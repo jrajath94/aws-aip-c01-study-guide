@@ -7,6 +7,7 @@ TRACK = os.path.expanduser("~/workspace/your_files/aws-aip-c01-cert")
 OUT = os.path.expanduser("~/workspace/your_files/aws-aip-c01-cert/.qa-shots")
 os.makedirs(OUT, exist_ok=True)
 PAGES = ["index.html", "volume-d1-foundation-models.html", "volume-d2-implementation-integration.html",
+         "volume-crash-course.html",
          "volume-d3-safety-security-governance.html", "volume-d4-optimization.html",
          "volume-d5-testing-validation.html", "volume-maarek-labs.html",
          "volume-question-bank.html", "volume-question-patterns.html",
@@ -30,7 +31,7 @@ SPILL_JS = """() => {
 
 results = {}
 with sync_playwright() as p:
-    browser = p.chromium.launch(executable_path="/usr/bin/google-chrome",
+    browser = p.chromium.launch(executable_path="/opt/meta-chromium/chrome",
                                 args=["--no-sandbox", "--disable-dev-shm-usage"])
     for page in PAGES:
         results[page] = {}
