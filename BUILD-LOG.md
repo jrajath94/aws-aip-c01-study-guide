@@ -52,3 +52,28 @@ wm_clean.py Layer A over all 11 HTML files: all exit 0. Ten files byte-identical
 - Some figures are model-generated ("Generated diagram" credited in captions) rather than AWS-official diagrams; captions credit internet-sourced diagrams where used.
 - Content is generic learning material only: no personal identifiers anywhere (verified by scan; "raj" hits were base64 image-data coincidences).
 - D4's lite-model worked pricing example uses retired Claude 3 Haiku rates, explicitly labeled illustrative; current Haiku 4.5 global rates are $1.00/$5.00 per 1M. Flagged to the learner in the parent report.
+
+## AUDIT-REPORT: Professional-Bar Question-Bank Audit (2026-09-28)
+
+**Auditor:** QUESTION-BANK PROFESSIONAL-BAR AUDITOR subagent. **File:** volume-question-bank.html.
+
+**Audit method.** All 140 stems extracted and graded against the professional bar from QUESTION-PATTERNS-RESEARCH.md (20 real-exam patterns: no single-fact "which service does X" softballs, multi-constraint scenario stems, plausible-but-wrong distractors, signature polarity traps). Pre-audit mix: 58 EASY / 54 MEDIUM / 28 HARD. **55 questions failed the bar** (pure trivia or single-fact stems with no scenario constraints) and were rewritten. Post-audit mix: 8 EASY / 137 MEDIUM / 47 HARD.
+
+**55 questions rewritten in place (same ids, same Q numbers, same correct letters; mock-exam links and 75-row answer key verified byte-consistent after the change):**
+- D1 (15): q-d1-006, q-d1-008, q-d1-011, q-d1-015, q-d1-016, q-d1-018, q-d1-019, q-d1-021, q-d1-025, q-d1-026, q-d1-027, q-d1-032, q-d1-034, q-d1-038, q-d1-040
+- D2 (18): q-d2-001, q-d2-002, q-d2-004, q-d2-005, q-d2-008, q-d2-013, q-d2-015, q-d2-016, q-d2-018, q-d2-020, q-d2-021, q-d2-023, q-d2-026, q-d2-027, q-d2-032, q-d2-033, q-d2-034, q-d2-035
+- D3 (11): q-d3-001, q-d3-002, q-d3-003, q-d3-008, q-d3-011, q-d3-013, q-d3-014, q-d3-018, q-d3-019, q-d3-024, q-d3-027
+- D4 (6): q-d4-001, q-d4-004, q-d4-006, q-d4-008, q-d4-013, q-d4-015
+- D5 (5): q-d5-001, q-d5-002, q-d5-003, q-d5-009, q-d5-011
+- All 55 kept their original format (ONE ANSWER) and correct letter (A). Mock-table Type labels for the 31 rewritten questions that appear in the mock exam were updated to match the new difficulty. Rewrites verified: no em dashes, no external URLs, no fictional services, per-distractor "why wrong" notes preserved.
+
+**52 new professional-bar questions added (Q141-Q192, new section "Bonus Professional-Bar Practice Questions" before the mock exam; ids q-d1-201..216, q-d2-201..213, q-d3-201..211, q-d4-201..206, q-d5-201..206).** Each has a multi-constraint scenario stem, per-distractor reasoning, and an explicit trap line. Seven are multi-response (SELECT 2, correct AB); the rest are single-answer.
+
+**3 hardest new questions (by design):**
+- q-d1-210 (Q150): fine-tune vs continued pre-training vs distillation ladder across three lifecycle stages; distractors swap the correct technique to the wrong stage.
+- q-d3-204 (Q174): multi-account Guardrails governance via Organizations SCP + StackSets + bedrock:GuardrailIdentifier (SELECT 2); the "organization policy" decoy tests knowledge that Bedrock lacks org-level policy objects.
+- q-d4-201 (Q181): three-way Provisioned Throughput vs batch inference vs on-demand tier assignment (SELECT 2) with an idle-cost constraint that kills the peak-sized-PT decoy.
+
+**Mechanical verification (scripted, all PASS):** 192 question blocks, ids unique, Q numbers sequential 1-192, all 140 original answer keys byte-identical to the pre-audit backup, mock 75-row key consistent, all mock anchors resolve, intro paragraph and FACT-CHECK comment updated, head / design-system style / DS_TRACK+DS_MANIFEST+ds.js scripts byte-identical (surgical edits confined to <main>), zero em dashes and zero external URLs in question content, HTML tag balance clean.
+
+**Notes.** The 11 em dashes in the file are pre-existing boilerplate (title tag, design-system CSS comments, ds.js comments), untouched per the no-touch rule. A full pre-audit backup is kept at /tmp/qbank/backup-before-audit.html (ephemeral; the canonical file is the deliverable).
