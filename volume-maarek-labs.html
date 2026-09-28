@@ -1,0 +1,1357 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>AIP-C01 Labs Volume: Maarek Labs and Hands-On Patterns</title><style>
+:root{
+  --bg:#000000;
+  --surface:#0d0d0d;
+  --border:#262626;
+  --text:#ececec;
+  --muted:#a8a8a8;
+  --accent:#f0b429;
+  --link:#6cb2ff;
+  --code-bg:#111111;
+  --maxw:72ch;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;overflow-x:clip}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{transition:none!important;animation:none!important}
+}
+body{
+  margin:0;background:var(--bg);color:var(--text);overflow-x:clip;
+  font:17px/1.75 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+}
+a{color:var(--link);text-decoration:none}
+a:hover{text-decoration:underline}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:2px}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.88em;
+  background:var(--code-bg);padding:.1em .35em;border-radius:4px;color:var(--text)}
+.codewrap{position:relative;margin:1.2rem 0}
+pre{background:var(--code-bg);border:1px solid var(--border);border-radius:8px;
+  padding:1em 1.2em;overflow-x:auto;max-width:100%}
+.codewrap pre{margin:0;padding-right:4.5em}
+pre code{background:none;padding:0;font-size:.85em;line-height:1.6}
+.copybtn{position:absolute;top:.55em;right:.55em;font-size:.75rem;font-weight:600;
+  background:var(--surface);color:var(--muted);border:1px solid var(--border);
+  border-radius:6px;padding:.3em .8em;cursor:pointer;font-family:inherit}
+.copybtn:hover{color:var(--text);border-color:var(--muted)}
+/* reading progress */
+.progress{position:fixed;top:0;left:0;right:0;height:3px;background:transparent;z-index:60}
+.progress-fill{height:100%;width:0;background:var(--accent)}
+/* layout */
+.layout{display:flex;min-height:100vh;align-items:stretch}
+/* sidebar */
+.rail{position:sticky;top:0;height:100vh;overflow-y:auto;flex:0 0 300px;
+  background:var(--surface);border-right:1px solid var(--border);
+  padding:1.4rem 1.1rem 2rem;z-index:40}
+.rail-title{font-size:1.02rem;font-weight:700;margin:0;color:var(--text)}
+.rail-sub{color:var(--muted);font-size:.82rem;margin:.25rem 0 1rem}
+.filter-label{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.rail-filter{width:100%;background:var(--code-bg);border:1px solid var(--border);
+  border-radius:8px;color:var(--text);font-size:.85rem;padding:.55rem .75rem;margin:0 0 1rem;
+  font-family:inherit}
+.rail-filter::placeholder{color:var(--muted)}
+.rail nav ul{list-style:none;margin:0;padding:0}
+.group{margin:.1rem 0}
+.group-row{display:flex;align-items:center;gap:.35rem;padding:.15rem 0}
+.group-title{font-weight:700;font-size:.92rem;color:var(--text);flex:1;padding:.3rem .4rem}
+a.ch[data-nav]{display:block;flex:1;min-width:0;padding:.42rem .55rem;border-radius:6px;
+  color:var(--text);font-weight:600;font-size:.9rem;border-left:2px solid transparent}
+a.ch[data-nav]:hover{background:var(--code-bg);text-decoration:none}
+a.ch[data-nav].active{border-left-color:var(--accent);background:var(--code-bg);color:var(--accent)}
+a.ch[data-nav] .n{color:var(--muted);font-weight:400;margin-right:.45em;font-size:.85em}
+a.ch[data-nav].active .n{color:var(--accent)}
+ul.sec{list-style:none;margin:.1rem 0 .4rem 1.35rem;padding:0;border-left:1px solid var(--border)}
+ul.sec li{display:flex;align-items:center;gap:.3rem}
+ul.sec a[data-nav]{flex:1;min-width:0;font-size:.8rem;color:var(--muted);display:block;
+  padding:.22rem .4rem .22rem .7rem;border-radius:4px}
+ul.sec a[data-nav]:hover{color:var(--text);background:var(--code-bg);text-decoration:none}
+ul.sec a[data-nav].active{color:var(--accent);background:var(--code-bg)}
+.toggle{flex:0 0 auto;width:1.5rem;height:1.5rem;border:1px solid var(--border);
+  background:transparent;color:var(--muted);border-radius:5px;cursor:pointer;
+  font-size:.8rem;line-height:1;padding:0}
+.toggle:hover{color:var(--text);border-color:var(--muted)}
+.done{flex:0 0 auto;width:1.25rem;height:1.25rem;border:1px solid var(--border);
+  background:transparent;border-radius:50%;cursor:pointer;padding:0;position:relative}
+.done:hover{border-color:var(--muted)}
+.done span{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  color:var(--accent);font-size:.8rem;font-weight:700}
+.done.is-done{border-color:var(--accent)}
+.done.is-done span::before{content:"¹3"}
+.done.sm{width:1rem;height:1rem}
+.done.sm span{font-size:.65rem}
+.group.done-group>a.ch[data-nav]{color:var(--muted)}
+/* main column */
+.main,main{flex:1;min-width:0;padding:2.5rem 2rem 6rem}
+.wrap{max-width:var(--maxw);margin:0 auto}
+main>*{max-width:var(--maxw);margin-left:auto;margin-right:auto}
+.page-title{font-size:2rem;line-height:1.25;margin:0 0 .3rem;font-weight:700}
+.page-sub{color:var(--muted);font-size:1.02rem;margin:0 0 2rem;text-align:left}
+h1{font-size:2rem;line-height:1.25;font-weight:700;margin:0 0 .6rem}
+h2{font-size:1.45rem;font-weight:600;margin:2.4rem 0 .8rem}
+h3{font-size:1.2rem;font-weight:600;margin:1.9rem 0 .6rem}
+h4{font-size:1.05rem;font-weight:600;margin:1.5rem 0 .5rem}
+p{margin:.7rem 0;text-align:justify}
+ul,ol{margin:.7rem 0;padding-left:1.5rem}
+li{margin:.3rem 0}
+.lede{color:var(--muted);font-size:1.05rem;margin:0 0 1.5rem;text-align:left}
+.sub{color:var(--muted);margin:0 0 1.5rem;text-align:left}
+.chapter{margin-bottom:4rem}
+/* tables */
+table{border-collapse:collapse;width:100%;margin:1rem 0;font-size:.92rem;
+  display:block;overflow-x:auto;max-width:100%}
+th,td{border:1px solid var(--border);padding:.55rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--surface);font-weight:700;color:var(--text)}
+/* components */
+.onboard{background:var(--surface);border:1px solid var(--border);
+  border-left:4px solid var(--link);border-radius:0 10px 10px 0;
+  padding:1.1rem 1.3rem;margin:0 0 2rem}
+.onboard h2,.onboard h3{margin:0 0 .5rem;font-size:1.1rem}
+.onboard-tag{font-weight:700;color:var(--link)}
+.onboard ul{margin:.4rem 0}
+.callout{border:1px solid var(--border);border-radius:8px;padding:.8rem 1.1rem;
+  margin:1.1rem 0;background:var(--surface)}
+.callout .callout-label{font-weight:700}
+.callout.key{border-left:4px solid var(--link)}
+.callout.ask{border-left:4px solid var(--accent)}
+.callout.trap{border-left:4px solid var(--accent)}
+.callout.trap .callout-label{color:var(--accent)}
+.callout.warn{border-left:4px solid var(--accent)}
+.callout.warn .callout-label{color:var(--accent)}
+.guide{background:var(--surface);border:1px solid var(--border);border-radius:10px;
+  padding:1.25rem 1.5rem;margin:1.1rem 0}
+/* practice questions */
+details{border:1px solid var(--border);border-radius:8px;margin:.8rem 0;background:var(--surface)}
+details summary{cursor:pointer;padding:.75rem 1.1rem;font-weight:600;list-style:none;color:var(--text)}
+details summary::-webkit-details-marker{display:none}
+details summary::before{content:"+ ";color:var(--accent);font-weight:700}
+details[open] summary::before{content:"2  "}
+details .qa-body{padding:0 1.1rem 1rem}
+details.ans .body{padding:.2rem 1.1rem 1rem}
+details.ans summary{color:var(--text)}
+.qcard{background:var(--surface);border:1px solid var(--border);border-radius:10px;
+  padding:1.25rem 1.4rem;margin:1.25rem 0}
+.qhead{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;margin-bottom:.6rem}
+.qid{font-weight:700;color:var(--text);font-size:.95rem}
+.badge{font-size:.75rem;font-weight:700;padding:.15rem .65rem;border-radius:20px;
+  background:var(--code-bg);border:1px solid var(--border);color:var(--muted)}
+.fmt{font-size:.75rem;color:var(--muted);border:1px solid var(--border);border-radius:20px;padding:.15rem .65rem}
+.domain{font-size:.75rem;color:var(--link);font-weight:600}
+.stem{font-size:.97rem;margin:.5rem 0 .75rem}
+.opts{list-style:none;margin:.6rem 0;padding:0}
+.opts li{padding:.5rem .75rem;border:1px solid var(--border);border-radius:8px;
+  margin:.4rem 0;background:var(--bg)}
+.opts .k{font-weight:700;color:var(--link);margin-right:.5rem}
+.trap{background:var(--surface);border:1px solid var(--border);border-left:4px solid var(--accent);
+  padding:.6rem .9rem;margin:.9rem 0 .4rem;font-size:.9rem;border-radius:0 8px 8px 0}
+.trap b{color:var(--accent)}
+.correct-line{font-weight:700;color:var(--accent)}
+.why-wrong li{margin:.4rem 0}
+ol.tight li,ul.tight li{margin:.4rem 0}
+.qbank-q{font-weight:600}
+.qexp{margin:.5rem 0 .2rem}
+.qexp .right{color:var(--accent);font-weight:700}
+.qexp .wrong{color:var(--muted)}
+/* diagrams */
+figure.fig{margin:1.6rem 0;padding:0;max-width:100%}
+figure.fig img{max-width:100%;height:auto;display:block;border-radius:8px;border:1px solid var(--border)}
+figcaption{color:var(--muted);font-size:.88rem;margin-top:.5rem;border-top:1px solid var(--border);
+  padding-top:.4rem;max-width:60ch;text-align:left}
+.howread{background:var(--surface);border:1px solid var(--border);border-left:4px solid var(--link);
+  border-radius:0 10px 10px 0;padding:1rem 1.2rem;margin:.4rem 0 1.6rem}
+.howread-title{font-weight:700;margin:0 0 .4rem;font-size:1rem}
+.howread-sub{font-weight:700;margin:.9rem 0 .3rem;font-size:.92rem;color:var(--link)}
+.howread ol.flow{margin:.4rem 0 .2rem;padding-left:1.4rem}
+.howread ol.flow li{margin:.28rem 0}
+.howread ol li{margin:.28rem 0}
+.howread table{margin:.5rem 0}
+pre.ascii{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.82rem;
+  line-height:1.55;background:var(--code-bg);border:1px solid var(--border);
+  border-left:4px solid var(--link);border-radius:0 8px 8px 0;padding:.9rem 1rem;
+  overflow-x:auto;white-space:pre;color:var(--text);margin:1.2rem 0;max-width:100%}
+figure.fig pre.ascii{margin:0}
+figure.fig .codewrap{margin:0}
+dfn{font-style:normal;color:var(--accent);border-bottom:1px dotted var(--accent);cursor:help}
+.kv{display:grid;grid-template-columns:180px 1fr;gap:.3rem .8rem;margin:.8rem 0;font-size:.93rem}
+.kv dt{font-weight:700}
+.kv dd{margin:0}
+.verified{font-size:.85rem;color:var(--muted);border-top:1px solid var(--border);
+  margin-top:2rem;padding-top:.6rem;text-align:left}
+.unverified{color:var(--accent);font-weight:700}
+/* pager */
+#pager{display:flex;justify-content:space-between;gap:1rem;margin:3rem 0 0;
+  padding-top:1.25rem;border-top:1px solid var(--border);max-width:var(--maxw)}
+#pager:empty{display:none}
+#pager a{border:1px solid var(--border);border-radius:8px;padding:.6rem 1rem;
+  background:var(--surface);color:var(--text);font-size:.88rem;max-width:48%}
+#pager a:hover{border-color:var(--accent);color:var(--accent);text-decoration:none}
+#pager .prev{margin-right:auto}
+#pager .next{margin-left:auto;text-align:right}
+/* hamburger + overlay */
+.hamburger{display:none;position:fixed;top:.7rem;left:.7rem;z-index:70;
+  background:var(--surface);border:1px solid var(--border);border-radius:8px;
+  color:var(--text);font-size:1.2rem;padding:.35rem .7rem;cursor:pointer}
+.drawer-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:45}
+footer{margin-top:3.5rem;padding-top:1.25rem;border-top:1px solid var(--border);
+  color:var(--muted);font-size:.82rem;text-align:left}
+/* responsive */
+@media (max-width:900px){
+  .layout{flex-direction:column}
+  .main,main{padding:1.5rem 1rem 4rem}
+  .rail{position:fixed;top:0;left:0;bottom:0;height:auto;transform:translateX(-102%);
+    transition:transform .25s ease;width:min(320px,85vw);flex:none;
+    box-shadow:none;border-right:1px solid var(--border)}
+  .rail.open{transform:translateX(0)}
+  .hamburger{display:block}
+  .drawer-overlay.show{display:block}
+  .kv{grid-template-columns:1fr}
+  #pager{flex-direction:column}
+  #pager a{max-width:100%}
+}
+@media print{
+  .rail,.hamburger,.drawer-overlay,.progress,.copybtn,.toggle,.done,#pager{display:none!important}
+  body{background:#fff;color:#000;font-size:12pt;line-height:1.5}
+  main>*,.wrap{max-width:100%}
+  a{color:#000;text-decoration:underline}
+  a[href^="http"]::after{content:" (" attr(href) ")";font-size:.85em}
+  details:not([open])>:not(summary){display:block!important}
+  figure,.qcard,details,.callout,.howread,.guide,pre,.onboard{break-inside:avoid}
+  p{text-align:left}
+  code,pre{background:#f2f2f2;color:#000;border-color:#999}
+}
+</style></head><body>
+<div class="progress" aria-hidden="true"><div class="progress-fill" id="progress-fill"></div></div>
+<button class="hamburger" id="hamburger" aria-label="Open navigation" aria-expanded="false" aria-controls="rail">&#9776;</button>
+<div class="drawer-overlay" id="drawer-overlay"></div>
+<div class="layout"><aside class="rail" id="rail">
+<div class="rail-head">
+<p class="rail-title">AIP-C01 Labs Volume</p>
+<p class="rail-sub">Maarek labs and hands-on patterns</p>
+<label class="filter-label" for="rail-filter">Filter sections</label>
+<input type="search" id="rail-filter" class="rail-filter" placeholder="Filter sections" autocomplete="off">
+</div>
+<nav aria-label="Chapters">
+<ul class="groups">
+<li class="group" data-gid="ch1">
+<div class="group-row">
+<a class="ch" data-nav href="#ch1"><span class="n">1</span><span class="t">Lab: Strands agent with custom tools</span></a>
+<button type="button" class="done" data-done="ch1" aria-pressed="false" aria-label="Mark Lab: Strands agent with custom tools complete" title="Mark complete"><span aria-hidden="true"></span></button>
+</div>
+</li>
+<li class="group" data-gid="ch2">
+<div class="group-row">
+<a class="ch" data-nav href="#ch2"><span class="n">2</span><span class="t">Lab: Multi-agent squad routing</span></a>
+<button type="button" class="done" data-done="ch2" aria-pressed="false" aria-label="Mark Lab: Multi-agent squad routing complete" title="Mark complete"><span aria-hidden="true"></span></button>
+</div>
+</li>
+<li class="group" data-gid="ch3">
+<div class="group-row">
+<a class="ch" data-nav href="#ch3"><span class="n">3</span><span class="t">Lab: AgentCore Runtime deployment</span></a>
+<button type="button" class="done" data-done="ch3" aria-pressed="false" aria-label="Mark Lab: AgentCore Runtime deployment complete" title="Mark complete"><span aria-hidden="true"></span></button>
+</div>
+</li>
+<li class="group" data-gid="ch4">
+<div class="group-row">
+<a class="ch" data-nav href="#ch4"><span class="n">4</span><span class="t">Lab: Bedrock Flows from JSON</span></a>
+<button type="button" class="done" data-done="ch4" aria-pressed="false" aria-label="Mark Lab: Bedrock Flows from JSON complete" title="Mark complete"><span aria-hidden="true"></span></button>
+</div>
+</li>
+<li class="group" data-gid="ch5">
+<div class="group-row">
+<a class="ch" data-nav href="#ch5"><span class="n">5</span><span class="t">Lab: Lambda as Bedrock front end</span></a>
+<button type="button" class="done" data-done="ch5" aria-pressed="false" aria-label="Mark Lab: Lambda as Bedrock front end complete" title="Mark complete"><span aria-hidden="true"></span></button>
+</div>
+</li>
+<li class="group" data-gid="ch6">
+<div class="group-row">
+<a class="ch" data-nav href="#ch6"><span class="n">6</span><span class="t">Lab: Lambda as agent action</span></a>
+<button type="button" class="done" data-done="ch6" aria-pressed="false" aria-label="Mark Lab: Lambda as agent action complete" title="Mark complete"><span aria-hidden="true"></span></button>
+</div>
+</li>
+<li class="group" data-gid="ch7">
+<div class="group-row">
+<a class="ch" data-nav href="#ch7"><span class="n">7</span><span class="t">Lab: CI/CD with eval gates</span></a>
+<button type="button" class="done" data-done="ch7" aria-pressed="false" aria-label="Mark Lab: CI/CD with eval gates complete" title="Mark complete"><span aria-hidden="true"></span></button>
+</div>
+</li>
+<li class="group" data-gid="ch8">
+<div class="group-row">
+<a class="ch" data-nav href="#ch8"><span class="n">8</span><span class="t">Lab: CDK for GenAI infrastructure</span></a>
+<button type="button" class="done" data-done="ch8" aria-pressed="false" aria-label="Mark Lab: CDK for GenAI infrastructure complete" title="Mark complete"><span aria-hidden="true"></span></button>
+</div>
+</li>
+<li class="group" data-gid="ch9">
+<div class="group-row">
+<a class="ch" data-nav href="#ch9"><span class="n">9</span><span class="t">Supporting labs: KMS, X-Ray, SQS, and foundations</span></a>
+<button type="button" class="done" data-done="ch9" aria-pressed="false" aria-label="Mark Supporting labs: KMS, X-Ray, SQS, and foundations complete" title="Mark complete"><span aria-hidden="true"></span></button>
+</div>
+</li>
+<li class="group" data-gid="qa">
+<div class="group-row">
+<a class="ch" data-nav href="#qa"><span class="n">QA</span><span class="t">Build checklist and verification log</span></a>
+<button type="button" class="done" data-done="qa" aria-pressed="false" aria-label="Mark Build checklist and verification log complete" title="Mark complete"><span aria-hidden="true"></span></button>
+</div>
+</li>
+</ul>
+</nav>
+</aside><div class="main"><div class="wrap">
+<h1 class="page-title">AIP-C01 Labs Volume</h1>
+<p class="page-sub">Maarek labs and hands-on patterns</p>
+
+
+<div class="onboard"><h2>How to use this volume</h2>
+<p><span class="onboard-tag">Hands on.</span> Each chapter is one lab from the course lab pack, rebuilt in plain words. Every chapter follows the same shape: what the lab teaches, why it matters in production, how it works under the hood, an architecture diagram with a numbered walkthrough, the exact exam angles, the traps, and one practice question with full explanations.</p>
+<p>Code shown here is adapted for teaching, written fresh for this volume. It is not copied from the course files. The lab sources are course material; this volume explains the concepts in its own words.</p>
+<p class="verified">Fact check: AWS service names, features, model IDs, and API shapes in this volume were verified against live AWS documentation on <strong>2026-09-28</strong>. Anything that could not be verified is marked <span class="unverified">UNVERIFIED</span> inline. Limits and defaults change; check the docs at build time.</p>
+</div>
+
+<!-- ================= CHAPTER 1 ================= -->
+<section class="chapter" id="ch1"><h2>1. Lab: Strands agent with custom tools</h2>
+<p class="lede">Build a working agent in a few lines of Python: one model, a tool list, a system prompt, and a custom function the model can call.</p>
+
+<h3>What this lab teaches</h3>
+<p>Strands Agents is an open-source Python SDK for building agents. An agent has three parts: a model (the brain), tools (the hands), and a prompt (the personality and instructions). You create an <code>Agent</code>, hand it a list of tools, and call it like a function with a question. The SDK runs the agent loop for you.</p>
+<p>The agent loop is the key idea. A single model call cannot use tools by itself. The loop works like this: send the prompt to the model, the model replies either with text or with a request to call a tool, the SDK runs the tool, the tool result goes back to the model, and the cycle repeats until the model produces a final answer. Strands is model-driven, meaning the model decides at each step whether it needs a tool and which one.</p>
+<p>A custom tool is just a Python function with the <code>@tool</code> decorator. The function's docstring becomes the tool description that the model reads when deciding what to call. The type hints become the input schema. A vague docstring means the model will misuse the tool, so the docstring is the real interface.</p>
+
+<h3>Why it exists: when you would use it in production</h3>
+<p>Without a framework, every team hand-writes the same loop: parse the model's tool request blocks, validate arguments, execute code, format results, handle errors, track conversation state. That loop is where most agent bugs live. Strands owns the loop so your code is only the business logic: the tools themselves.</p>
+<p>You reach for Strands when you need full code control over an agent: custom retry logic, your own tools, your own deployment target. It is the code-first alternative to the fully managed Bedrock Agents console experience. You can run a Strands agent on a laptop, in a container, on Lambda, or on AgentCore Runtime (chapter 3).</p>
+
+<h3>How it works under the hood</h3>
+<p>Step by step, for the pattern <code>Agent(tools=[calculator, current_time, count_keyword], system_prompt=...)</code>:</p>
+<ol>
+<li>You define tools. Each <code>@tool</code> function registers its name, its docstring (description), and a JSON schema built from its type hints.</li>
+<li>You create the <code>Agent</code>. The system prompt is prepended to every conversation. The tool list is converted into the tool definitions the model API expects.</li>
+<li>You call the agent with a message, for example three tasks at once. The SDK sends the system prompt, the message, and the tool definitions to the model (Strands uses the Bedrock Converse API under the hood for Bedrock models).</li>
+<li>The model returns one or more tool calls. The SDK executes each Python function with the arguments the model chose.</li>
+<li>Tool results return to the model as tool result blocks. The model may call more tools or finish with text.</li>
+<li>The call returns an agent result object whose string form is the final answer.</li>
+</ol>
+<p>The <code>strands-agents-tools</code> package ships ready-made tools such as a calculator and a current-time tool, so a lab agent can mix built-in tools with your own custom ones. The <code>callback_handler</code> controls streaming output; setting it to <code>None</code> silences intermediate steps.</p>
+<p>Adapted teaching snippet (a few lines, written for this volume):</p>
+<pre><code>from strands import Agent, tool
+
+@tool
+def word_count(text: str) -> int:
+    """Count the words in a piece of text. The model reads this sentence."""
+    return len(text.split())
+
+agent = Agent(tools=[word_count], system_prompt="You are a study coach.")
+print(agent("How many words are in 'cloud nine'?"))</code></pre>
+<p>Each tool call costs another model invocation, and the conversation history grows with every turn. If an agent makes five tool calls over a 2,000-token context, you pay for roughly five invocations, not one. That is why loop guards and precise tool descriptions matter for cost.</p>
+
+<div class="callout trap"><span class="callout-label">Common misunderstanding.</span> The docstring is not documentation for humans here; it is the routing logic the model uses to pick tools. Teams that write "utility function" as a docstring get random tool selection and blame the model.</div>
+
+<figure class="fig"><pre class="ascii">  User message ("what time is it? calculate X, count 'prompt' in this text")
+       |
+       v
+ +------------------+      +---------------------------+
+ |  Strands Agent   |----->|  Model (Bedrock Converse) |
+ |  event loop      |<-----|  decides: answer or tool? |
+ +------------------+      +---------------------------+
+       | toolUse block                    ^ toolResult block
+       v                                  |
+ +------------------+                     |
+ | Python functions |--- results back ----+
+ | calculator,      |
+ | current_time,    |
+ | count_keyword    |
+ +------------------+
+       |
+       v
+  Final answer text</pre>
+<figcaption>Figure 1.1: The Strands agent loop. The model decides each step; the SDK executes the Python functions. Caption: ASCII diagram drawn for this volume.</figcaption></figure>
+<div class="howread"><p class="howread-title">How to read this diagram</p>
+<ol class="flow">
+<li>Start at the top: the user message enters the agent. The agent is not the model; it is the loop that drives the model.</li>
+<li>The loop sends the system prompt, the message, and the tool definitions to the model through the Converse API.</li>
+<li>The model replies with either final text or a toolUse block naming a function and arguments. The arrow to the right shows this decision point.</li>
+<li>A toolUse block goes down to the Python functions. The SDK runs the real code with the model's chosen arguments.</li>
+<li>Results flow back up as toolResult blocks. The loop repeats from step 2 until the model returns text.</li>
+</ol>
+<p class="howread-sub">What breaks if a component fails</p>
+<ul>
+<li>If a tool raises an exception and you do not catch it, the loop stalls or the model gets an error block it cannot use. Wrap tool bodies in error handling.</li>
+<li>If the tool list is empty, the agent is just a chatbot. If the docstrings are vague, the model calls the wrong tool or invents arguments.</li>
+<li>If the model API throttles, the whole loop stops. Retries with backoff belong around the agent call, not inside each tool.</li>
+</ul></div>
+
+<div class="callout ask"><span class="callout-label">How AWS will ask about this.</span> Scenario: a team wants a Python agent that calls internal functions with minimal boilerplate and full code control. The most correct answer names Strands Agents (or the Agent Squad framework from chapter 2) with <code>@tool</code> functions. Distractors: hand-rolling the tool loop with raw InvokeModel calls (works but high operational burden, and Maarek's rule prefers the managed or framework path), or Bedrock Agents console when the scenario stresses code-first deployment on their own infrastructure. Trap pattern: an option that says "Strands replaces Bedrock Agents." They are alternatives for different needs: Bedrock Agents is the managed service with action groups and aliases; Strands is the SDK you host yourself, including on AgentCore.</div>
+
+<div class="callout trap"><span class="callout-label">Exam tips and wrong-answer traps.</span>
+<ul>
+<li>Tool choice is driven by the docstring plus type hints. A question about "the agent keeps calling the wrong tool" points at the tool description, not at the model.</li>
+<li>Tools execute with your code's permissions. A tool that calls AWS APIs needs IAM scope; the exam tests least privilege on tool permissions.</li>
+<li>Strands' Bedrock model provider uses the Converse API, not the legacy InvokeModel path. If a question mixes Strands with provider-specific InvokeModel bodies, that is the trap.</li>
+</ul></div>
+
+<h4>Practice question</h4>
+<p class="qbank-q">A startup's developers need a Python agent that answers support questions and calls two internal functions: one that looks up order status and one that computes refunds. They want full control of the code, they want to deploy on their own containers, and they want to avoid writing the model tool-call loop by hand. Which approach is MOST correct?</p>
+<p>A. Write a custom loop with InvokeModel that parses toolUse blocks, executes the functions, and feeds results back.<br>
+B. Build the agent with the Strands Agents SDK, exposing each internal function as an <code>@tool</code> with a clear docstring and type hints.<br>
+C. Create a Bedrock Agent in the console with action groups, because code-first frameworks cannot call internal functions.<br>
+D. Put both functions behind API Gateway and have the model call the HTTP endpoints by reading the URLs from the system prompt.</p>
+<div class="qexp">
+<p><span class="right">B is correct.</span> Strands is the code-first framework: <code>@tool</code> turns plain Python functions into tools, the SDK owns the loop, and the agent deploys anywhere including the team's own containers. The docstring plus type hints give the model the interface it needs.</p>
+<p><span class="wrong">A is wrong</span> because hand-rolling the loop duplicates what the framework does and adds operational burden; the exam prefers the framework or managed path when the scenario does not demand custom loop behavior.</p>
+<p><span class="wrong">C is wrong</span> for two reasons: the premise is false (code-first frameworks call internal functions easily, that is their main strength), and the scenario explicitly asks for code control and self-hosted deployment, which points away from the console-first managed agent.</p>
+<p><span class="wrong">D is wrong</span> because models cannot reliably "call URLs from the system prompt." Tool use needs a real tool interface with schemas, not prompt text. This distractor tests whether you confuse prompt content with tool definitions.</p>
+</div>
+</section>
+
+<!-- ================= CHAPTER 2 ================= -->
+<section class="chapter" id="ch2"><h2>2. Lab: Multi-agent squad routing</h2>
+<p class="lede">One entry point, many specialist agents. A classifier reads each request and routes it to the right specialist.</p>
+
+<h3>What this lab teaches</h3>
+<p>Agent Squad is an open-source multi-agent orchestration framework (pip package name <code>agent-squad</code>). Instead of one giant agent that does everything, you register several specialist agents with one orchestrator. Each request goes through a classifier, usually a small fast model, which picks the best specialist for that request. The orchestrator then hands the request to the chosen agent and returns its answer with routing metadata.</p>
+<p>The framework also supports composite agents: a ChainAgent runs a fixed pipeline where each agent's output feeds the next, and a SupervisorAgent coordinates workers. For chat history it uses a ChatStorage layer: in-memory by default, DynamoDB or SQL for production.</p>
+
+<h3>Why it exists: when you would use it in production</h3>
+<p>Specialists beat generalists as scope grows. A billing agent, a technical support agent, and a general assistant each carry different tools, prompts, and knowledge. Adding a fourth specialty means registering one more agent, not rewriting a router. The classifier pattern also lets you mix frameworks: a Strands agent, a plain Bedrock model agent, and a Lambda-backed agent can all sit behind the same entry point.</p>
+
+<h3>How it works under the hood</h3>
+<p>Step by step for the lab's setup (a Strands specialist plus a general Bedrock LLM agent):</p>
+<ol>
+<li>Create the orchestrator with a classifier: <code>AgentSquad(classifier=...)</code>. The BedrockClassifier is itself a model call: it receives the user input, the conversation history, and the catalog of registered agents (names plus descriptions), and it returns which agent should handle the request.</li>
+<li>Register each agent with <code>add_agent</code>. The name and description are load-bearing: they are what the classifier reads. "Handles all general questions that do not require calculator, current time, or keyword counting" is a real routing instruction, not a label.</li>
+<li>Wrap foreign agents in an adapter. The lab wraps the Strands agent in a small class that converts a Strands result into the framework's ConversationMessage format. This adapter pattern is how any framework joins the squad.</li>
+<li>Call <code>await orchestrator.route_request(user_input, user_id, session_id)</code>. It is a coroutine, so you must await it. The orchestrator reads history from ChatStorage, classifies, dispatches, saves both sides of the exchange, and returns a response object with metadata naming the chosen agent.</li>
+<li>Branch on <code>response.streaming</code>: in streaming mode the output is an async generator of chunks; otherwise it is a single message. Forgetting this branch is the classic integration bug.</li>
+</ol>
+<p>Adapted teaching snippet (written for this volume):</p>
+<pre><code>from agent_squad.orchestrator import AgentSquad
+from agent_squad.agents import BedrockLLMAgent, BedrockLLMAgentOptions
+from agent_squad.classifiers import BedrockClassifier, BedrockClassifierOptions
+
+orchestrator = AgentSquad(classifier=BedrockClassifier(BedrockClassifierOptions()))
+orchestrator.add_agent(BedrockLLMAgent(BedrockLLMAgentOptions(
+    name="General Assistant",
+    description="Handles general questions.",
+)))
+
+response = await orchestrator.route_request("What is the capital of France?",
+                                            user_id="u1", session_id="s1")
+print(response.metadata.agent_name)   # which specialist was picked</code></pre>
+<p>Cost math: classification adds one extra model call per turn. Using a tiny model such as Nova Micro for the classifier keeps that call to fractions of a cent, which is why the lab configures the classifier with low max tokens and temperature 0. Deterministic classification (temperature 0) also makes routing reproducible, which matters for debugging.</p>
+
+<div class="callout trap"><span class="callout-label">Common misunderstanding.</span> The classifier is not magic keyword matching; it is an LLM reading your agent descriptions. If two agents have overlapping descriptions, routing becomes a coin flip. Write descriptions as mutually exclusive routing rules.</div>
+
+<figure class="fig"><pre class="ascii">  User request ("calculate 3111696 / 74088")
+       |
+       v
+ +---------------------+     +----------------------+
+ | AgentSquad          |---->| BedrockClassifier    |
+ | orchestrator        |     | (small fast model)   |
+ | route_request()     |<----| reads agent catalog  |
+ +---------------------+     +----------------------+
+       | chosen: "Calculator/Time/Keyword agent"
+       v
+ +---------------------+     +----------------------+
+ | Specialist agents   |     | ChatStorage          |
+ | - Strands (tools)   |     | in-memory (dev) or   |
+ | - Bedrock LLM       |<--->| DynamoDB (prod)      |
+ |   (general)         |     | per user+session     |
+ +---------------------+     +----------------------+
+       |
+       v
+  Answer + metadata.agent_name ("which agent answered")</pre>
+<figcaption>Figure 2.1: Agent Squad request flow. The classifier picks one specialist per request; history persists per user and session. Caption: ASCII diagram drawn for this volume.</figcaption></figure>
+<div class="howread"><p class="howread-title">How to read this diagram</p>
+<ol class="flow">
+<li>Start at the top: a user request enters <code>route_request</code> with a user id and session id.</li>
+<li>The orchestrator asks the classifier which registered agent fits. The classifier sees only names and descriptions, not the agents' internals.</li>
+<li>The chosen specialist processes the request. Specialists can be different frameworks; the adapter in the lab makes the Strands agent speak the squad's message format.</li>
+<li>ChatStorage on the right persists the exchange per user and session, so follow-up turns keep context. In production this is DynamoDB, not memory.</li>
+<li>The response returns the answer plus metadata naming the chosen agent, which is what you log for routing audits.</li>
+</ol>
+<p class="howread-sub">What breaks if a component fails</p>
+<ul>
+<li>If agent descriptions overlap, the classifier routes inconsistently. Fix the descriptions, not the model.</li>
+<li>If ChatStorage is in-memory in production, every restart wipes conversation history and multi-instance deployments disagree. Use DynamoDB.</li>
+<li>If you forget <code>await</code> on <code>route_request</code>, you get a coroutine object instead of an answer. If you ignore <code>response.streaming</code>, streaming agents break your client.</li>
+</ul></div>
+
+<div class="callout ask"><span class="callout-label">How AWS will ask about this.</span> Scenario: specialist agents for tax, investment, and estate planning must collaborate, use tools, keep memory for weeks, and require human approval over a threshold. The most correct answer combines an orchestration framework (Agent Squad or Strands multi-agent) with DynamoDB-backed memory and Step Functions for the approval workflow. Distractors: one giant single prompt (does not scale, no tool isolation), Lex (conversational UI, not autonomous orchestration), S3 for conversation memory (wrong access pattern and latency). A second angle: "which agent answered and why" points at routing metadata and the classifier's agent catalog.</div>
+
+<div class="callout trap"><span class="callout-label">Exam tips and wrong-answer traps.</span>
+<ul>
+<li>Do not confuse the squad's classifier with a Bedrock prompt router or inference profile. The classifier routes between your agents; prompt routers route between models by cost and quality; inference profiles route for regional availability. Three different mechanisms.</li>
+<li>Memory for weeks means durable storage (DynamoDB). Session memory inside the agent process is short-term only.</li>
+<li>Human approval over a money threshold is a Step Functions workflow with a callback or task token, not a prompt instruction to "ask a human."</li>
+</ul></div>
+
+<h4>Practice question</h4>
+<p class="qbank-q">A company runs three specialist agents behind one chat endpoint: a billing agent with account tools, a support agent with a knowledge base, and a general assistant. Requirements: each request must reach exactly one specialist, conversation history must survive restarts, and the team must log which specialist handled each request. Which combination is MOST correct? (Select TWO.)</p>
+<p>A. Front the agents with an Agent Squad orchestrator using a BedrockClassifier and per-agent name and description entries.<br>
+B. Store conversation history in the orchestrator's default in-memory ChatStorage.<br>
+C. Use DynamoDB-backed ChatStorage keyed by user id and session id, and log response metadata showing the chosen agent.<br>
+D. Merge all three specialists into one agent with one long system prompt to simplify routing.</p>
+<div class="qexp">
+<p><span class="right">A and C are correct.</span> A gives intent-based routing with a real classifier reading the agent catalog. C gives durable per-session history plus the audit trail (which agent answered) the scenario demands.</p>
+<p><span class="wrong">B is wrong</span> because in-memory storage dies with the process; "must survive restarts" rules it out. This is the classic durable-versus-ephemeral trap.</p>
+<p><span class="wrong">D is wrong</span> because merging specialists destroys tool isolation and makes the prompt a bottleneck; the scenario's whole point is specialist routing, and the exam rewards the orchestrator pattern over the mega-prompt.</p>
+</div>
+</section>
+
+<!-- ================= CHAPTER 3 ================= -->
+<section class="chapter" id="ch3"><h2>3. Lab: AgentCore Runtime deployment</h2>
+<p class="lede">Take the laptop agent and ship it: containerize it, satisfy the runtime contract, and let AgentCore host it with sessions, tools, memory, and identity.</p>
+
+<h3>What this lab teaches</h3>
+<p>Amazon Bedrock AgentCore is the managed platform for running agents in production. It has five parts you must be able to name: <strong>Runtime</strong> (serverless hosting for your agent container), <strong>Gateway</strong> (turns your APIs and Lambda functions into MCP-compatible tools), <strong>Memory</strong> (managed short-term and long-term agent context), <strong>Identity</strong> (agent authentication and access to third-party apps), and <strong>Observability</strong> (tracing and monitoring with OpenTelemetry). The lab focuses on Runtime: packaging the Strands agent from chapter 1 as a container that AgentCore can host.</p>
+<p>The Runtime speaks to your container over plain HTTP with a fixed contract: listen on port 8080, answer <code>POST /invocations</code> with your agent logic, and answer <code>GET /ping</code> as a health check. The <code>bedrock-agentcore</code> Python SDK provides <code>BedrockAgentCoreApp</code>, a small wrapper that implements this contract for you. You mark one function with <code>@app.entrypoint</code>, and it receives the JSON payload from each <code>/invocations</code> call.</p>
+
+<h3>Why it exists: when you would use it in production</h3>
+<p>A laptop agent has no sessions, no scaling, no safe credential handling, and no audit trail. AgentCore gives you managed sessions (the platform keeps a session alive across calls and can keep it warm for background work), a standard way to expose tools through Gateway instead of hand-wiring each integration, and memory that outlives any single container. The migration story the exam cares about: Bedrock Agents to AgentCore when you need framework freedom (Strands, LangGraph, CrewAI) without giving up managed hosting.</p>
+
+<h3>How it works under the hood</h3>
+<p>The lab's <code>agentcore.py</code> plus <code>Dockerfile</code> follow this sequence:</p>
+<ol>
+<li><code>app = BedrockAgentCoreApp()</code> creates the wrapper. The <code>@app.entrypoint</code> decorator marks <code>invoke(payload, context)</code> as the handler. The payload is the deserialized JSON body of the <code>POST /invocations</code> request; the context carries runtime information such as the session id.</li>
+<li>Inside the handler, the code builds the Strands agent exactly as in chapter 1 and runs it on <code>payload.get("prompt", "")</code>. The handler returns a plain dict, which the SDK serializes back as the JSON response.</li>
+<li><code>app.run()</code> starts an HTTP server on port 8080. The same line runs the agent locally for testing and serves it inside the container in production. Test with <code>curl -X POST http://localhost:8080/invocations</code> before you deploy.</li>
+<li>The Dockerfile builds the image: a slim Python base, install from <code>requirements.txt</code> (the <code>bedrock-agentcore</code> SDK, <code>strands-agents</code>, <code>strands-agents-tools</code>), add the OpenTelemetry distro so traces flow to Observability, set the region, create a non-root user, expose port 8080, and start the module.</li>
+<li>The platform requires <code>linux/arm64</code> images. The container must bind <code>0.0.0.0:8080</code>, not localhost, or the platform's health checks cannot reach it.</li>
+</ol>
+<p>Adapted teaching snippet (written for this volume):</p>
+<pre><code>from bedrock_agentcore.runtime import BedrockAgentCoreApp
+
+app = BedrockAgentCoreApp()
+
+@app.entrypoint
+def invoke(payload, context):
+    answer = run_my_agent(payload.get("prompt", ""))
+    return {"answer": str(answer)}
+
+if __name__ == "__main__":
+    app.run()  # serves POST /invocations and GET /ping on port 8080</code></pre>
+<p>Gateway deserves one extra line because the exam names it: it converts existing APIs and Lambda functions into MCP-compatible tools, so agents built in any framework can call them through the Model Context Protocol instead of through bespoke integrations. Identity handles the OAuth and credential side so your agent code never holds raw secrets.</p>
+
+<div class="callout trap"><span class="callout-label">Common misunderstanding.</span> AgentCore Runtime is not "Lambda for agents." Lambda caps executions at 15 minutes and has no session concept; Runtime manages long-lived agent sessions with health checks and idle timeouts. Picking Lambda for a long-running agent session is a standard exam trap.</div>
+
+<figure class="fig"><pre class="ascii">  Developer laptop                    AWS
+  +----------------+     +-------------------------------+
+  | agentcore.py + |     |  AgentCore Runtime            |
+  | Dockerfile     |---> |  session per caller           |
+  | docker build   | ECR |       |                       |
+  +----------------+ --> |       v                       |
+                         |  Container (arm64, :8080)     |
+  Caller --------------->|  POST /invocations -> handler |
+                         |  GET  /ping        -> health |
+                         |       |                       |
+                         |       +--> Gateway: MCP tools |
+                         |       +--> Memory: session +  |
+                         |       |    long-term context  |
+                         |       +--> Identity: OAuth /  |
+                         |            credentials        |
+                         |       +--> Observability:     |
+                         |            OTEL traces        |
+                         +-------------------------------+</pre>
+<figcaption>Figure 3.1: Deploying a Strands agent on AgentCore Runtime. The container contract is two HTTP routes; the platform supplies sessions, tools, memory, identity, and traces. Caption: ASCII diagram drawn for this volume.</figcaption></figure>
+<div class="howread"><p class="howread-title">How to read this diagram</p>
+<ol class="flow">
+<li>Start left: the developer builds the image from the agent code and Dockerfile, then pushes it to a container registry (ECR).</li>
+<li>The Runtime launches the container and manages one session per caller. Sessions survive across calls; the platform polls <code>/ping</code> to know the container is alive.</li>
+<li>Each caller request is a <code>POST /invocations</code> with a JSON payload. The <code>@app.entrypoint</code> function handles it and returns JSON.</li>
+<li>Inside the session, the agent reaches four platform services: Gateway for MCP tools, Memory for context that outlives the container, Identity for credentials, and Observability for traces.</li>
+</ol>
+<p class="howread-sub">What breaks if a component fails</p>
+<ul>
+<li>If the image is built for the wrong CPU architecture, the container never starts. Build for <code>linux/arm64</code>.</li>
+<li>If the server binds localhost instead of <code>0.0.0.0</code>, health checks fail and the session is reaped even though the agent works locally.</li>
+<li>If <code>/ping</code> is missing or slow, the platform treats the session as dead. The SDK's built-in handler exists so you do not hand-roll this.</li>
+</ul></div>
+
+<div class="callout ask"><span class="callout-label">How AWS will ask about this.</span> Scenario: a team built an agent in an open-source framework and needs managed hosting with sessions, tool access via MCP, and no server management. The most correct answer is AgentCore Runtime, with Gateway for the tools. Distractors: ECS with a hand-built session store (works but you own sessions, scaling, and health checks), Lambda (15-minute cap, no sessions), Bedrock Agents (managed but locks you into its framework and console model). A second angle maps each need to a component: "tools for any framework" points at Gateway, "remember users across weeks" at Memory, "call Salesforce on the user's behalf" at Identity.</div>
+
+<div class="callout trap"><span class="callout-label">Exam tips and wrong-answer traps.</span>
+<ul>
+<li>Name all five components cold: Runtime, Gateway, Memory, Identity, Observability. Questions often test Gateway versus Memory versus Identity by scenario verb.</li>
+<li>The container contract is <code>POST /invocations</code> plus <code>GET /ping</code> on port 8080. A question about "the deployed agent never receives traffic" points at the contract, not the model.</li>
+<li>Migration direction matters: Bedrock Agents to AgentCore is the documented path when teams outgrow the managed agent framework. The reverse is not a thing.</li>
+</ul></div>
+
+<h4>Practice question</h4>
+<p class="qbank-q">A team has a working Strands agent on a developer laptop. For production they need: managed hosting with per-caller sessions, the agent's existing REST APIs exposed as tools usable through MCP, user preferences remembered across weeks, and no server management. Which combination is MOST correct? (Select TWO.)</p>
+<p>A. Deploy the agent container to AgentCore Runtime and expose the REST APIs through AgentCore Gateway.<br>
+B. Store user preferences in AgentCore Memory.<br>
+C. Package the agent as a Lambda function with a 15-minute timeout and keep preferences in Lambda environment variables.<br>
+D. Rebuild the agent as a Bedrock Agent because AgentCore Runtime only hosts Bedrock Agents.</p>
+<div class="qexp">
+<p><span class="right">A and B are correct.</span> Runtime gives managed sessions and hosting for any-framework agents; Gateway converts existing APIs into MCP tools; Memory is the managed store for long-lived agent context. Together they satisfy every requirement.</p>
+<p><span class="wrong">C is wrong</span> twice over: Lambda caps at 15 minutes and has no session concept, and environment variables are not a user-preference store. This is the "Lambda for everything" trap.</p>
+<p><span class="wrong">D is wrong</span> because the premise is false: Runtime hosts any-framework agents, which is exactly its purpose, and the Bedrock-Agents-to-AgentCore migration path exists precisely for teams that started managed and need framework freedom, not the reverse.</p>
+</div>
+</section>
+
+<!-- ================= CHAPTER 4 ================= -->
+<section class="chapter" id="ch4"><h2>4. Lab: Bedrock Flows from JSON</h2>
+<p class="lede">Chain prompts into a deterministic pipeline. The lab's prompt list becomes a real flow definition: nodes, connections, and conditions.</p>
+
+<h3>What this lab teaches</h3>
+<p>Amazon Bedrock Flows (called Prompt Flows in older material) build deterministic multi-step GenAI workflows. You define a flow as JSON with two arrays: <code>nodes</code>, where each node is one step, and <code>connections</code>, which wire the steps together into paths. The lab's <code>PromptChaining.json</code> holds a simple list of three prompts: name a city, describe it, describe its cuisine. In a real flow definition, each of those prompts becomes a Prompt node, and Data connections pipe each node's output into the next node's input.</p>
+<p>Node types cover the building blocks: Input and Output (entry and exit), Prompt (one model call with a template), Agent (hand a step to an agent), KnowledgeBase (a retrieval step), Condition (branch on logic), Iterator (loop over a list), LambdaFunction (custom code), plus storage nodes. A connection is either <code>Data</code>, which moves a named output to a named input, or <code>Conditional</code>, which follows a path only when its condition expression is true.</p>
+
+<h3>Why it exists: when you would use it in production</h3>
+<p>Not every workflow needs an autonomous agent. When the path is fixed, three prompts in, one answer out, an agent's reasoning loop is expensive overhead and nondeterministic. Flows give you a visual builder plus a JSON definition you can version in git, test, and deploy. Product teams can edit prompt text without engineers redeploying code, and the definition's structure makes the pipeline auditable: you can see exactly which step feeds which.</p>
+
+<h3>How it works under the hood</h3>
+<p>A flow definition follows this shape (adapted for teaching, mirroring the lab's three prompts):</p>
+<pre><code>{
+  "nodes": [
+    {"name": "FlowInput",  "type": "Input"},
+    {"name": "NameCity",   "type": "Prompt",
+     "configuration": {"prompt": {"template": "Name a random city..."}}},
+    {"name": "DescribeCity", "type": "Prompt",
+     "configuration": {"prompt": {"template": "Describe this city: {{city}}"}}},
+    {"name": "FlowOutput", "type": "Output"}
+  ],
+  "connections": [
+    {"name": "c1", "source": "FlowInput", "target": "NameCity",
+     "type": "Data",
+     "configuration": {"data": {"sourceOutput": "document", "targetInput": "input"}}},
+    {"name": "c2", "source": "NameCity", "target": "DescribeCity",
+     "type": "Data",
+     "configuration": {"data": {"sourceOutput": "modelCompletion", "targetInput": "city"}}}
+  ]
+}</code></pre>
+<p>Reading it: each connection names a source node and a target node. The <code>data</code> block maps a named output of the source (<code>sourceOutput</code>) to a named input of the target (<code>targetInput</code>), which is why prompt templates use <code>{{variable}}</code> placeholders. A <code>Conditional</code> connection instead carries a <code>condition</code> expression, and the flow follows the first matching branch. Expressions use JSONPath-style references to node outputs.</p>
+<p>Lifecycle: after editing a flow you run PrepareFlow, which packages the latest changes into the DRAFT version for testing. For production you create an alias pointing at a numbered version, so prompt edits never move production traffic by accident. The same DRAFT-then-alias discipline you know from Bedrock Agents applies here.</p>
+<p>One detail on the Iterator node: community sources describe it as sequential, processing list items one at a time rather than in parallel. <span class="unverified">UNVERIFIED: the sequential-iterator behavior was not confirmed in the live AWS docs during this build; treat it as community-reported.</span></p>
+
+<div class="callout trap"><span class="callout-label">Common misunderstanding.</span> Flows and agents solve different problems. A fixed three-step chain is a flow. A task where the model must decide which tools to call, in which order, with retries, is an agent. Putting an agent's job into a flow gives you rigidity; putting a flow's job into an agent gives you cost and nondeterminism.</div>
+
+<figure class="fig"><pre class="ascii">  Input ("go")
+    |
+    v
+ +-----------+  Data: modelCompletion -> city  +--------------+
+ | Prompt:   | ------------------------------> | Prompt:      |
+ | NameCity  |                                 | DescribeCity |
+ +-----------+                                 +--------------+
+                                                     |
+                          Data: modelCompletion -> city
+                                                     v
+                                               +--------------+
+                                               | Prompt:      |
+                                               | Cuisine      |
+                                               +--------------+
+                                                     |
+                                                     v
+                                                   Output
+
+  With a branch:
+
+ +-----------+  Conditional: $.sentiment == "negative"  +----------+
+ | Condition | ---------------------------------------> | Prompt:  |
+ | node      |                                          | Apology  |
+ +-----------+  Conditional: otherwise                   +----------+
+                 --------------------------------------> +----------+
+                                                         | Prompt:  |
+                                                         | Thanks   |
+                                                         +----------+</pre>
+<figcaption>Figure 4.1: Top: the lab's prompt chain as flow nodes and Data connections. Bottom: a Condition node branching on an expression. Caption: ASCII diagram drawn for this volume.</figcaption></figure>
+<div class="howread"><p class="howread-title">How to read this diagram</p>
+<ol class="flow">
+<li>Top half: follow the arrows down. Each box is a node; each arrow is a connection of type Data.</li>
+<li>Read each arrow's label as "take this named output, feed it into that named input." The <code>{{city}}</code> placeholder in the prompt template is the receiving end.</li>
+<li>Bottom half: a Condition node has two Conditional connections. The flow evaluates the condition expression and follows the first match. Exactly one path runs.</li>
+<li>Input and Output nodes are the flow's boundary: one entry point, and one or more exits.</li>
+</ol>
+<p class="howread-sub">What breaks if a component fails</p>
+<ul>
+<li>If a <code>targetInput</code> name does not match a placeholder in the prompt template, the step runs with an empty variable. Name mismatches are the most common flow bug.</li>
+<li>If you edit nodes and skip PrepareFlow, the DRAFT version still holds the old definition and your tests lie to you.</li>
+<li>If a condition expression references a field that does not exist, the branch never matches and the flow takes the fallback path silently.</li>
+</ul></div>
+
+<div class="callout ask"><span class="callout-label">How AWS will ask about this.</span> Scenario: "a three-stage prompt chain with branching; the marketing team edits prompt text weekly; no engineer redeploys." The most correct answer is Bedrock Flows (Prompt Management for the versioned prompts, Flows for the chain). Distractors: Bedrock Agents (overkill for a fixed deterministic chain), Step Functions (the right answer when the workflow needs timeouts, human approvals, or non-GenAI orchestration, but heavier than Flows for a pure prompt chain), hardcoding prompts in Lambda (violates the no-redeploy constraint). Second angle: "the flow ignores recent edits" points at the missed PrepareFlow step.</div>
+
+<div class="callout trap"><span class="callout-label">Exam tips and wrong-answer traps.</span>
+<ul>
+<li>Flows versus Step Functions is a favorite confusion pair. Rule of thumb: prompt-centric fixed chains go to Flows; general orchestration with waits, retries across services, and human approvals goes to Step Functions. Scenarios often allow both; the "most correct" is the one matching the constraint words.</li>
+<li>Connection types are Data and Conditional. If an option mentions other connection types, it is invented.</li>
+<li>Prompt variants are for A/B testing; prompt versions are immutable releases. The exam swaps these.</li>
+</ul></div>
+
+<h4>Practice question</h4>
+<p class="qbank-q">A media company runs a fixed pipeline: extract topics from an article, draft a headline from the topics, then classify the headline's tone. Editors tweak the prompt wording every week, and engineering must not redeploy for wording changes. Which approach is MOST correct?</p>
+<p>A. Build a Bedrock Agent with three action groups, one per stage, and let the agent decide the order at runtime.<br>
+B. Define a Bedrock Flow with three Prompt nodes chained by Data connections, manage the prompts with Prompt Management versions, and expose a flow alias for production.<br>
+C. Hardcode the three prompts in a Lambda function behind API Gateway and redeploy weekly.<br>
+D. Use Step Functions with three Lambda tasks that each call InvokeModel, because Flows cannot chain prompts.</p>
+<div class="qexp">
+<p><span class="right">B is correct.</span> The pipeline is fixed and prompt-centric, which is exactly what Flows are for. Data connections pipe each stage's output into the next; Prompt Management versions let editors change wording without code deploys; the alias pins production to a tested version.</p>
+<p><span class="wrong">A is wrong</span> because an agent adds reasoning overhead and nondeterminism to a fixed pipeline; nothing here needs dynamic tool choice.</p>
+<p><span class="wrong">C is wrong</span> because it directly violates the no-redeploy constraint the scenario states.</p>
+<p><span class="wrong">D is wrong</span> because its premise is false: chaining prompts is the core Flows use case. Step Functions would be the answer if the scenario needed human approvals or cross-service waits, which it does not.</p>
+</div>
+</section>
+
+<!-- ================= CHAPTER 5 ================= -->
+<section class="chapter" id="ch5"><h2>5. Lab: Lambda as Bedrock front end</h2>
+<p class="lede">Put a stable HTTP front door in front of your model calls: API Gateway for the endpoint, Lambda for the logic.</p>
+
+<h3>What this lab teaches</h3>
+<p>AWS Lambda is serverless compute: you upload a function, AWS runs it on events, and you pay per invocation. API Gateway is the managed front door: it gives you a stable HTTPS endpoint with authentication, throttling, and request routing, and it forwards requests to Lambda. The lab's <code>lambda-code.py</code> shows the Lambda proxy integration shape: the handler receives an event, does work, and returns a dict with <code>statusCode</code>, <code>headers</code>, and a JSON-string <code>body</code>. API Gateway translates that dict into the HTTP response the caller sees.</p>
+<p>For GenAI, this pair is the standard synchronous front end. The client calls your API; API Gateway authenticates and throttles; Lambda validates the request, picks the model, calls Bedrock, and returns the answer. The lab's hello-world handler is the skeleton you flesh out with a Bedrock call.</p>
+
+<h3>Why it exists: when you would use it in production</h3>
+<p>Calling Bedrock directly from a browser or mobile app means shipping AWS credentials to the client and giving every client raw model access. The Lambda front end keeps credentials server-side, enforces per-client throttling at the gateway, validates inputs before they cost you tokens, and gives you one place to change the model without touching clients. It is also where the exam's favorite model-switching trio lives: Lambda holds the routing logic, API Gateway holds the stable endpoint, and AppConfig holds the model identifier as runtime configuration, so switching models needs no redeploy.</p>
+
+<h3>How it works under the hood</h3>
+<ol>
+<li>The client sends an HTTPS request to the API Gateway endpoint. Gateway checks the auth method (IAM, Cognito authorizer, or API key), applies the throttling limit, and forwards the request to Lambda as a proxy event.</li>
+<li>The Lambda handler parses the event body, validates it (required fields, sane lengths, no prompt-injection payload aimed at downstream systems), and reads the current model identifier from AppConfig at runtime.</li>
+<li>Lambda calls Bedrock, usually the Converse API for its unified request shape, waits for the response, and formats the proxy response: <code>{"statusCode": 200, "headers": {"Content-Type": "application/json"}, "body": json.dumps(result)}</code>.</li>
+<li>API Gateway returns that to the client. Failures surface as 4xx for bad input and 5xx for downstream errors; the handler must never leak stack traces or credentials in error bodies.</li>
+</ol>
+<p>Adapted teaching snippet (the proxy response shape, written for this volume):</p>
+<pre><code>import json
+
+def lambda_handler(event, context):
+    model_id = get_model_id_from_appconfig()  # runtime config, no redeploy
+    answer = call_bedrock_converse(model_id, event_body(event))
+    return {
+        "statusCode": 200,
+        "headers": {"Content-Type": "application/json"},
+        "body": json.dumps({"answer": answer}),
+    }</code></pre>
+<p>Limits that shape designs: a Lambda execution caps at 15 minutes, so it fits request-response model calls but not long-running agent sessions. API Gateway has payload and timeout limits of its own, so long token streams go out over WebSocket APIs or direct streaming rather than a single REST response. For streaming to browsers, the ConverseStream API pairs with chunked transfer or WebSockets.</p>
+
+<div class="callout trap"><span class="callout-label">Common misunderstanding.</span> API Gateway plus Lambda does not make the model faster. It adds a small hop of latency. You pay that hop for auth, throttling, validation, and a stable contract. If a scenario demands the lowest possible latency and has no auth or multi-client needs, direct SDK calls win.</div>
+
+<figure class="fig"><pre class="ascii">  Client (web / mobile)
+       |
+       | HTTPS
+       v
+ +------------------+     +------------------+
+ | API Gateway      |---->| Lambda function  |
+ | - auth (Cognito/ |     | - validate input |
+ |   IAM / API key) |     | - read model id  |
+ | - throttling     |     |   from AppConfig |
+ | - stable URL     |     | - call Bedrock   |
+ +------------------+     |   Converse API   |
+       ^                  +------------------+
+       |                           |
+       +---- proxy response --------+
+       (statusCode, headers, body)</pre>
+<figcaption>Figure 5.1: The synchronous GenAI front end. The gateway owns the endpoint contract; Lambda owns the logic; AppConfig owns the model choice. Caption: ASCII diagram drawn for this volume.</figcaption></figure>
+<div class="howread"><p class="howread-title">How to read this diagram</p>
+<ol class="flow">
+<li>Start at the top: the client only ever talks to the gateway URL. It never sees Bedrock or AWS credentials.</li>
+<li>The gateway box lists its three jobs: authenticate the caller, throttle abusive clients, and keep the URL stable while backends change.</li>
+<li>Lambda's box lists its jobs in order: validate, look up the model id from AppConfig at runtime, call Bedrock.</li>
+<li>The return arrow shows the proxy response contract: statusCode, headers, and a JSON-string body. API Gateway turns that dict into the HTTP response.</li>
+</ol>
+<p class="howread-sub">What breaks if a component fails</p>
+<ul>
+<li>If the handler returns a dict instead of a JSON string in <code>body</code>, API Gateway returns a confusing error. Always <code>json.dumps</code> the body.</li>
+<li>If AppConfig is unreachable, the function cannot resolve the model id. Cache the config with a short TTL and fail closed, not open.</li>
+<li>If throttling is misconfigured at the gateway, one abusive client can burn your token budget. Set per-client limits.</li>
+</ul></div>
+
+<div class="callout ask"><span class="callout-label">How AWS will ask about this.</span> The canonical question: "operations must switch between models without code deployments." The most correct select-three is AppConfig plus API Gateway plus Lambda. Distractors: CloudFormation for runtime switching (CloudFormation changes are deployments, which violates the constraint), EventBridge as the config store (it routes events; it does not hold configuration), hardcoding model ids in the Lambda (works until the first switch, then it is a redeploy). A second angle: streaming long responses through a REST API hits gateway limits; the fix is WebSocket APIs or direct streaming.</div>
+
+<div class="callout trap"><span class="callout-label">Exam tips and wrong-answer traps.</span>
+<ul>
+<li>Lambda's 15-minute cap is the tripwire. Any scenario with waits, human approvals, or long agent sessions points at Step Functions, not a longer Lambda.</li>
+<li>The proxy response shape (statusCode, headers, string body) is the kind of detail a troubleshooting question hides a bug in.</li>
+<li>AppConfig is the exam's standard answer for "change behavior without redeploying," for models and for prompts alike.</li>
+</ul></div>
+
+<h4>Practice question</h4>
+<p class="qbank-q">A company serves a Bedrock-powered support chatbot through a mobile app. Product wants to switch the underlying model between providers without app updates or redeploys, throttle abusive clients, and keep AWS credentials off the device. Which combination is MOST correct? (Select THREE.)</p>
+<p>A. Put API Gateway in front with throttling and a Cognito authorizer.<br>
+B. Store the active model identifier in AppConfig and have the Lambda read it at runtime.<br>
+C. Implement the request logic in Lambda, calling Bedrock with the Converse API.<br>
+D. Embed the model identifier in the mobile app and call Bedrock directly from the device.<br>
+E. Redeploy the Lambda with a CloudFormation stack update each time the model changes.</p>
+<div class="qexp">
+<p><span class="right">A, B, and C are correct.</span> A gives the stable authenticated endpoint with throttling and keeps credentials server-side. B makes the model choice runtime configuration, satisfying no-redeploy. C is the compute layer that validates input and calls Bedrock through the unified Converse interface.</p>
+<p><span class="wrong">D is wrong</span> because it ships AWS credentials to the device and gives every client raw model access with no throttling or validation; it also requires app updates to change models.</p>
+<p><span class="wrong">E is wrong</span> because a stack update is a deployment, which directly violates the no-redeploy constraint. This is the CloudFormation-for-runtime-config trap.</p>
+</div>
+</section>
+
+<!-- ================= CHAPTER 6 ================= -->
+<section class="chapter" id="ch6"><h2>6. Lab: Lambda as agent action</h2>
+<p class="lede">Give a Bedrock Agent real hands. The lab's weather function shows the exact event the agent sends and the exact response it expects back.</p>
+
+<h3>What this lab teaches</h3>
+<p>A Bedrock Agent reasons, but it acts through action groups. An action group binds the agent to a Lambda function plus a schema describing the available functions. There are two schema styles: function details, where you list simple named functions with parameters, and an OpenAPI schema, where you describe REST-style operations. The lab's <code>weather.py</code> implements the function-details style: a <code>get_weather</code>-style function taking a city and units.</p>
+<p>The contract has two halves. The input event the agent sends contains the agent name, the action group name, the function name, a <code>parameters</code> list of name-type-value entries, and a <code>messageVersion</code>. The response the Lambda must return wraps the result as <code>messageVersion</code>, <code>response.actionGroup</code>, <code>response.function</code>, and <code>response.functionResponse.responseBody.TEXT.body</code>. With an OpenAPI schema instead, the event carries <code>apiPath</code> and <code>httpMethod</code>, and the response carries an HTTP status code. This shape is documented in the Bedrock user guide page on configuring Lambda functions for agents.</p>
+
+<h3>Why it exists: when you would use it in production</h3>
+<p>An agent without actions is a chatbot. Actions connect it to the business: look up orders, file tickets, query databases, call internal APIs. Lambda is the natural host because each action is a short, event-driven piece of code that scales to zero. The schema is the contract that lets the model call your code reliably: parameter names, types, and descriptions tell the model exactly what to pass.</p>
+
+<h3>How it works under the hood</h3>
+<ol>
+<li>The user asks something needing a tool, for example the weather in a city. The agent's orchestration loop decides to call the function, filling in parameters from the conversation.</li>
+<li>Bedrock invokes your Lambda with the action event. Your handler reads <code>event["parameters"]</code>, a list of dicts, and extracts each named value. Defensive code handles missing parameters rather than crashing.</li>
+<li>Your code does the real work: a database query, an HTTP call, a calculation. Keep it fast; the agent is waiting, and the user experience is streaming text that pauses while tools run.</li>
+<li>The handler builds the response in the exact nested shape and returns it. The agent receives the function result, continues reasoning, and produces the final answer.</li>
+<li>After any change to the agent's configuration, including action groups, you must run PrepareAgent so the DRAFT version picks it up. Production traffic goes through an alias pinned to a prepared version.</li>
+</ol>
+<p>Adapted teaching snippet (the parameter extraction pattern, written for this volume):</p>
+<pre><code>def lambda_handler(event, context):
+    params = {p["name"]: p["value"] for p in event.get("parameters", [])}
+    city = params.get("city", "unknown")
+    result = lookup_weather(city)  # your business logic here
+    return {
+        "messageVersion": event["messageVersion"],
+        "response": {
+            "actionGroup": event["actionGroup"],
+            "function": event["function"],
+            "functionResponse": {
+                "responseBody": {"TEXT": {"body": result}}
+            },
+        },
+    }</code></pre>
+<p>Two numbers to carry: the Lambda response payload is bounded by the synchronous invocation payload limit, so return concise results and put large payloads in S3 with a reference. And the agent ignores your new action group until PrepareAgent runs; "I added the action group but the agent never calls it" is the single most common agent bug, and the exam loves it.</p>
+
+<div class="callout trap"><span class="callout-label">Common misunderstanding.</span> The action group schema is written for the model, not for you. Parameter descriptions are the model's instructions for what to pass. A parameter named <code>q</code> with no description gets garbage input; a parameter named <code>city</code> described as "the city the user asked about, e.g. Paris" gets the right value.</div>
+
+<figure class="fig"><pre class="ascii">  User: "weather in Paris?"
+       |
+       v
+ +------------------+  decides tool call   +------------------+
+ | Bedrock Agent    | --------------------> | Action group   |
+ | orchestration    |  function=get_weather | Lambda         |
+ | loop             |  parameters=[city]   | - read params  |
+ |                  | <-------------------- | - run logic    |
+ +------------------+  functionResponse    +------------------+
+       |               responseBody.TEXT.body
+       v
+  Final answer: "75 degrees and sunny in Paris."</pre>
+<figcaption>Figure 6.1: A Bedrock Agent invoking a Lambda action. The event and response shapes are a fixed contract. Caption: ASCII diagram drawn for this volume.</figcaption></figure>
+<div class="howread"><p class="howread-title">How to read this diagram</p>
+<ol class="flow">
+<li>Start at the top with the user question. The agent's loop, not your code, decides a tool is needed.</li>
+<li>The rightward arrow shows the invocation: function name plus the parameters list. This is the input half of the contract.</li>
+<li>Inside the Lambda box, the two jobs run in order: extract named parameters defensively, then execute the business logic.</li>
+<li>The leftward arrow shows the response half: the nested <code>functionResponse.responseBody.TEXT.body</code> shape carrying the result string.</li>
+<li>The agent resumes reasoning and answers the user, citing the tool result.</li>
+</ol>
+<p class="howread-sub">What breaks if a component fails</p>
+<ul>
+<li>If the response nesting is wrong by one level, the agent cannot parse the result and the turn fails. Copy the shape exactly.</li>
+<li>If PrepareAgent was not re-run after adding the action group, the agent behaves as if the tool does not exist.</li>
+<li>If the Lambda needs more than a few seconds, the user watches a paused stream. Keep actions fast or make them asynchronous with a status check.</li>
+</ul></div>
+
+<div class="callout ask"><span class="callout-label">How AWS will ask about this.</span> Scenario: "the agent ignores the new action group" points at the missed PrepareAgent step, every time. Scenario: "the agent must call an internal REST API with path parameters" points at the OpenAPI-schema action group style, with the schema stored in S3. Distractors: describing inter-agent communication as action groups (the exam uses the supervisor and collaborator mechanism for agent-to-agent, not action groups), or putting the tool logic in the agent instruction text instead of a real function. A troubleshooting angle hides a bug in the response nesting: one wrong level and the result never reaches the model.</div>
+
+<div class="callout trap"><span class="callout-label">Exam tips and wrong-answer traps.</span>
+<ul>
+<li>Function details versus OpenAPI schema: simple named functions go to function details; REST-style operations with paths and methods go to OpenAPI. Match the style to the scenario.</li>
+<li>The <code>parameters</code> list uses name, type, and value entries. A distractor may show a flat dict; the real shape is a list of entries.</li>
+<li>Session attributes travel in the event too, letting actions read conversation context the agent stored earlier.</li>
+</ul></div>
+
+<h4>Practice question</h4>
+<p class="qbank-q">A developer adds a new action group with a Lambda function to a Bedrock Agent, tests in the console, and finds the agent never calls the new function. The Lambda works when invoked directly. What is the MOST likely cause?</p>
+<p>A. The Lambda function's timeout is too short for the agent's orchestration loop.<br>
+B. PrepareAgent was not run after the action group change, so the DRAFT version does not include it.<br>
+C. The agent's IAM role is missing bedrock:InvokeModel permission.<br>
+D. The action group must be defined with an OpenAPI schema; function details are not supported.</p>
+<div class="qexp">
+<p><span class="right">B is correct.</span> Agent configuration changes only take effect after preparation packages them into the DRAFT version. The Lambda working standalone proves the function is fine; the agent simply does not know about it yet.</p>
+<p><span class="wrong">A is wrong</span> because a timeout problem would surface as a failed invocation, not as the agent never attempting the call.</p>
+<p><span class="wrong">C is wrong</span> because a missing InvokeModel permission would break all model calls, not just the new action group; the agent is clearly reasoning fine.</p>
+<p><span class="wrong">D is wrong</span> because its premise is false: both function details and OpenAPI schemas are supported action group styles.</p>
+</div>
+</section>
+
+<!-- ================= CHAPTER 7 ================= -->
+<section class="chapter" id="ch7"><h2>7. Lab: CI/CD with eval gates</h2>
+<p class="lede">Ship prompt and model changes like code: pipeline stages, build specs, and an evaluation gate that blocks bad releases.</p>
+
+<h3>What this lab teaches</h3>
+<p>CI/CD on AWS is a pipeline of stages: source, build, test, deploy. AWS CodePipeline orchestrates the stages. AWS CodeBuild runs the build, driven by a <code>buildspec.yml</code> file with phases: <code>install</code>, <code>pre_build</code>, <code>build</code>, and <code>post_build</code>. AWS CodeDeploy ships the artifact to its target. The lab pack's <code>buildspec.yml</code> shows the skeleton: install a runtime, echo through the phases, and run a check in the build phase that fails the build when the check fails.</p>
+<p>For GenAI, the build phase gains an evaluation gate. A prompt or model change is a behavior change, and behavior needs tests. The gate runs an eval suite, compares metrics against thresholds, and fails the build on regression. The pipeline stops, the bad prompt never deploys, and the team gets a red build instead of a production incident.</p>
+
+<h3>Why it exists: when you would use it in production</h3>
+<p>Teams that edit prompts in the console and paste them into production get silent regressions: a reworded system prompt that drops refusal behavior, a model swap that changes tone, a new few-shot example that biases outputs. CI/CD makes prompt and config changes reviewable, testable, and reversible. The eval gate is the GenAI equivalent of a unit test suite: it encodes "the behavior we promise" and blocks anything that breaks it.</p>
+
+<h3>How it works under the hood</h3>
+<ol>
+<li>A developer pushes a change to the prompt templates or model configuration in git. CodePipeline's source stage picks it up.</li>
+<li>CodeBuild runs <code>buildspec.yml</code>. The install phase sets up the runtime; pre_build prepares; the build phase runs two suites: fast unit checks (schema validation of prompt templates, config linting) and the eval gate.</li>
+<li>The eval gate invokes the candidate prompt or model against a golden dataset and scores it: faithfulness for RAG answers, toxicity and refusal checks for safety, format compliance for structured outputs. Scores are compared to thresholds stored with the repo. Any threshold breach fails the build.</li>
+<li>On green, the pipeline continues: an optional manual approval stage for high-risk changes, then deployment. Deployment for GenAI usually means shifting a flow alias or agent alias to the new version, or a canary that sends a slice of traffic first while CloudWatch alarms watch token error rates and latency.</li>
+<li>On red, the pipeline halts and the previous version keeps serving. Rollback is shifting the alias back, which is instant because versions are immutable.</li>
+</ol>
+<p>Adapted teaching snippet (a buildspec eval gate, written for this volume):</p>
+<pre><code>version: 0.2
+phases:
+  install:
+    runtime-versions:
+      python: 3.12
+  build:
+    commands:
+      - echo "Validating prompt templates"
+      - python validate_prompts.py prompts/
+      - echo "Running eval gate against golden dataset"
+      - python eval_gate.py --dataset golden/qa.jsonl
+          --min-faithfulness 0.85 --max-toxicity 0.02
+      # any non-zero exit fails the build and stops the pipeline</code></pre>
+<p>The eval suite itself can use Bedrock's evaluation features: programmatic metrics for objective checks, LLM-as-a-judge for quality dimensions like faithfulness and style, and human review for the subjective ones. The pipeline runs the automated tiers on every change and reserves human review for releases that cross risk thresholds.</p>
+
+<div class="callout trap"><span class="callout-label">Common misunderstanding.</span> An eval gate is not "run the model once and eyeball it." It is a repeatable suite with thresholds, checked into the repo, run on every change. Manual console spot-checks are the thing the gate replaces.</div>
+
+<figure class="fig"><pre class="ascii">  git push (prompts/ + config)
+       |
+       v
+ +------------------+     +-------------------------------+
+ | CodePipeline     |---->| CodeBuild (buildspec.yml)     |
+ | source stage     |     | install -> pre_build -> build |
+ +------------------+     |   unit checks (schemas)       |
+                          |   EVAL GATE: golden dataset   |
+                          |   faithfulness >= 0.85        |
+                          |   toxicity     <= 0.02        |
+                          +---------------+---------------+
+                                          |
+                       fail: stop here    |    pass: continue
+                                          v
+                          +-------------------------------+
+                          | approval (manual, high risk)  |
+                          +---------------+---------------+
+                                          v
+                          +-------------------------------+
+                          | deploy: shift alias / canary    |
+                          | CloudWatch alarms on errors   |
+                          +-------------------------------+</pre>
+<figcaption>Figure 7.1: A GenAI pipeline with an evaluation gate. The gate is a build phase that fails the pipeline on metric regression. Caption: ASCII diagram drawn for this volume.</figcaption></figure>
+<div class="howread"><p class="howread-title">How to read this diagram</p>
+<ol class="flow">
+<li>Start at the top: the only trigger is a git push. Console edits that bypass the repo bypass the gate, which is why the repo is the source of truth.</li>
+<li>The build box shows the phases in order. The eval gate sits inside the build phase, after the fast unit checks, because evals cost model calls and should run only on sane inputs.</li>
+<li>Read the two exit arrows: fail stops the pipeline immediately; pass continues to approval and deploy.</li>
+<li>Deploy means alias shift or canary, never overwriting the serving version in place. Alarms watch the rollout.</li>
+</ol>
+<p class="howread-sub">What breaks if a component fails</p>
+<ul>
+<li>If thresholds are set once and never recalibrated, the gate either blocks everything or blocks nothing. Review thresholds when the dataset or product changes.</li>
+<li>If the golden dataset goes stale, the gate tests yesterday's product. Refresh it from production traffic samples.</li>
+<li>If evals run against the production model endpoint instead of the candidate, the gate measures the wrong thing. Pin the candidate version explicitly.</li>
+</ul></div>
+
+<div class="callout ask"><span class="callout-label">How AWS will ask about this.</span> Scenario: "validate a new prompt version before rollout" or "a prompt change caused a production incident; prevent recurrence." The most correct answer is a pipeline with automated regression testing and a canary or alias-based deployment. Distractors: manual testing in the console as the complete answer (not repeatable, not a gate), deploying straight to production because "prompts are not code" (they are behavior changes and need gates), or unit tests alone with no behavioral eval (unit tests cannot catch tone or faithfulness regressions). A second angle: "which eval method for brand voice at scale" points at LLM-as-a-judge in the gate plus human spot checks.</div>
+
+<div class="callout trap"><span class="callout-label">Exam tips and wrong-answer traps.</span>
+<ul>
+<li>Programmatic eval for objective metrics, LLM-as-a-judge for quality at scale, human eval for subjective judgment. Match the method to the metric; the exam tests this mapping.</li>
+<li>Canary plus alias shift is the deployment answer. Blue-green full swaps are fine too, but the exam's GenAI scenarios usually say canary.</li>
+<li>A failing eval gate must stop the pipeline. An option that "alerts but deploys anyway" is never the most correct for a safety regression.</li>
+</ul></div>
+
+<h4>Practice question</h4>
+<p class="qbank-q">A team edits Bedrock prompts weekly. Last month a reworded system prompt silently dropped the product's refusal behavior for disallowed content, and nobody noticed for a week. Which approach MOST reduces the chance of recurrence?</p>
+<p>A. Require two engineers to eyeball each prompt change in the console before pasting it into production.<br>
+B. Check prompts into git and run a CodePipeline where CodeBuild executes an eval gate on a golden dataset with toxicity and refusal thresholds; failures block deployment.<br>
+C. Write unit tests asserting the prompt template files are valid JSON.<br>
+D. Deploy prompt changes on Fridays so the team can monitor them over the weekend.</p>
+<div class="qexp">
+<p><span class="right">B is correct.</span> It makes prompt changes reviewable (git), repeatable (pipeline), and behaviorally tested (eval gate with the exact metrics that regressed: toxicity and refusal). A threshold breach stops the pipeline before production.</p>
+<p><span class="wrong">A is wrong</span> because manual eyeballing is not repeatable and does not scale; it is the process the incident already proved insufficient.</p>
+<p><span class="wrong">C is wrong</span> because schema validity says nothing about behavior; a valid-JSON prompt can still refuse nothing.</p>
+<p><span class="wrong">D is wrong</span> and slightly comic: deployment timing is not a safety control. Friday deploys are famously the opposite of safe.</p>
+</div>
+</section>
+
+<!-- ================= CHAPTER 8 ================= -->
+<section class="chapter" id="ch8"><h2>8. Lab: CDK for GenAI infrastructure</h2>
+<p class="lede">Define the whole GenAI stack in a real programming language and let it compile to CloudFormation.</p>
+
+<h3>What this lab teaches</h3>
+<p>The AWS Cloud Development Kit (CDK) lets you define cloud infrastructure in familiar languages such as TypeScript or Python. You write constructs, small building blocks like a Lambda function, an S3 bucket, or a DynamoDB table, and compose them into a stack. Running <code>cdk synth</code> compiles your code into a CloudFormation template; <code>cdk deploy</code> creates or updates the stack from that template. The lab's stack file builds a realistic pattern: an S3 bucket for uploads, a Lambda function with an IAM role, and a DynamoDB table, wired together with outputs.</p>
+<p>For GenAI workloads the same pattern hosts the serving path: the Lambda that calls Bedrock, the API Gateway in front of it, the DynamoDB table for session state, and the IAM policies scoping each piece. IAM is where CDK earns its keep for GenAI: the Lambda's role gets exactly <code>bedrock:InvokeModel</code> on the specific model ARNs it may call, plus logging permissions, and nothing else.</p>
+
+<h3>Why it exists: when you would use it in production</h3>
+<p>A production GenAI service is a dozen resources with relationships: the function needs the table name, the role needs the model ARNs, the gateway needs the function ARN. Hand-written templates for this drift out of sync with the code they deploy. CDK keeps infrastructure next to application code, in a language with loops, conditions, and tests, and every environment (dev, staging, prod) is the same stack class with different parameters. That repeatability is what the exam means by standardized, reusable components.</p>
+
+<h3>How it works under the hood</h3>
+<ol>
+<li>You write a stack class extending the CDK Stack. Each construct call, for example <code>new dynamodb.Table(...)</code>, adds a resource to an internal tree. References between constructs, like passing the table to the Lambda's environment, become CloudFormation references automatically.</li>
+<li><code>cdk synth</code> walks the tree and emits the CloudFormation template. Review it with <code>cdk diff</code> before deploying; diff shows exactly what will change, including replacements that would delete data.</li>
+<li><code>cdk deploy</code> hands the template to CloudFormation, which creates or updates resources in dependency order. Outputs, such as the bucket name, print at the end and are importable by other stacks.</li>
+<li>For GenAI, you add the Bedrock permissions to the Lambda's role, scoped to the models the function may call. Least privilege here is an exam staple: <code>bedrock:*</code> on <code>*</code> is the distractor.</li>
+<li>Removal policies decide what happens on stack deletion. Data stores usually get retain or snapshot policies; the lab's destroy policy suits throwaway lab resources only.</li>
+</ol>
+<p>Adapted teaching snippet (the least-privilege GenAI role pattern, written for this volume):</p>
+<pre><code>// inside the stack: the serving Lambda may call two models, nothing else
+fnRole.addToPolicy(new iam.PolicyStatement({
+  effect: iam.Effect.ALLOW,
+  actions: ["bedrock:InvokeModel"],
+  resources: [
+    "arn:aws:bedrock:us-east-1::foundation-model/amazon.nova-lite-v1:0",
+    "arn:aws:bedrock:us-east-1::foundation-model/amazon.nova-micro-v1:0",
+  ],
+}));</code></pre>
+<p>The lab's stack also demonstrates the event-source pattern: a Lambda subscribed to S3 events, so every upload triggers processing. For GenAI ingestion pipelines, that pattern feeds new documents into chunking and embedding without a polling loop.</p>
+
+<div class="callout trap"><span class="callout-label">Common misunderstanding.</span> CDK is deploy-time infrastructure, not runtime configuration. Switching models at runtime is AppConfig's job (chapter 5). A question that asks for model switching "without redeploy" and offers a CDK redeploy as the answer is testing whether you confuse the two planes.</div>
+
+<figure class="fig"><pre class="ascii">  app code (TypeScript / Python)
+       |
+       | cdk synth
+       v
+ +---------------------+     +---------------------+
+ | CloudFormation      |---->| cdk diff (review!)  |
+ | template            |     +---------------------+
+ +---------------------+               |
+       | cdk deploy                    v approved
+       v                      +---------------------+
+ +---------------------+      | CloudFormation      |
+ | Stack:              |<-----| creates / updates   |
+ | - Lambda (serving)  |      +---------------------+
+ | - API Gateway       |
+ | - DynamoDB (state)  |
+ | - IAM role:         |
+ |   bedrock:InvokeModel
+ |   on 2 model ARNs   |
+ +---------------------+</pre>
+<figcaption>Figure 8.1: From CDK code to a deployed GenAI stack. Synth, review the diff, then deploy. Caption: ASCII diagram drawn for this volume.</figcaption></figure>
+<div class="howread"><p class="howread-title">How to read this diagram</p>
+<ol class="flow">
+<li>Start at the top: you write application plus infrastructure in one language. The stack class is the unit of deployment.</li>
+<li><code>cdk synth</code> compiles to a CloudFormation template. Nothing has been created yet; this step is free and safe.</li>
+<li><code>cdk diff</code> shows the change set. Read it every time; a replacement on a stateful resource deletes data.</li>
+<li><code>cdk deploy</code> executes through CloudFormation, which orders resource creation and rolls back on failure.</li>
+<li>The stack box lists the GenAI serving pieces and the least-privilege IAM role. The role is the security boundary the exam tests.</li>
+</ol>
+<p class="howread-sub">What breaks if a component fails</p>
+<ul>
+<li>If you skip <code>cdk diff</code>, a small code change can replace a database. Review before deploy, always.</li>
+<li>If the IAM role is too broad, a compromised function can call any model in any account context the role allows. Scope to model ARNs.</li>
+<li>If environments are hand-built instead of stack instances, dev and prod drift and bugs reproduce nowhere but production.</li>
+</ul></div>
+
+<div class="callout ask"><span class="callout-label">How AWS will ask about this.</span> Scenario: "deploy the GenAI serving stack repeatably across dev, staging, and prod with least-privilege access." The most correct answer is CDK (or CloudFormation) with scoped IAM. Distractors: console click-ops (not repeatable), CDK for runtime model switching (wrong plane; that is AppConfig), or a single wildcard IAM policy (violates least privilege). A second angle: "the deployment replaced the DynamoDB table and lost session data" points at the skipped diff review and the removal policy.</div>
+
+<div class="callout trap"><span class="callout-label">Exam tips and wrong-answer traps.</span>
+<ul>
+<li>CDK compiles to CloudFormation. Any option claiming CDK deploys "without CloudFormation" misunderstands the tool.</li>
+<li>Least privilege is tested by ARN scoping. <code>bedrock:InvokeModel</code> on specific foundation-model ARNs beats <code>bedrock:*</code> on <code>*</code> every time.</li>
+<li>Infrastructure as code is the answer to "standardized, reusable components across deployments," a phrase straight from the exam guide's design task.</li>
+</ul></div>
+
+<h4>Practice question</h4>
+<p class="qbank-q">A team must deploy an identical GenAI serving stack (Lambda, API Gateway, DynamoDB session table) to dev, staging, and production. The Lambda must call Bedrock models, and security requires least privilege. Which approach is MOST correct?</p>
+<p>A. Build each environment by hand in the console and attach the AWS managed AdministratorAccess policy to the Lambda role for simplicity.<br>
+B. Define one CDK stack class instantiated per environment; grant the Lambda role bedrock:InvokeModel scoped to the specific model ARNs it needs; review cdk diff before each deploy.<br>
+C. Write the Lambda code to assume a new IAM role at runtime that switches models via CDK redeploys.<br>
+D. Store the CloudFormation template in a shared drive and email it to whoever deploys that week.</p>
+<div class="qexp">
+<p><span class="right">B is correct.</span> One stack class gives identical environments; ARN-scoped InvokeModel is least privilege; diff review catches destructive replacements. It hits repeatability, security, and safety in one answer.</p>
+<p><span class="wrong">A is wrong</span> twice: console builds are not repeatable across environments, and AdministratorAccess on a serving role is the opposite of least privilege.</p>
+<p><span class="wrong">C is wrong</span> because it confuses the planes: model switching at runtime is AppConfig's job, and CDK redeploys are deployments, not runtime configuration.</p>
+<p><span class="wrong">D is wrong</span> because a template on a shared drive with no versioning or pipeline is click-ops with extra steps; it fails repeatability and auditability.</p>
+</div>
+</section>
+
+<!-- ================= CHAPTER 9 ================= -->
+<section class="chapter" id="ch9"><h2>9. Supporting labs: KMS, X-Ray, SQS, and foundations</h2>
+<p class="lede">The remaining lab files, mapped to their exam roles: encryption, tracing, messaging, and the building blocks under every GenAI architecture.</p>
+
+<h3>What this chapter covers</h3>
+<p>The lab pack includes supporting exercises that are not GenAI-specific but appear constantly in GenAI architectures and exam scenarios. Each gets its exam framing here so no file is left unmapped.</p>
+
+<h4>KMS: encryption for model data</h4>
+<p>AWS Key Management Service manages the encryption keys that protect data at rest. The lab's CLI script walks the envelope pattern: encrypt a file with a KMS key, store the ciphertext, decrypt it back with the same key. In GenAI architectures KMS keys encrypt fine-tuning datasets in S3, Bedrock model invocation logs, and flow definitions. The exam tests two things: that sensitive training or log data is encrypted with customer-managed keys, and that VPC endpoints keep Bedrock traffic off the public internet. A question about "encrypt the data used to customize a model" points at KMS plus S3 server-side encryption, not at the model service itself.</p>
+
+<h4>X-Ray: tracing the agent's path</h4>
+<p>AWS X-Ray traces requests as they cross service boundaries, showing each segment's latency. The lab's CloudFormation template wires X-Ray into a sample app. For GenAI, X-Ray answers "where did the 8 seconds go" across a multi-step agent run: the classifier call, the specialist's model call, the Lambda tool, the DynamoDB read. The exam pairs X-Ray with CloudWatch Logs Insights for GenAI observability: X-Ray for the trace across calls, Logs Insights for prompt and response forensics. A distractor offers CloudTrail for latency debugging; CloudTrail is audit logging, not performance tracing.</p>
+
+<h4>SQS: decoupling the pipeline</h4>
+<p>Amazon SQS is a managed message queue: send, receive, delete. The lab script covers the basics. In GenAI pipelines SQS decouples ingestion from processing: uploads land, a queue buffers them, Lambda workers drain the queue into chunking and embedding. The exam tests SQS for fan-out and buffering, and it tests what SQS is not: it is not a configuration store (that is AppConfig), not a state store (that is DynamoDB), and not a vector store.</p>
+
+<h4>Foundations: CLI, EC2 metadata, user data, Kinesis, CloudFormation basics</h4>
+<ul>
+<li><strong>CLI and EC2 metadata:</strong> the metadata script shows how code on EC2 discovers its own identity and credentials. Exam angle: IAM roles for EC2 instead of baked-in keys, and IMDSv2 for metadata security.</li>
+<li><strong>EC2 user data:</strong> bootstrap scripts that configure an instance at launch. Exam angle: user data runs once at launch; it is not a configuration management system and not a place for secrets.</li>
+<li><strong>Kinesis data streams:</strong> the lab script creates a stream for ordered, replayable ingestion. Exam angle: Kinesis for streaming data into processing (for example, a live transcript feed into a summarizer), versus SQS for simple buffering.</li>
+<li><strong>CloudFormation basics:</strong> the two templates build from a bare instance to one with a security group and elastic IP. Exam angle: declarative infrastructure, and the reason CloudFormation is wrong for runtime model switching (it is a deployment mechanism).</li>
+</ul>
+
+<h4>The two big files: book.txt and the bylaws document</h4>
+<p>The 260 KB <code>book.txt</code> and the bylaws Word document are sample knowledge sources. Their exam role is the RAG ingestion story: raw text loses structure like headings and tables, so pipelines use extraction (Textract, Comprehend), structure-preserving conversion, and divider markers to improve chunking before embeddings are built. When a scenario says "10,000 mixed files a day into a knowledge base," these files are what that ingestion pipeline eats.</p>
+
+<figure class="fig"><pre class="ascii">  Raw sources (book.txt, .docx, uploads)
+       |
+       v
+ +------------------+     +------------------+
+ | Ingestion        |---->| SQS buffer       |
+ | Lambda / BDA     |     | workers drain    |
+ | extract structure|     +------------------+
+ +------------------+              |
+       | KMS encrypts at rest      v
+       v                  +------------------+
+ +------------------+    | Chunk + embed    |
+ | S3 (versioned,    |--->| -> vector store  |
+ | KMS-encrypted)   |    +------------------+
+ +------------------+
+       X-Ray traces every hop; CloudWatch alarms on failures</pre>
+<figcaption>Figure 9.1: Where the supporting labs fit in a GenAI ingestion pipeline. Caption: ASCII diagram drawn for this volume.</figcaption></figure>
+<div class="howread"><p class="howread-title">How to read this diagram</p>
+<ol class="flow">
+<li>Start at the top: raw documents enter. Ingestion (Lambda preprocessing or Bedrock Data Automation) extracts structure so chunking works.</li>
+<li>SQS buffers the work so a surge of uploads does not overwhelm the embedders. Workers drain at their own pace.</li>
+<li>S3 holds the raw and processed files, versioned and encrypted with KMS. Nothing here is public.</li>
+<li>Chunking and embedding feed the vector store. X-Ray traces the whole path; CloudWatch watches for failures.</li>
+</ol>
+<p class="howread-sub">What breaks if a component fails</p>
+<ul>
+<li>If structure extraction is skipped, tables and headings shatter across chunks and retrieval quality collapses. This is the "bad RAG answers" root cause the exam hides in ingestion.</li>
+<li>If the queue has no dead-letter handling, poison messages retry forever and block the pipeline.</li>
+<li>If encryption is missing on the bucket, a compliance scenario fails no matter how good the retrieval is.</li>
+</ul></div>
+
+<div class="callout ask"><span class="callout-label">How AWS will ask about this.</span> These labs answer the "which service for this job" questions: KMS for encryption at rest, X-Ray for cross-service latency tracing, SQS for buffering between pipeline stages, Kinesis for ordered replayable streams. The traps are always the wrong-plane tools: CloudTrail for metrics, S3 for session state, ElastiCache for durable vectors.</div>
+
+<h4>Practice question</h4>
+<p class="qbank-q">A RAG ingestion pipeline processes thousands of documents daily. Requirements: buffer upload surges, encrypt stored documents with customer-managed keys, and trace end-to-end latency when a document stalls. Which combination is MOST correct? (Select THREE.)</p>
+<p>A. Buffer incoming documents with SQS so embedding workers drain at their own pace.<br>
+B. Encrypt the S3 buckets with KMS customer-managed keys.<br>
+C. Enable X-Ray tracing across the ingestion Lambdas to find slow hops.<br>
+D. Store the documents in ElastiCache for durability and query CloudTrail for latency metrics.<br>
+E. Skip structure extraction because the embedding model will figure out tables on its own.</p>
+<div class="qexp">
+<p><span class="right">A, B, and C are correct.</span> A decouples surge from processing. B meets the customer-managed encryption requirement. C gives cross-service latency traces, which is exactly the stalled-document question.</p>
+<p><span class="wrong">D is wrong</span> twice: ElastiCache is ephemeral cache, not durable document storage, and CloudTrail is audit logging, not a metrics or tracing plane. This is the wrong-plane double trap.</p>
+<p><span class="wrong">E is wrong</span> because raw unstructured text shatters tables across chunks; structure extraction before chunking is what keeps retrieval quality up.</p>
+</div>
+</section>
+
+<!-- ================= QA ================= -->
+<section class="chapter" id="qa"><h2>Build checklist and verification log</h2>
+<p class="lede">What was checked before this volume shipped.</p>
+<ul>
+<li>Parse check: balanced tags, unique section ids (ch1..ch9, qa), all rail anchors resolve. <strong>PASS</strong> (verified by script after writing).</li>
+<li>Zero em dashes in the file. <strong>PASS</strong> (grep).</li>
+<li>Zero gradients; palette variables only. <strong>PASS</strong> (grep).</li>
+<li>Every chapter has a visual (ASCII figure) plus a "How to read this diagram" walkthrough with numbered flow and per-component failure notes. <strong>PASS</strong>.</li>
+<li>Every chapter has the Maarek framing: what it is, why and when, how AWS asks, exam tips and traps, and one practice question with why-right and why-each-distractor-wrong. <strong>PASS</strong>.</li>
+<li>Copyright rule: all explanations and exercises written fresh for this volume; only short adapted snippets shown; no lab file reproduced verbatim. <strong>PASS</strong>.</li>
+<li>Generic content only: no names, no employers, no personal identifiers. <strong>PASS</strong>.</li>
+<li>No placeholders, no TODO, no empty sections. <strong>PASS</strong>.</li>
+<li>No external dependencies: single self-contained HTML, no hotlinked images, all diagrams ASCII. <strong>PASS</strong>.</li>
+</ul>
+<h3>Live verification log (2026-09-28)</h3>
+<ul>
+<li><strong>Verified against live sources:</strong> AgentCore five components (Runtime, Gateway, Memory, Identity, Observability) and the container contract (POST /invocations, GET /ping, port 8080, linux/arm64) via the official Bedrock AgentCore dev guide URLs and corroborating samples; <code>BedrockAgentCoreApp</code> with <code>@app.entrypoint</code> via the AgentCore SDK samples; Strands <code>@tool</code> decorator semantics (docstring as description, type hints as schema) via the Strands SDK docs and samples; Agent Squad package <code>agent-squad</code> with <code>AgentSquad</code>, <code>route_request</code> coroutine, <code>BedrockClassifier</code>, <code>add_agent</code>, <code>response.metadata</code>, and <code>ChatStorage</code> via the project's current docs and the AWS Solutions Guidance page; Bedrock Flows definition structure (<code>nodes</code> and <code>connections</code> arrays, <code>Data</code> and <code>Conditional</code> connection types, PrepareFlow DRAFT behavior) via the official Bedrock API reference and CloudFormation docs; Bedrock agent action-group Lambda event and response shapes (parameters list, <code>responseBody.TEXT.body</code>, <code>messageVersion</code>, apiSchema versus functionSchema) via the Bedrock user guide page on Lambda configuration for agents; Nova model IDs <code>amazon.nova-lite-v1:0</code> and <code>amazon.nova-micro-v1:0</code> via multiple current sources.</li>
+<li><strong>Marked UNVERIFIED inline:</strong> the Iterator node sequential-processing detail in chapter 4 (community-reported, not confirmed in live docs during this build).</li>
+<li><strong>Not stated as fact:</strong> volatile numbers (pricing, quotas) are either omitted or labeled illustrative; where a limit is standard and documented (for example Lambda's 15-minute maximum), it is stated as a documented limit.</li>
+</ul>
+<p class="verified">Last verified: 2026-09-28. Re-check service details against current AWS documentation before the exam date.</p>
+</section>
+</div>
+<nav id="pager" aria-label="Previous and next sections"></nav>
+</div></div>
+<script>
+(function(){
+"use strict";
+var NS="aip-c01:maarek-labs";
+var rail=document.getElementById("rail");
+var filter=document.getElementById("rail-filter");
+var hamburger=document.getElementById("hamburger");
+var overlay=document.getElementById("drawer-overlay");
+var progressFill=document.getElementById("progress-fill");
+var pager=document.getElementById("pager");
+/* collapsible groups */
+document.querySelectorAll(".group").forEach(function(g){
+  var sub=g.querySelector("ul.sec");
+  var t=g.querySelector(".toggle");
+  if(!sub){ if(t) t.style.display="none"; return; }
+  var key=NS+":group:"+g.getAttribute("data-gid");
+  var collapsed=false;
+  try{ collapsed=localStorage.getItem(key)==="1"; }catch(e){}
+  function paint(){
+    sub.hidden=collapsed;
+    t.setAttribute("aria-expanded",String(!collapsed));
+    t.querySelector("span").textContent=collapsed?"\u25B8":"\u25BE";
+    t.setAttribute("aria-label",collapsed?"Expand section group":"Collapse section group");
+  }
+  t.addEventListener("click",function(){
+    collapsed=!collapsed;
+    try{ localStorage.setItem(key,collapsed?"1":"0"); }catch(e){}
+    paint();
+  });
+  paint();
+});
+/* completion checkmarks */
+document.querySelectorAll("[data-done]").forEach(function(btn){
+  var key=NS+":done:"+btn.getAttribute("data-done");
+  function paint(){
+    var d=false;
+    try{ d=localStorage.getItem(key)==="1"; }catch(e){}
+    btn.setAttribute("aria-pressed",String(d));
+    btn.classList.toggle("is-done",d);
+  }
+  btn.addEventListener("click",function(ev){
+    ev.preventDefault(); ev.stopPropagation();
+    var d=false;
+    try{
+      d=localStorage.getItem(key)!=="1";
+      localStorage.setItem(key,d?"1":"0");
+    }catch(e){ d=!d; }
+    paint();
+  });
+  paint();
+});
+/* scroll-spy */
+var navLinks=Array.prototype.slice.call(document.querySelectorAll("[data-nav]"));
+var targetMap=new Map();
+navLinks.forEach(function(a){
+  var id=a.getAttribute("href").slice(1);
+  var el=document.getElementById(id);
+  if(el) targetMap.set(el,a);
+});
+function setActive(a){
+  navLinks.forEach(function(x){x.classList.remove("active");});
+  if(a){
+    a.classList.add("active");
+    if(rail){
+      var top=a.offsetTop-rail.clientHeight/2;
+      rail.scrollTo({top:top,behavior:"smooth"});
+    }
+  }
+  updatePager(a);
+}
+if("IntersectionObserver" in window && targetMap.size){
+  var obs=new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(e.isIntersecting) setActive(targetMap.get(e.target));
+    });
+  },{rootMargin:"-15% 0px -75% 0px"});
+  targetMap.forEach(function(a,el){obs.observe(el);});
+}
+/* filter */
+function groupCollapsed(g){
+  try{ return localStorage.getItem(NS+":group:"+g.getAttribute("data-gid"))==="1"; }catch(e){ return false; }
+}
+function applyFilter(){
+  var q=filter.value.trim().toLowerCase();
+  document.querySelectorAll(".group").forEach(function(g){
+    var links=g.querySelectorAll("[data-nav]");
+    var any=false;
+    links.forEach(function(a){
+      var hit=!q||a.textContent.toLowerCase().indexOf(q)>-1;
+      var li=a.closest("li");
+      var target=li;
+      if(li&&li.classList.contains("group")) target=li.querySelector(".group-row");
+      if(target) target.style.display=hit?"":"none";
+      if(hit) any=true;
+    });
+    g.style.display=any?"":"none";
+    var sub=g.querySelector("ul.sec");
+    if(sub) sub.hidden=q?false:groupCollapsed(g);
+  });
+}
+if(filter){
+  filter.addEventListener("input",applyFilter);
+  filter.addEventListener("keydown",function(ev){
+    if(ev.key==="Escape"){ filter.value=""; applyFilter(); filter.blur(); }
+    ev.stopPropagation();
+  });
+}
+/* reading progress */
+function updateProgress(){
+  var h=document.documentElement;
+  var max=h.scrollHeight-h.clientHeight;
+  var pct=max>0?(h.scrollTop/max)*100:0;
+  if(progressFill) progressFill.style.width=pct+"%";
+}
+window.addEventListener("scroll",updateProgress,{passive:true});
+window.addEventListener("resize",updateProgress);
+updateProgress();
+/* pager (prev/next chapter links) */
+function updatePager(active){
+  if(!pager) return;
+  var idx=active?navLinks.indexOf(active):-1;
+  pager.innerHTML="";
+  function link(a,cls,label){
+    var el=document.createElement("a");
+    el.href=a.getAttribute("href");
+    el.className=cls;
+    el.innerHTML="<span>"+label+"</span> "+a.querySelector(".t,span")?"":"";
+    el.textContent=(cls==="prev"?"\u2190 ":"") + a.textContent.trim() + (cls==="next"?" \u2192":"");
+    el.setAttribute("aria-label",(cls==="prev"?"Previous section: ":"Next section: ")+a.textContent.trim());
+    return el;
+  }
+  if(idx>0) pager.appendChild(link(navLinks[idx-1],"prev"));
+  if(idx>=0&&idx<navLinks.length-1) pager.appendChild(link(navLinks[idx+1],"next"));
+  if(idx===-1&&navLinks.length) pager.appendChild(link(navLinks[0],"next"));
+}
+updatePager(null);
+/* keyboard nav */
+document.addEventListener("keydown",function(ev){
+  var tag=(document.activeElement&&document.activeElement.tagName)||"";
+  var typing=tag==="INPUT"||tag==="TEXTAREA";
+  if(ev.key==="/"&&!typing){
+    ev.preventDefault();
+    if(filter){ filter.focus(); openDrawer(); }
+    return;
+  }
+  if(ev.key==="Escape"){
+    if(filter&&document.activeElement===filter){ filter.value=""; applyFilter(); filter.blur(); }
+    closeDrawer();
+    return;
+  }
+  if((ev.key==="ArrowDown"||ev.key==="ArrowUp")&&rail&&rail.contains(document.activeElement)){
+    ev.preventDefault();
+    var vis=navLinks.filter(function(a){return a.offsetParent!==null;});
+    var i=vis.indexOf(document.activeElement);
+    var n=ev.key==="ArrowDown"?i+1:i-1;
+    if(n>=0&&n<vis.length) vis[n].focus();
+  }
+});
+/* mobile drawer */
+function openDrawer(){
+  if(!rail||window.innerWidth>900) return;
+  rail.classList.add("open");
+  if(overlay) overlay.classList.add("show");
+  if(hamburger) hamburger.setAttribute("aria-expanded","true");
+}
+function closeDrawer(){
+  if(!rail) return;
+  rail.classList.remove("open");
+  if(overlay) overlay.classList.remove("show");
+  if(hamburger) hamburger.setAttribute("aria-expanded","false");
+}
+if(hamburger) hamburger.addEventListener("click",function(){
+  if(rail.classList.contains("open")) closeDrawer(); else openDrawer();
+});
+if(overlay) overlay.addEventListener("click",closeDrawer);
+rail.querySelectorAll("[data-nav]").forEach(function(a){
+  a.addEventListener("click",closeDrawer);
+});
+/* copy buttons on code blocks */
+document.querySelectorAll("pre").forEach(function(pre){
+  var wrap=document.createElement("div");
+  wrap.className="codewrap";
+  pre.parentNode.insertBefore(wrap,pre);
+  wrap.appendChild(pre);
+  var b=document.createElement("button");
+  b.type="button"; b.className="copybtn"; b.textContent="Copy";
+  b.setAttribute("aria-label","Copy code block to clipboard");
+  b.addEventListener("click",function(){
+    var t=pre.innerText;
+    function done(){ b.textContent="Copied"; setTimeout(function(){b.textContent="Copy";},1500); }
+    function fallback(){
+      var r=document.createRange(); r.selectNodeContents(pre);
+      var s=window.getSelection(); s.removeAllRanges(); s.addRange(r);
+      try{ document.execCommand("copy"); }catch(e){}
+      s.removeAllRanges(); done();
+    }
+    if(navigator.clipboard&&navigator.clipboard.writeText){
+      navigator.clipboard.writeText(t).then(done,fallback);
+    }else{ fallback(); }
+  });
+  wrap.appendChild(b);
+});
+})();
+</script>
+
+</body></html>
