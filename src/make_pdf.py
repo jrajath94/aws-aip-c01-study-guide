@@ -12,8 +12,9 @@ PAGES = [
     ("d3", "volume-d3-safety-security-governance.html", "D3 · AI Safety, Security, and Governance (20%)"),
     ("d4", "volume-d4-optimization.html", "D4 · Operational Efficiency and Optimization (12%)"),
     ("d5", "volume-d5-testing-validation.html", "D5 · Testing, Validation, and Troubleshooting (11%)"),
-    ("bank", "volume-question-bank.html", "Question Bank + 75-Question Mock Exam (192 questions)"),
+    ("bank", "volume-question-bank.html", "Question Bank + 75-Question Mock Exam (200 questions)"),
     ("patterns", "volume-question-patterns.html", "How AWS Asks: Pattern Guide + Original Questions"),
+    ("crash", "volume-crash-course.html", "Crash Course: the Whole Exam in One Volume"),
     ("design", "volume-system-design.html", "System Design Guide"),
     ("labs", "volume-maarek-labs.html", "Hands-On Labs (Maarek Course Labs)"),
     ("appendix", "volume-appendix-gaps.html", "Gap Appendix: Peripheral Services"),
@@ -58,7 +59,7 @@ out = """<!DOCTYPE html>
 <div class="pdf-cover">
   <h1>AWS Certified Generative AI Developer &ndash; Professional</h1>
   <p><strong>(AIP-C01) Complete Study Guide</strong></p>
-  <p>11 volumes &middot; 192 exam-style questions &middot; 75-question mock exam &middot; system design guide &middot; hands-on labs</p>
+  <p>12 volumes &middot; 200 exam-style questions &middot; 75-question mock exam &middot; crash course &middot; system design guide &middot; hands-on labs</p>
   <p>Verified exam identity: 75 questions (65 scored + 10 unscored), 180 min, pass 750/1000, $300</p>
   <p>Built September 28, 2026 &middot; self-contained, generic learning content</p>
 </div>
