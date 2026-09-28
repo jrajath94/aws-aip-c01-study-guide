@@ -1,0 +1,1717 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>AIP-C01 Crash Course: the whole exam in one volume</title>
+<style>
+/* ==== DS canonical design system — do not edit per-file (build.py inlines) ==== */
+/* ==========================================================================
+   DS — Canonical Design System (shared across all study-guide tracks)
+   Pitch-black dark mode. System fonts only. No gradients, no decorative
+   filler. This file is inlined verbatim into each volume's <head>.
+   ========================================================================== */
+
+:root {
+  --bg: #000000;
+  --surface: #0d0d0d;
+  --border: #262626;
+  --text: #ececec;
+  --muted: #a8a8a8;
+  --accent: #f0b429;   /* warm amber — key highlights, active states, takeaways */
+  --link: #6cb2ff;
+  --code-bg: #111111;
+  --font-sans: "Atkinson Hyperlegible", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+/* ---------- Offline fonts (shipped in assets/fonts/, zero webfont dependency) ---------- */
+
+@font-face {
+  font-family: "Atkinson Hyperlegible";
+  src: url("assets/fonts/AtkinsonHyperlegible-Regular.ttf") format("truetype");
+  font-weight: 400; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: "Atkinson Hyperlegible";
+  src: url("assets/fonts/AtkinsonHyperlegible-Italic.ttf") format("truetype");
+  font-weight: 400; font-style: italic; font-display: swap;
+}
+@font-face {
+  font-family: "Atkinson Hyperlegible";
+  src: url("assets/fonts/AtkinsonHyperlegible-Bold.ttf") format("truetype");
+  font-weight: 700; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: "Atkinson Hyperlegible";
+  src: url("assets/fonts/AtkinsonHyperlegible-BoldItalic.ttf") format("truetype");
+  font-weight: 700; font-style: italic; font-display: swap;
+}
+@font-face {
+  font-family: "Inter";
+  src: url("assets/fonts/Inter-var.ttf") format("truetype");
+  font-weight: 100 900; font-style: normal; font-display: swap;
+}
+
+/* ---------- Base ---------- */
+
+* { box-sizing: border-box; }
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 1rem;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: 17px;
+  line-height: 1.75;
+  overflow-x: clip;          /* no horizontal scroll at any width; clip keeps sticky working */
+}
+
+a { color: var(--link); }
+a:hover { text-decoration-thickness: 2px; }
+
+/* Visible focus for keyboard users — never remove without replacement. */
+:focus-visible {
+  outline: 2px solid var(--link);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+.ds-visually-hidden {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Skip link: hidden until focused. */
+.ds-skip {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 200;
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.6rem 1rem;
+  text-decoration: none;
+  font-weight: 600;
+}
+.ds-skip:focus { left: 0.75rem; top: 0.75rem; }
+
+/* ---------- Typography ---------- */
+
+h1, h2, h3, h4 {
+  font-style: normal;        /* headings always roman, never italic */
+  line-height: 1.35;
+  margin: 2.2rem 0 1rem;
+  color: var(--text);
+}
+h1 { font-size: 2rem;    font-weight: 700; }
+h2 { font-size: 1.5rem;  font-weight: 700; border-bottom: 1px solid var(--border); padding-bottom: 0.4rem; }
+h3 { font-size: 1.25rem; font-weight: 600; }
+h4 { font-size: 1.1rem;  font-weight: 600; }
+
+p { text-align: justify; margin: 1rem 0; overflow-wrap: break-word; }
+li { overflow-wrap: break-word; }
+ul, ol { padding-left: 1.6rem; }
+li { margin: 0.35rem 0; }
+
+blockquote {
+  margin: 1.5rem 0;
+  padding: 0.5rem 1.25rem;
+  border-left: 2px solid var(--border);
+  color: var(--muted);
+}
+blockquote p { text-align: left; }
+
+hr { border: 0; border-top: 1px solid var(--border); margin: 2.5rem 0; }
+
+code, kbd, samp {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+}
+p code, li code, td code, th code, figcaption code {
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.1em 0.35em;
+  overflow-wrap: anywhere;   /* long tokens (ARNs, model IDs) break rather than overflow the column */
+}
+
+/* ---------- Reading progress bar ---------- */
+
+#ds-progress {
+  position: fixed;
+  top: 0; left: 0;
+  height: 3px;
+  width: 0%;
+  background: var(--accent);
+  z-index: 100;
+  pointer-events: none;
+}
+
+/* ---------- Sidebar ---------- */
+
+#ds-sidebar-root {
+  flex: 0 0 300px;
+  width: 300px;
+  height: 100vh;
+  position: sticky;
+  top: 0;
+  overflow-y: auto;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  z-index: 60;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+.ds-side-inner {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  padding-bottom: 2rem;
+}
+
+.ds-side-search {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--surface);
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid var(--border);
+}
+.ds-side-search input {
+  width: 100%;
+  font-family: inherit;
+  font-size: 0.9rem;
+  color: var(--text);
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+}
+.ds-side-search input::placeholder { color: var(--muted); }
+
+.ds-nav {
+  list-style: none;
+  margin: 0;
+  padding: 0.5rem 0;
+}
+
+.ds-nav-row {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding-right: 0.6rem;
+}
+
+.ds-nav-toggle {
+  flex: 0 0 auto;
+  background: none;
+  border: 0;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 0.7rem;
+  line-height: 1;
+  padding: 0.55rem 0.3rem 0.55rem 1rem;
+  font-family: inherit;
+}
+.ds-nav-toggle:hover { color: var(--accent); }
+
+.ds-nav-link {
+  flex: 1 1 auto;
+  display: block;
+  min-width: 0;
+  padding: 0.45rem 0.25rem 0.45rem 0.4rem;
+  padding-left: 1.25rem;
+  margin-left: -0.55rem;      /* align text under toggle glyph */
+  color: var(--text);
+  text-decoration: none;
+  font-size: 0.92rem;
+  line-height: 1.45;
+  border-left: 2px solid transparent;
+}
+.ds-nav-link:hover { color: #ffffff; background: rgba(255, 255, 255, 0.04); }
+.ds-nav-link.active {
+  color: var(--accent);
+  border-left-color: var(--accent);
+  font-weight: 600;
+}
+
+.ds-nav-sub { list-style: none; margin: 0; padding: 0; }
+.ds-nav-subrow .ds-nav-link {
+  padding-left: 2.6rem;
+  margin-left: 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+.ds-nav-subrow .ds-nav-link:hover { color: var(--text); }
+.ds-nav-subrow .ds-nav-link.active { color: var(--accent); }
+
+.ds-done-wrap { flex: 0 0 auto; display: inline-flex; align-items: center; }
+.ds-done {
+  width: 1rem; height: 1rem;
+  margin: 0;
+  cursor: pointer;
+  accent-color: var(--accent);
+}
+.ds-nav-row.done .ds-nav-link {
+  color: var(--muted);
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+}
+
+/* ---------- Main content ---------- */
+
+#ds-content {
+  flex: 1 1 auto;
+  min-width: 0;               /* lets flex child shrink; prevents overflow */
+  overflow-wrap: break-word;   /* long unbroken strings (ARNs, URLs) break instead of spilling */
+  padding: 2.5rem 2rem 4rem;
+}
+.ds-content-inner {
+  max-width: 72ch;
+  margin: 0 auto;
+}
+
+/* ---------- Hamburger / drawer (mobile) ---------- */
+
+#ds-hamburger {
+  display: none;
+  position: fixed;
+  top: 0.75rem; left: 0.75rem;
+  z-index: 90;
+  width: 2.75rem; height: 2.75rem;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+}
+#ds-hamburger span {
+  display: block;
+  width: 1.25rem; height: 2px;
+  background: var(--text);
+}
+
+#ds-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  background: rgba(0, 0, 0, 0.6);
+}
+
+@media (max-width: 900px) {
+  body { display: block; }
+
+  #ds-hamburger { display: inline-flex; }
+
+  #ds-sidebar-root {
+    position: fixed;
+    left: 0; top: 0;
+    flex: none;
+    width: min(320px, 85vw);
+    transform: translateX(-105%);
+    transition: transform 0.25s ease;
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.6);
+  }
+  body.ds-drawer-open #ds-sidebar-root { transform: translateX(0); }
+  body.ds-drawer-open #ds-overlay { display: block; }
+
+  #ds-content { padding: 4.25rem 1.25rem 3rem; }
+}
+
+/* ---------- Learning components ---------- */
+
+/* "How the exam asks" callout */
+.exam-ask {
+  background: var(--surface);
+  border-left: 3px solid var(--accent);
+  border-radius: 0 6px 6px 0;
+  padding: 1rem 1.25rem;
+  margin: 1.5rem 0;
+}
+.exam-ask::before {
+  content: "HOW THE EXAM ASKS";
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--accent);
+  margin-bottom: 0.5rem;
+}
+.exam-ask p:first-of-type { margin-top: 0; }
+.exam-ask p:last-child { margin-bottom: 0; }
+
+/* Key-takeaway box */
+.takeaway {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: 6px;
+  padding: 1rem 1.25rem;
+  margin: 1.5rem 0;
+}
+.takeaway::before {
+  content: "KEY TAKEAWAY";
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--accent);
+  margin-bottom: 0.5rem;
+}
+.takeaway p:first-of-type { margin-top: 0; }
+.takeaway p:last-child { margin-bottom: 0; }
+
+/* Practice-question widget (click-to-reveal) */
+.pq {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  padding: 1.25rem;
+  margin: 1.5rem 0;
+}
+.pq-question { font-weight: 600; margin-top: 0; text-align: left; }
+.pq-reveal {
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  background: transparent;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  border-radius: 6px;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+}
+.pq-reveal:hover { background: rgba(240, 180, 41, 0.1); }
+/* Answer hidden only when JS is present — no-JS readers see the answer. */
+html.ds-js .pq-answer { display: none; }
+html.ds-js .pq-answer.open { display: block; }
+.pq-answer {
+  margin-top: 1rem;
+  border-top: 1px solid var(--border);
+  padding-top: 1rem;
+}
+.pq-answer p { text-align: left; }
+.pq-options { list-style: none; padding-left: 0; }
+.pq-option { padding: 0.4rem 0 0.4rem 0.85rem; margin: 0.5rem 0; }
+.pq-option.correct { border-left: 2px solid var(--accent); font-weight: 600; }
+.pq-option.wrong { border-left: 2px solid var(--border); color: var(--muted); }
+.pq-option .pq-note { display: block; font-weight: 400; color: var(--muted); font-size: 0.9rem; }
+.pq-answer .correct { color: var(--accent); font-weight: 700; }
+.pq-answer .wrong { color: var(--text); font-weight: 600; }
+.pq-meta { margin: 0 0 0.5rem; display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center; }
+.pq-ref { color: var(--muted); font-size: 0.82rem; font-weight: 400; }
+
+/* details/summary Q&A left functional, styled to match .pq */
+details {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  padding: 1rem 1.25rem;
+  margin: 1.5rem 0;
+}
+details > summary {
+  cursor: pointer;
+  font-weight: 600;
+  text-align: left;
+}
+details > summary::marker { color: var(--accent); }
+details.pq { padding: 1.25rem; }
+details.pq > summary {
+  display: inline-block;
+  font-size: 0.9rem;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  border-radius: 6px;
+  padding: 0.5rem 1rem;
+  list-style: none;
+}
+details.pq > summary::-webkit-details-marker { display: none; }
+details.pq > summary:hover { background: rgba(240, 180, 41, 0.1); }
+details.pq > .pq-answer {
+  display: block;             /* native disclosure, always functional */
+  margin-top: 1rem;
+  border-top: 1px solid var(--border);
+  padding-top: 1rem;
+}
+
+/* Copy button injected into code blocks */
+pre {
+  position: relative;
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 1rem;
+  overflow-x: auto;
+  font-family: var(--font-mono);
+  font-size: 0.88rem;
+  line-height: 1.6;
+  margin: 1.5rem 0;
+}
+pre code { background: none; border: 0; padding: 0; white-space: pre; }
+.ds-copy-btn {
+  position: absolute;
+  top: 0.5rem; right: 0.5rem;
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--muted);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 0.3rem 0.65rem;
+  cursor: pointer;
+}
+.ds-copy-btn:hover { color: var(--text); border-color: var(--muted); }
+
+/* Numbered how-to-read diagram walkthrough */
+.diagram-walkthrough ol {
+  list-style: none;
+  counter-reset: dw;
+  padding: 0;
+  margin: 1.25rem 0;
+}
+.diagram-walkthrough ol > li {
+  counter-increment: dw;
+  position: relative;
+  padding-left: 2.6rem;
+  margin-bottom: 0.85rem;
+  text-align: left;
+}
+.diagram-walkthrough ol > li::before {
+  content: counter(dw);
+  position: absolute;
+  left: 0; top: 0.15rem;
+  width: 1.8rem; height: 1.8rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--accent);
+  border-radius: 50%;
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+/* First-use term styling */
+.def {
+  border-bottom: 1px dotted var(--muted);
+  color: #f5f5f5;
+  cursor: help;
+}
+
+/* Exam-constraint chip */
+.constraint {
+  display: inline-block;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  border-radius: 999px;
+  padding: 0.15rem 0.7rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  margin: 0.15rem 0.25rem 0.15rem 0;
+  white-space: nowrap;
+}
+
+/* Block variant: for long-form constraint boxes (wraps; never clips) */
+.constraint-block {
+  display: block;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: 6px;
+  padding: 0.8rem 1rem;
+  margin: 0.9rem 0;
+  font-size: 0.95rem;
+  color: var(--text);
+}
+.constraint-block strong {
+  color: var(--accent);
+}
+
+/* Tables */
+.table-wrap {
+  overflow-x: auto;
+  margin: 1.5rem 0;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.94rem;
+  line-height: 1.6;
+}
+caption {
+  caption-side: bottom;
+  color: var(--muted);
+  font-size: 0.85rem;
+  padding: 0.6rem;
+  text-align: center;
+}
+th, td {
+  padding: 0.6rem 0.8rem;
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid var(--border);
+}
+thead th {
+  background: var(--surface);
+  font-weight: 700;
+  white-space: nowrap;
+}
+tbody tr:nth-child(odd)  { background: #0d0d0d; }
+tbody tr:nth-child(even) { background: #111111; }
+tbody tr:last-child th,
+tbody tr:last-child td { border-bottom: 0; }
+
+/* Images */
+img {
+  max-width: 100%;
+  height: auto;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+figure { margin: 1.75rem 0; }
+figure.fig-light img { background: #ffffff; padding: 1.1rem; border-radius: 12px; }
+figcaption {
+  color: var(--muted);
+  font-size: 0.85rem;
+  line-height: 1.6;
+  margin-top: 0.6rem;
+  text-align: center;
+}
+
+/* Prev / next volume footer */
+.ds-prevnext {
+  display: flex;
+  justify-content: space-between;
+  align-items: stretch;
+  gap: 1rem;
+  margin: 3.5rem 0 1rem;
+  border-top: 1px solid var(--border);
+  padding-top: 1.75rem;
+}
+.ds-prevnext a {
+  display: block;
+  flex: 1 1 0;
+  min-width: 0;               /* flex item must shrink below label width on narrow screens */
+  max-width: 48%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.9rem 1.2rem;
+  color: var(--text);
+  text-decoration: none;
+}
+.ds-prevnext a:hover { border-color: var(--accent); }
+.ds-prevnext .ds-next { text-align: right; }
+.ds-prev-empty { flex: 1 1 0; min-width: 0; max-width: 48%; }
+.ds-pn-kicker {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 0.25rem;
+}
+.ds-pn-label { font-weight: 600; line-height: 1.5; }
+
+/* ---------- Decision ladder (GenAI decision frameworks) ---------- */
+.ladder {
+  margin: 1.5rem 0;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.rung {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  padding: 0.9rem 1.1rem;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+}
+.rung:last-child { border-bottom: 0; }
+.rung-n {
+  flex: 0 0 auto;
+  width: 1.9rem; height: 1.9rem;
+  display: flex; align-items: center; justify-content: center;
+  border: 1px solid var(--accent);
+  border-radius: 50%;
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+.rung > div { min-width: 0; }
+.rung b { display: block; color: var(--text); }
+.rung span:not(.rung-n) { color: var(--muted); font-size: 0.92rem; }
+
+/* ---------- Print ---------- */
+
+@media print {
+  :root {
+    --bg: #ffffff;
+    --surface: #f5f5f5;
+    --border: #cccccc;
+    --text: #000000;
+    --muted: #444444;
+    --accent: #8a5a00;
+    --link: #0000ee;
+    --code-bg: #f5f5f5;
+  }
+  body {
+    display: block;
+    background: #ffffff;
+    color: #000000;
+    font-size: 12pt;
+    line-height: 1.6;
+  }
+  #ds-sidebar-root,
+  #ds-progress,
+  #ds-hamburger,
+  #ds-overlay,
+  .ds-side-search,
+  .ds-copy-btn,
+  .ds-done-wrap,
+  .ds-skip { display: none !important; }
+  #ds-content { padding: 0; }
+  .ds-content-inner { max-width: none; }
+  p, .pq-question, .pq-answer p, details > summary { text-align: left; }
+
+  /* Expand everything for paper. */
+  details:not([open]) > :not(summary) { display: block !important; }
+  html.ds-js .pq-answer { display: block !important; }
+  .ds-nav-sub { display: block !important; }
+
+  figure, pre, table, .pq, .exam-ask, .takeaway { break-inside: avoid; }
+  h1, h2, h3, h4 { break-after: avoid; }
+
+  pre { white-space: pre-wrap; word-wrap: break-word; }
+  .table-wrap { overflow: visible; border: 0; }
+
+  /* Print-friendly link URLs: external links only. */
+  a[href^="http"]::after {
+    content: " (" attr(href) ")";
+    font-size: 0.85em;
+    color: var(--muted);
+    word-break: break-all;
+  }
+  a { text-decoration: none; }
+}
+
+/* ==========================================================================
+   PART 2 — Content components (sanctioned adapters, shared by all tracks)
+   Added 2026-09-28 during the CCAR-P remediation: every bespoke class that
+   survived the first theming pass is defined here ONCE, in dark-mode tokens,
+   so all volumes render identically. Pitch-black discipline holds: no
+   gradients, no decorative filler, system fonts only.
+   ========================================================================== */
+
+/* ---- Page lede / kicker / eyebrow ---- */
+.lede{color:var(--muted);font-size:1.05rem;margin:0 0 1.5rem;text-align:left}
+.kicker{color:var(--muted);font-size:.94rem;margin:0 0 1.6rem;text-align:left}
+.eyebrow{font:600 .75rem/1.4 var(--font-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin:0 0 .5rem}
+
+/* ---- Top banner / hero card (dark; the navy 03 banner was a defect) ---- */
+.banner{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.625rem 1.75rem;margin:0 0 1.875rem}
+.banner h1{margin-top:0}
+.banner .kicker{font-size:.85rem;color:var(--muted);margin-bottom:6px}
+.banner p{color:var(--muted);text-align:left}
+.hero{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:2rem 2.2rem;margin:0 0 2.5rem}
+.hero h1{margin-top:0}
+.hero p{color:var(--muted)}
+.hero .facts{margin-top:1rem}
+
+/* ---- Fact chips / fact cards ---- */
+.facts{display:flex;flex-wrap:wrap;gap:10px;margin:1rem 0 2rem}
+.facts span{border:1px solid var(--border);background:var(--code-bg);border-radius:6px;padding:5px 12px;font-size:.85rem}
+.fact{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:.7rem .9rem;flex:1 1 150px;min-width:140px}
+.fact b{display:block;font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600}
+.fact span{font-size:1.02rem;font-weight:600}
+
+/* ---- Unit cards ---- */
+.unit{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.625rem 1.75rem;margin:1.625rem 0}
+.unit>h2:first-of-type{margin-top:0}
+.unit-tag{display:block;font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:.25rem}
+
+/* ---- Callout family (info / trap / fix / warn) ---- */
+.callout{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:.9rem 1.25rem;margin:1.5rem 0}
+.callout .lbl,.callout .cl,.callout-h{font-weight:700;display:block;margin-bottom:.35rem}
+.callout p:last-child{margin-bottom:0}
+.callout.trap{border-left:4px solid #e57373}
+.callout.trap .lbl,.callout.trap .cl,.callout.trap .callout-h{color:#e57373}
+.callout.fix{border-left:4px solid #3fb96b}
+.callout.fix .lbl,.callout.fix .cl,.callout.fix .callout-h{color:#3fb96b}
+.callout.warn{border-left:3px solid #e05656}
+.callout.warn .lbl,.callout.warn .cl,.callout.warn .callout-h{color:#e05656}
+.callout.anti{border-left:3px solid var(--muted)}
+.callout.anti .lbl,.callout.anti .cl{color:var(--muted)}
+.callout.num{border-left:3px solid var(--accent)}
+.callout.num .lbl,.callout.num .cl{color:var(--accent)}
+.callout.math{border-left:3px solid #3fb96b}
+.callout.math .callout-h{color:#3fb96b}
+.callout.fail{border-left:3px solid #e5484d}
+.callout.fail .callout-h{color:#e5484d}
+
+/* Legacy aliases mapped onto the callout family */
+.board{border-left:4px solid var(--link);background:var(--surface);padding:.75rem 1.125rem;border-radius:0 8px 8px 0;margin:1.2em 0}
+.board .lbl{font-weight:700;color:var(--link)}
+.trapbox{border:1px solid var(--accent);background:var(--surface);border-radius:8px;padding:.75rem 1.125rem;margin:1.2em 0}
+.trapbox .lbl{font-weight:700;color:var(--accent)}
+.nums{border-left:4px solid var(--accent);background:var(--surface);padding:.75rem 1.125rem;border-radius:0 8px 8px 0;margin:1.2em 0}
+.nums .lbl{font-weight:700;color:var(--accent)}
+.trap{background:var(--surface);border:1px solid var(--border);border-left:3px solid #e57373;border-radius:6px;padding:1rem 1.25rem;margin:1.5rem 0}
+.trap>.label,.trap .t-title{display:block;font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#e57373;margin-bottom:.5rem}
+.trap .t-title{margin:0 0 .3rem}
+.trap p:first-of-type{margin-top:0}
+.trap p:last-child{margin-bottom:0}
+.warn{background:var(--surface);border-left:3px solid var(--accent);border-radius:0 6px 6px 0;padding:1rem 1.25rem;margin:1.5rem 0}
+.warn h4{margin:0 0 .5rem;color:var(--accent);font-size:1rem}
+.warn p:first-of-type{margin-top:0}
+.warn p:last-child{margin-bottom:0}
+.askbox{background:var(--surface);border:1px solid var(--accent);border-radius:10px;padding:1rem 1.25rem;margin:1.5rem 0}
+.askbox h4{margin:0 0 .5rem;color:var(--accent);font-size:1rem}
+.askbox .shape{font-size:.95rem}
+.askbox .trap{font-size:.95rem;margin-top:.75rem;border-left:3px solid #e57373;padding-left:1rem}
+.askbox .trap b{color:#e57373}
+
+/* ---- Exam strip / onboarding / examline ---- */
+.examstrip,.exam-strip{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--link);border-radius:0 8px 8px 0;padding:1rem 1.25rem;margin:1.5rem 0 2.5rem}
+.examstrip td{padding:.25rem .6rem .25rem 0;vertical-align:top}
+.examstrip td:first-child{color:var(--muted);white-space:nowrap}
+.exam-strip{margin-top:1rem}
+.onboard{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--link);border-radius:0 8px 8px 0;padding:1rem 1.25rem;margin:1.5rem 0}
+.onboard .q{font-weight:700}
+.examline{font-size:.93rem;color:var(--muted);border-top:1px solid var(--border);padding-top:.7rem;margin-top:1.4rem}
+
+/* ---- Pills, tags, badges ---- */
+.volume-tag{display:inline-block;background:var(--surface);border:1px solid var(--accent);color:var(--accent);font-size:.8rem;font-weight:700;letter-spacing:.06em;padding:.25rem .7rem;border-radius:20px;margin-bottom:1rem}
+.tag{display:inline-block;font-size:.75rem;font-weight:700;padding:.2em .7em;border-radius:20px;border:1px solid var(--accent);color:var(--accent);margin-right:.5em;vertical-align:.15em}
+.badges{display:flex;flex-wrap:wrap;gap:.5rem;margin:1rem 0 .5rem}
+.badge{background:var(--surface);border:1px solid var(--border);border-radius:999px;padding:.25rem .9rem;font-size:.85rem;color:var(--text)}
+.badge b{color:var(--accent)}
+
+/* ---- In-content TOC cards ---- */
+.toc-grid{display:grid;grid-template-columns:1fr 1fr;gap:.65rem;margin:1.25rem 0}
+.toc-grid a{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:.75rem .9rem;text-decoration:none;color:var(--text);font-size:.95rem}
+.toc-grid a:hover{border-color:var(--link)}
+.toc-grid a b{display:block;color:var(--link)}
+.toc{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1.2rem 1.5rem;margin:0 0 3rem}
+@media (max-width:640px){.toc-grid{grid-template-columns:1fr}}
+
+/* ---- Section helpers ---- */
+.section{margin-bottom:2.5rem}
+.chapter{margin-bottom:3.5rem}
+.note{font-size:.88rem;color:var(--muted)}
+.small{font-size:.9rem;color:var(--muted)}
+.ht{font-weight:700;font-size:.9rem;letter-spacing:.06em;color:var(--accent);margin:0 0 .5rem;text-align:left}
+
+/* ---- Definition blocks ---- */
+div.def{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:.9rem 1.2rem;margin:1rem 0}
+div.def p{margin:.4rem 0}
+div.def .term,span.def .term{font-weight:700;color:var(--link)}
+div.def .t-title{font-weight:700;margin:0 0 .2rem}
+
+/* ---- Key-value definition lists ---- */
+dl.kv{display:grid;grid-template-columns:170px 1fr;gap:.35rem .9rem;margin:.8rem 0;font-size:.93rem}
+dl.kv dt{font-weight:700}
+dl.kv dd{margin:0}
+@media (max-width:640px){dl.kv{grid-template-columns:1fr}}
+
+/* ---- Custom labels inside canonical callouts: custom text stays the label,
+        the auto ::before label is suppressed to avoid duplication ---- */
+.exam-ask:has(>.label)::before,.takeaway:has(>.label)::before{content:none}
+.exam-ask:has(>h4)::before{content:none}
+.exam-ask>.label,.takeaway>.label{display:block;font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin-bottom:.5rem}
+.exam-ask>h4{font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin:0 0 .5rem}
+.exam-ask .callout-h{color:var(--text)}
+.exam-ask .lbl{font-size:.85rem;color:var(--muted);font-weight:600;margin-bottom:.5rem}
+.exam-ask .cl,.takeaway .cl,.takeaway .lbl{font-weight:700;display:block;margin-bottom:.35rem;color:var(--accent)}
+.diagram-walkthrough .lbl{font-weight:700;margin-bottom:6px}
+.diagram-walkthrough .walkthrough-h{margin:0 0 .6rem;font-size:.85rem;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.06em;text-align:left}
+.diagram-walkthrough>p:first-child{margin:0 0 .75rem;font-size:.82rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);text-align:left}
+.diagram-walkthrough .howread-title{font-weight:700;font-size:1rem;margin:0 0 .3rem}
+.diagram-walkthrough .howread-sub{font-weight:700;font-size:.88rem;margin:.7rem 0 .2rem}
+
+/* ---- Tables: header rows without thead stay distinct; numeric alignment ---- */
+.table-wrap tr:first-child th{background:var(--surface);font-weight:700;white-space:nowrap}
+.table-wrap th{background:var(--surface);font-weight:700}
+table.data.num td,table.data.num th{font-variant-numeric:tabular-nums}
+
+/* ---- Figure credits ---- */
+figcaption .credit{display:block;margin-top:2px}
+figcaption .src{font-size:.8rem}
+
+/* ---- Footer ---- */
+footer,#ds-content footer{color:var(--muted);font-size:.85rem;border-top:1px solid var(--border);padding-top:1.25rem;margin-top:3.5rem}
+footer p{text-align:left}
+
+/* ---- Index page: volume cards, how-to ---- */
+.vol{display:block;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1rem 1.15rem;margin:0 0 .7rem;text-decoration:none;color:inherit}
+.vol:hover{border-color:var(--accent)}
+.vol .row{display:flex;justify-content:space-between;align-items:baseline;gap:1rem}
+.vol .row > *{min-width:0}
+.vol h3{margin:0;font-size:1.05rem}
+.vol .w{flex:none;font:600 .75rem/1 var(--font-mono);color:var(--accent);border:1px solid var(--border);border-radius:20px;padding:.3rem .6rem;white-space:nowrap}
+.vol p{margin:.4rem 0 0;color:var(--muted);font-size:.92rem;text-align:left}
+.howto{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1rem 1.15rem;color:var(--muted);font-size:.93rem}
+.howto ol{margin:.4rem 0 0;padding-left:1.2rem}
+.howto li+li{margin-top:.3rem}
+
+/* ==========================================================================
+   QUESTION BANK components (.qb-*) — scenario questions with per-distractor
+   explanations, Maarek-style. Used by 08-question-bank.html.
+   ========================================================================== */
+.qb-q{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.5rem 1.75rem;margin:2rem 0}
+.qb-q:first-of-type{margin-top:1.5rem}
+.qb-head{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;margin-bottom:1rem}
+.qb-num{font:700 .85rem var(--font-mono);color:var(--accent);letter-spacing:.04em}
+.qb-pill{font-size:.75rem;font-weight:700;padding:.2rem .7rem;border-radius:20px;border:1px solid var(--border);white-space:nowrap}
+.qb-pill.easy{color:#3fb96b;border-color:#3fb96b}
+.qb-pill.med{color:var(--accent);border-color:var(--accent)}
+.qb-pill.hard{color:#e5484d;border-color:#e5484d}
+.qb-scenario{margin:0 0 1rem}
+.qb-ask{font-weight:700;font-size:1.06rem;margin:1.25rem 0 .75rem}
+.qb-opts{margin:.5rem 0 0;padding-left:1.4rem}
+.qb-opts li{margin-bottom:.55rem}
+.qb-opts li::marker{font-weight:700;color:var(--accent)}
+.qb-q details.pq{margin-top:1.25rem;border-top:1px solid var(--border);padding-top:1rem}
+.qb-verdict{display:inline-block;background:var(--accent);color:#000;font-weight:700;padding:.3rem .9rem;border-radius:8px;margin:.25rem 0 1rem;font-size:.95rem}
+.qb-why{border-left:3px solid #3fb96b;padding-left:1rem;margin:0 0 1rem}
+.qb-why strong{color:#3fb96b}
+.qb-distractors{margin:.5rem 0 0;padding-left:1.4rem}
+.qb-distractors li{margin-bottom:.6rem;color:var(--muted)}
+.qb-distractors li::marker{font-weight:700;color:#e57373}
+/* Decision flowcharts inside the question bank */
+.qb-fig{margin:1.5rem 0}
+.qb-flow{display:flex;flex-direction:column;align-items:stretch;gap:.3rem;margin:1rem 0;max-width:640px}
+.qb-node{background:var(--code-bg);border:1px solid var(--border);border-radius:8px;padding:.7rem 1rem;text-align:center;font-size:.95rem}
+.qb-node.decision{border-color:var(--accent);border-style:dashed}
+.qb-node.outcome{border-color:#3fb96b}
+.qb-arrow{text-align:center;color:var(--muted);font-size:1.25rem;line-height:1.1}
+.qb-branch{font-size:.78rem;color:var(--accent);font-weight:700;margin-left:.5rem}
+/* Domain section headers inside the question bank */
+.qb-domain-note{color:var(--muted);margin:-.5rem 0 1.5rem}
+
+/* ---- Print: question bank prints clean on light paper ---- */
+@media print{
+  .qb-q{break-inside:avoid;background:#fff;border:1px solid #ccc}
+  .qb-verdict{background:#eee;color:#000;border:1px solid #999}
+  .qb-node{background:#f5f5f5;border-color:#999}
+}
+
+/* Strategy cards in the question bank */
+.qb-strategy{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.25rem 1.5rem;margin:1.25rem 0}
+.qb-strategy>h3:first-child{margin-top:0}
+.qb-node.result{border-color:#3fb96b}
+
+</style>
+</head>
+<body>
+<div id="ds-sidebar-root"></div>
+<main id="ds-content"><div class="ds-content-inner">
+<h1 id="aip-c01-crash-course">AIP-C01 Crash Course</h1>
+<style>
+details.cc-qa{border:1px solid var(--line,#2a2a2a);border-radius:8px;padding:.6rem .9rem;margin:.5rem 0;background:var(--card,#141414)}
+details.cc-qa summary{cursor:pointer;font-weight:600;list-style:none}
+details.cc-qa summary::-webkit-details-marker{display:none}
+details.cc-qa summary::before{content:"+ ";color:var(--accent,#4da3ff)}
+details.cc-qa[open] summary::before{content:"\2212 "}
+details.cc-qa blockquote{margin:.5rem 0 0;border-left:3px solid var(--accent,#4da3ff);padding-left:.8rem;color:inherit}
+</style>
+
+<p>The entire exam in one volume. No stories, no padding. Decision rules, numbers, traps, and 30 rapid-fire questions. If you know everything here cold, you can answer every item on the exam.</p>
+<h2 id="the-exam-in-30-seconds">The exam in 30 seconds</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Fact</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Questions</td>
+<td>75 (65 scored, 10 unscored)</td>
+</tr>
+<tr>
+<td>Time</td>
+<td>180 minutes (about 2.4 min per question)</td>
+</tr>
+<tr>
+<td>Pass</td>
+<td>750 out of 1000</td>
+</tr>
+<tr>
+<td>Cost</td>
+<td>$300</td>
+</tr>
+<tr>
+<td>Formats</td>
+<td>Multiple choice + multiple response (select 2/3, no partial credit)</td>
+</tr>
+<tr>
+<td>D1 Foundation Models, Data &amp; Compliance</td>
+<td>31% (about 20 scored)</td>
+</tr>
+<tr>
+<td>D2 Implementation &amp; Integration</td>
+<td>26% (about 17 scored)</td>
+</tr>
+<tr>
+<td>D3 AI Safety, Security &amp; Governance</td>
+<td>20% (about 13 scored)</td>
+</tr>
+<tr>
+<td>D4 Operational Efficiency &amp; Optimization</td>
+<td>12% (about 8 scored)</td>
+</tr>
+<tr>
+<td>D5 Testing, Validation &amp; Troubleshooting</td>
+<td>11% (about 7 scored)</td>
+</tr>
+</tbody>
+</table></div>
+<p>How the exam asks: multi-paragraph company scenario, 2 to 4 hard requirements, 4 long plausible options. Three options are good ideas in the wrong context. One satisfies every constraint at once. Find the killer constraint first, then compare survivors.</p>
+<h2 id="how-to-use-this-volume">How to use this volume</h2>
+<ul>
+<li><strong>10 minutes:</strong> read "The exam in 30 seconds," the numbers sheet, and the top 30 traps.</li>
+<li><strong>1 hour:</strong> add the per-domain decision rules (the "if X, pick Y" lines).</li>
+<li><strong>1 day:</strong> do all 30 rapid-fire questions, then re-read every rule you missed.</li>
+</ul>
+<h2 id="d1-rapid-fire">D1 rapid-fire: Foundation Models, Data &amp; Compliance (31%)</h2>
+<p>The approach ladder, cheapest first. <strong>Prompt engineering</strong> (new format, tone, few-shot; no new knowledge). <strong>RAG / Knowledge Bases</strong> (private, current, or cited facts the model was not trained on). <strong>Agents</strong> (actions: API calls, databases, multi-step tool use). <strong>Fine-tuning</strong> (new behavior baked into weights; labeled data in S3; needs Provisioned Throughput to serve).</p>
+<p><strong>If the stem says X, pick Y:</strong></p>
+<ul>
+<li>"Facts change over time" or "must cite sources" → RAG (Knowledge Bases), never fine-tuning.</li>
+<li>"New tone, format, style, behavior" → fine-tuning or prompt engineering, never RAG.</li>
+<li>"Take actions," "call APIs," "multi-step with tools" → Bedrock Agents.</li>
+<li>"Unstructured docs (PDF, HTML)" → Knowledge Bases. "Relational data, SQL" → text-to-SQL on RDS. Never embed tables into a vector store.</li>
+<li>"Small dataset" (under ~1M records) → Aurora Serverless with pgvector. "Large" → OpenSearch with HNSW/IVFFlat. "100% recall on small data" → exact flat search.</li>
+<li>"Throttled at peak, needs resilience" → cross-region inference profiles. Dead under data-residency constraints.</li>
+<li>"Repeated long system prompt" → prompt caching. "Unique interactions" → streaming or a smaller model, never caching.</li>
+<li>"Users report slow responses" → streaming (ConverseStream) for perceived latency. Provisioned Throughput fixes capacity, not first-token speed.</li>
+<li>"Cheapest for nightly 200k summaries" → batch inference (S3 in, S3 out, ~50% off, hours of latency). Never for interactive SLAs.</li>
+<li>"Swap models without redeploying" → model ID in AppConfig, read at runtime. CloudFormation changes are deployments.</li>
+</ul>
+<p><strong>Must know cold:</strong></p>
+<ul>
+<li>Converse is the unified API (system, messages, inferenceConfig, toolConfig, guardrailConfig). InvokeModel is provider-specific raw bodies, and the ONLY path for embeddings.</li>
+<li><code>guardrailConfig</code> on Converse needs guardrail ID + version; <code>trace=enabled</code> shows what fired.</li>
+<li><code>stopReason</code> values: <code>end_turn</code> (done), <code>max_tokens</code> (truncated), <code>guardrail_intervened</code> (blocked).</li>
+<li>Same embedding model at ingestion and query time, or retrieval silently breaks.</li>
+<li>Fine-tuned and custom models REQUIRE Provisioned Throughput. A base model ID will not serve them.</li>
+<li>Temperature 0 = deterministic. Temperature/topP both set = they interact; pick one.</li>
+<li>Token math: cost = (input tokens + output tokens) x price. Estimate before the call for proactive alerts.</li>
+</ul>
+<h2 id="d2-rapid-fire">D2 rapid-fire: Implementation &amp; Integration (26%)</h2>
+<p><strong>If the stem says X, pick Y:</strong></p>
+<ul>
+<li>"Reasoning with tools, decides steps itself" → Bedrock Agents (action groups + Lambda).</li>
+<li>"Fixed sequence, same steps every time" → Bedrock Flows (deterministic prompt chains). Agents are overhead here.</li>
+<li>"Which agent call shape" → <code>invoke_agent</code> with <code>agentId</code> + <code>agentAliasId</code> (alias PROD, never DRAFT) + <code>sessionId</code> (the memory key) + <code>inputText</code>. Returns a stream you iterate.</li>
+<li>"Agent ignores the new action group" → PrepareAgent was skipped. Config changes need prepare before DRAFT picks them up.</li>
+<li>"Lambda action function" → parameters arrive as a LIST of {name, value} dicts. Response needs the exact nested shape with <code>messageVersion</code>, <code>actionGroup</code>, <code>function</code> echoed back and the result string in <code>responseBody.TEXT.body</code>.</li>
+<li>"Task runs longer than 15 minutes" → Lambda is dead. Go async or Step Functions.</li>
+<li>"Wait for human approval, takes hours" → Step Functions Standard with wait-for-callback. Express caps at 5 minutes and cannot pause.</li>
+<li>"Process 10k S3 objects in a tight window" → Step Functions Distributed Map (up to 10k parallel children).</li>
+<li>"Stable URL, auth, throttling in front of Bedrock" → API Gateway + Lambda. Direct SDK calls win only when latency is king and no auth is needed.</li>
+<li>"Versioned prompt templates reused across flows" → Prompt Management. Not AppConfig, not DynamoDB.</li>
+<li>"Quality gate before deploy" → Bedrock evaluation jobs in the pipeline; deploy only above the score threshold.</li>
+</ul>
+<p><strong>Must know cold:</strong></p>
+<ul>
+<li>Agent trace: <code>enableTrace=true</code> on <code>invoke_agent</code> returns the reasoning trace. The exam's transparency answer.</li>
+<li>Multi-agent pattern: supervisor routes to collaborators, per-KB IAM filtering for tenant isolation.</li>
+<li>Async single request: <code>start_async_invoke</code>, poll or events, result to S3. Not streaming (streaming is tokens to a waiting user).</li>
+<li>API Gateway REST APIs support Lambda response streaming. HTTP APIs do not.</li>
+<li>Session memory is keyed by <code>sessionId</code>. Reusing one ID across users leaks conversations.</li>
+</ul>
+<h2 id="d3-rapid-fire">D3 rapid-fire: AI Safety, Security &amp; Governance (20%)</h2>
+<p>Guardrails can: content filters (hate, violence, sexual, misconduct), denied topics, word filters, PII detection and redaction, grounding check (hallucination), contextual grounding check, automated reasoning checks. Guardrails can NEVER do: IAM, tenant isolation, data extraction, token quotas, billing.</p>
+<p><strong>If the stem says X, pick Y:</strong></p>
+<ul>
+<li>"Notify on bad content but do NOT block" → guardrail in <strong>detect mode</strong>, notifications on intervene metrics. Block mode violates the constraint.</li>
+<li>"Block specific topics in and out" → denied topics policy on both inputs and outputs.</li>
+<li>"Find PII in S3 data" → Macie. "Detect PII in live text" → Comprehend. "Redact at call time" → Guardrails. The pipeline is Comprehend detect, redact, then Bedrock.</li>
+<li>"Who called which model and when" → CloudTrail. "Which prompts were blocked and why" → CloudWatch custom metrics. "Full prompt and response text" → model invocation logging (opt-in) to S3.</li>
+<li>"Restrict models across the whole org" → SCPs (require approved guardrail on InvokeModel). Per-role caps → permissions boundaries. Deploy at scale → StackSets.</li>
+<li>"Bedrock with no public internet" → interface VPC endpoints + Lambda in private subnets. NAT gateway violates the constraint.</li>
+<li>"Customer data must not train models" → the model terms/opt-out. Also: invocation logging data stays in your account.</li>
+<li>"Most mathematically certain that outputs obey policy" → Automated Reasoning checks (2026 feature; formal logic), above plain content filters.</li>
+</ul>
+<p><strong>Must know cold:</strong></p>
+<ul>
+<li>Model eval: programmatic needs ground truth (accuracy, stability, toxicity). LLM-as-judge needs no labels (correctness, faithfulness, fluency). Human eval: last resort, samples only.</li>
+<li>Provider benchmarks never decide your model choice. They are marketing until you run your own eval.</li>
+<li>"Built-in alignment is enough" is always wrong. The deployer owns evaluation and governance.</li>
+</ul>
+<h2 id="d4-rapid-fire">D4 rapid-fire: Optimization (12%)</h2>
+<p>The exam's three adjectives, three different winners. <strong>"Least operational overhead"</strong> → fewest self-managed components (Aurora Serverless, Converse, managed routers). <strong>"Least custom development effort"</strong> → managed features over your Lambda code. <strong>"Most cost-effective"</strong> → token math (smaller model, caching, batch, cascade).</p>
+<p><strong>If the stem says X, pick Y:</strong></p>
+<ul>
+<li>"Throttled at peak" → Provisioned Throughput (reserved capacity; pass the provisioned ARN as modelId). Fine-tuned models need PT, base models can use on-demand.</li>
+<li>"Costs scale with mixed simple/hard queries" → intelligent prompt routing (cascade simple to cheap, escalate hard).</li>
+<li>"Repeated long prefix, cost pressure" → prompt caching (same context block, cache point set right).</li>
+<li>"Nightly bulk, no SLA" → batch inference (~50% off).</li>
+<li>"Route by complexity for cost" → prompt routers. "Route by region for availability" → inference profiles. Never swap them.</li>
+<li>"Users see slow first token" → streaming. Not PT, not caching.</li>
+<li>"Which metric proves the cache works" → cache read hit rate, not total token spend.</li>
+</ul>
+<p><strong>Must know cold:</strong></p>
+<ul>
+<li>PT bought but on-demand still throttles → code passes the base model ID instead of the provisioned ARN.</li>
+<li>Prompt routers have a default fallback model. If the fallback fires too often, the tier boundaries are wrong.</li>
+<li><code>converse()</code> <code>inferenceConfig</code>: <code>maxTokens</code>, <code>temperature</code>, <code>topP</code>, <code>stopSequences</code>. Same shape on InvokeModel? No. InvokeModel takes raw provider JSON.</li>
+</ul>
+<h2 id="d5-rapid-fire">D5 rapid-fire: Testing &amp; Validation (11%)</h2>
+<p><strong>If the stem says X, pick Y:</strong></p>
+<ul>
+<li>"Compare models cheaply at scale" → automatic metrics first (ROUGE, faithfulness), then LLM-as-judge on the survivor, humans on flagged samples only. Never humans-on-everything under a budget.</li>
+<li>"Critical flagged interactions" → A2I (human review loop). Not all traffic.</li>
+<li>"Answers confident but wrong after a re-sync" → check the embedding model version and chunking config. The re-sync is the only change; debug the change.</li>
+<li>"RAG retrieval fails silently" → same embedding model at ingest and query; chunk boundaries did not split key facts; KB sync status is in-sync.</li>
+<li>"AccessDenied on InvokeModel" → check model availability in the region BEFORE debugging IAM.</li>
+<li>"Model ignores new prompt template" → Prompt Management version not published, or AppConfig serving a cached value.</li>
+<li>"Test without production traffic" → model evaluation jobs with a golden dataset; A/B with two aliases; shadow traffic through inference profiles.</li>
+</ul>
+<p><strong>Must know cold:</strong></p>
+<ul>
+<li>Change-point debugging: the broken thing is whatever changed most recently. Debug the delta.</li>
+<li>Eval datasets need labels for programmatic metrics. LLM-as-judge works unlabeled.</li>
+<li><code>max_tokens</code> stopReason on good-looking answers = output was CUT, not finished.</li>
+</ul>
+<h2 id="must-memorize-numbers">Must-memorize numbers</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Number</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Questions / scored / time</td>
+<td>75 / 65 / 180 min</td>
+</tr>
+<tr>
+<td>Pass score</td>
+<td>750 / 1000</td>
+</tr>
+<tr>
+<td>Lambda max duration</td>
+<td>15 minutes</td>
+</tr>
+<tr>
+<td>Step Functions Express max duration</td>
+<td>5 minutes</td>
+</tr>
+<tr>
+<td>Step Functions Distributed Map parallel children</td>
+<td>up to 10,000</td>
+</tr>
+<tr>
+<td>Batch inference discount</td>
+<td>~50% off on-demand</td>
+</tr>
+<tr>
+<td>Domain weights</td>
+<td>D1 31%, D2 26%, D3 20%, D4 12%, D5 11%</td>
+</tr>
+<tr>
+<td>Approximate scored questions per domain</td>
+<td>D1 20, D2 17, D3 13, D4 8, D5 7</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="top-30-traps">Top 30 traps in one line each</h2>
+<ol>
+<li>Lambda waiting, sleeping, or polling past 15 minutes. It dies.</li>
+<li>"No ML team / least effort" means custom builds lose to Bedrock managed features.</li>
+<li>Knowledge bases serve documents. No API calls, no access control, no actions.</li>
+<li>Changing documents or citations = RAG, never fine-tuning.</li>
+<li>Profiles = availability, routers = cost, Provisioned Throughput = reserved capacity.</li>
+<li>Guardrails filter content. Not IAM, not tenant isolation, not token quotas.</li>
+<li>Cheapest option that meets every requirement wins. Premium extras without a stated need lose.</li>
+<li>CloudFormation = deployment. Runtime switching without redeploys = AppConfig.</li>
+<li>ElastiCache is ephemeral caching. Durable vectors live in a vector store.</li>
+<li>Cross-region failover violates data-residency constraints. Check the region first.</li>
+<li>Converse + Prompt Management + guardrailConfig is rejected. ApplyGuardrail standalone works around it.</li>
+<li>Agent config changed but behavior did not = PrepareAgent was skipped.</li>
+<li>AccessDenied on InvokeModel = check regional model availability before IAM.</li>
+<li>Converse is text generation. Embeddings go through InvokeModel.</li>
+<li>Built-in safety never transfers evaluation and governance to AWS. You own it.</li>
+<li>"Proactively" kills every reactive option. Count tokens before the call, not after.</li>
+<li>Fabricated features: real service + invented capability (S3 nodes in Flows, Guardrail token quotas).</li>
+<li>CloudTrail = who called what. CloudWatch = what was blocked and why. Invocation logging = prompt and response text.</li>
+<li>Express = 5-min cap, no callbacks. Hours-long human waits need Standard.</li>
+<li>Tight window over many objects = Distributed Map. Sequential dies on the clock.</li>
+<li>Small vectors = Aurora pgvector. Large = OpenSearch. 100% recall small = exact flat search.</li>
+<li>Slow first token = streaming. PT fixes capacity, caching needs repeated prefixes.</li>
+<li>Prompt caching needs repeated long prefixes. Unique traffic makes it dead weight.</li>
+<li>Bought PT but throttled = code passes the base model ID, not the provisioned ARN.</li>
+<li>"Notify but do not block" = guardrail detect mode.</li>
+<li>SCPs = org-wide max permissions. Permissions boundaries = per-role caps.</li>
+<li>Macie finds PII in S3. Comprehend detects in text. Guardrails redact at call time.</li>
+<li>No public internet = interface VPC endpoints. NAT gateway violates the constraint.</li>
+<li>Eval ladder: automatic metrics, then LLM-as-judge, humans on top candidates only.</li>
+<li>Adjectives decide: least custom dev = managed features. Least overhead = fewest components. Most cost-effective = token math.</li>
+</ol>
+<h2 id="30-rapid-fire-questions">30 rapid-fire questions</h2>
+<p>One question, one-line why. Cover every answer wrong and you are not ready.</p>
+<details class="cc-qa"><summary>CC01. Stem says &quot;answer over contracts that update monthly, with citations.&quot; Why is fine-tuning wrong?</summary><p>Fine-tuning bakes static weights. Monthly changes need re-training, and it cannot cite sources. RAG reads current docs.</p></details>
+
+<details class="cc-qa"><summary>CC02. Stem says &quot;same model, 90% of prompts share a 4k system prompt.&quot; Which cost lever?</summary><p>Prompt caching. Repeated long prefixes are its only precondition, and this stem hands it to you.</p></details>
+
+<details class="cc-qa"><summary>CC03. `invoke_agent` must use the PROD deployment, not the draft. Which parameter?</summary><p><code>agentAliasId</code> set to the PROD alias. Agent ID alone routes to DRAFT, the classic bug.</p></details>
+
+<details class="cc-qa"><summary>CC04. Lambda action function receives `event[&quot;parameters&quot;]`. What shape?</summary><p>A list of {"name":..., "value":...} dicts. Treating it as a plain dict drops every parameter.</p></details>
+
+<details class="cc-qa"><summary>CC05. Approval step takes 4 hours. Express or Standard?</summary><p>Standard with wait-for-callback. Express caps at 5 minutes and cannot pause for hours.</p></details>
+
+<details class="cc-qa"><summary>CC06. &quot;Block bullying topics&quot; vs &quot;notify on bullying but never block.&quot; What changes?</summary><p>Guardrail mode: block vs detect. Same filter, different mode. The constraint is about the mode, not the feature.</p></details>
+
+<details class="cc-qa"><summary>CC07. Compliance wants full prompt and response text for blocked calls. CloudTrail or invocation logging?</summary><p>Invocation logging (opt-in) to S3. CloudTrail records API metadata only, never token content.</p></details>
+
+<details class="cc-qa"><summary>CC08. PT purchased, on-demand still throttles, code uses base model ID. Fix?</summary><p>Pass the provisioned model ARN as <code>modelId</code>. Idle capacity means the code never routes to it.</p></details>
+
+<details class="cc-qa"><summary>CC09. `stopReason` is `max_tokens` on a clean-looking answer. What happened?</summary><p>Output was cut mid-generation, not finished. Raise maxTokens or shorten the input.</p></details>
+
+<details class="cc-qa"><summary>CC10. &quot;Proactively alert before token limits.&quot; Alarm on InputTokenCount or pre-call counting?</summary><p>Pre-call counting. The metric fires after the call runs, which is reactive, and the stem demands proactive.</p></details>
+
+<details class="cc-qa"><summary>CC11. Small vector dataset, 100% recall required. HNSW or exact flat search?</summary><p>Exact flat search. HNSW is approximate by design; small data makes the exact scan affordable.</p></details>
+
+<details class="cc-qa"><summary>CC12. Embeddings for the knowledge base. Converse or InvokeModel?</summary><p>InvokeModel. Converse is text generation only and has no embedding path.</p></details>
+
+<details class="cc-qa"><summary>CC13. Agent ignores the new action group. First check?</summary><p>PrepareAgent was skipped. Config changes need prepare before the draft behavior changes.</p></details>
+
+<details class="cc-qa"><summary>CC14. &quot;Cheapest nightly 500k-row classification.&quot; Realtime Converse or batch?</summary><p>Batch inference (S3 in, S3 out, ~50% off). Realtime pricing for offline bulk is the expensive default.</p></details>
+
+<details class="cc-qa"><summary>CC15. Two days to compare two models. Humans read everything or automatic ladder?</summary><p>Automatic metrics first, LLM-as-judge on the survivor, humans on flagged samples. The ladder climbs in cost order.</p></details>
+
+<details class="cc-qa"><summary>CC16. Cross-region inference profile proposed, stem requires data residency in one region. Verdict?</summary><p>Reject it. Profiles route across regions, which violates the residency constraint. Check the region first.</p></details>
+
+<details class="cc-qa"><summary>CC17. &quot;Least operational overhead&quot; for vectors on 200k records. Self-managed OpenSearch or Aurora pgvector?</summary><p>Aurora Serverless with pgvector. The adjective picks fewest self-managed components, not best raw scale.</p></details>
+
+<details class="cc-qa"><summary>CC18. Answers &quot;confident but wrong&quot; after a knowledge base re-sync. Debug generation or retrieval?</summary><p>Retrieval. The re-sync is the only change: check embedding model version and chunking config drift.</p></details>
+
+<details class="cc-qa"><summary>CC19. PII must be found across all S3 buckets. Comprehend or Macie?</summary><p>Macie. Comprehend scans text you send it; Macie discovers PII across S3 at rest.</p></details>
+
+<details class="cc-qa"><summary>CC20. Bedrock in a VPC with no public internet. NAT gateway or interface endpoints?</summary><p>Interface VPC endpoints. A NAT gateway gives public internet access, violating the explicit constraint.</p></details>
+
+<details class="cc-qa"><summary>CC21. Stem offers &quot;Flows with an S3 copy node&quot; as an option. Trust it?</summary><p>No. Fabricated feature. Flows have no S3 copy action node. Verify node and feature lists before picking.</p></details>
+
+<details class="cc-qa"><summary>CC22. Streaming vs Provisioned Throughput for &quot;users report slow responses&quot; on unique queries. Pick?</summary><p>Streaming (ConverseStream). PT fixes capacity, caching needs repeated prefixes, neither speeds first token.</p></details>
+
+<details class="cc-qa"><summary>CC23. `sessionId` reused across all users of a support bot. Risk?</summary><p>Conversation memory leaks between users. Session ID is the memory key; one ID per user session.</p></details>
+
+<details class="cc-qa"><summary>CC24. Restrict model access across 40 AWS accounts. SCP or per-account IAM roles?</summary><p>SCPs via Organizations (deployed with StackSets). Per-account roles are 40 chances to drift.</p></details>
+
+<details class="cc-qa"><summary>CC25. Fine-tuned model served with on-demand pricing. Works?</summary><p>No. Fine-tuned and custom models require Provisioned Throughput. The base model ID will not serve them.</p></details>
+
+<details class="cc-qa"><summary>CC26. &quot;Most mathematically certain outputs obey policy.&quot; Content filter or Automated Reasoning checks?</summary><p>Automated Reasoning checks. Formal logic verification, a stronger guarantee than classifier filters (2026 feature).</p></details>
+
+<details class="cc-qa"><summary>CC27. Prompt Management + guardrailConfig on Converse is rejected. Workaround?</summary><p>ApplyGuardrail as a standalone call. The combination is rejected, so split the calls.</p></details>
+
+<details class="cc-qa"><summary>CC28. Temperature 0.7 AND topP 0.9 both set. Fine?</summary><p>They interact. Set one, not both, or sampling behavior gets unpredictable.</p></details>
+
+<details class="cc-qa"><summary>CC29. Distributed Map vs 10k sequential Lambda invocations for a 30-minute window. Pick?</summary><p>Distributed Map, up to 10k parallel children. Sequential dies on the clock; plain Lambda fan-out dies on orchestration overhead.</p></details>
+
+<details class="cc-qa"><summary>CC30. Evaluator asks which model is better for YOUR prompts. Provider benchmark or your own eval job?</summary><p>Your own eval job. Provider benchmarks never measure your data, your prompts, or your quality bar.</p></details>
+<p>You finished the crash course. Missed more than five? Re-read the decision rules for the domains you missed, then do the full 200-question bank. Missed five or fewer? You are ready to schedule.</p>
+</div></main>
+<script>
+window.DS_TRACK = "aipc01";
+window.DS_MANIFEST = [
+  { file: "index.html", label: "Start · Exam Overview & Study Map" },
+  { file: "volume-d1-foundation-models.html", label: "D1 · Foundation Models, Data & Compliance (31%)" },
+  { file: "volume-d2-implementation-integration.html", label: "D2 · Implementation & Integration (26%)" },
+  { file: "volume-d3-safety-security-governance.html", label: "D3 · Safety, Security & Governance (20%)" },
+  { file: "volume-d4-optimization.html", label: "D4 · Optimization (12%)" },
+  { file: "volume-d5-testing-validation.html", label: "D5 · Testing & Validation (11%)" },
+  { file: "volume-maarek-labs.html", label: "Hands-On Labs" },
+  { file: "volume-question-bank.html", label: "Question Bank" },
+  { file: "volume-question-patterns.html", label: "Question Patterns · How AWS Asks" },
+  { file: "volume-system-design.html", label: "System Design Guide" },
+  { file: "volume-crash-course.html", label: "Crash Course · One-Volume Sprint" },
+  { file: "volume-appendix-gaps.html", label: "Appendix · Coverage Gaps" }
+];
+</script>
+<script>
+/* ==== DS runtime — do not edit per-file (build.py inlines) ==== */
+/* ==========================================================================
+   DS — Canonical Design System behavior (shared across study-guide tracks)
+   Inlined verbatim into a single <script> before </body> in each volume.
+   Zero per-page config except an optional manifest override:
+     <script>window.DS_TRACK = "aipc01";
+             window.DS_MANIFEST = [{file:"index.html",label:"…"}, …];<\/script>
+   must appear BEFORE this script to take effect.
+   Auto-builds: sidebar nav (from the page's own h2/h3), scroll-spy, search
+   filter, completion checkmarks (localStorage), reading progress bar,
+   prev/next footer, copy buttons, .pq reveal toggles, keyboard shortcuts,
+   mobile drawer. Leaves <details>/<summary> fully native.
+   ========================================================================== */
+(function () {
+  "use strict";
+
+  var TRACK = window.DS_TRACK || "ccarp";
+
+  /* Official CCAR-P volume order (hardcoded). Each entry: filename + short
+     human label shown in the prev/next footer. */
+  var MANIFEST = window.DS_MANIFEST || [
+    { file: "index.html",                                label: "Start · Exam Overview & Study Map" },
+    { file: "01-solution-design-architecture.html",      label: "D1 · Solution Design & Architecture (17%)" },
+    { file: "02-models-prompting-context.html",          label: "D2 · Models, Prompting & Context (13%)" },
+    { file: "03-integration.html",                       label: "D3 · Integration (19%)" },
+    { file: "04-evaluation-testing-optimization.html",   label: "D4 · Evaluation, Testing & Optimization (16%)" },
+    { file: "05-governance-safety-risk.html",             label: "D5 · Governance, Safety & Risk (14%)" },
+    { file: "06-stakeholder-communication-lifecycle.html", label: "D6 · Stakeholder Communication & Lifecycle (14%)" },
+    { file: "07-developer-productivity-enablement.html", label: "D7 · Developer Productivity & Enablement (7%)" },
+    { file: "08-question-bank.html",                     label: "Question Bank" },
+    { file: "09-system-design-guide.html",               label: "System Design Guide" }
+  ];
+
+  document.documentElement.classList.add("ds-js");
+
+  var main = document.getElementById("ds-content");
+  if (!main) return; // minimal DOM contract not met — bail quietly
+
+  var sidebarRoot = document.getElementById("ds-sidebar-root");
+
+  /* ---------- helpers ---------- */
+
+  function slugify(s) {
+    var out = String(s).toLowerCase().trim()
+      .replace(/[^a-z0-9\u00c0-\u024f]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .replace(/-+/g, "-");
+    return out || "section";
+  }
+
+  function storeGet(k) { try { return window.localStorage.getItem(k); } catch (e) { return null; } }
+  function storeSet(k, v) { try { window.localStorage.setItem(k, v); } catch (e) { /* private mode */ } }
+  function storeDel(k) { try { window.localStorage.removeItem(k); } catch (e) { /* private mode */ } }
+
+  var pageFile = (window.location.pathname.split("/").pop() || "index.html")
+    .split("?")[0].split("#")[0] || "index.html";
+
+  /* ---------- 1. Ensure every h2/h3 has a unique slugified id ---------- */
+
+  var usedIds = {};
+  var headings = Array.prototype.slice.call(main.querySelectorAll("h2, h3"));
+  headings.forEach(function (h) {
+    var base = (h.id && h.id.trim()) ? h.id.trim() : slugify(h.textContent);
+    var id = base, n = 1;
+    while (usedIds[id]) { n += 1; id = base + "-" + n; }
+    usedIds[id] = true;
+    h.id = id;
+    if (h.tagName === "H2") h.setAttribute("tabindex", "-1"); // focus target for Alt+Arrow jumps
+  });
+
+  /* ---------- 2. Wrap main content at 72ch ---------- */
+
+  var inner = document.createElement("div");
+  inner.className = "ds-content-inner";
+  while (main.firstChild) inner.appendChild(main.firstChild);
+  main.appendChild(inner);
+
+  /* ---------- 3. Global chrome: skip link, progress bar, hamburger, overlay ---------- */
+
+  var skip = document.createElement("a");
+  skip.href = "#ds-content";
+  skip.className = "ds-skip";
+  skip.textContent = "Skip to content";
+  document.body.insertBefore(skip, document.body.firstChild);
+
+  var progress = document.createElement("div");
+  progress.id = "ds-progress";
+  progress.setAttribute("aria-hidden", "true");
+  document.body.appendChild(progress);
+
+  var burger = document.createElement("button");
+  burger.id = "ds-hamburger";
+  burger.type = "button";
+  burger.setAttribute("aria-label", "Open navigation menu");
+  burger.setAttribute("aria-expanded", "false");
+  burger.setAttribute("aria-controls", "ds-sidebar-root");
+  burger.innerHTML = "<span></span><span></span><span></span>";
+  document.body.appendChild(burger);
+
+  var overlay = document.createElement("div");
+  overlay.id = "ds-overlay";
+  overlay.setAttribute("aria-hidden", "true");
+  document.body.appendChild(overlay);
+
+  function drawerOpen() {
+    document.body.classList.add("ds-drawer-open");
+    burger.setAttribute("aria-expanded", "true");
+    burger.setAttribute("aria-label", "Close navigation menu");
+  }
+  function drawerClose() {
+    document.body.classList.remove("ds-drawer-open");
+    burger.setAttribute("aria-expanded", "false");
+    burger.setAttribute("aria-label", "Open navigation menu");
+  }
+  burger.addEventListener("click", function () {
+    if (document.body.classList.contains("ds-drawer-open")) drawerClose();
+    else drawerOpen();
+  });
+  overlay.addEventListener("click", drawerClose);
+
+  /* ---------- 4. Build the sidebar from h2/h3 ---------- */
+
+  var linkById = {};
+  var sectionIds = []; // h2 ids in order (for Alt+Arrow jumps)
+  var searchInput = null;
+
+  if (sidebarRoot) {
+    sidebarRoot.setAttribute("role", "navigation");
+    sidebarRoot.setAttribute("aria-label", "Study guide sections");
+
+    var sideInner = document.createElement("div");
+    sideInner.className = "ds-side-inner";
+
+    var searchWrap = document.createElement("div");
+    searchWrap.className = "ds-side-search";
+    var searchLabel = document.createElement("label");
+    searchLabel.className = "ds-visually-hidden";
+    searchLabel.setAttribute("for", "ds-nav-search");
+    searchLabel.textContent = "Filter sections";
+    searchInput = document.createElement("input");
+    searchInput.id = "ds-nav-search";
+    searchInput.type = "search";
+    searchInput.setAttribute("placeholder", "Filter sections…  ( / )");
+    searchInput.setAttribute("aria-label", "Filter sections");
+    searchWrap.appendChild(searchLabel);
+    searchWrap.appendChild(searchInput);
+    sideInner.appendChild(searchWrap);
+
+    var nav = document.createElement("ul");
+    nav.className = "ds-nav";
+    sideInner.appendChild(nav);
+    sidebarRoot.appendChild(sideInner);
+
+    function makeDone(title, id) {
+      var key = TRACK + ":" + pageFile + ":done:" + id;
+      var wrap = document.createElement("span");
+      wrap.className = "ds-done-wrap";
+      var cb = document.createElement("input");
+      cb.type = "checkbox";
+      cb.className = "ds-done";
+      cb.setAttribute("aria-label", "Mark section complete: " + title);
+      cb.checked = storeGet(key) === "1";
+      cb.addEventListener("change", function () {
+        if (cb.checked) storeSet(key, "1"); else storeDel(key);
+        var row = cb.closest(".ds-nav-row");
+        if (row) row.classList.toggle("done", cb.checked);
+      });
+      wrap.appendChild(cb);
+      if (cb.checked) {
+        // row class applied after row exists (see below via queue)
+        setTimeout(function () {
+          var row = cb.closest(".ds-nav-row");
+          if (row) row.classList.add("done");
+        }, 0);
+      }
+      return wrap;
+    }
+
+    var subCounter = 0;
+    var currentSub = null;
+
+    headings.forEach(function (h) {
+      var title = h.textContent.trim();
+      if (h.tagName === "H2") {
+        sectionIds.push(h.id);
+        subCounter += 1;
+        var subId = "ds-sub-" + subCounter;
+
+        var chapterLi = document.createElement("li");
+        chapterLi.className = "ds-nav-chapter";
+
+        var row = document.createElement("div");
+        row.className = "ds-nav-row";
+
+        var toggle = document.createElement("button");
+        toggle.type = "button";
+        toggle.className = "ds-nav-toggle";
+        toggle.textContent = "▾";
+        toggle.setAttribute("aria-expanded", "true");
+        toggle.setAttribute("aria-controls", subId);
+        toggle.setAttribute("aria-label", "Collapse section: " + title);
+
+        var sub = document.createElement("ul");
+        sub.className = "ds-nav-sub";
+        sub.id = subId;
+
+        toggle.addEventListener("click", function () {
+          var open = toggle.getAttribute("aria-expanded") === "true";
+          toggle.setAttribute("aria-expanded", String(!open));
+          toggle.setAttribute("aria-label", (open ? "Expand" : "Collapse") + " section: " + title);
+          toggle.textContent = open ? "▸" : "▾";
+          sub.hidden = open;
+        });
+
+        var a = document.createElement("a");
+        a.className = "ds-nav-link";
+        a.href = "#" + h.id;
+        a.textContent = title;
+        a.setAttribute("data-target", h.id);
+
+        row.appendChild(toggle);
+        row.appendChild(a);
+        row.appendChild(makeDone(title, h.id));
+        chapterLi.appendChild(row);
+        chapterLi.appendChild(sub);
+        nav.appendChild(chapterLi);
+        currentSub = sub;
+        linkById[h.id] = a;
+      } else if (currentSub) { // h3 → subsection of the current chapter
+        var sli = document.createElement("li");
+        sli.className = "ds-nav-row ds-nav-subrow";
+        var sa = document.createElement("a");
+        sa.className = "ds-nav-link";
+        sa.href = "#" + h.id;
+        sa.textContent = title;
+        sa.setAttribute("data-target", h.id);
+        sli.appendChild(sa);
+        sli.appendChild(makeDone(title, h.id));
+        currentSub.appendChild(sli);
+        linkById[h.id] = sa;
+      }
+    });
+
+    // Live filter
+    searchInput.addEventListener("input", function () {
+      var q = searchInput.value.trim().toLowerCase();
+      Array.prototype.forEach.call(nav.querySelectorAll(".ds-nav-chapter"), function (ch) {
+        var chapterLink = ch.querySelector(".ds-nav-row > .ds-nav-link");
+        var chapterText = chapterLink ? chapterLink.textContent.toLowerCase() : "";
+        var subMatch = false;
+        Array.prototype.forEach.call(ch.querySelectorAll(".ds-nav-subrow"), function (sr) {
+          var m = !q || sr.textContent.toLowerCase().indexOf(q) !== -1;
+          sr.style.display = m ? "" : "none";
+          if (m) subMatch = true;
+        });
+        ch.style.display = (!q || chapterText.indexOf(q) !== -1 || subMatch) ? "" : "none";
+      });
+    });
+
+    // Close the mobile drawer when a nav link is tapped
+    nav.addEventListener("click", function (e) {
+      var a = e.target && e.target.closest ? e.target.closest("a.ds-nav-link") : null;
+      if (a && window.innerWidth <= 900) drawerClose();
+    });
+
+    /* ---------- 5. Scroll-spy ---------- */
+
+    var spyLinks = headings
+      .map(function (h) { return linkById[h.id]; })
+      .filter(function (a) { return !!a; });
+
+    function setActive(id) {
+      spyLinks.forEach(function (a) {
+        a.classList.toggle("active", a.getAttribute("data-target") === id);
+      });
+    }
+
+    if ("IntersectionObserver" in window && headings.length) {
+      var spy = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) setActive(entry.target.id);
+        });
+      }, { rootMargin: "-30% 0px -60% 0px", threshold: 0 });
+      headings.forEach(function (h) { spy.observe(h); });
+    }
+  }
+
+  /* ---------- 6. Reading progress bar ---------- */
+
+  var ticking = false;
+  function updateProgress() {
+    var el = document.documentElement;
+    var max = el.scrollHeight - el.clientHeight;
+    var pct = max > 0 ? (el.scrollTop / max) * 100 : 0;
+    progress.style.width = pct.toFixed(2) + "%";
+    ticking = false;
+  }
+  window.addEventListener("scroll", function () {
+    if (!ticking) { ticking = true; window.requestAnimationFrame(updateProgress); }
+  }, { passive: true });
+  window.addEventListener("resize", updateProgress);
+  updateProgress();
+
+  /* ---------- 7. Prev / next volume footer (from manifest) ---------- */
+
+  function manifestIndex() {
+    for (var i = 0; i < MANIFEST.length; i++) {
+      if (MANIFEST[i].file === pageFile) return i;
+    }
+    return -1;
+  }
+  var mi = manifestIndex();
+  if (mi !== -1) {
+    var pn = document.createElement("nav");
+    pn.className = "ds-prevnext";
+    pn.setAttribute("aria-label", "Previous and next volume");
+
+    function pnLink(entry, cls, kicker) {
+      var a = document.createElement("a");
+      a.className = cls;
+      a.href = entry.file;
+      var k = document.createElement("span");
+      k.className = "ds-pn-kicker";
+      k.textContent = kicker;
+      var lab = document.createElement("span");
+      lab.className = "ds-pn-label";
+      lab.textContent = entry.label;
+      a.appendChild(k);
+      a.appendChild(lab);
+      return a;
+    }
+
+    if (mi > 0) pn.appendChild(pnLink(MANIFEST[mi - 1], "ds-prev", "Previous"));
+    else {
+      var spacer = document.createElement("span");
+      spacer.className = "ds-prev-empty";
+      spacer.setAttribute("aria-hidden", "true");
+      pn.appendChild(spacer);
+    }
+    if (mi < MANIFEST.length - 1) pn.appendChild(pnLink(MANIFEST[mi + 1], "ds-next", "Next"));
+
+    inner.appendChild(pn);
+  }
+  // If the current page is not in the manifest, no prev/next is rendered.
+
+  /* ---------- 8. Copy buttons on every <pre> ---------- */
+
+  Array.prototype.forEach.call(inner.querySelectorAll("pre"), function (pre) {
+    if (pre.querySelector(".ds-copy-btn")) return; // don't double-inject
+    var btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "ds-copy-btn";
+    btn.textContent = "Copy";
+    btn.setAttribute("aria-label", "Copy code block");
+    btn.addEventListener("click", function () {
+      var code = pre.querySelector("code");
+      var text = code ? code.innerText : pre.innerText;
+      function feedback(ok) {
+        btn.textContent = ok ? "Copied" : "Failed";
+        window.setTimeout(function () { btn.textContent = "Copy"; }, 1500);
+      }
+      function legacyCopy() {
+        var ta = document.createElement("textarea");
+        ta.value = text;
+        ta.style.position = "fixed";
+        ta.style.opacity = "0";
+        document.body.appendChild(ta);
+        ta.select();
+        var ok = false;
+        try { ok = document.execCommand("copy"); } catch (e) { /* ignore */ }
+        document.body.removeChild(ta);
+        feedback(ok);
+      }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(
+          function () { feedback(true); },
+          function () { legacyCopy(); }
+        );
+      } else {
+        legacyCopy();
+      }
+    });
+    pre.appendChild(btn);
+  });
+
+  /* ---------- 9. .pq reveal toggles (details/summary left native) ---------- */
+
+  Array.prototype.forEach.call(inner.querySelectorAll(".pq"), function (pq) {
+    if (pq.tagName === "DETAILS") return; // native disclosure — do not touch
+    var btn = pq.querySelector(".pq-reveal");
+    var ans = pq.querySelector(".pq-answer");
+    if (!btn || !ans || btn.tagName !== "BUTTON") return;
+    btn.setAttribute("aria-expanded", "false");
+    btn.setAttribute("aria-controls", ans.id || "");
+    btn.addEventListener("click", function () {
+      var open = ans.classList.toggle("open");
+      btn.setAttribute("aria-expanded", String(open));
+      btn.textContent = open ? "Hide answer" : "Reveal answer";
+    });
+  });
+
+  /* ---------- 10. Keyboard shortcuts ---------- */
+
+  document.addEventListener("keydown", function (e) {
+    var active = document.activeElement;
+    var inField = active && /^(INPUT|TEXTAREA|SELECT)$/.test(active.tagName);
+
+    // "/" focuses the sidebar search (when not typing somewhere)
+    if (e.key === "/" && !inField && !e.ctrlKey && !e.metaKey && !e.altKey && searchInput) {
+      e.preventDefault();
+      if (window.innerWidth <= 900 && !document.body.classList.contains("ds-drawer-open")) drawerOpen();
+      searchInput.focus();
+      return;
+    }
+
+    // Esc closes the mobile drawer; otherwise clears the search
+    if (e.key === "Escape") {
+      if (document.body.classList.contains("ds-drawer-open")) {
+        drawerClose();
+        burger.focus();
+      } else if (active === searchInput) {
+        searchInput.value = "";
+        searchInput.dispatchEvent(new Event("input", { bubbles: true }));
+        searchInput.blur();
+      }
+      return;
+    }
+
+    // Alt+ArrowDown / Alt+ArrowUp jump to next/previous h2 section
+    if (e.altKey && (e.key === "ArrowDown" || e.key === "ArrowUp") && sectionIds.length) {
+      e.preventDefault();
+      var dir = e.key === "ArrowDown" ? 1 : -1;
+      var y = window.scrollY + 120;
+      var idx = -1;
+      sectionIds.forEach(function (id, i) {
+        var el = document.getElementById(id);
+        if (el && el.getBoundingClientRect().top + window.scrollY <= y) idx = i;
+      });
+      var target = idx + dir;
+      if (target < 0) target = 0;
+      if (target >= sectionIds.length) target = sectionIds.length - 1;
+      var tel = document.getElementById(sectionIds[target]);
+      if (tel) {
+        tel.scrollIntoView({ behavior: "smooth", block: "start" });
+        if (tel.focus) tel.focus({ preventScroll: true });
+      }
+    }
+  });
+})();
+
+</script>
+</body>
+</html>
