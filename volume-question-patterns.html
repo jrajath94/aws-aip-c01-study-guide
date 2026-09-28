@@ -994,7 +994,7 @@ footer p{text-align:left}
 <li><strong>Matching:</strong> match the most distinctive pair first to shrink the field, then the next. Never match by vague association; each pair has one precise mechanism.</li>
 <li><strong>Time management:</strong> 75 questions in 180 minutes is about 2.4 minutes per question. If an option violates a constraint on sight, eliminate and move on.</li>
 </ul>
-<h2 id="trap-catalog-the-15-traps-aws-reuses">Trap catalog: the 15 traps AWS reuses</h2>
+<h2 id="trap-catalog-the-30-traps-aws-reuses">Trap catalog: the 30 traps AWS reuses</h2>
 <ol>
 <li><strong>Lambda 15-minute timeout:</strong> any option with a Lambda waiting, sleeping, or polling for a long task dies. Go async or use Step Functions.</li>
 <li><strong>Custom code vs managed:</strong> when the stem says no ML team or least effort, custom builds lose to Bedrock managed features.</li>
@@ -1011,6 +1011,21 @@ footer p{text-align:left}
 <li><strong>Misleading AccessDenied:</strong> check model availability in the region before debugging permissions.</li>
 <li><strong>Converse for embeddings:</strong> Converse is text generation only. Embeddings go through InvokeModel.</li>
 <li><strong>Built-in safety is enough:</strong> alignment and guardrails never transfer the deployer's responsibility to evaluate and govern.</li>
+<li><strong>Proactive vs reactive:</strong> when the stem says "proactively," delete every option that reacts after failure. Token-limit alerts mean counting tokens before the call, not alarming after.</li>
+<li><strong>Fabricated features:</strong> a real service paired with a capability it does not have. S3 nodes inside Bedrock Flows, Guardrails enforcing token quotas, cross-region Guardrail replication. If an option sounds slightly off, check the feature exists.</li>
+<li><strong>Audit trail three-way:</strong> "who called which model" is CloudTrail. "Which prompts were blocked and why" is CloudWatch custom metrics. Prompt and response content is model invocation logging (opt-in). CloudTrail never carries prompts.</li>
+<li><strong>Step Functions Standard vs Express:</strong> Express caps at 5 minutes and cannot wait for callbacks (human approval, long pauses). High concurrency never beats a duration or pause constraint. Standard for callbacks.</li>
+<li><strong>Sequential vs parallel:</strong> tight windows over many objects mean Step Functions Distributed Map (up to 10k parallel children over S3). Lambda-only dies on the 15-minute timeout; sequential dies on the clock.</li>
+<li><strong>Vector store by scale:</strong> small data goes to Aurora Serverless with pgvector (least overhead). Medium to large goes to OpenSearch with IVFFlat or HNSW. Small data with a 100 percent recall requirement needs flat exact search, not HNSW.</li>
+<li><strong>Perceived vs real latency:</strong> "users report slow responses" with unique interactions means streaming (ConverseStream), not Provisioned Throughput and not prompt caching. PT fixes capacity, caching needs repeated prefixes. Neither speeds first token.</li>
+<li><strong>Prompt caching precondition:</strong> caching pays only with repeated long prefixes (same system prompt, same large context). Unique interactions make it dead weight. Check the repetition sentence before picking it.</li>
+<li><strong>Provisioned throughput misuse:</strong> idle PT plus throttled on-demand calls means the code passes a base model ID instead of the provisioned model ARN. Fine-tuned models cannot use on-demand at all; they require PT.</li>
+<li><strong>Guardrail detect vs block:</strong> "notify if bad content appears but do not block" is detect mode, not a blocking filter. Detection without blocking is a mode choice, not a different service.</li>
+<li><strong>SCP vs permissions boundary:</strong> org-wide model restrictions are SCPs (maximum permissions, including requiring an approved guardrail on InvokeModel). Permissions boundaries cap individual roles. One mechanism alone is the trap; the full answer pairs them.</li>
+<li><strong>PII pipeline order:</strong> Macie finds PII in S3 at rest. Comprehend detects PII in text inline. Guardrails redact or block at invocation time. The pipeline is Comprehend detect, then redact, then Bedrock. Macie never scans logs; Guardrails never discover.</li>
+<li><strong>No public internet:</strong> interface VPC endpoints for Bedrock plus Lambda in private subnets. A NAT gateway option violates the constraint even when everything else looks right.</li>
+<li><strong>Evaluation ladder:</strong> automatic metrics screen cheaply, LLM-as-judge scores quality at scale, humans review only the top candidates. A2I is for flagged critical interactions, not all traffic. Provider benchmarks alone never decide.</li>
+<li><strong>Adjective precision:</strong> "least custom development effort" favors managed features over Lambda code. "Least operational overhead" favors the fewest self-managed components. "Most cost-effective" favors token math (smaller model, caching, batch). Three adjectives, three different winners. Read the exact word.</li>
 </ol>
 <h2 id="D1">D1: Develop and Optimize GenAI Apps with Bedrock</h2>
 <p>Q1</p>
@@ -2156,8 +2171,10 @@ footer p{text-align:left}
 <p>Every AWS service fact used in these questions was verified against official AWS documentation on <strong>2026-09-28</strong>. Facts that could not be verified against a live official source are marked UNVERIFIED below and are not asserted as fact in any question.</p>
 <ul>
 <li>Verified: Converse API fields (modelId, messages, system, inferenceConfig, toolConfig, guardrailConfig, additionalModelRequestFields, outputConfig, promptVariables), content blocks (toolUse, toolResult, cachePoint, guardContent, reasoningContent), and the restriction that Prompt Management prompts cannot combine with inline guardrailConfig, inferenceConfig, system, or toolConfig.</li>
-<li>Verified: Guardrail control types: content filters (Hate, Insults, Sexual, Violence, Misconduct, Prompt Attack; LOW/MEDIUM/HIGH), denied topics, word filters (exact match), sensitive-information filters (block/mask PII plus custom regex), contextual grounding, Automated Reasoning checks; ApplyGuardrail as a standalone model-agnostic API.</li>
-<li>Verified: Knowledge base chunking strategies (default, fixed-size, hierarchical, semantic, none, plus custom Lambda), set per data source at creation; Titan Text Embeddings v2 dimensions (256/512/1024); Cohere Embed English and Multilingual (1024); vector store options including OpenSearch Serverless, Aurora PostgreSQL, Pinecone, Redis, MongoDB Atlas, Neptune Analytics, OpenSearch managed cluster, S3 Vectors.</li>
+<li>Verified: Guardrail control types: content filters (Hate, Insults, Sexual, Violence, Misconduct, Prompt Attack; LOW/MEDIUM/HIGH), denied topics, word filters (exact match), sensitive-information filters (block/mask PII plus custom regex), contextual grounding, Automated Reasoning checks.
+  ApplyGuardrail as a standalone model-agnostic API.</li>
+<li>Verified: Knowledge base chunking strategies (default, fixed-size, hierarchical, semantic, none, plus custom Lambda), set per data source at creation; Titan Text Embeddings v2 dimensions (256/512/1024); Cohere Embed English and Multilingual (1024).
+  Vector store options including OpenSearch Serverless, Aurora PostgreSQL, Pinecone, Redis, MongoDB Atlas, Neptune Analytics, OpenSearch managed cluster, S3 Vectors.</li>
 <li>Verified: Cross-region inference via geographic profiles (us., eu. prefixes) and global profiles; prefix as data-residency decision; some models requiring inference profile IDs; inference profiles not supporting Provisioned Throughput.</li>
 <li>Verified: Batch inference via CreateModelInvocationJob with S3 input/output; no tool calling or structured output in batch; no prompt caching in batch; provisioned models excluded from batch.</li>
 <li>Verified: Prompt caching via cachePoint after stable content, per-model minimum token thresholds, TTL options (default 5 min, up to 1 hour), cacheReadInputTokens and cacheWriteInputTokens usage fields.</li>
@@ -2186,6 +2203,7 @@ window.DS_MANIFEST = [
   { file: "volume-question-bank.html", label: "Question Bank" },
   { file: "volume-question-patterns.html", label: "Question Patterns · How AWS Asks" },
   { file: "volume-system-design.html", label: "System Design Guide" },
+  { file: "volume-crash-course.html", label: "Crash Course · One-Volume Sprint" },
   { file: "volume-appendix-gaps.html", label: "Appendix · Coverage Gaps" }
 ];
 </script>
