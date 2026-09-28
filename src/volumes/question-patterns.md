@@ -54,7 +54,7 @@ Distractors name real services doing the wrong job: Guardrails for extraction, k
 - **Matching:** match the most distinctive pair first to shrink the field, then the next. Never match by vague association; each pair has one precise mechanism.
 - **Time management:** 75 questions in 180 minutes is about 2.4 minutes per question. If an option violates a constraint on sight, eliminate and move on.
 
-## Trap catalog: the 15 traps AWS reuses {#trap-catalog-the-15-traps-aws-reuses}
+## Trap catalog: the 30 traps AWS reuses {#trap-catalog-the-30-traps-aws-reuses}
 
 1. **Lambda 15-minute timeout:** any option with a Lambda waiting, sleeping, or polling for a long task dies. Go async or use Step Functions.
 2. **Custom code vs managed:** when the stem says no ML team or least effort, custom builds lose to Bedrock managed features.
@@ -71,6 +71,21 @@ Distractors name real services doing the wrong job: Guardrails for extraction, k
 13. **Misleading AccessDenied:** check model availability in the region before debugging permissions.
 14. **Converse for embeddings:** Converse is text generation only. Embeddings go through InvokeModel.
 15. **Built-in safety is enough:** alignment and guardrails never transfer the deployer's responsibility to evaluate and govern.
+16. **Proactive vs reactive:** when the stem says "proactively," delete every option that reacts after failure. Token-limit alerts mean counting tokens before the call, not alarming after.
+17. **Fabricated features:** a real service paired with a capability it does not have. S3 nodes inside Bedrock Flows, Guardrails enforcing token quotas, cross-region Guardrail replication. If an option sounds slightly off, check the feature exists.
+18. **Audit trail three-way:** "who called which model" is CloudTrail. "Which prompts were blocked and why" is CloudWatch custom metrics. Prompt and response content is model invocation logging (opt-in). CloudTrail never carries prompts.
+19. **Step Functions Standard vs Express:** Express caps at 5 minutes and cannot wait for callbacks (human approval, long pauses). High concurrency never beats a duration or pause constraint. Standard for callbacks.
+20. **Sequential vs parallel:** tight windows over many objects mean Step Functions Distributed Map (up to 10k parallel children over S3). Lambda-only dies on the 15-minute timeout; sequential dies on the clock.
+21. **Vector store by scale:** small data goes to Aurora Serverless with pgvector (least overhead). Medium to large goes to OpenSearch with IVFFlat or HNSW. Small data with a 100 percent recall requirement needs flat exact search, not HNSW.
+22. **Perceived vs real latency:** "users report slow responses" with unique interactions means streaming (ConverseStream), not Provisioned Throughput and not prompt caching. PT fixes capacity, caching needs repeated prefixes. Neither speeds first token.
+23. **Prompt caching precondition:** caching pays only with repeated long prefixes (same system prompt, same large context). Unique interactions make it dead weight. Check the repetition sentence before picking it.
+24. **Provisioned throughput misuse:** idle PT plus throttled on-demand calls means the code passes a base model ID instead of the provisioned model ARN. Fine-tuned models cannot use on-demand at all; they require PT.
+25. **Guardrail detect vs block:** "notify if bad content appears but do not block" is detect mode, not a blocking filter. Detection without blocking is a mode choice, not a different service.
+26. **SCP vs permissions boundary:** org-wide model restrictions are SCPs (maximum permissions, including requiring an approved guardrail on InvokeModel). Permissions boundaries cap individual roles. One mechanism alone is the trap; the full answer pairs them.
+27. **PII pipeline order:** Macie finds PII in S3 at rest. Comprehend detects PII in text inline. Guardrails redact or block at invocation time. The pipeline is Comprehend detect, then redact, then Bedrock. Macie never scans logs; Guardrails never discover.
+28. **No public internet:** interface VPC endpoints for Bedrock plus Lambda in private subnets. A NAT gateway option violates the constraint even when everything else looks right.
+29. **Evaluation ladder:** automatic metrics screen cheaply, LLM-as-judge scores quality at scale, humans review only the top candidates. A2I is for flagged critical interactions, not all traffic. Provider benchmarks alone never decide.
+30. **Adjective precision:** "least custom development effort" favors managed features over Lambda code. "Least operational overhead" favors the fewest self-managed components. "Most cost-effective" favors token math (smaller model, caching, batch). Three adjectives, three different winners. Read the exact word.
 
 ## D1: Develop and Optimize GenAI Apps with Bedrock {#D1}
 
@@ -1675,8 +1690,10 @@ Pattern 2: governance is a lifecycle, not a single control. Every wrong option i
 Every AWS service fact used in these questions was verified against official AWS documentation on **2026-09-28**. Facts that could not be verified against a live official source are marked UNVERIFIED below and are not asserted as fact in any question.
 
 - Verified: Converse API fields (modelId, messages, system, inferenceConfig, toolConfig, guardrailConfig, additionalModelRequestFields, outputConfig, promptVariables), content blocks (toolUse, toolResult, cachePoint, guardContent, reasoningContent), and the restriction that Prompt Management prompts cannot combine with inline guardrailConfig, inferenceConfig, system, or toolConfig.
-- Verified: Guardrail control types: content filters (Hate, Insults, Sexual, Violence, Misconduct, Prompt Attack; LOW/MEDIUM/HIGH), denied topics, word filters (exact match), sensitive-information filters (block/mask PII plus custom regex), contextual grounding, Automated Reasoning checks; ApplyGuardrail as a standalone model-agnostic API.
-- Verified: Knowledge base chunking strategies (default, fixed-size, hierarchical, semantic, none, plus custom Lambda), set per data source at creation; Titan Text Embeddings v2 dimensions (256/512/1024); Cohere Embed English and Multilingual (1024); vector store options including OpenSearch Serverless, Aurora PostgreSQL, Pinecone, Redis, MongoDB Atlas, Neptune Analytics, OpenSearch managed cluster, S3 Vectors.
+- Verified: Guardrail control types: content filters (Hate, Insults, Sexual, Violence, Misconduct, Prompt Attack; LOW/MEDIUM/HIGH), denied topics, word filters (exact match), sensitive-information filters (block/mask PII plus custom regex), contextual grounding, Automated Reasoning checks.
+  ApplyGuardrail as a standalone model-agnostic API.
+- Verified: Knowledge base chunking strategies (default, fixed-size, hierarchical, semantic, none, plus custom Lambda), set per data source at creation; Titan Text Embeddings v2 dimensions (256/512/1024); Cohere Embed English and Multilingual (1024).
+  Vector store options including OpenSearch Serverless, Aurora PostgreSQL, Pinecone, Redis, MongoDB Atlas, Neptune Analytics, OpenSearch managed cluster, S3 Vectors.
 - Verified: Cross-region inference via geographic profiles (us., eu. prefixes) and global profiles; prefix as data-residency decision; some models requiring inference profile IDs; inference profiles not supporting Provisioned Throughput.
 - Verified: Batch inference via CreateModelInvocationJob with S3 input/output; no tool calling or structured output in batch; no prompt caching in batch; provisioned models excluded from batch.
 - Verified: Prompt caching via cachePoint after stable content, per-model minimum token thresholds, TTL options (default 5 min, up to 1 hour), cacheReadInputTokens and cacheWriteInputTokens usage fields.
