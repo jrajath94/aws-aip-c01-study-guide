@@ -71,8 +71,8 @@ def render_pq(params, inner, warnings, fname):
     lines = inner.split("\n")
     # meta badges line: *A · B · C* — optional trailing ref
     meta_html = ""
-    if lines and re.match(r"^\*([^*]+)\*\s*(—\s*(.+))?$", lines[0].strip()):
-        m = re.match(r"^\*([^*]+)\*\s*(?:—\s*(.+))?$", lines[0].strip())
+    if lines and re.match(r"^\*([^*]+)\*\s*(?:[—,]\s*(.+))?$", lines[0].strip()):
+        m = re.match(r"^\*([^*]+)\*\s*(?:[—,]\s*(.+))?$", lines[0].strip())
         chips = "".join('<span class="constraint">%s</span>' % ihtml.escape(c.strip())
                         for c in m.group(1).split("·"))
         ref = ' <span class="pq-ref">%s</span>' % ihtml.escape(m.group(2)) if m.group(2) else ""
@@ -97,7 +97,11 @@ def render_pq(params, inner, warnings, fname):
         text = text.replace("<!-- correct -->", "").strip()
         note_parts, j = [], i + 1
         while j < n and (lines[j].startswith("  ") or lines[j].strip().startswith(">")):
-            note_parts.append(re.sub(r"^\s*>?\s?", "", lines[j]).strip())
+            nl = lines[j]
+            if "<!-- correct -->" in nl:  # marker may sit on a wrapped continuation line
+                is_c = True
+                nl = nl.replace("<!-- correct -->", "")
+            note_parts.append(re.sub(r"^\s*>?\s?", "", nl).strip())
             j += 1
         opts.append((letter, text, " ".join(note_parts), is_c))
         i = j
@@ -223,12 +227,11 @@ def render_chunks(chunks, manifest, warnings, fname):
                 out.append(render_vol(params, inner))
             elif name in SIMPLE_DIVS:
                 cls = SIMPLE_DIVS[name]
-                extra = ""
-                if name == "details":
-                    extra = "<summary>%s</summary>" % ihtml.escape(params or "More")
-                    cls = ""
-                out.append('<div class="%s">%s%s</div>' % (cls, extra, md(inner)) if cls
-                           else '<details>%s%s</details>' % (extra, md(inner)))
+                out.append('<div class="%s">%s</div>' % (cls, md(inner)))
+            elif name == "details":
+                summary = ihtml.escape(params or "More")
+                out.append('<details class="cc-qa"><summary>%s</summary>%s</details>'
+                           % (summary, md(inner)))
             else:
                 warnings.append("%s: unknown directive :::%s" % (fname, name))
                 out.append(md(inner))
@@ -315,6 +318,18 @@ def main():
     print("warnings:", len(warnings))
     for w in warnings[:30]:
         print("  WARN:", w)
+    # Humanizer QA gate: hard-fail on em dashes, banned AI tells,
+    # throat-clearing openers (src/humanize_check.py). Long-sentence
+    # and code-language findings are reported as warnings, not failures.
+    # Code standard: Python/boto3 only; CLI only where the exam tests it.
+    import subprocess
+    gate = os.path.join(os.path.dirname(os.path.abspath(__file__)), "humanize_check.py")
+    r = subprocess.run([sys.executable, gate], capture_output=True, text=True)
+    print(r.stdout.strip().split("\n")[-1])
+    if r.returncode != 0:
+        print("HUMANIZER GATE FAILED - fix the FAIL lines above, then rebuild.")
+        sys.exit(1)
+    print("humanizer gate: PASS")
     print("done: %d pages" % len(built))
 
 if __name__ == "__main__":
