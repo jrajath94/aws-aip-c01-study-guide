@@ -1,3 +1,1175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<style>
+/* Validation-assembly: bridge + equation rendering (additive, 2026-09-29). */
+.chapter-bridge,.topic-bridge,.u-bridge{border-left:3px solid #8a8f98;border-left:3px solid color-mix(in srgb,currentColor 40%,transparent);padding:.55rem .9rem;margin:1.1rem 0;background:rgba(128,128,128,.08);border-radius:0 6px 6px 0}
+.next-chapter,.u-next,.u-goto{font-weight:650;margin:1.15rem 0}
+.display-eq,.eq{text-align:center;margin:1.15rem 0;font-size:1.12em;line-height:1.7}
+.eq-where{margin:.1rem 0 1rem 1.25rem;font-size:.93em;opacity:.92}
+.eq-worked{border:1px solid #8a8f98;border:1px solid color-mix(in srgb,currentColor 30%,transparent);border-radius:8px;padding:.7rem 1rem;margin:1rem 0;background:rgba(128,128,128,.06)}
+</style>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>AIP-C01 Domain 4: Operational Efficiency and Optimization</title>
+<style>
+/* ==== DS canonical design system — do not edit per-file (build.py inlines) ==== */
+/* ==========================================================================
+   DS — Canonical Design System (shared across all study-guide tracks)
+   Pitch-black dark mode. Charis SIL primary reading font (OFL, bundled
+   offline in assets/fonts/). Nav chrome uses a clean system sans.
+   No gradients, no decorative filler. Inlined verbatim into <head>.
+   ========================================================================== */
+
+:root {
+  --bg: #000000;
+  --surface: #0d0d0d;
+  --border: #262626;
+  --text: #ececec;
+  --muted: #a8a8a8;
+  --accent: #f0b429;   /* warm amber — key highlights, active states, takeaways */
+  --link: #6cb2ff;
+  --code-bg: #111111;
+  --font-sans: "Charis SIL", "Atkinson Hyperlegible", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-chrome: -apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+/* ---------- Offline fonts (shipped in assets/fonts/, zero webfont dependency) ---------- */
+
+@font-face {
+  font-family: "Atkinson Hyperlegible";
+  src: url("assets/fonts/AtkinsonHyperlegible-Regular.ttf") format("truetype");
+  font-weight: 400; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: "Atkinson Hyperlegible";
+  src: url("assets/fonts/AtkinsonHyperlegible-Italic.ttf") format("truetype");
+  font-weight: 400; font-style: italic; font-display: swap;
+}
+@font-face {
+  font-family: "Atkinson Hyperlegible";
+  src: url("assets/fonts/AtkinsonHyperlegible-Bold.ttf") format("truetype");
+  font-weight: 700; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: "Atkinson Hyperlegible";
+  src: url("assets/fonts/AtkinsonHyperlegible-BoldItalic.ttf") format("truetype");
+  font-weight: 700; font-style: italic; font-display: swap;
+}
+@font-face {
+  font-family: "Inter";
+  src: url("assets/fonts/Inter-var.ttf") format("truetype");
+  font-weight: 100 900; font-style: normal; font-display: swap;
+}
+/* ---------- Charis SIL (OFL, SIL International) — primary reading font ----------
+   woff2 latin + latin-ext subsets, bundled in assets/fonts/, zero CDN. */
+@font-face {
+  font-family: "Charis SIL";
+  src: url("assets/fonts/CharisSIL-latin-normal-400.woff2") format("woff2");
+  font-weight: 400; font-style: normal; font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Charis SIL";
+  src: url("assets/fonts/CharisSIL-latin-ext-normal-400.woff2") format("woff2");
+  font-weight: 400; font-style: normal; font-display: swap;
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: "Charis SIL";
+  src: url("assets/fonts/CharisSIL-latin-italic-400.woff2") format("woff2");
+  font-weight: 400; font-style: italic; font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Charis SIL";
+  src: url("assets/fonts/CharisSIL-latin-ext-italic-400.woff2") format("woff2");
+  font-weight: 400; font-style: italic; font-display: swap;
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: "Charis SIL";
+  src: url("assets/fonts/CharisSIL-latin-normal-700.woff2") format("woff2");
+  font-weight: 700; font-style: normal; font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Charis SIL";
+  src: url("assets/fonts/CharisSIL-latin-ext-normal-700.woff2") format("woff2");
+  font-weight: 700; font-style: normal; font-display: swap;
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: "Charis SIL";
+  src: url("assets/fonts/CharisSIL-latin-italic-700.woff2") format("woff2");
+  font-weight: 700; font-style: italic; font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Charis SIL";
+  src: url("assets/fonts/CharisSIL-latin-ext-italic-700.woff2") format("woff2");
+  font-weight: 700; font-style: italic; font-display: swap;
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+
+/* ---------- Base ---------- */
+
+* { box-sizing: border-box; }
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 1rem;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: 17px;
+  line-height: 1.75;
+  overflow-x: clip;          /* no horizontal scroll at any width; clip keeps sticky working */
+}
+
+a { color: var(--link); }
+a:hover { text-decoration-thickness: 2px; }
+
+/* Visible focus for keyboard users — never remove without replacement. */
+:focus-visible {
+  outline: 2px solid var(--link);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+.ds-visually-hidden {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Skip link: hidden until focused. */
+.ds-skip {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 200;
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.6rem 1rem;
+  text-decoration: none;
+  font-weight: 600;
+}
+.ds-skip:focus { left: 0.75rem; top: 0.75rem; }
+
+/* ---------- Typography ---------- */
+
+h1, h2, h3, h4 {
+  font-style: normal;        /* headings always roman, never italic */
+  line-height: 1.35;
+  margin: 2.2rem 0 1rem;
+  color: var(--text);
+}
+h1 { font-size: 2rem;    font-weight: 700; }
+h2 { font-size: 1.5rem;  font-weight: 700; border-bottom: 1px solid var(--border); padding-bottom: 0.4rem; }
+h3 { font-size: 1.25rem; font-weight: 600; }
+h4 { font-size: 1.1rem;  font-weight: 600; }
+
+p { text-align: justify; margin: 1rem 0; overflow-wrap: break-word; }
+li { overflow-wrap: break-word; }
+ul, ol { padding-left: 1.6rem; }
+li { margin: 0.35rem 0; }
+
+blockquote {
+  margin: 1.5rem 0;
+  padding: 0.5rem 1.25rem;
+  border-left: 2px solid var(--border);
+  color: var(--muted);
+}
+blockquote p { text-align: left; }
+
+hr { border: 0; border-top: 1px solid var(--border); margin: 2.5rem 0; }
+
+code, kbd, samp {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+}
+p code, li code, td code, th code, figcaption code {
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.1em 0.35em;
+  overflow-wrap: anywhere;   /* long tokens (ARNs, model IDs) break rather than overflow the column */
+}
+
+/* ---------- Reading progress bar ---------- */
+
+#ds-progress {
+  position: fixed;
+  top: 0; left: 0;
+  height: 3px;
+  width: 0%;
+  background: var(--accent);
+  z-index: 100;
+  pointer-events: none;
+}
+
+/* ---------- Sidebar ---------- */
+
+#ds-sidebar-root {
+  flex: 0 0 300px;
+  width: 300px;
+  height: 100vh;
+  position: sticky;
+  top: 0;
+  overflow-y: auto;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  z-index: 60;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+.ds-side-inner {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  padding-bottom: 2rem;
+}
+
+.ds-side-search {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--surface);
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid var(--border);
+}
+.ds-side-search input {
+  width: 100%;
+  font-family: inherit;
+  font-size: 0.9rem;
+  color: var(--text);
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+}
+.ds-side-search input::placeholder { color: var(--muted); }
+
+.ds-nav {
+  list-style: none;
+  margin: 0;
+  padding: 0.5rem 0;
+}
+
+.ds-nav-row {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding-right: 0.6rem;
+}
+
+.ds-nav-toggle {
+  flex: 0 0 auto;
+  background: none;
+  border: 0;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 0.7rem;
+  line-height: 1;
+  padding: 0.55rem 0.3rem 0.55rem 1rem;
+  font-family: inherit;
+}
+.ds-nav-toggle:hover { color: var(--accent); }
+
+.ds-nav-link {
+  flex: 1 1 auto;
+  display: block;
+  min-width: 0;
+  padding: 0.45rem 0.25rem 0.45rem 0.4rem;
+  padding-left: 1.25rem;
+  margin-left: -0.55rem;      /* align text under toggle glyph */
+  color: var(--text);
+  text-decoration: none;
+  font-size: 0.92rem;
+  line-height: 1.45;
+  border-left: 2px solid transparent;
+}
+.ds-nav-link:hover { color: #ffffff; background: rgba(255, 255, 255, 0.04); }
+.ds-nav-link.active {
+  color: var(--accent);
+  border-left-color: var(--accent);
+  font-weight: 600;
+}
+
+.ds-nav-sub { list-style: none; margin: 0; padding: 0; }
+.ds-nav-subrow .ds-nav-link {
+  padding-left: 2.6rem;
+  margin-left: 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+.ds-nav-subrow .ds-nav-link:hover { color: var(--text); }
+.ds-nav-subrow .ds-nav-link.active { color: var(--accent); }
+
+.ds-done-wrap { flex: 0 0 auto; display: inline-flex; align-items: center; }
+.ds-done {
+  width: 1rem; height: 1rem;
+  margin: 0;
+  cursor: pointer;
+  accent-color: var(--accent);
+}
+.ds-nav-row.done .ds-nav-link {
+  color: var(--muted);
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+}
+
+/* ---------- Main content ---------- */
+
+#ds-content {
+  flex: 1 1 auto;
+  min-width: 0;               /* lets flex child shrink; prevents overflow */
+  overflow-wrap: break-word;   /* long unbroken strings (ARNs, URLs) break instead of spilling */
+  padding: 2.5rem 2rem 4rem;
+}
+.ds-content-inner {
+  max-width: 72ch;
+  margin: 0 auto;
+}
+
+/* ---------- Hamburger / drawer (mobile) ---------- */
+
+#ds-hamburger {
+  display: none;
+  position: fixed;
+  top: 0.75rem; left: 0.75rem;
+  z-index: 90;
+  width: 2.75rem; height: 2.75rem;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+}
+#ds-hamburger span {
+  display: block;
+  width: 1.25rem; height: 2px;
+  background: var(--text);
+}
+
+#ds-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  background: rgba(0, 0, 0, 0.6);
+}
+
+@media (max-width: 900px) {
+  body { display: block; }
+
+  #ds-hamburger { display: inline-flex; }
+
+  #ds-sidebar-root {
+    position: fixed;
+    left: 0; top: 0;
+    flex: none;
+    width: min(320px, 85vw);
+    transform: translateX(-105%);
+    transition: transform 0.25s ease;
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.6);
+  }
+  body.ds-drawer-open #ds-sidebar-root { transform: translateX(0); }
+  body.ds-drawer-open #ds-overlay { display: block; }
+
+  #ds-content { padding: 4.25rem 1.25rem 3rem; }
+}
+
+/* ---------- Learning components ---------- */
+
+/* "How the exam asks" callout */
+.exam-ask {
+  background: var(--surface);
+  border-left: 3px solid var(--accent);
+  border-radius: 0 6px 6px 0;
+  padding: 1rem 1.25rem;
+  margin: 1.5rem 0;
+}
+.exam-ask::before {
+  content: "HOW THE EXAM ASKS";
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--accent);
+  margin-bottom: 0.5rem;
+}
+.exam-ask p:first-of-type { margin-top: 0; }
+.exam-ask p:last-child { margin-bottom: 0; }
+
+/* Key-takeaway box */
+.takeaway {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: 6px;
+  padding: 1rem 1.25rem;
+  margin: 1.5rem 0;
+}
+.takeaway::before {
+  content: "KEY TAKEAWAY";
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--accent);
+  margin-bottom: 0.5rem;
+}
+.takeaway p:first-of-type { margin-top: 0; }
+.takeaway p:last-child { margin-bottom: 0; }
+
+/* Practice-question widget (click-to-reveal) */
+.pq {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  padding: 1.25rem;
+  margin: 1.5rem 0;
+}
+.pq-question { font-weight: 600; margin-top: 0; text-align: left; }
+.pq-reveal {
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  background: transparent;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  border-radius: 6px;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+}
+.pq-reveal:hover { background: rgba(240, 180, 41, 0.1); }
+/* Answer hidden only when JS is present — no-JS readers see the answer. */
+html.ds-js .pq-answer { display: none; }
+html.ds-js .pq-answer.open { display: block; }
+.pq-answer {
+  margin-top: 1rem;
+  border-top: 1px solid var(--border);
+  padding-top: 1rem;
+}
+.pq-answer p { text-align: left; }
+.pq-options { list-style: none; padding-left: 0; }
+.pq-option { padding: 0.4rem 0 0.4rem 0.85rem; margin: 0.5rem 0; }
+.pq-option.correct { border-left: 2px solid var(--accent); font-weight: 600; }
+.pq-option.wrong { border-left: 2px solid var(--border); color: var(--muted); }
+.pq-option .pq-note { display: block; font-weight: 400; color: var(--muted); font-size: 0.9rem; }
+.pq-answer .correct { color: var(--accent); font-weight: 700; }
+.pq-answer .wrong { color: var(--text); font-weight: 600; }
+.pq-meta { margin: 0 0 0.5rem; display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center; }
+.pq-ref { color: var(--muted); font-size: 0.82rem; font-weight: 400; }
+
+/* details/summary Q&A left functional, styled to match .pq */
+details {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  padding: 1rem 1.25rem;
+  margin: 1.5rem 0;
+}
+details > summary {
+  cursor: pointer;
+  font-weight: 600;
+  text-align: left;
+}
+details > summary::marker { color: var(--accent); }
+details.pq { padding: 1.25rem; }
+details.pq > summary {
+  display: inline-block;
+  font-size: 0.9rem;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  border-radius: 6px;
+  padding: 0.5rem 1rem;
+  list-style: none;
+}
+details.pq > summary::-webkit-details-marker { display: none; }
+details.pq > summary:hover { background: rgba(240, 180, 41, 0.1); }
+details.pq > .pq-answer {
+  display: block;             /* native disclosure, always functional */
+  margin-top: 1rem;
+  border-top: 1px solid var(--border);
+  padding-top: 1rem;
+}
+
+/* Copy button injected into code blocks */
+pre {
+  position: relative;
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 1rem;
+  overflow-x: auto;
+  font-family: var(--font-mono);
+  font-size: 0.88rem;
+  line-height: 1.6;
+  margin: 1.5rem 0;
+}
+pre code { background: none; border: 0; padding: 0; white-space: pre; }
+.ds-copy-btn {
+  position: absolute;
+  top: 0.5rem; right: 0.5rem;
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--muted);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 0.3rem 0.65rem;
+  cursor: pointer;
+}
+.ds-copy-btn:hover { color: var(--text); border-color: var(--muted); }
+
+/* Numbered how-to-read diagram walkthrough */
+.diagram-walkthrough ol {
+  list-style: none;
+  counter-reset: dw;
+  padding: 0;
+  margin: 1.25rem 0;
+}
+.diagram-walkthrough ol > li {
+  counter-increment: dw;
+  position: relative;
+  padding-left: 2.6rem;
+  margin-bottom: 0.85rem;
+  text-align: left;
+}
+.diagram-walkthrough ol > li::before {
+  content: counter(dw);
+  position: absolute;
+  left: 0; top: 0.15rem;
+  width: 1.8rem; height: 1.8rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--accent);
+  border-radius: 50%;
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+/* First-use term styling */
+.def {
+  border-bottom: 1px dotted var(--muted);
+  color: #f5f5f5;
+  cursor: help;
+}
+
+/* Exam-constraint chip */
+.constraint {
+  display: inline-block;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  border-radius: 999px;
+  padding: 0.15rem 0.7rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  margin: 0.15rem 0.25rem 0.15rem 0;
+  white-space: nowrap;
+}
+
+/* Block variant: for long-form constraint boxes (wraps; never clips) */
+.constraint-block {
+  display: block;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: 6px;
+  padding: 0.8rem 1rem;
+  margin: 0.9rem 0;
+  font-size: 0.95rem;
+  color: var(--text);
+}
+.constraint-block strong {
+  color: var(--accent);
+}
+
+/* Tables */
+.table-wrap {
+  overflow-x: auto;
+  margin: 1.5rem 0;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.94rem;
+  line-height: 1.6;
+}
+caption {
+  caption-side: bottom;
+  color: var(--muted);
+  font-size: 0.85rem;
+  padding: 0.6rem;
+  text-align: center;
+}
+th, td {
+  padding: 0.6rem 0.8rem;
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid var(--border);
+}
+thead th {
+  background: var(--surface);
+  font-weight: 700;
+  white-space: nowrap;
+}
+tbody tr:nth-child(odd)  { background: #0d0d0d; }
+tbody tr:nth-child(even) { background: #111111; }
+tbody tr:last-child th,
+tbody tr:last-child td { border-bottom: 0; }
+
+/* Images */
+img {
+  max-width: 100%;
+  height: auto;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+figure { margin: 1.75rem 0; }
+figure.fig-light img { background: #ffffff; padding: 1.1rem; border-radius: 12px; }
+figcaption {
+  color: var(--muted);
+  font-size: 0.85rem;
+  line-height: 1.6;
+  margin-top: 0.6rem;
+  text-align: center;
+}
+
+/* Prev / next volume footer */
+.ds-prevnext {
+  display: flex;
+  justify-content: space-between;
+  align-items: stretch;
+  gap: 1rem;
+  margin: 3.5rem 0 1rem;
+  border-top: 1px solid var(--border);
+  padding-top: 1.75rem;
+}
+.ds-prevnext a {
+  display: block;
+  flex: 1 1 0;
+  min-width: 0;               /* flex item must shrink below label width on narrow screens */
+  max-width: 48%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.9rem 1.2rem;
+  color: var(--text);
+  text-decoration: none;
+}
+.ds-prevnext a:hover { border-color: var(--accent); }
+.ds-prevnext .ds-next { text-align: right; }
+.ds-prev-empty { flex: 1 1 0; min-width: 0; max-width: 48%; }
+.ds-pn-kicker {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 0.25rem;
+}
+.ds-pn-label { font-weight: 600; line-height: 1.5; }
+
+/* ---------- Decision ladder (GenAI decision frameworks) ---------- */
+.ladder {
+  margin: 1.5rem 0;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.rung {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  padding: 0.9rem 1.1rem;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+}
+.rung:last-child { border-bottom: 0; }
+.rung-n {
+  flex: 0 0 auto;
+  width: 1.9rem; height: 1.9rem;
+  display: flex; align-items: center; justify-content: center;
+  border: 1px solid var(--accent);
+  border-radius: 50%;
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+.rung > div { min-width: 0; }
+.rung b { display: block; color: var(--text); }
+.rung span:not(.rung-n) { color: var(--muted); font-size: 0.92rem; }
+
+/* ---------- Print ---------- */
+
+@media print {
+  :root {
+    --bg: #ffffff;
+    --surface: #f5f5f5;
+    --border: #cccccc;
+    --text: #000000;
+    --muted: #444444;
+    --accent: #8a5a00;
+    --link: #0000ee;
+    --code-bg: #f5f5f5;
+  }
+  body {
+    display: block;
+    background: #ffffff;
+    color: #000000;
+    font-size: 12pt;
+    line-height: 1.6;
+  }
+  #ds-sidebar-root,
+  #ds-progress,
+  #ds-hamburger,
+  #ds-overlay,
+  .ds-side-search,
+  .ds-copy-btn,
+  .ds-done-wrap,
+  .ds-skip { display: none !important; }
+  #ds-content { padding: 0; }
+  .ds-content-inner { max-width: none; }
+  p, .pq-question, .pq-answer p, details > summary { text-align: left; }
+
+  /* Expand everything for paper. */
+  details:not([open]) > :not(summary) { display: block !important; }
+  html.ds-js .pq-answer { display: block !important; }
+  .ds-nav-sub { display: block !important; }
+
+  figure, pre, table, .pq, .exam-ask, .takeaway { break-inside: avoid; }
+  h1, h2, h3, h4 { break-after: avoid; }
+
+  pre { white-space: pre-wrap; word-wrap: break-word; }
+  .table-wrap { overflow: visible; border: 0; }
+
+  /* Print-friendly link URLs: external links only. */
+  a[href^="http"]::after {
+    content: " (" attr(href) ")";
+    font-size: 0.85em;
+    color: var(--muted);
+    word-break: break-all;
+  }
+  a { text-decoration: none; }
+}
+
+/* ==========================================================================
+   PART 2 — Content components (sanctioned adapters, shared by all tracks)
+   Added 2026-09-28 during the CCAR-P remediation: every bespoke class that
+   survived the first theming pass is defined here ONCE, in dark-mode tokens,
+   so all volumes render identically. Pitch-black discipline holds: no
+   gradients, no decorative filler, system fonts only.
+   ========================================================================== */
+
+/* ---- Page lede / kicker / eyebrow ---- */
+.lede{color:var(--muted);font-size:1.05rem;margin:0 0 1.5rem;text-align:left}
+.kicker{color:var(--muted);font-size:.94rem;margin:0 0 1.6rem;text-align:left}
+.eyebrow{font:600 .75rem/1.4 var(--font-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin:0 0 .5rem}
+
+/* ---- Top banner / hero card (dark; the navy 03 banner was a defect) ---- */
+.banner{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.625rem 1.75rem;margin:0 0 1.875rem}
+.banner h1{margin-top:0}
+.banner .kicker{font-size:.85rem;color:var(--muted);margin-bottom:6px}
+.banner p{color:var(--muted);text-align:left}
+.hero{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:2rem 2.2rem;margin:0 0 2.5rem}
+.hero h1{margin-top:0}
+.hero p{color:var(--muted)}
+.hero .facts{margin-top:1rem}
+
+/* ---- Fact chips / fact cards ---- */
+.facts{display:flex;flex-wrap:wrap;gap:10px;margin:1rem 0 2rem}
+.facts span{border:1px solid var(--border);background:var(--code-bg);border-radius:6px;padding:5px 12px;font-size:.85rem}
+.fact{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:.7rem .9rem;flex:1 1 150px;min-width:140px}
+.fact b{display:block;font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600}
+.fact span{font-size:1.02rem;font-weight:600}
+
+/* ---- Unit cards ---- */
+.unit{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.625rem 1.75rem;margin:1.625rem 0}
+.unit>h2:first-of-type{margin-top:0}
+.unit-tag{display:block;font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:.25rem}
+
+/* ---- Callout family (info / trap / fix / warn) ---- */
+.callout{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:.9rem 1.25rem;margin:1.5rem 0}
+.callout .lbl,.callout .cl,.callout-h{font-weight:700;display:block;margin-bottom:.35rem}
+.callout p:last-child{margin-bottom:0}
+.callout.trap{border-left:4px solid #e57373}
+.callout.trap .lbl,.callout.trap .cl,.callout.trap .callout-h{color:#e57373}
+.callout.fix{border-left:4px solid #3fb96b}
+.callout.fix .lbl,.callout.fix .cl,.callout.fix .callout-h{color:#3fb96b}
+.callout.warn{border-left:3px solid #e05656}
+.callout.warn .lbl,.callout.warn .cl,.callout.warn .callout-h{color:#e05656}
+.callout.anti{border-left:3px solid var(--muted)}
+.callout.anti .lbl,.callout.anti .cl{color:var(--muted)}
+.callout.num{border-left:3px solid var(--accent)}
+.callout.num .lbl,.callout.num .cl{color:var(--accent)}
+.callout.math{border-left:3px solid #3fb96b}
+.callout.math .callout-h{color:#3fb96b}
+.callout.fail{border-left:3px solid #e5484d}
+.callout.fail .callout-h{color:#e5484d}
+
+/* Legacy aliases mapped onto the callout family */
+.board{border-left:4px solid var(--link);background:var(--surface);padding:.75rem 1.125rem;border-radius:0 8px 8px 0;margin:1.2em 0}
+.board .lbl{font-weight:700;color:var(--link)}
+.trapbox{border:1px solid var(--accent);background:var(--surface);border-radius:8px;padding:.75rem 1.125rem;margin:1.2em 0}
+.trapbox .lbl{font-weight:700;color:var(--accent)}
+.nums{border-left:4px solid var(--accent);background:var(--surface);padding:.75rem 1.125rem;border-radius:0 8px 8px 0;margin:1.2em 0}
+.nums .lbl{font-weight:700;color:var(--accent)}
+.trap{background:var(--surface);border:1px solid var(--border);border-left:3px solid #e57373;border-radius:6px;padding:1rem 1.25rem;margin:1.5rem 0}
+.trap>.label,.trap .t-title{display:block;font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#e57373;margin-bottom:.5rem}
+.trap .t-title{margin:0 0 .3rem}
+.trap p:first-of-type{margin-top:0}
+.trap p:last-child{margin-bottom:0}
+.warn{background:var(--surface);border-left:3px solid var(--accent);border-radius:0 6px 6px 0;padding:1rem 1.25rem;margin:1.5rem 0}
+.warn h4{margin:0 0 .5rem;color:var(--accent);font-size:1rem}
+.warn p:first-of-type{margin-top:0}
+.warn p:last-child{margin-bottom:0}
+.askbox{background:var(--surface);border:1px solid var(--accent);border-radius:10px;padding:1rem 1.25rem;margin:1.5rem 0}
+.askbox h4{margin:0 0 .5rem;color:var(--accent);font-size:1rem}
+.askbox .shape{font-size:.95rem}
+.askbox .trap{font-size:.95rem;margin-top:.75rem;border-left:3px solid #e57373;padding-left:1rem}
+.askbox .trap b{color:#e57373}
+
+/* ---- Exam strip / onboarding / examline ---- */
+.examstrip,.exam-strip{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--link);border-radius:0 8px 8px 0;padding:1rem 1.25rem;margin:1.5rem 0 2.5rem}
+.examstrip td{padding:.25rem .6rem .25rem 0;vertical-align:top}
+.examstrip td:first-child{color:var(--muted);white-space:nowrap}
+.exam-strip{margin-top:1rem}
+.onboard{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--link);border-radius:0 8px 8px 0;padding:1rem 1.25rem;margin:1.5rem 0}
+.onboard .q{font-weight:700}
+.examline{font-size:.93rem;color:var(--muted);border-top:1px solid var(--border);padding-top:.7rem;margin-top:1.4rem}
+
+/* ---- Pills, tags, badges ---- */
+.volume-tag{display:inline-block;background:var(--surface);border:1px solid var(--accent);color:var(--accent);font-size:.8rem;font-weight:700;letter-spacing:.06em;padding:.25rem .7rem;border-radius:20px;margin-bottom:1rem}
+.tag{display:inline-block;font-size:.75rem;font-weight:700;padding:.2em .7em;border-radius:20px;border:1px solid var(--accent);color:var(--accent);margin-right:.5em;vertical-align:.15em}
+.badges{display:flex;flex-wrap:wrap;gap:.5rem;margin:1rem 0 .5rem}
+.badge{background:var(--surface);border:1px solid var(--border);border-radius:999px;padding:.25rem .9rem;font-size:.85rem;color:var(--text)}
+.badge b{color:var(--accent)}
+
+/* ---- In-content TOC cards ---- */
+.toc-grid{display:grid;grid-template-columns:1fr 1fr;gap:.65rem;margin:1.25rem 0}
+.toc-grid a{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:.75rem .9rem;text-decoration:none;color:var(--text);font-size:.95rem}
+.toc-grid a:hover{border-color:var(--link)}
+.toc-grid a b{display:block;color:var(--link)}
+.toc{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1.2rem 1.5rem;margin:0 0 3rem}
+@media (max-width:640px){.toc-grid{grid-template-columns:1fr}}
+
+/* ---- Section helpers ---- */
+.section{margin-bottom:2.5rem}
+.chapter{margin-bottom:3.5rem}
+.note{font-size:.88rem;color:var(--muted)}
+.small{font-size:.9rem;color:var(--muted)}
+.ht{font-weight:700;font-size:.9rem;letter-spacing:.06em;color:var(--accent);margin:0 0 .5rem;text-align:left}
+
+/* ---- Definition blocks ---- */
+div.def{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:.9rem 1.2rem;margin:1rem 0}
+div.def p{margin:.4rem 0}
+div.def .term,span.def .term{font-weight:700;color:var(--link)}
+div.def .t-title{font-weight:700;margin:0 0 .2rem}
+
+/* ---- Key-value definition lists ---- */
+dl.kv{display:grid;grid-template-columns:170px 1fr;gap:.35rem .9rem;margin:.8rem 0;font-size:.93rem}
+dl.kv dt{font-weight:700}
+dl.kv dd{margin:0}
+@media (max-width:640px){dl.kv{grid-template-columns:1fr}}
+
+/* ---- Custom labels inside canonical callouts: custom text stays the label,
+        the auto ::before label is suppressed to avoid duplication ---- */
+.exam-ask:has(>.label)::before,.takeaway:has(>.label)::before{content:none}
+.exam-ask:has(>h4)::before{content:none}
+.exam-ask>.label,.takeaway>.label{display:block;font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin-bottom:.5rem}
+.exam-ask>h4{font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin:0 0 .5rem}
+.exam-ask .callout-h{color:var(--text)}
+.exam-ask .lbl{font-size:.85rem;color:var(--muted);font-weight:600;margin-bottom:.5rem}
+.exam-ask .cl,.takeaway .cl,.takeaway .lbl{font-weight:700;display:block;margin-bottom:.35rem;color:var(--accent)}
+.diagram-walkthrough .lbl{font-weight:700;margin-bottom:6px}
+.diagram-walkthrough .walkthrough-h{margin:0 0 .6rem;font-size:.85rem;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.06em;text-align:left}
+.diagram-walkthrough>p:first-child{margin:0 0 .75rem;font-size:.82rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);text-align:left}
+.diagram-walkthrough .howread-title{font-weight:700;font-size:1rem;margin:0 0 .3rem}
+.diagram-walkthrough .howread-sub{font-weight:700;font-size:.88rem;margin:.7rem 0 .2rem}
+
+/* ---- Tables: header rows without thead stay distinct; numeric alignment ---- */
+.table-wrap tr:first-child th{background:var(--surface);font-weight:700;white-space:nowrap}
+.table-wrap th{background:var(--surface);font-weight:700}
+table.data.num td,table.data.num th{font-variant-numeric:tabular-nums}
+
+/* ---- Figure credits ---- */
+figcaption .credit{display:block;margin-top:2px}
+figcaption .src{font-size:.8rem}
+
+/* ---- Footer ---- */
+footer,#ds-content footer{color:var(--muted);font-size:.85rem;border-top:1px solid var(--border);padding-top:1.25rem;margin-top:3.5rem}
+footer p{text-align:left}
+
+/* ---- Index page: volume cards, how-to ---- */
+.vol{display:block;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1rem 1.15rem;margin:0 0 .7rem;text-decoration:none;color:inherit}
+.vol:hover{border-color:var(--accent)}
+.vol .row{display:flex;justify-content:space-between;align-items:baseline;gap:1rem}
+.vol .row > *{min-width:0}
+.vol h3{margin:0;font-size:1.05rem}
+.vol .w{flex:none;font:600 .75rem/1 var(--font-mono);color:var(--accent);border:1px solid var(--border);border-radius:20px;padding:.3rem .6rem;white-space:nowrap}
+.vol p{margin:.4rem 0 0;color:var(--muted);font-size:.92rem;text-align:left}
+.howto{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1rem 1.15rem;color:var(--muted);font-size:.93rem}
+.howto ol{margin:.4rem 0 0;padding-left:1.2rem}
+.howto li+li{margin-top:.3rem}
+
+/* ==========================================================================
+   QUESTION BANK components (.qb-*) — scenario questions with per-distractor
+   explanations, Maarek-style. Used by 08-question-bank.html.
+   ========================================================================== */
+.qb-q{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.5rem 1.75rem;margin:2rem 0}
+.qb-q:first-of-type{margin-top:1.5rem}
+.qb-head{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;margin-bottom:1rem}
+.qb-num{font:700 .85rem var(--font-mono);color:var(--accent);letter-spacing:.04em}
+.qb-pill{font-size:.75rem;font-weight:700;padding:.2rem .7rem;border-radius:20px;border:1px solid var(--border);white-space:nowrap}
+.qb-pill.easy{color:#3fb96b;border-color:#3fb96b}
+.qb-pill.med{color:var(--accent);border-color:var(--accent)}
+.qb-pill.hard{color:#e5484d;border-color:#e5484d}
+.qb-scenario{margin:0 0 1rem}
+.qb-ask{font-weight:700;font-size:1.06rem;margin:1.25rem 0 .75rem}
+.qb-opts{margin:.5rem 0 0;padding-left:1.4rem}
+.qb-opts li{margin-bottom:.55rem}
+.qb-opts li::marker{font-weight:700;color:var(--accent)}
+.qb-q details.pq{margin-top:1.25rem;border-top:1px solid var(--border);padding-top:1rem}
+.qb-verdict{display:inline-block;background:var(--accent);color:#000;font-weight:700;padding:.3rem .9rem;border-radius:8px;margin:.25rem 0 1rem;font-size:.95rem}
+.qb-why{border-left:3px solid #3fb96b;padding-left:1rem;margin:0 0 1rem}
+.qb-why strong{color:#3fb96b}
+.qb-distractors{margin:.5rem 0 0;padding-left:1.4rem}
+.qb-distractors li{margin-bottom:.6rem;color:var(--muted)}
+.qb-distractors li::marker{font-weight:700;color:#e57373}
+/* Decision flowcharts inside the question bank */
+.qb-fig{margin:1.5rem 0}
+.qb-flow{display:flex;flex-direction:column;align-items:stretch;gap:.3rem;margin:1rem 0;max-width:640px}
+.qb-node{background:var(--code-bg);border:1px solid var(--border);border-radius:8px;padding:.7rem 1rem;text-align:center;font-size:.95rem}
+.qb-node.decision{border-color:var(--accent);border-style:dashed}
+.qb-node.outcome{border-color:#3fb96b}
+.qb-arrow{text-align:center;color:var(--muted);font-size:1.25rem;line-height:1.1}
+.qb-branch{font-size:.78rem;color:var(--accent);font-weight:700;margin-left:.5rem}
+/* Domain section headers inside the question bank */
+.qb-domain-note{color:var(--muted);margin:-.5rem 0 1.5rem}
+
+/* ---- Print: question bank prints clean on light paper ---- */
+@media print{
+  .qb-q{break-inside:avoid;background:#fff;border:1px solid #ccc}
+  .qb-verdict{background:#eee;color:#000;border:1px solid #999}
+  .qb-node{background:#f5f5f5;border-color:#999}
+}
+
+/* Strategy cards in the question bank */
+.qb-strategy{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.25rem 1.5rem;margin:1.25rem 0}
+.qb-strategy>h3:first-child{margin-top:0}
+.qb-node.result{border-color:#3fb96b}
+
+/* ==========================================================================
+   SITE CHROME — header (track title, breadcrumbs, volume nav, prev/next),
+   footer sitemap. Rendered by ds.js from window.DS_MANIFEST, identical on
+   every page. Nav chrome uses --font-chrome (clean system sans) for contrast
+   with the Charis SIL reading font.
+   ========================================================================== */
+
+#ds-content .ds-site-header {
+  font-family: var(--font-chrome);
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  margin: -2.5rem -2rem 2.25rem;
+  padding: 0.85rem 2rem 0;
+}
+#ds-content .ds-site-header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+#ds-content .ds-track-title {
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  color: var(--text);
+  text-decoration: none;
+  overflow-wrap: break-word;
+}
+#ds-content .ds-track-title:hover { color: var(--accent); }
+#ds-content .ds-hpn { display: flex; gap: 0.5rem; flex: none; }
+#ds-content .ds-hpn a {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--muted);
+  text-decoration: none;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.35rem 0.7rem;
+  white-space: nowrap;
+}
+#ds-content .ds-hpn a:hover { color: var(--accent); border-color: var(--accent); }
+
+#ds-content .ds-crumb { margin: 0.65rem 0 0; }
+#ds-content .ds-crumb ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+#ds-content .ds-crumb li + li::before {
+  content: "/";
+  margin: 0 0.45rem;
+  color: var(--border);
+}
+#ds-content .ds-crumb a { color: var(--link); text-decoration: none; }
+#ds-content .ds-crumb a:hover { text-decoration: underline; }
+#ds-content .ds-crumb [aria-current="page"] { color: var(--text); }
+
+#ds-content .ds-volnav {
+  display: flex;
+  gap: 0.25rem;
+  overflow-x: auto;
+  list-style: none;
+  margin: 0.65rem -2rem 0;
+  padding: 0 2rem 0.7rem;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+#ds-content .ds-volnav a {
+  display: block;
+  white-space: nowrap;
+  font-size: 0.8rem;
+  color: var(--muted);
+  text-decoration: none;
+  padding: 0.45rem 0.8rem;
+  border: 1px solid transparent;
+  border-radius: 6px;
+}
+#ds-content .ds-volnav a:hover { color: var(--text); background: rgba(255, 255, 255, 0.04); }
+#ds-content .ds-volnav a[aria-current="page"] {
+  color: var(--accent);
+  font-weight: 600;
+  border-color: var(--border);
+  background: var(--code-bg);
+}
+
+/* Volumes block at the top of the sidebar (mobile drawer shows this). */
+.ds-side-volumes { padding: 0.85rem 1rem 0.25rem; border-bottom: 1px solid var(--border); }
+.ds-side-volumes h2 {
+  font-family: var(--font-chrome);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0 0 0.35rem;
+  padding: 0;
+  border: 0;
+}
+.ds-side-volumes ul { list-style: none; margin: 0; padding: 0 0 0.6rem; }
+.ds-side-volumes a {
+  display: block;
+  font-family: var(--font-chrome);
+  font-size: 0.85rem;
+  line-height: 1.45;
+  color: var(--muted);
+  text-decoration: none;
+  padding: 0.35rem 0;
+}
+.ds-side-volumes a:hover { color: var(--text); }
+.ds-side-volumes a[aria-current="page"] { color: var(--accent); font-weight: 600; }
+
+/* Footer sitemap: every volume + track home. */
+#ds-content .ds-site-footer {
+  font-family: var(--font-chrome);
+  font-size: 0.85rem;
+  color: var(--muted);
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  margin: 2.5rem -2rem -4rem;
+  padding: 1.5rem 2rem 2.5rem;
+}
+#ds-content .ds-site-footer .ds-footer-kicker {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0 0 0.25rem;
+}
+#ds-content .ds-site-footer .ds-footer-home {
+  font-weight: 700;
+  color: var(--text);
+  text-decoration: none;
+}
+#ds-content .ds-site-footer .ds-footer-home:hover { color: var(--accent); }
+#ds-content .ds-site-footer nav ul {
+  list-style: none;
+  margin: 0.75rem 0 0;
+  padding: 0;
+  columns: 2;
+  column-gap: 2rem;
+}
+#ds-content .ds-site-footer nav li { break-inside: avoid; }
+#ds-content .ds-site-footer nav a {
+  color: var(--muted);
+  text-decoration: none;
+  line-height: 2;
+}
+#ds-content .ds-site-footer nav a:hover { color: var(--accent); }
+#ds-content .ds-site-footer nav a[aria-current="page"] { color: var(--accent); font-weight: 600; }
+
+@media (max-width: 900px) {
+  /* Mobile: the horizontal volume strip hides; the hamburger drawer
+     (sidebar "Volumes" block) is the volume nav. */
+  #ds-content .ds-volnav { display: none; }
+  #ds-content .ds-site-header { margin: -4.25rem -1.25rem 2rem; padding: 0.85rem 1.25rem 0.7rem; }
+  /* Clear the fixed hamburger (left 0.75rem + 2.75rem wide = ends at 3.5rem). */
+  #ds-content .ds-site-header-top { padding-left: 2.75rem; }
+  /* The fixed hamburger floats over the drawer's top-left corner. */
+  .ds-side-volumes { padding-top: 4.25rem; }
+  #ds-content .ds-site-footer { margin: 2.5rem -1.25rem -3rem; padding: 1.5rem 1.25rem 2.5rem; }
+}
+@media (max-width: 640px) {
+  #ds-content .ds-site-footer nav ul { columns: 1; }
+}
+
+@media print {
+  #ds-content .ds-site-header,
+  #ds-content .ds-site-footer,
+  .ds-side-volumes { display: none !important; }
+}
+.walkthrough{margin:.4rem 0 1.4rem;padding:.6rem .9rem;border-left:3px solid var(--accent,#4da3ff);background:var(--card,#141414);border-radius:0 8px 8px 0;font-size:.92rem;color:var(--muted,#a8a8a8)}
+.walkthrough strong{color:inherit}
+</style>
 <style>
 /* Phase-2 additions: bridge paragraphs and display math.
    Additive only. Placed before the experience-layer block, which it does not modify. */
@@ -8,6 +1180,132 @@
 .callout.math .eq{text-align:center;font-size:1.12em;margin:.6rem 0}
 .callout.math .eq-where{color:var(--muted);font-size:.93em}
 </style>
+<style>
+/* Hallmark · pre-emit critique: P5 H4 E5 S4 R5 V5
+ * ==========================================================================
+ * Experience layer for study volumes — ADDITIVE ONLY.
+ * Never edits content markup or DS chrome; references DS tokens only
+ * (--accent, --border). No new colors, no gradients, no decorative filler.
+ *
+ * Motion stance: calm delight. Opacity/translate only (GPU-friendly),
+ * one IntersectionObserver, one rAF-throttled scroll listener, zero layout
+ * shift, prefers-reduced-motion respected, fully usable with JS disabled
+ * (every hidden state is gated on html.xp-js, which only this layer's
+ * companion script adds).
+ *
+ * Wiring (final assembly, per volume — same model as ds.css/ds.js):
+ *   1. In <head>, AFTER the DS style block, add:
+ *        <style>
+ *        /* ==== Experience layer — additive, do not edit per-file ==== */
+ *        …this file verbatim…
+ *        [close the style element]
+ *   2. Immediately before the document's LAST closing body tag (the real
+ *      one at the end of the file — some volumes mention a literal closing
+ *      body tag inside their docs prose; ignore those), AFTER the ds.js
+ *      script block, add:
+ *        <script>
+ *        /* ==== Experience layer behavior — additive ==== */
+ *        …experience.js verbatim…
+ *        [close the script element]
+ * (Closing tags are written out in the assembly snippet, not here, so this
+ * file can be pasted verbatim without early-terminating its own element.)
+ * ========================================================================== */
+
+/* ---------- 1. Smooth anchor scrolling (motion-safe readers only) ---------- */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+/* ---------- 2. Scroll-triggered reveals ----------
+   Hidden state exists ONLY under html.xp-js. No-JS readers, print, and
+   reduced-motion users always see full content. Uses the independent
+   `translate` property (not `transform`) so hover feedback below composes
+   without specificity fights. Opacity + translate only: zero layout shift. */
+html.xp-js .xp-reveal {
+  opacity: 0;
+  translate: 0 14px;
+}
+html.xp-js .xp-reveal.xp-in {
+  opacity: 1;
+  translate: 0 0;
+  transition:
+    opacity 0.55s ease,
+    translate 0.55s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+/* ---------- 3. Hero ---------- */
+/* Layout-neutral wrapper the script may add around a volume's title block.
+   Parallax itself is applied inline by the script (transform only). */
+.xp-hero {
+  position: relative;
+}
+
+/* ---------- 4. Calm hover feedback: cards + knowledge checks only ----------
+   translateY(-1px) + accent border. transform composes with the reveal's
+   independent `translate` property — no conflicts. */
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .pq,
+  .watch-card,
+  .ob-board,
+  .lab {
+    transition: transform 0.18s ease, border-color 0.18s ease;
+  }
+  .pq:hover,
+  .watch-card:hover,
+  .ob-board:hover,
+  .lab:hover {
+    transform: translateY(-1px);
+    border-color: var(--accent);
+  }
+  .pq:focus-within,
+  .watch-card:focus-within,
+  .ob-board:focus-within,
+  .lab:focus-within {
+    border-color: var(--accent);
+  }
+}
+
+/* ---------- 5. Reduced motion: everything static and visible ---------- */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  html.xp-js .xp-reveal {
+    opacity: 1;
+    translate: 0 0;
+    transition: none;
+  }
+  .xp-hero {
+    transform: none !important;
+    opacity: 1 !important;
+  }
+  .pq,
+  .watch-card,
+  .ob-board,
+  .lab {
+    transition: none;
+  }
+}
+
+/* ---------- 6. Print: never hide content ---------- */
+@media print {
+  html.xp-js .xp-reveal {
+    opacity: 1 !important;
+    translate: 0 0 !important;
+    transition: none;
+  }
+  .xp-hero {
+    transform: none !important;
+    opacity: 1 !important;
+  }
+}
+
+</style>
+</head>
+<body>
+<div id="ds-sidebar-root"></div>
 <main id="ds-content"><div class="ds-content-inner">
 <h1 id="domain-4-operational-efficiency-and-optimization">Domain 4: Operational Efficiency and Optimization</h1>
 <p>Every scenario here is a trade-off: cost against latency against quality. The exam tests whether you pick the right lever for the constraint it gave you, and it punishes answers that fix a problem you do not have.</p>
@@ -17,6 +1315,7 @@ Always confirm current rates on the Bedrock pricing page before relying on them.
 <div class="takeaway"><p><strong>The one sentence version</strong></p>
 <p>On-demand charges per token and fits spiky traffic. Token efficiency is the free first lever. Retrieval tuning shrinks retrieved context. Prompt caching cuts input-token cost for repeated prefixes, and semantic caching skips repeated calls entirely. Batch inference halves the price for offline jobs. Provisioned Throughput buys guaranteed capacity for steady baselines. Smaller models and routing cut cost per call, and fine-tuning bakes repeated behavior into a cheap model as the last resort. CloudWatch, invocation logs, and X-Ray tell you which lever to pull. Every Domain 4 question is one of these levers applied to a constraint.</p></div>
 <h2 id="the-domain-4-decision-map">The Domain 4 decision map</h2>
+<figure><img src="assets/img/density/d4-decision-map.svg" alt="The Domain 4 decision map: read the constraint on the left, take the lever on the right" loading="lazy"><figcaption>The Domain 4 decision map: read the constraint on the left, take the lever on the right</figcaption><figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure><div class="walkthrough"><strong>How to read this.</strong> Each row is one scenario constraint with an arrow to its lever; border colors group the levers by family (green cheapest, amber capacity, blue latency/quality). Takeaway: read the constraint first, then reach for exactly one row; the distractor is always a real lever on the wrong row.</div>
 <p>Memorize this before you read anything else. It answers half of this domain.</p>
 <div class="table-wrap"><table>
 <thead>
@@ -79,6 +1378,7 @@ Always confirm current rates on the Bedrock pricing page before relying on them.
 <p>The default way you pay for Bedrock: per token, split into input tokens and output tokens, at a per-model rate.</p>
 <figure><img src="assets/img/mermaid/05-cost-ladder.svg" alt="Cost ladder: prompt caching plus small models for simple tasks is cheapest per token, then batch inference (~50% off), then on-demand, then Provisioned Throughput for steady high volume." loading="lazy"><figcaption>Cost ladder: prompt caching plus small models for simple tasks is cheapest per token, then batch inference (~50% off), then on-demand, then Provisioned Throughput for steady high volume.</figcaption><figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
 <h3>The bill, in one paragraph</h3>
+<figure><img src="assets/img/density/d4-bill.svg" alt="The bill: input tokens plus output tokens, times the per-token price" loading="lazy"><figcaption>The bill: input tokens plus output tokens, times the per-token price</figcaption><figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure><div class="walkthrough"><strong>How to read this.</strong> Three blocks in the equation: inputs priced lower, outputs priced higher because generation costs compute, times price. Takeaway: the input meter is where multi-turn history silently multiplies the bill.</div>
 <p>On-demand inference is Bedrock's pay-as-you-go pricing. You call InvokeModel or Converse with a model ID, and AWS bills input tokens (everything you send: system prompt, conversation history, tools, the user's message) plus output tokens (everything the model generates), each at that model's per-thousand-token price. A token is a chunk of text the model processes, roughly three quarters of an English word. Output tokens cost more than input tokens because generating text is the expensive part: it takes a full forward pass of the model for every single token.</p>
 <p>It exists because GenAI traffic is unpredictable. An app in beta, a demo, an internal tool with fifty users: committing to hourly capacity would be absurd. On-demand means zero spend when idle and payment only for what you use. The failure mode it removes is idle waste: you never pay for GPU time you did not use.</p>
 <p>The silent cost killer: on the next turn of a chat, the whole conversation history goes in again as input tokens. A 20-turn chat re-pays the full history on every single turn. Nothing caches by default; nothing remembers for free. Bedrock meters InputTokenCount and OutputTokenCount per invocation and reports them to CloudWatch, so your bill is exactly auditable.</p>
@@ -106,7 +1406,7 @@ At 1 million calls/month:  $1,000/month. 12x cheaper.
 <p>"On-demand is the expensive option, so I should always use provisioned throughput or batch to save money." Wrong. On-demand is the cheapest option when traffic is spiky or low, because the other options charge for idle capacity or require commitments. Provisioned throughput has an hourly fee whether you use it or not; if your app idles at night, you pay for sleeping hours. The exam loves offering provisioned throughput as a cost fix for bursty traffic. It is a latency and capacity guarantee, not a discount for unpredictability.</p></div>
 <p>How the exam asks it: "a startup is prototyping a chat feature, usage is unpredictable, the CFO wants the lowest bill during the experiment." The answer is on-demand inference. Distractors: provisioned throughput (predictable pricing, but charges for idle hours), batch inference (hours of latency, useless for chat), buying reserved capacity.</p>
 <p class="ch-bridge" style="border-left:3px solid var(--accent);padding:.55rem 1rem;background:var(--surface);border-radius:0 8px 8px 0;margin:1.1rem 0"><strong>Why this comes next.</strong> On-demand pricing taught you how the meter runs. Chapter 2 pulls the first lever, and it is free: shrink what you send before you spend anything.</p>
-<p class="ch-next" style="color:var(--muted);font-size:.95em;margin:1.4rem 0 .4rem"><strong>Next:</strong> Next: token efficiency, the free lever you pull before spending anything.</p>
+<p class="ch-next" style="color:var(--muted);font-size:.95em;margin:1.4rem 0 .4rem"><strong>Next:</strong> token efficiency, the free lever you pull before spending anything.</p>
 <h2 id="11-token-efficiency-and-prompt-optimization">02. Token efficiency and prompt optimization</h2>
 <p>Every token you do not send is a token you do not pay for.</p>
 <h3>The free lever, pulled first</h3>
@@ -144,7 +1444,7 @@ After pruning + compression:
 <p>"Prompt compression means making the model dumber." Compression trims verbosity, not capability: removing "please" padding and duplicate examples does not reduce what the model knows. The trap version: the exam offers "switch to a smaller model" for a scenario where the real problem is a bloated prompt on the right model. Always fix the prompt first; it is free. A second trap: using <code>temperature</code> or <code>top-p</code> as cost controls. Those control randomness and quality, not token counts or cost.</p></div>
 <p>How the exam asks it: "token costs are growing 30% month over month; the CFO wants cuts without UX degradation; prompts include long histories and verbose instructions." The correct answer is multi-lever: prune context, compress prompts, cap output length, estimate and track tokens per feature. Distractors are single-lever answers: only prompt caching, only a smaller model. The exam rewards the candidate who stacks the free levers first. The tell is "without UX degradation": quality must be re-verified, which points to prompt work plus evaluation, not just a cheaper model.</p>
 <p class="ch-bridge" style="border-left:3px solid var(--accent);padding:.55rem 1rem;background:var(--surface);border-radius:0 8px 8px 0;margin:1.1rem 0"><strong>Why this comes next.</strong> Lean prompts cut tokens, but the repeated static prefix is a different tax. Chapter 3 discounts the part of the prompt you pay for over and over.</p>
-<p class="ch-next" style="color:var(--muted);font-size:.95em;margin:1.4rem 0 .4rem"><strong>Next:</strong> Next: prompt caching, discounting the repeated prefix.</p>
+<p class="ch-next" style="color:var(--muted);font-size:.95em;margin:1.4rem 0 .4rem"><strong>Next:</strong> prompt caching, discounting the repeated prefix.</p>
 <h2 id="02-prompt-caching">03. Prompt caching</h2>
 <p>Stop paying full price for the part of the prompt that never changes.</p>
 <h3>The discount for static prefixes</h3>
@@ -171,7 +1471,7 @@ With caching (first call writes cache, rest hit):
 <p>"Prompt caching fixes my throttling problem." No. Prompt caching is a cost lever: it discounts repeated input tokens. It does not reserve capacity. If you are being throttled at peak, the answer is provisioned throughput (Topic 10) or rate-limit handling (Topic 12). The exam deliberately offers prompt caching as a distractor in throttling scenarios and as a distractor provisioned throughput in "same long system prompt every call" scenarios. Match the lever to the constraint: repeated prefix cost -&gt; caching; capacity and latency guarantee -&gt; provisioned throughput.</p></div>
 <p>How the exam asks it: "an agent re-sends a 10,000-token tool specification on every turn; token costs are growing; the workload is otherwise fine." The answer: add cache points before the static tool definitions, on a supported model. Distractors: provisioned throughput (solves nothing here), batch inference (breaks real-time), reducing temperature (irrelevant to cost). The tell is "same long prefix on every call" or "repeated static system prompt."</p>
 <p class="ch-bridge" style="border-left:3px solid var(--accent);padding:.55rem 1rem;background:var(--surface);border-radius:0 8px 8px 0;margin:1.1rem 0"><strong>Why this comes next.</strong> Prompt caching discounts repeated tokens on calls you still make. Chapter 4 goes further: skip the model call entirely when the question has been asked before.</p>
-<p class="ch-next" style="color:var(--muted);font-size:.95em;margin:1.4rem 0 .4rem"><strong>Next:</strong> Next: semantic caching, skipping the call entirely.</p>
+<p class="ch-next" style="color:var(--muted);font-size:.95em;margin:1.4rem 0 .4rem"><strong>Next:</strong> semantic caching, skipping the call entirely.</p>
 <h2 id="12-semantic-caching">04. Semantic caching</h2>
 <p>Do not call the model at all when you already know the answer.</p>
 <h3>Answering from memory instead of the model</h3>
@@ -198,7 +1498,7 @@ With semantic cache at 60% hit rate:
 <p>"Semantic caching and prompt caching are the same thing." They attack different costs. <strong>Prompt caching</strong> discounts repeated input tokens on calls you still make (Bedrock feature, static prefix). <strong>Semantic caching</strong> eliminates the call entirely for repeated meanings (your architecture, ElastiCache or DynamoDB). A second trap: semantic caching for highly personalized queries. Personalized means every question is unique, so the hit rate is near zero and the cache adds latency and complexity for nothing. The exam names this exact rejection.</p></div>
 <p>How the exam asks it: "a FAQ bot receives millions of questions; analysis shows heavy repetition with varied wording. Minimize cost and latency." Answer: a semantic cache (ElastiCache or DynamoDB) in front of the model with similarity matching and TTL invalidation. Distractors: prompt caching (still makes the call, and the questions vary so the prefix is not static), provisioned throughput (capacity, not repetition), fine-tuning (irrelevant). The tell is "repeated similar questions" plus cost and latency goals. The anti-tell: "personalized recommendations" disqualifies semantic caching.</p>
 <p class="ch-bridge" style="border-left:3px solid var(--accent);padding:.55rem 1rem;background:var(--surface);border-radius:0 8px 8px 0;margin:1.1rem 0"><strong>Why this comes next.</strong> Caching attacks repetition. Chapter 5 attacks the other big input tax: retrieved chunks stuffed into every prompt.</p>
-<p class="ch-next" style="color:var(--muted);font-size:.95em;margin:1.4rem 0 .4rem"><strong>Next:</strong> Next: retrieval tuning, shrinking the chunks in the prompt.</p>
+<p class="ch-next" style="color:var(--muted);font-size:.95em;margin:1.4rem 0 .4rem"><strong>Next:</strong> retrieval tuning, shrinking the chunks in the prompt.</p>
 <h2 id="05-retrieval-tuning-fewer-better-chunks">05. Retrieval tuning: fewer, better chunks</h2>
 <p>Retrieved context is usually the biggest line in a retrieval prompt. Tune it before you pay for it.</p>
 <figure><img src="assets/img/mermaid/82-token-budget.svg" alt="Token budget per request: the system prompt is fixed cost, retrieved context is the biggest lever, summarize old history, cap max output tokens" loading="lazy"><figcaption>Token budget per request: the system prompt is fixed cost, retrieved context is the biggest lever, conversation history gets summarized, user input is small, and max output tokens are capped.</figcaption><figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
@@ -227,7 +1527,7 @@ After: broad retrieve 20, rerank, keep top 3  -&gt;  1,500 tokens/call
 <p>How the exam asks it: "a RAG application retrieves 10 chunks per query; token costs are growing; answers are usually correct but verbose; quality must not drop." Answer: reduce top-k, add a reranking step and keep only the top few chunks, verify with evaluation. Distractors: a larger model (more expensive, does not fix retrieval), fine-tuning the model on the documents (wrong tool for changing knowledge; that is Domain 1's trap), prompt caching (helps only if the retrieved chunks repeat verbatim across calls, which they do not).</p>
 
 <p class="ch-bridge" style="border-left:3px solid var(--accent);padding:.55rem 1rem;background:var(--surface);border-radius:0 8px 8px 0;margin:1.1rem 0"><strong>Why this comes next.</strong> With prompts lean and context trimmed, the next question is whether you need the expensive model at all. Chapter 6 routes each request to the cheapest model that handles it.</p>
-<p class="ch-next" style="color:var(--muted);font-size:.95em;margin:1.4rem 0 .4rem"><strong>Next:</strong> Next: right-sizing and cascading, the cheapest model per request.</p>
+<p class="ch-next" style="color:var(--muted);font-size:.95em;margin:1.4rem 0 .4rem"><strong>Next:</strong> right-sizing and cascading, the cheapest model per request.</p>
 <h2 id="08-right-sizing-models-and-cascading-with-routers">06. Right-sizing models and cascading with routers</h2>
 <p>The cheapest correct answer is usually a smaller model.</p>
 <h3>Match the model to the difficulty</h3>
@@ -253,7 +1553,7 @@ Cascaded (router cost negligible):
 <p>"Bigger models are always better, so routing easy work to a small model risks quality." The exam tests this backwards assumption. Quality is measured per task: a lightweight model that scores identically on simple extraction is not lower quality, it is correctly sized. The real risk is misclassification, which you control with evaluation. Also watch the router confusion trap from Topic 11: prompt routers route by complexity for cost, inference profiles route by region for availability. Different tools, different scenarios.</p></div>
 <p>How the exam asks it: "token costs are growing; analysis shows 80% of requests are simple FAQ lookups currently served by the flagship model; quality must not drop." Answer: add a prompt router or cascade sending simple queries to a lightweight model and complex ones to the flagship. Distractors: fine-tuning the flagship (wrong lever, huge effort), prompt caching (helps only with a repeated prefix), provisioned throughput (capacity, not cost). The tell is "simple queries on an expensive model."</p>
 <p class="ch-bridge" style="border-left:3px solid var(--accent);padding:.55rem 1rem;background:var(--surface);border-radius:0 8px 8px 0;margin:1.1rem 0"><strong>Why this comes next.</strong> Routing picks the right model per request. Chapter 7 bakes the behavior into the weights instead: the most expensive lever, pulled last.</p>
-<p class="ch-next" style="color:var(--muted);font-size:.95em;margin:1.4rem 0 .4rem"><strong>Next:</strong> Next: fine-tuning, baking behavior into the weights.</p>
+<p class="ch-next" style="color:var(--muted);font-size:.95em;margin:1.4rem 0 .4rem"><strong>Next:</strong> fine-tuning, baking behavior into the weights.</p>
 <h2 id="07-fine-tuning-a-small-model-for-your-workload">07. Fine-tuning a small model for your workload</h2>
 <p>When the same narrow task runs millions of times, stop renting the flagship's generality. Bake the behavior into a small model.</p>
 <figure><img src="assets/img/mermaid/90-fine-tune-economics.svg" alt="Fine-tuning economics: a flagship model at high per-call cost versus a fine-tuned small model trained once on labeled examples and served cheaply at scale" loading="lazy"><figcaption>Fine-tuning economics: the flagship costs more per call because you rent its generality; a small model fine-tuned on your task examples costs once to train and little per call.</figcaption><figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
@@ -284,10 +1584,11 @@ prompt work wins without any training.
 <p>How the exam asks it: "a company enforces a consistent brand voice across 50M responses a month with a giant system prompt; token costs are the complaint; the voice rules are stable." Answer: fine-tune a small model (or distill the flagship's behavior into one) so the style lives in the weights and the prompt shrinks. Distractors: RAG (the knowledge is not the problem), prompt caching (discounts the giant prompt but the drift remains), a larger model (more expensive, same drift).</p>
 
 <p class="ch-bridge" style="border-left:3px solid var(--accent);padding:.55rem 1rem;background:var(--surface);border-radius:0 8px 8px 0;margin:1.1rem 0"><strong>Why this comes next.</strong> The cost levers are covered. Chapter 8 turns to the second axis of the trade-off: latency, and the difference between actual speed and perceived speed.</p>
-<p class="ch-next" style="color:var(--muted);font-size:.95em;margin:1.4rem 0 .4rem"><strong>Next:</strong> Next: latency and streaming, perceived speed versus actual speed.</p>
+<p class="ch-next" style="color:var(--muted);font-size:.95em;margin:1.4rem 0 .4rem"><strong>Next:</strong> latency and streaming, perceived speed versus actual speed.</p>
 <h2 id="06-latency-vs-throughput-streaming-and-perceived-speed">08. Latency vs throughput: streaming and perceived speed</h2>
 <p>Users judge speed by the first token, not the last one.</p>
 <h3>Perceived latency is the metric that matters</h3>
+<figure><img src="assets/img/density/d4-perceived-latency.svg" alt="Perceived latency: streaming shows tokens from the first second while non-streaming shows nothing until the end" loading="lazy"><figcaption>Perceived latency: streaming shows tokens from the first second while non-streaming shows nothing until the end</figcaption><figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure><div class="walkthrough"><strong>How to read this.</strong> Two timelines. Top: silence, then the whole answer; the red line marks time to first token at the end. Bottom: the green bar starts near the left, tokens arriving early. Takeaway: total durations are similar; perceived speed is entirely about when the user sees something.</div>
 <p>Streaming delivers the model's response token by token as it is generated, instead of waiting for the full response and sending it at once. With ConverseStream or InvokeModelWithResponseStream, your app receives a stream of events and renders each token the moment it arrives. Time to first token (TTFT) is the delay before the first token appears; total latency is the delay until the last token. Streaming does not change total latency. It changes perceived latency, which is what users feel.</p>
 <p>A 500-token answer might take 15 seconds to generate fully. A blank screen for 15 seconds feels broken; the first words in 1 second with the rest flowing feels instant, even though the total time is identical. Chat products live or die on this perception. Streaming also lets you start downstream work early: begin rendering, begin text-to-speech, or detect a refusal before the full response completes.</p>
 <p>The mechanics: your app calls the streaming API variant, the connection stays open (server-sent events style) while the model generates, and each token is flushed as an event the moment it is produced. Your client appends it to the visible text immediately. TTFT depends on input size and model size: a huge prompt or a giant model delays the first token. Total time depends on output length and generation speed.</p>
@@ -316,7 +1617,7 @@ Switching to a lightweight model at 60 tokens/sec:
 <p>"Streaming makes the model faster." It does not change generation speed at all; it changes when the user sees output. The exam pairs this with a second trap: using streaming to fix a hard latency SLA. If the scenario demands a guaranteed sub-3-second complete response, streaming helps perception but the guarantee comes from provisioned throughput and model choice. Also watch for "streaming reduces cost": it does not; token counts are identical.</p></div>
 <p>How the exam asks it: "users complain the chatbot feels slow; responses take 10+ seconds to appear; answers are correct." Answer: enable streaming (ConverseStream) so tokens render incrementally. Distractors: provisioned throughput (fixes capacity, not perception, and costs more), a larger model (slower and pricier), batch inference (wrong direction entirely). The tell is "feels slow" or "time to first token" language with correct-but-slow answers.</p>
 <p class="ch-bridge" style="border-left:3px solid var(--accent);padding:.55rem 1rem;background:var(--surface);border-radius:0 8px 8px 0;margin:1.1rem 0"><strong>Why this comes next.</strong> Streaming serves users now. Chapter 9 serves work that can wait: batch inference at roughly half the price.</p>
-<p class="ch-next" style="color:var(--muted);font-size:.95em;margin:1.4rem 0 .4rem"><strong>Next:</strong> Next: batch inference, half price for work that can wait.</p>
+<p class="ch-next" style="color:var(--muted);font-size:.95em;margin:1.4rem 0 .4rem"><strong>Next:</strong> batch inference, half price for work that can wait.</p>
 <h2 id="03-batch-inference">09. Batch inference</h2>
 <p>Half-price inference for work that can wait.</p>
 <h3>Overnight work at roughly half price</h3>
@@ -343,7 +1644,7 @@ Batch (50% discount):
 <p>"Batch inference is just a slower on-demand, so I can use it for my chat app to save money." No. Batch has hours-scale latency and no SLA; using it for anything interactive breaks the product. The exam frames this as "a company wants to cut inference costs for its real-time chatbot" and offers batch as a tempting 50%-off distractor. The latency requirement in the scenario disqualifies it instantly. Batch is only correct when the scenario says words like "nightly", "offline", "no strict latency requirement", or "results needed by morning".</p></div>
 <p>How the exam asks it: "a media company must generate summaries for 500,000 archived videos; results needed within 24 hours; minimize cost." The answer: batch inference with S3 input and output. Distractors: provisioned throughput (paying for idle hours on a one-shot job), on-demand with a big Lambda fleet (full price plus operational overhead), fine-tuning (irrelevant). The tell is "offline" plus "cost is the priority."</p>
 <p class="ch-bridge" style="border-left:3px solid var(--accent);padding:.55rem 1rem;background:var(--surface);border-radius:0 8px 8px 0;margin:1.1rem 0"><strong>Why this comes next.</strong> Batch covers offline, on-demand covers spiky. Chapter 10 covers the steady middle: reserved capacity for predictable baselines.</p>
-<p class="ch-next" style="color:var(--muted);font-size:.95em;margin:1.4rem 0 .4rem"><strong>Next:</strong> Next: provisioned throughput, reserved capacity for the steady baseline.</p>
+<p class="ch-next" style="color:var(--muted);font-size:.95em;margin:1.4rem 0 .4rem"><strong>Next:</strong> provisioned throughput, reserved capacity for the steady baseline.</p>
 <h2 id="04-provisioned-throughput">10. Provisioned Throughput</h2>
 <p>Reserve capacity when steady traffic and latency guarantees matter more than per-token price.</p>
 <h3>Buying certainty by the hour</h3>
@@ -376,7 +1677,7 @@ Option C: PT only when the baseline is big enough.
 <p>Two traps in one topic. Trap 1: "provisioned throughput lowers my token bill on spiky traffic." It does not. You pay the hourly fee during idle hours, which makes spiky workloads more expensive. Trap 2: "we bought provisioned throughput but we are still throttled." Capacity is not the bug; routing is. The code must target the provisioned model ARN. The exam presents this as a debugging question: "after purchasing PT, throttling continued; what is wrong?" Answer: the application still invokes the base model ID.</p></div>
 <p>How the exam asks it, two shapes. Design: "2M requests/day baseline, 10x Friday spikes, sub-3s latency, minimize cost." Answer: PT for baseline plus on-demand overflow. Distractors: all-PT (overprovisioned idle cost), all-on-demand (throttling risk), EC2 fleet (operational overhead). Debugging: "PT purchased, throttling persists." Answer: route invocations to the provisioned model ARN. Distractor: "buy more model units."</p>
 <p class="ch-bridge" style="border-left:3px solid var(--accent);padding:.55rem 1rem;background:var(--surface);border-radius:0 8px 8px 0;margin:1.1rem 0"><strong>Why this comes next.</strong> Provisioned throughput reserves capacity in one region. Chapter 11 routes across regions for availability and failover.</p>
-<p class="ch-next" style="color:var(--muted);font-size:.95em;margin:1.4rem 0 .4rem"><strong>Next:</strong> Next: inference profiles, routing across regions.</p>
+<p class="ch-next" style="color:var(--muted);font-size:.95em;margin:1.4rem 0 .4rem"><strong>Next:</strong> inference profiles, routing across regions.</p>
 <h2 id="05-inference-profiles-and-cross-region-routing">11. Inference profiles and cross-region routing</h2>
 <p>Route around regional limits: more capacity, automatic failover, one identifier.</p>
 <p>FACT-CHECK 2026-09-28: prefix list and profile ID format corrected against live sources. Cross-region inference profile prefixes are us., eu., apac., and global. (plus us-gov. for GovCloud). There are no au. or jp. prefixes (APAC regions use apac.). Inference profile ID format verified as e.g. us.anthropic.claude-haiku-4-5-20251001-v1:0.</p>
@@ -398,7 +1699,7 @@ Cost: identical per-token rates. The profile is a routing feature,
 <p>The exam's three-way confusion set, tested repeatedly: <strong>inference profiles</strong> route for availability and resilience (geographic prefixes), <strong>prompt routers / model routers</strong> route for cost and quality (send easy prompts to cheap models), and <strong>provisioned throughput</strong> reserves capacity (hourly commit). A scenario about regional failover wants an inference profile; a scenario about cutting cost on simple queries wants a router or cascade; a scenario about latency SLAs on steady traffic wants provisioned throughput. Each mechanism answers a different question. If you mix them up, the distractor wins.</p></div>
 <p>How the exam asks it: "a model is available in only two regions; the app needs resilience against regional outages and throttling; minimal code changes." Answer: call the inference profile ID. Distractors: deploying EC2 with an ALB in a second region (does not solve Bedrock-side throttling), custom retry logic across regions (operational overhead), provisioned throughput (reserves capacity in one region, no failover). The tell is "regional" plus "failover" plus "minimal operational overhead."</p>
 <p class="ch-bridge" style="border-left:3px solid var(--accent);padding:.55rem 1rem;background:var(--surface);border-radius:0 8px 8px 0;margin:1.1rem 0"><strong>Why this comes next.</strong> Capacity reserved, traffic routed. Chapter 12 handles what happens when traffic still hits the speed limit: throttling and retries.</p>
-<p class="ch-next" style="color:var(--muted);font-size:.95em;margin:1.4rem 0 .4rem"><strong>Next:</strong> Next: rate limits, throttling, and retries.</p>
+<p class="ch-next" style="color:var(--muted);font-size:.95em;margin:1.4rem 0 .4rem"><strong>Next:</strong> rate limits, throttling, and retries.</p>
 <h2 id="07-rate-limits-quotas-and-throttling-with-retries">12. Rate limits, quotas, and throttling with retries</h2>
 <p>Every API has a speed limit. Production code respects it instead of crashing into it.</p>
 <h3>Throttling is a signal, not a bug</h3>
@@ -426,7 +1727,7 @@ With provisioned throughput sized for 150 RPM + on-demand overflow:
 <p>"Throttling means something is broken; I should request a quota increase immediately." Throttling during a brief spike is normal and is handled by retries. Quota increases are for sustained, legitimate growth. The exam's trap is offering "request a quota increase" as the fix for a transient burst scenario, or offering "buy provisioned throughput" when the throttling is a 30-second spike that retries would absorb. Match the fix to the duration: seconds of overload -&gt; retries; hours of overload -&gt; capacity.</p></div>
 <p>How the exam asks it: "during traffic spikes the application throws ThrottlingException; most spikes last under a minute; minimize changes." Answer: rely on SDK retries with exponential backoff and jitter, possibly plus API Gateway throttling to smooth client bursts. Distractors: provisioned throughput (overkill for sub-minute spikes), quota increase (for sustained load), catching the exception and dropping the request (user-facing failure). The tell is "brief spikes" plus "minimal changes."</p>
 <p class="ch-bridge" style="border-left:3px solid var(--accent);padding:.55rem 1rem;background:var(--surface);border-radius:0 8px 8px 0;margin:1.1rem 0"><strong>Why this comes next.</strong> You cannot optimize what you cannot see. Chapter 13 builds the dashboard: the four metrics that make cost and throttling visible.</p>
-<p class="ch-next" style="color:var(--muted);font-size:.95em;margin:1.4rem 0 .4rem"><strong>Next:</strong> Next: CloudWatch metrics, the dashboard.</p>
+<p class="ch-next" style="color:var(--muted);font-size:.95em;margin:1.4rem 0 .4rem"><strong>Next:</strong> CloudWatch metrics, the dashboard.</p>
 <h2 id="09-cloudwatch-metrics-for-bedrock">13. CloudWatch metrics for Bedrock</h2>
 <p>You cannot optimize what you cannot see. These four metrics are the dashboard.</p>
 <h3>Four metrics, then alarms</h3>
@@ -455,7 +1756,7 @@ It does not carry token counts or latency as metrics. Metrics are CloudWatch's j
 The GenAI answer is Bedrock evaluations and golden datasets (Domain 5). The exam offers both as plausible-sounding distractors.</p></div>
 <p>How the exam asks it: "the team needs near-real-time detection of abnormal token spend and throttling spikes, with minimal custom work." Answer: CloudWatch metrics (InputTokenCount, OutputTokenCount, InvocationThrottles) with anomaly detection and alarms, plus Cost Anomaly Detection. Distractors: a Glue plus Athena pipeline over logs (heavy custom work for a near-real-time need), CloudTrail (wrong plane), SageMaker Model Monitor (wrong workload type). The tell is "near real time" plus "minimal custom work": that is always the managed metrics service.</p>
 <p class="ch-bridge" style="border-left:3px solid var(--accent);padding:.55rem 1rem;background:var(--surface);border-radius:0 8px 8px 0;margin:1.1rem 0"><strong>Why this comes next.</strong> Metrics show the pattern. Chapter 14 shows the specifics: logs of what was said, traces of where the time went.</p>
-<p class="ch-next" style="color:var(--muted);font-size:.95em;margin:1.4rem 0 .4rem"><strong>Next:</strong> Next: invocation logging and X-Ray tracing, what was said and where time went.</p>
+<p class="ch-next" style="color:var(--muted);font-size:.95em;margin:1.4rem 0 .4rem"><strong>Next:</strong> invocation logging and X-Ray tracing, what was said and where time went.</p>
 <h2 id="10-model-invocation-logging-and-x-ray-tracing">14. Model invocation logging and X-Ray tracing</h2>
 <p>Metrics tell you something is wrong. Logs and traces tell you what.</p>
 <h3>What was said, and where the time went</h3>
@@ -483,7 +1784,7 @@ optimizing the wrong component.
 <p>"CloudTrail shows me the prompts and responses." No. CloudTrail logs API-level events: who called <code>InvokeModel</code>, when, from where (the audit plane). It does not record prompt or response bodies. Prompt and response forensics need model invocation logging to S3 or CloudWatch Logs (the data plane). The exam tests this distinction directly: a scenario asking "which service records the full prompt text for debugging" wants invocation logging, and CloudTrail is the distractor.</p></div>
 <p>How the exam asks it: "a multi-step agent is intermittently slow; the team must find which step (tool calls vs model calls) causes the delay, and must be able to audit exact prompts later; healthcare data is involved." Answer, select-three style: X-Ray tracing across the agent chain, model invocation logging to S3 with KMS encryption, CloudWatch Logs Insights for analysis. Distractors: CloudTrail for prompt forensics (wrong plane), unencrypted logging (compliance violation), "add provisioned throughput" (optimizes the wrong component without evidence).</p>
 <p class="ch-bridge" style="border-left:3px solid var(--accent);padding:.55rem 1rem;background:var(--surface);border-radius:0 8px 8px 0;margin:1.1rem 0"><strong>Why this comes next.</strong> Every lever in one place. Chapter 15 stacks them into the ladder: the order you pull them, and the portfolio answer the exam rewards.</p>
-<p class="ch-next" style="color:var(--muted);font-size:.95em;margin:1.4rem 0 .4rem"><strong>Next:</strong> Next: the cost ladder, every lever stacked in order.</p>
+<p class="ch-next" style="color:var(--muted);font-size:.95em;margin:1.4rem 0 .4rem"><strong>Next:</strong> the cost ladder, every lever stacked in order.</p>
 <h2 id="13-best-practices-the-cost-ladder">15. Best practices: the cost ladder</h2>
 <p>The whole domain in one ordered list: cheapest lever first, most expensive last.</p>
 <h3>The ladder, cheapest first</h3>
@@ -526,6 +1827,7 @@ Apply the ladder:
 <p><img alt="AWS architecture diagram for SaaS cost control of foundation models on Amazon Bedrock" src="assets/img/mermaid/38-saas-cost-control.svg" /></p>
 <p>Reading the diagram: the SaaS cost-control diagram maps the same ladder onto a production SaaS architecture: lean prompts and semantic caching at the request edge, routers sending traffic to the right model tier, batch jobs draining offline work, PT covering the steady baseline with on-demand overflow, and a CloudWatch dashboard with budgets and anomaly detection watching the whole stack. The pattern is identical; only the deployment shape changes.</p>
 <h3>The scenario shapes</h3>
+<figure><img src="assets/img/density/d4-scenario-shapes.svg" alt="The scenario shapes: each named constraint maps to its lever stack" loading="lazy"><figcaption>The scenario shapes: each named constraint maps to its lever stack</figcaption><figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure><div class="walkthrough"><strong>How to read this.</strong> Four cards: the exam's recurring scenario shapes with their answers. Takeaway: portfolio questions are a ladder walk, one cheapest fitting lever per component, and the most correct answer is usually a hybrid.</div>
 <ul>
 <li>Optimization under constraint ("token costs growing 30%/month, no UX degradation"): stack the free levers (prompt compression, caching, caps), re-verify quality with evaluation.</li>
 <li>Performance plus volatility ("sub-3-second responses, 10x traffic spikes"): streaming for perceived latency, smaller models, provisioned throughput for baseline plus on-demand overflow, retries with backoff for spikes.</li>
