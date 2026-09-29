@@ -1,0 +1,2810 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>AIF-C01 Crash Course: AWS Certified AI Practitioner</title>
+<style>
+/* ==== DS canonical design system — do not edit per-file (build.py inlines) ==== */
+/* ==========================================================================
+   DS — Canonical Design System (shared across all study-guide tracks)
+   Pitch-black dark mode. Charis SIL primary reading font (OFL, bundled
+   offline in assets/fonts/). Nav chrome uses a clean system sans.
+   No gradients, no decorative filler. Inlined verbatim into <head>.
+   ========================================================================== */
+
+:root {
+  --bg: #000000;
+  --surface: #0d0d0d;
+  --border: #262626;
+  --text: #ececec;
+  --muted: #a8a8a8;
+  --accent: #f0b429;   /* warm amber — key highlights, active states, takeaways */
+  --link: #6cb2ff;
+  --code-bg: #111111;
+  --font-sans: "Charis SIL", "Atkinson Hyperlegible", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-chrome: -apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+/* ---------- Offline fonts (shipped in assets/fonts/, zero webfont dependency) ---------- */
+
+@font-face {
+  font-family: "Atkinson Hyperlegible";
+  src: url("assets/fonts/AtkinsonHyperlegible-Regular.ttf") format("truetype");
+  font-weight: 400; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: "Atkinson Hyperlegible";
+  src: url("assets/fonts/AtkinsonHyperlegible-Italic.ttf") format("truetype");
+  font-weight: 400; font-style: italic; font-display: swap;
+}
+@font-face {
+  font-family: "Atkinson Hyperlegible";
+  src: url("assets/fonts/AtkinsonHyperlegible-Bold.ttf") format("truetype");
+  font-weight: 700; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: "Atkinson Hyperlegible";
+  src: url("assets/fonts/AtkinsonHyperlegible-BoldItalic.ttf") format("truetype");
+  font-weight: 700; font-style: italic; font-display: swap;
+}
+@font-face {
+  font-family: "Inter";
+  src: url("assets/fonts/Inter-var.ttf") format("truetype");
+  font-weight: 100 900; font-style: normal; font-display: swap;
+}
+/* ---------- Charis SIL (OFL, SIL International) — primary reading font ----------
+   woff2 latin + latin-ext subsets, bundled in assets/fonts/, zero CDN. */
+@font-face {
+  font-family: "Charis SIL";
+  src: url("assets/fonts/CharisSIL-latin-normal-400.woff2") format("woff2");
+  font-weight: 400; font-style: normal; font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Charis SIL";
+  src: url("assets/fonts/CharisSIL-latin-ext-normal-400.woff2") format("woff2");
+  font-weight: 400; font-style: normal; font-display: swap;
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: "Charis SIL";
+  src: url("assets/fonts/CharisSIL-latin-italic-400.woff2") format("woff2");
+  font-weight: 400; font-style: italic; font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Charis SIL";
+  src: url("assets/fonts/CharisSIL-latin-ext-italic-400.woff2") format("woff2");
+  font-weight: 400; font-style: italic; font-display: swap;
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: "Charis SIL";
+  src: url("assets/fonts/CharisSIL-latin-normal-700.woff2") format("woff2");
+  font-weight: 700; font-style: normal; font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Charis SIL";
+  src: url("assets/fonts/CharisSIL-latin-ext-normal-700.woff2") format("woff2");
+  font-weight: 700; font-style: normal; font-display: swap;
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: "Charis SIL";
+  src: url("assets/fonts/CharisSIL-latin-italic-700.woff2") format("woff2");
+  font-weight: 700; font-style: italic; font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Charis SIL";
+  src: url("assets/fonts/CharisSIL-latin-ext-italic-700.woff2") format("woff2");
+  font-weight: 700; font-style: italic; font-display: swap;
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+
+/* ---------- Base ---------- */
+
+* { box-sizing: border-box; }
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 1rem;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: 17px;
+  line-height: 1.75;
+  overflow-x: clip;          /* no horizontal scroll at any width; clip keeps sticky working */
+}
+
+a { color: var(--link); }
+a:hover { text-decoration-thickness: 2px; }
+
+/* Visible focus for keyboard users — never remove without replacement. */
+:focus-visible {
+  outline: 2px solid var(--link);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+.ds-visually-hidden {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Skip link: hidden until focused. */
+.ds-skip {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 200;
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.6rem 1rem;
+  text-decoration: none;
+  font-weight: 600;
+}
+.ds-skip:focus { left: 0.75rem; top: 0.75rem; }
+
+/* ---------- Typography ---------- */
+
+h1, h2, h3, h4 {
+  font-style: normal;        /* headings always roman, never italic */
+  line-height: 1.35;
+  margin: 2.2rem 0 1rem;
+  color: var(--text);
+}
+h1 { font-size: 2rem;    font-weight: 700; }
+h2 { font-size: 1.5rem;  font-weight: 700; border-bottom: 1px solid var(--border); padding-bottom: 0.4rem; }
+h3 { font-size: 1.25rem; font-weight: 600; }
+h4 { font-size: 1.1rem;  font-weight: 600; }
+
+p { text-align: justify; margin: 1rem 0; overflow-wrap: break-word; }
+li { overflow-wrap: break-word; }
+ul, ol { padding-left: 1.6rem; }
+li { margin: 0.35rem 0; }
+
+blockquote {
+  margin: 1.5rem 0;
+  padding: 0.5rem 1.25rem;
+  border-left: 2px solid var(--border);
+  color: var(--muted);
+}
+blockquote p { text-align: left; }
+
+hr { border: 0; border-top: 1px solid var(--border); margin: 2.5rem 0; }
+
+code, kbd, samp {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+}
+p code, li code, td code, th code, figcaption code {
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.1em 0.35em;
+  overflow-wrap: anywhere;   /* long tokens (ARNs, model IDs) break rather than overflow the column */
+}
+
+/* ---------- Reading progress bar ---------- */
+
+#ds-progress {
+  position: fixed;
+  top: 0; left: 0;
+  height: 3px;
+  width: 0%;
+  background: var(--accent);
+  z-index: 100;
+  pointer-events: none;
+}
+
+/* ---------- Sidebar ---------- */
+
+#ds-sidebar-root {
+  flex: 0 0 300px;
+  width: 300px;
+  height: 100vh;
+  position: sticky;
+  top: 0;
+  overflow-y: auto;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  z-index: 60;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+.ds-side-inner {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  padding-bottom: 2rem;
+}
+
+.ds-side-search {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--surface);
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid var(--border);
+}
+.ds-side-search input {
+  width: 100%;
+  font-family: inherit;
+  font-size: 0.9rem;
+  color: var(--text);
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+}
+.ds-side-search input::placeholder { color: var(--muted); }
+
+.ds-nav {
+  list-style: none;
+  margin: 0;
+  padding: 0.5rem 0;
+}
+
+.ds-nav-row {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding-right: 0.6rem;
+}
+
+.ds-nav-toggle {
+  flex: 0 0 auto;
+  background: none;
+  border: 0;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 0.7rem;
+  line-height: 1;
+  padding: 0.55rem 0.3rem 0.55rem 1rem;
+  font-family: inherit;
+}
+.ds-nav-toggle:hover { color: var(--accent); }
+
+.ds-nav-link {
+  flex: 1 1 auto;
+  display: block;
+  min-width: 0;
+  padding: 0.45rem 0.25rem 0.45rem 0.4rem;
+  padding-left: 1.25rem;
+  margin-left: -0.55rem;      /* align text under toggle glyph */
+  color: var(--text);
+  text-decoration: none;
+  font-size: 0.92rem;
+  line-height: 1.45;
+  border-left: 2px solid transparent;
+}
+.ds-nav-link:hover { color: #ffffff; background: rgba(255, 255, 255, 0.04); }
+.ds-nav-link.active {
+  color: var(--accent);
+  border-left-color: var(--accent);
+  font-weight: 600;
+}
+
+.ds-nav-sub { list-style: none; margin: 0; padding: 0; }
+.ds-nav-subrow .ds-nav-link {
+  padding-left: 2.6rem;
+  margin-left: 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+.ds-nav-subrow .ds-nav-link:hover { color: var(--text); }
+.ds-nav-subrow .ds-nav-link.active { color: var(--accent); }
+
+.ds-done-wrap { flex: 0 0 auto; display: inline-flex; align-items: center; }
+.ds-done {
+  width: 1rem; height: 1rem;
+  margin: 0;
+  cursor: pointer;
+  accent-color: var(--accent);
+}
+.ds-nav-row.done .ds-nav-link {
+  color: var(--muted);
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+}
+
+/* ---------- Main content ---------- */
+
+#ds-content {
+  flex: 1 1 auto;
+  min-width: 0;               /* lets flex child shrink; prevents overflow */
+  overflow-wrap: break-word;   /* long unbroken strings (ARNs, URLs) break instead of spilling */
+  padding: 2.5rem 2rem 4rem;
+}
+.ds-content-inner {
+  max-width: 72ch;
+  margin: 0 auto;
+}
+
+/* ---------- Hamburger / drawer (mobile) ---------- */
+
+#ds-hamburger {
+  display: none;
+  position: fixed;
+  top: 0.75rem; left: 0.75rem;
+  z-index: 90;
+  width: 2.75rem; height: 2.75rem;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+}
+#ds-hamburger span {
+  display: block;
+  width: 1.25rem; height: 2px;
+  background: var(--text);
+}
+
+#ds-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  background: rgba(0, 0, 0, 0.6);
+}
+
+@media (max-width: 900px) {
+  body { display: block; }
+
+  #ds-hamburger { display: inline-flex; }
+
+  #ds-sidebar-root {
+    position: fixed;
+    left: 0; top: 0;
+    flex: none;
+    width: min(320px, 85vw);
+    transform: translateX(-105%);
+    transition: transform 0.25s ease;
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.6);
+  }
+  body.ds-drawer-open #ds-sidebar-root { transform: translateX(0); }
+  body.ds-drawer-open #ds-overlay { display: block; }
+
+  #ds-content { padding: 4.25rem 1.25rem 3rem; }
+}
+
+/* ---------- Learning components ---------- */
+
+/* "How the exam asks" callout */
+.exam-ask {
+  background: var(--surface);
+  border-left: 3px solid var(--accent);
+  border-radius: 0 6px 6px 0;
+  padding: 1rem 1.25rem;
+  margin: 1.5rem 0;
+}
+.exam-ask::before {
+  content: "HOW THE EXAM ASKS";
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--accent);
+  margin-bottom: 0.5rem;
+}
+.exam-ask p:first-of-type { margin-top: 0; }
+.exam-ask p:last-child { margin-bottom: 0; }
+
+/* Key-takeaway box */
+.takeaway {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: 6px;
+  padding: 1rem 1.25rem;
+  margin: 1.5rem 0;
+}
+.takeaway::before {
+  content: "KEY TAKEAWAY";
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--accent);
+  margin-bottom: 0.5rem;
+}
+.takeaway p:first-of-type { margin-top: 0; }
+.takeaway p:last-child { margin-bottom: 0; }
+
+/* Practice-question widget (click-to-reveal) */
+.pq {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  padding: 1.25rem;
+  margin: 1.5rem 0;
+}
+.pq-question { font-weight: 600; margin-top: 0; text-align: left; }
+.pq-reveal {
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  background: transparent;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  border-radius: 6px;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+}
+.pq-reveal:hover { background: rgba(240, 180, 41, 0.1); }
+/* Answer hidden only when JS is present — no-JS readers see the answer. */
+html.ds-js .pq-answer { display: none; }
+html.ds-js .pq-answer.open { display: block; }
+.pq-answer {
+  margin-top: 1rem;
+  border-top: 1px solid var(--border);
+  padding-top: 1rem;
+}
+.pq-answer p { text-align: left; }
+.pq-options { list-style: none; padding-left: 0; }
+.pq-option { padding: 0.4rem 0 0.4rem 0.85rem; margin: 0.5rem 0; }
+.pq-option.correct { border-left: 2px solid var(--accent); font-weight: 600; }
+.pq-option.wrong { border-left: 2px solid var(--border); color: var(--muted); }
+.pq-option .pq-note { display: block; font-weight: 400; color: var(--muted); font-size: 0.9rem; }
+.pq-answer .correct { color: var(--accent); font-weight: 700; }
+.pq-answer .wrong { color: var(--text); font-weight: 600; }
+.pq-meta { margin: 0 0 0.5rem; display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center; }
+.pq-ref { color: var(--muted); font-size: 0.82rem; font-weight: 400; }
+
+/* details/summary Q&A left functional, styled to match .pq */
+details {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  padding: 1rem 1.25rem;
+  margin: 1.5rem 0;
+}
+details > summary {
+  cursor: pointer;
+  font-weight: 600;
+  text-align: left;
+}
+details > summary::marker { color: var(--accent); }
+details.pq { padding: 1.25rem; }
+details.pq > summary {
+  display: inline-block;
+  font-size: 0.9rem;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  border-radius: 6px;
+  padding: 0.5rem 1rem;
+  list-style: none;
+}
+details.pq > summary::-webkit-details-marker { display: none; }
+details.pq > summary:hover { background: rgba(240, 180, 41, 0.1); }
+details.pq > .pq-answer {
+  display: block;             /* native disclosure, always functional */
+  margin-top: 1rem;
+  border-top: 1px solid var(--border);
+  padding-top: 1rem;
+}
+
+/* Copy button injected into code blocks */
+pre {
+  position: relative;
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 1rem;
+  overflow-x: auto;
+  font-family: var(--font-mono);
+  font-size: 0.88rem;
+  line-height: 1.6;
+  margin: 1.5rem 0;
+}
+pre code { background: none; border: 0; padding: 0; white-space: pre; }
+.ds-copy-btn {
+  position: absolute;
+  top: 0.5rem; right: 0.5rem;
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--muted);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 0.3rem 0.65rem;
+  cursor: pointer;
+}
+.ds-copy-btn:hover { color: var(--text); border-color: var(--muted); }
+
+/* Numbered how-to-read diagram walkthrough */
+.diagram-walkthrough ol {
+  list-style: none;
+  counter-reset: dw;
+  padding: 0;
+  margin: 1.25rem 0;
+}
+.diagram-walkthrough ol > li {
+  counter-increment: dw;
+  position: relative;
+  padding-left: 2.6rem;
+  margin-bottom: 0.85rem;
+  text-align: left;
+}
+.diagram-walkthrough ol > li::before {
+  content: counter(dw);
+  position: absolute;
+  left: 0; top: 0.15rem;
+  width: 1.8rem; height: 1.8rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--accent);
+  border-radius: 50%;
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+/* First-use term styling */
+.def {
+  border-bottom: 1px dotted var(--muted);
+  color: #f5f5f5;
+  cursor: help;
+}
+
+/* Exam-constraint chip */
+.constraint {
+  display: inline-block;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  border-radius: 999px;
+  padding: 0.15rem 0.7rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  margin: 0.15rem 0.25rem 0.15rem 0;
+  white-space: nowrap;
+}
+
+/* Block variant: for long-form constraint boxes (wraps; never clips) */
+.constraint-block {
+  display: block;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: 6px;
+  padding: 0.8rem 1rem;
+  margin: 0.9rem 0;
+  font-size: 0.95rem;
+  color: var(--text);
+}
+.constraint-block strong {
+  color: var(--accent);
+}
+
+/* Tables */
+.table-wrap {
+  overflow-x: auto;
+  margin: 1.5rem 0;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.94rem;
+  line-height: 1.6;
+}
+caption {
+  caption-side: bottom;
+  color: var(--muted);
+  font-size: 0.85rem;
+  padding: 0.6rem;
+  text-align: center;
+}
+th, td {
+  padding: 0.6rem 0.8rem;
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid var(--border);
+}
+thead th {
+  background: var(--surface);
+  font-weight: 700;
+  white-space: nowrap;
+}
+tbody tr:nth-child(odd)  { background: #0d0d0d; }
+tbody tr:nth-child(even) { background: #111111; }
+tbody tr:last-child th,
+tbody tr:last-child td { border-bottom: 0; }
+
+/* Images */
+img {
+  max-width: 100%;
+  height: auto;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+figure { margin: 1.75rem 0; }
+figure.fig-light img { background: #ffffff; padding: 1.1rem; border-radius: 12px; }
+figcaption {
+  color: var(--muted);
+  font-size: 0.85rem;
+  line-height: 1.6;
+  margin-top: 0.6rem;
+  text-align: center;
+}
+
+/* Prev / next volume footer */
+.ds-prevnext {
+  display: flex;
+  justify-content: space-between;
+  align-items: stretch;
+  gap: 1rem;
+  margin: 3.5rem 0 1rem;
+  border-top: 1px solid var(--border);
+  padding-top: 1.75rem;
+}
+.ds-prevnext a {
+  display: block;
+  flex: 1 1 0;
+  min-width: 0;               /* flex item must shrink below label width on narrow screens */
+  max-width: 48%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.9rem 1.2rem;
+  color: var(--text);
+  text-decoration: none;
+}
+.ds-prevnext a:hover { border-color: var(--accent); }
+.ds-prevnext .ds-next { text-align: right; }
+.ds-prev-empty { flex: 1 1 0; min-width: 0; max-width: 48%; }
+.ds-pn-kicker {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 0.25rem;
+}
+.ds-pn-label { font-weight: 600; line-height: 1.5; }
+
+/* ---------- Decision ladder (GenAI decision frameworks) ---------- */
+.ladder {
+  margin: 1.5rem 0;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.rung {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  padding: 0.9rem 1.1rem;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+}
+.rung:last-child { border-bottom: 0; }
+.rung-n {
+  flex: 0 0 auto;
+  width: 1.9rem; height: 1.9rem;
+  display: flex; align-items: center; justify-content: center;
+  border: 1px solid var(--accent);
+  border-radius: 50%;
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+.rung > div { min-width: 0; }
+.rung b { display: block; color: var(--text); }
+.rung span:not(.rung-n) { color: var(--muted); font-size: 0.92rem; }
+
+/* ---------- Print ---------- */
+
+@media print {
+  :root {
+    --bg: #ffffff;
+    --surface: #f5f5f5;
+    --border: #cccccc;
+    --text: #000000;
+    --muted: #444444;
+    --accent: #8a5a00;
+    --link: #0000ee;
+    --code-bg: #f5f5f5;
+  }
+  body {
+    display: block;
+    background: #ffffff;
+    color: #000000;
+    font-size: 12pt;
+    line-height: 1.6;
+  }
+  #ds-sidebar-root,
+  #ds-progress,
+  #ds-hamburger,
+  #ds-overlay,
+  .ds-side-search,
+  .ds-copy-btn,
+  .ds-done-wrap,
+  .ds-skip { display: none !important; }
+  #ds-content { padding: 0; }
+  .ds-content-inner { max-width: none; }
+  p, .pq-question, .pq-answer p, details > summary { text-align: left; }
+
+  /* Expand everything for paper. */
+  details:not([open]) > :not(summary) { display: block !important; }
+  html.ds-js .pq-answer { display: block !important; }
+  .ds-nav-sub { display: block !important; }
+
+  figure, pre, table, .pq, .exam-ask, .takeaway { break-inside: avoid; }
+  h1, h2, h3, h4 { break-after: avoid; }
+
+  pre { white-space: pre-wrap; word-wrap: break-word; }
+  .table-wrap { overflow: visible; border: 0; }
+
+  /* Print-friendly link URLs: external links only. */
+  a[href^="http"]::after {
+    content: " (" attr(href) ")";
+    font-size: 0.85em;
+    color: var(--muted);
+    word-break: break-all;
+  }
+  a { text-decoration: none; }
+}
+
+/* ==========================================================================
+   PART 2 — Content components (sanctioned adapters, shared by all tracks)
+   Added 2026-09-28 during the CCAR-P remediation: every bespoke class that
+   survived the first theming pass is defined here ONCE, in dark-mode tokens,
+   so all volumes render identically. Pitch-black discipline holds: no
+   gradients, no decorative filler, system fonts only.
+   ========================================================================== */
+
+/* ---- Page lede / kicker / eyebrow ---- */
+.lede{color:var(--muted);font-size:1.05rem;margin:0 0 1.5rem;text-align:left}
+.kicker{color:var(--muted);font-size:.94rem;margin:0 0 1.6rem;text-align:left}
+.eyebrow{font:600 .75rem/1.4 var(--font-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin:0 0 .5rem}
+
+/* ---- Top banner / hero card (dark; the navy 03 banner was a defect) ---- */
+.banner{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.625rem 1.75rem;margin:0 0 1.875rem}
+.banner h1{margin-top:0}
+.banner .kicker{font-size:.85rem;color:var(--muted);margin-bottom:6px}
+.banner p{color:var(--muted);text-align:left}
+.hero{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:2rem 2.2rem;margin:0 0 2.5rem}
+.hero h1{margin-top:0}
+.hero p{color:var(--muted)}
+.hero .facts{margin-top:1rem}
+
+/* ---- Fact chips / fact cards ---- */
+.facts{display:flex;flex-wrap:wrap;gap:10px;margin:1rem 0 2rem}
+.facts span{border:1px solid var(--border);background:var(--code-bg);border-radius:6px;padding:5px 12px;font-size:.85rem}
+.fact{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:.7rem .9rem;flex:1 1 150px;min-width:140px}
+.fact b{display:block;font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600}
+.fact span{font-size:1.02rem;font-weight:600}
+
+/* ---- Unit cards ---- */
+.unit{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.625rem 1.75rem;margin:1.625rem 0}
+.unit>h2:first-of-type{margin-top:0}
+.unit-tag{display:block;font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:.25rem}
+
+/* ---- Callout family (info / trap / fix / warn) ---- */
+.callout{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:.9rem 1.25rem;margin:1.5rem 0}
+.callout .lbl,.callout .cl,.callout-h{font-weight:700;display:block;margin-bottom:.35rem}
+.callout p:last-child{margin-bottom:0}
+.callout.trap{border-left:4px solid #e57373}
+.callout.trap .lbl,.callout.trap .cl,.callout.trap .callout-h{color:#e57373}
+.callout.fix{border-left:4px solid #3fb96b}
+.callout.fix .lbl,.callout.fix .cl,.callout.fix .callout-h{color:#3fb96b}
+.callout.warn{border-left:3px solid #e05656}
+.callout.warn .lbl,.callout.warn .cl,.callout.warn .callout-h{color:#e05656}
+.callout.anti{border-left:3px solid var(--muted)}
+.callout.anti .lbl,.callout.anti .cl{color:var(--muted)}
+.callout.num{border-left:3px solid var(--accent)}
+.callout.num .lbl,.callout.num .cl{color:var(--accent)}
+.callout.math{border-left:3px solid #3fb96b}
+.callout.math .callout-h{color:#3fb96b}
+.callout.fail{border-left:3px solid #e5484d}
+.callout.fail .callout-h{color:#e5484d}
+
+/* Legacy aliases mapped onto the callout family */
+.board{border-left:4px solid var(--link);background:var(--surface);padding:.75rem 1.125rem;border-radius:0 8px 8px 0;margin:1.2em 0}
+.board .lbl{font-weight:700;color:var(--link)}
+.trapbox{border:1px solid var(--accent);background:var(--surface);border-radius:8px;padding:.75rem 1.125rem;margin:1.2em 0}
+.trapbox .lbl{font-weight:700;color:var(--accent)}
+.nums{border-left:4px solid var(--accent);background:var(--surface);padding:.75rem 1.125rem;border-radius:0 8px 8px 0;margin:1.2em 0}
+.nums .lbl{font-weight:700;color:var(--accent)}
+.trap{background:var(--surface);border:1px solid var(--border);border-left:3px solid #e57373;border-radius:6px;padding:1rem 1.25rem;margin:1.5rem 0}
+.trap>.label,.trap .t-title{display:block;font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#e57373;margin-bottom:.5rem}
+.trap .t-title{margin:0 0 .3rem}
+.trap p:first-of-type{margin-top:0}
+.trap p:last-child{margin-bottom:0}
+.warn{background:var(--surface);border-left:3px solid var(--accent);border-radius:0 6px 6px 0;padding:1rem 1.25rem;margin:1.5rem 0}
+.warn h4{margin:0 0 .5rem;color:var(--accent);font-size:1rem}
+.warn p:first-of-type{margin-top:0}
+.warn p:last-child{margin-bottom:0}
+.askbox{background:var(--surface);border:1px solid var(--accent);border-radius:10px;padding:1rem 1.25rem;margin:1.5rem 0}
+.askbox h4{margin:0 0 .5rem;color:var(--accent);font-size:1rem}
+.askbox .shape{font-size:.95rem}
+.askbox .trap{font-size:.95rem;margin-top:.75rem;border-left:3px solid #e57373;padding-left:1rem}
+.askbox .trap b{color:#e57373}
+
+/* ---- Exam strip / onboarding / examline ---- */
+.examstrip,.exam-strip{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--link);border-radius:0 8px 8px 0;padding:1rem 1.25rem;margin:1.5rem 0 2.5rem}
+.examstrip td{padding:.25rem .6rem .25rem 0;vertical-align:top}
+.examstrip td:first-child{color:var(--muted);white-space:nowrap}
+.exam-strip{margin-top:1rem}
+.onboard{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--link);border-radius:0 8px 8px 0;padding:1rem 1.25rem;margin:1.5rem 0}
+.onboard .q{font-weight:700}
+.examline{font-size:.93rem;color:var(--muted);border-top:1px solid var(--border);padding-top:.7rem;margin-top:1.4rem}
+
+/* ---- Pills, tags, badges ---- */
+.volume-tag{display:inline-block;background:var(--surface);border:1px solid var(--accent);color:var(--accent);font-size:.8rem;font-weight:700;letter-spacing:.06em;padding:.25rem .7rem;border-radius:20px;margin-bottom:1rem}
+.tag{display:inline-block;font-size:.75rem;font-weight:700;padding:.2em .7em;border-radius:20px;border:1px solid var(--accent);color:var(--accent);margin-right:.5em;vertical-align:.15em}
+.badges{display:flex;flex-wrap:wrap;gap:.5rem;margin:1rem 0 .5rem}
+.badge{background:var(--surface);border:1px solid var(--border);border-radius:999px;padding:.25rem .9rem;font-size:.85rem;color:var(--text)}
+.badge b{color:var(--accent)}
+
+/* ---- In-content TOC cards ---- */
+.toc-grid{display:grid;grid-template-columns:1fr 1fr;gap:.65rem;margin:1.25rem 0}
+.toc-grid a{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:.75rem .9rem;text-decoration:none;color:var(--text);font-size:.95rem}
+.toc-grid a:hover{border-color:var(--link)}
+.toc-grid a b{display:block;color:var(--link)}
+.toc{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1.2rem 1.5rem;margin:0 0 3rem}
+@media (max-width:640px){.toc-grid{grid-template-columns:1fr}}
+
+/* ---- Section helpers ---- */
+.section{margin-bottom:2.5rem}
+.chapter{margin-bottom:3.5rem}
+.note{font-size:.88rem;color:var(--muted)}
+.small{font-size:.9rem;color:var(--muted)}
+.ht{font-weight:700;font-size:.9rem;letter-spacing:.06em;color:var(--accent);margin:0 0 .5rem;text-align:left}
+
+/* ---- Definition blocks ---- */
+div.def{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:.9rem 1.2rem;margin:1rem 0}
+div.def p{margin:.4rem 0}
+div.def .term,span.def .term{font-weight:700;color:var(--link)}
+div.def .t-title{font-weight:700;margin:0 0 .2rem}
+
+/* ---- Key-value definition lists ---- */
+dl.kv{display:grid;grid-template-columns:170px 1fr;gap:.35rem .9rem;margin:.8rem 0;font-size:.93rem}
+dl.kv dt{font-weight:700}
+dl.kv dd{margin:0}
+@media (max-width:640px){dl.kv{grid-template-columns:1fr}}
+
+/* ---- Custom labels inside canonical callouts: custom text stays the label,
+        the auto ::before label is suppressed to avoid duplication ---- */
+.exam-ask:has(>.label)::before,.takeaway:has(>.label)::before{content:none}
+.exam-ask:has(>h4)::before{content:none}
+.exam-ask>.label,.takeaway>.label{display:block;font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin-bottom:.5rem}
+.exam-ask>h4{font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin:0 0 .5rem}
+.exam-ask .callout-h{color:var(--text)}
+.exam-ask .lbl{font-size:.85rem;color:var(--muted);font-weight:600;margin-bottom:.5rem}
+.exam-ask .cl,.takeaway .cl,.takeaway .lbl{font-weight:700;display:block;margin-bottom:.35rem;color:var(--accent)}
+.diagram-walkthrough .lbl{font-weight:700;margin-bottom:6px}
+.diagram-walkthrough .walkthrough-h{margin:0 0 .6rem;font-size:.85rem;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.06em;text-align:left}
+.diagram-walkthrough>p:first-child{margin:0 0 .75rem;font-size:.82rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);text-align:left}
+.diagram-walkthrough .howread-title{font-weight:700;font-size:1rem;margin:0 0 .3rem}
+.diagram-walkthrough .howread-sub{font-weight:700;font-size:.88rem;margin:.7rem 0 .2rem}
+
+/* ---- Tables: header rows without thead stay distinct; numeric alignment ---- */
+.table-wrap tr:first-child th{background:var(--surface);font-weight:700;white-space:nowrap}
+.table-wrap th{background:var(--surface);font-weight:700}
+table.data.num td,table.data.num th{font-variant-numeric:tabular-nums}
+
+/* ---- Figure credits ---- */
+figcaption .credit{display:block;margin-top:2px}
+figcaption .src{font-size:.8rem}
+
+/* ---- Footer ---- */
+footer,#ds-content footer{color:var(--muted);font-size:.85rem;border-top:1px solid var(--border);padding-top:1.25rem;margin-top:3.5rem}
+footer p{text-align:left}
+
+/* ---- Index page: volume cards, how-to ---- */
+.vol{display:block;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1rem 1.15rem;margin:0 0 .7rem;text-decoration:none;color:inherit}
+.vol:hover{border-color:var(--accent)}
+.vol .row{display:flex;justify-content:space-between;align-items:baseline;gap:1rem}
+.vol .row > *{min-width:0}
+.vol h3{margin:0;font-size:1.05rem}
+.vol .w{flex:none;font:600 .75rem/1 var(--font-mono);color:var(--accent);border:1px solid var(--border);border-radius:20px;padding:.3rem .6rem;white-space:nowrap}
+.vol p{margin:.4rem 0 0;color:var(--muted);font-size:.92rem;text-align:left}
+.howto{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1rem 1.15rem;color:var(--muted);font-size:.93rem}
+.howto ol{margin:.4rem 0 0;padding-left:1.2rem}
+.howto li+li{margin-top:.3rem}
+
+/* ==========================================================================
+   QUESTION BANK components (.qb-*) — scenario questions with per-distractor
+   explanations, Maarek-style. Used by 08-question-bank.html.
+   ========================================================================== */
+.qb-q{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.5rem 1.75rem;margin:2rem 0}
+.qb-q:first-of-type{margin-top:1.5rem}
+.qb-head{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;margin-bottom:1rem}
+.qb-num{font:700 .85rem var(--font-mono);color:var(--accent);letter-spacing:.04em}
+.qb-pill{font-size:.75rem;font-weight:700;padding:.2rem .7rem;border-radius:20px;border:1px solid var(--border);white-space:nowrap}
+.qb-pill.easy{color:#3fb96b;border-color:#3fb96b}
+.qb-pill.med{color:var(--accent);border-color:var(--accent)}
+.qb-pill.hard{color:#e5484d;border-color:#e5484d}
+.qb-scenario{margin:0 0 1rem}
+.qb-ask{font-weight:700;font-size:1.06rem;margin:1.25rem 0 .75rem}
+.qb-opts{margin:.5rem 0 0;padding-left:1.4rem}
+.qb-opts li{margin-bottom:.55rem}
+.qb-opts li::marker{font-weight:700;color:var(--accent)}
+.qb-q details.pq{margin-top:1.25rem;border-top:1px solid var(--border);padding-top:1rem}
+.qb-verdict{display:inline-block;background:var(--accent);color:#000;font-weight:700;padding:.3rem .9rem;border-radius:8px;margin:.25rem 0 1rem;font-size:.95rem}
+.qb-why{border-left:3px solid #3fb96b;padding-left:1rem;margin:0 0 1rem}
+.qb-why strong{color:#3fb96b}
+.qb-distractors{margin:.5rem 0 0;padding-left:1.4rem}
+.qb-distractors li{margin-bottom:.6rem;color:var(--muted)}
+.qb-distractors li::marker{font-weight:700;color:#e57373}
+/* Decision flowcharts inside the question bank */
+.qb-fig{margin:1.5rem 0}
+.qb-flow{display:flex;flex-direction:column;align-items:stretch;gap:.3rem;margin:1rem 0;max-width:640px}
+.qb-node{background:var(--code-bg);border:1px solid var(--border);border-radius:8px;padding:.7rem 1rem;text-align:center;font-size:.95rem}
+.qb-node.decision{border-color:var(--accent);border-style:dashed}
+.qb-node.outcome{border-color:#3fb96b}
+.qb-arrow{text-align:center;color:var(--muted);font-size:1.25rem;line-height:1.1}
+.qb-branch{font-size:.78rem;color:var(--accent);font-weight:700;margin-left:.5rem}
+/* Domain section headers inside the question bank */
+.qb-domain-note{color:var(--muted);margin:-.5rem 0 1.5rem}
+
+/* ---- Print: question bank prints clean on light paper ---- */
+@media print{
+  .qb-q{break-inside:avoid;background:#fff;border:1px solid #ccc}
+  .qb-verdict{background:#eee;color:#000;border:1px solid #999}
+  .qb-node{background:#f5f5f5;border-color:#999}
+}
+
+/* Strategy cards in the question bank */
+.qb-strategy{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.25rem 1.5rem;margin:1.25rem 0}
+.qb-strategy>h3:first-child{margin-top:0}
+.qb-node.result{border-color:#3fb96b}
+
+/* ==========================================================================
+   SITE CHROME — header (track title, breadcrumbs, volume nav, prev/next),
+   footer sitemap. Rendered by ds.js from window.DS_MANIFEST, identical on
+   every page. Nav chrome uses --font-chrome (clean system sans) for contrast
+   with the Charis SIL reading font.
+   ========================================================================== */
+
+#ds-content .ds-site-header {
+  font-family: var(--font-chrome);
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  margin: -2.5rem -2rem 2.25rem;
+  padding: 0.85rem 2rem 0;
+}
+#ds-content .ds-site-header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+#ds-content .ds-track-title {
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  color: var(--text);
+  text-decoration: none;
+  overflow-wrap: break-word;
+}
+#ds-content .ds-track-title:hover { color: var(--accent); }
+#ds-content .ds-hpn { display: flex; gap: 0.5rem; flex: none; }
+#ds-content .ds-hpn a {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--muted);
+  text-decoration: none;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.35rem 0.7rem;
+  white-space: nowrap;
+}
+#ds-content .ds-hpn a:hover { color: var(--accent); border-color: var(--accent); }
+
+#ds-content .ds-crumb { margin: 0.65rem 0 0; }
+#ds-content .ds-crumb ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+#ds-content .ds-crumb li + li::before {
+  content: "/";
+  margin: 0 0.45rem;
+  color: var(--border);
+}
+#ds-content .ds-crumb a { color: var(--link); text-decoration: none; }
+#ds-content .ds-crumb a:hover { text-decoration: underline; }
+#ds-content .ds-crumb [aria-current="page"] { color: var(--text); }
+
+#ds-content .ds-volnav {
+  display: flex;
+  gap: 0.25rem;
+  overflow-x: auto;
+  list-style: none;
+  margin: 0.65rem -2rem 0;
+  padding: 0 2rem 0.7rem;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+#ds-content .ds-volnav a {
+  display: block;
+  white-space: nowrap;
+  font-size: 0.8rem;
+  color: var(--muted);
+  text-decoration: none;
+  padding: 0.45rem 0.8rem;
+  border: 1px solid transparent;
+  border-radius: 6px;
+}
+#ds-content .ds-volnav a:hover { color: var(--text); background: rgba(255, 255, 255, 0.04); }
+#ds-content .ds-volnav a[aria-current="page"] {
+  color: var(--accent);
+  font-weight: 600;
+  border-color: var(--border);
+  background: var(--code-bg);
+}
+
+/* Volumes block at the top of the sidebar (mobile drawer shows this). */
+.ds-side-volumes { padding: 0.85rem 1rem 0.25rem; border-bottom: 1px solid var(--border); }
+.ds-side-volumes h2 {
+  font-family: var(--font-chrome);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0 0 0.35rem;
+  padding: 0;
+  border: 0;
+}
+.ds-side-volumes ul { list-style: none; margin: 0; padding: 0 0 0.6rem; }
+.ds-side-volumes a {
+  display: block;
+  font-family: var(--font-chrome);
+  font-size: 0.85rem;
+  line-height: 1.45;
+  color: var(--muted);
+  text-decoration: none;
+  padding: 0.35rem 0;
+}
+.ds-side-volumes a:hover { color: var(--text); }
+.ds-side-volumes a[aria-current="page"] { color: var(--accent); font-weight: 600; }
+
+/* Footer sitemap: every volume + track home. */
+#ds-content .ds-site-footer {
+  font-family: var(--font-chrome);
+  font-size: 0.85rem;
+  color: var(--muted);
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  margin: 2.5rem -2rem -4rem;
+  padding: 1.5rem 2rem 2.5rem;
+}
+#ds-content .ds-site-footer .ds-footer-kicker {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0 0 0.25rem;
+}
+#ds-content .ds-site-footer .ds-footer-home {
+  font-weight: 700;
+  color: var(--text);
+  text-decoration: none;
+}
+#ds-content .ds-site-footer .ds-footer-home:hover { color: var(--accent); }
+#ds-content .ds-site-footer nav ul {
+  list-style: none;
+  margin: 0.75rem 0 0;
+  padding: 0;
+  columns: 2;
+  column-gap: 2rem;
+}
+#ds-content .ds-site-footer nav li { break-inside: avoid; }
+#ds-content .ds-site-footer nav a {
+  color: var(--muted);
+  text-decoration: none;
+  line-height: 2;
+}
+#ds-content .ds-site-footer nav a:hover { color: var(--accent); }
+#ds-content .ds-site-footer nav a[aria-current="page"] { color: var(--accent); font-weight: 600; }
+
+@media (max-width: 900px) {
+  /* Mobile: the horizontal volume strip hides; the hamburger drawer
+     (sidebar "Volumes" block) is the volume nav. */
+  #ds-content .ds-volnav { display: none; }
+  #ds-content .ds-site-header { margin: -4.25rem -1.25rem 2rem; padding: 0.85rem 1.25rem 0.7rem; }
+  /* Clear the fixed hamburger (left 0.75rem + 2.75rem wide = ends at 3.5rem). */
+  #ds-content .ds-site-header-top { padding-left: 2.75rem; }
+  /* The fixed hamburger floats over the drawer's top-left corner. */
+  .ds-side-volumes { padding-top: 4.25rem; }
+  #ds-content .ds-site-footer { margin: 2.5rem -1.25rem -3rem; padding: 1.5rem 1.25rem 2.5rem; }
+}
+@media (max-width: 640px) {
+  #ds-content .ds-site-footer nav ul { columns: 1; }
+}
+
+@media print {
+  #ds-content .ds-site-header,
+  #ds-content .ds-site-footer,
+  .ds-side-volumes { display: none !important; }
+}
+
+
+/* ==== YouTube click-to-load facades (track-local) ==== */
+.prereq-video iframe.yt-player { width: 100%; aspect-ratio: 16/9; border: 0; border-radius: 8px; }
+.yt-speedbar { display: flex; gap: 6px; align-items: center; margin-top: 8px; flex-wrap: wrap; font-size: 13px; }
+.yt-speedbar-label { font-weight: 600; margin-right: 2px; }
+.yt-speedbar button { padding: 4px 10px; border: 1px solid #c9c9c9; border-radius: 999px; background: #ffffff; cursor: pointer; font-size: 13px; }
+.yt-speedbar button.active { background: #1a1a1a; color: #ffffff; border-color: #1a1a1a; }
+.video-why { font-size: 14px; color: #4a4a4a; }
+.yt-facade { width: 100%; aspect-ratio: 16/9; border: 0; border-radius: 8px; background: #141414; }
+.yt-facade-btn { width: 100%; height: 100%; border: 0; border-radius: 8px; background: #141414; color: #f5f5f5; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; padding: 24px; font: inherit; }
+.yt-facade-play { width: 68px; height: 48px; background: #c00; border-radius: 12px; position: relative; }
+.yt-facade-play::after { content: ""; position: absolute; left: 28px; top: 14px; border-left: 16px solid #fff; border-top: 10px solid transparent; border-bottom: 10px solid transparent; }
+.yt-facade-title { font-weight: 600; font-size: 16px; text-align: center; }
+.yt-facade-note { font-size: 13px; color: #bdbdbd; }
+.prereq-video iframe.yt-player.loaded { width: 100%; aspect-ratio: 16/9; border: 0; border-radius: 8px; }
+/* ==== Experience layer v1 (additive, 2026-09-28) ==== */
+/* Hallmark · pre-emit critique: P5 H4 E5 S4 R5 V5
+ * ==========================================================================
+ * Experience layer for study volumes — ADDITIVE ONLY.
+ * Never edits content markup or DS chrome; references DS tokens only
+ * (--accent, --border). No new colors, no gradients, no decorative filler.
+ *
+ * Motion stance: calm delight. Opacity/translate only (GPU-friendly),
+ * one IntersectionObserver, one rAF-throttled scroll listener, zero layout
+ * shift, prefers-reduced-motion respected, fully usable with JS disabled
+ * (every hidden state is gated on html.xp-js, which only this layer's
+ * companion script adds).
+ *
+ * Wiring (final assembly, per volume — same model as ds.css/ds.js):
+ *   1. In <head>, AFTER the DS style block, add:
+ *        <style>
+ *        /* ==== Experience layer — additive, do not edit per-file ==== */
+ *        …this file verbatim…
+ *        [close the style element]
+ *   2. Before <script>
+/* ==== Experience layer v1 behavior (additive, 2026-09-28) ==== */
+/* ==== Experience layer behavior — additive ====
+ * Calm, GPU-friendly page motion for study volumes. No-JS safe: every hidden
+ * state in experience.css is gated on `html.xp-js`, which only this script
+ * adds — without it the page is fully readable. Respects
+ * prefers-reduced-motion (exits early; CSS keeps everything static).
+ *
+ * Three jobs:
+ *  1. Hero parallax — detects the volume hero (.banner/.hero, else wraps the
+ *     h1 + lede block in .xp-hero) and drifts it gently as the reader
+ *     scrolls on. Transform/opacity only, rAF-throttled, passive listener.
+ *  2. Scroll reveals — one IntersectionObserver fades+rises figures, key
+ *     callouts and knowledge checks exactly once. Elements already in view
+ *     on load appear immediately (no load flash).
+ *  3. Nothing else: progress bar, scroll-spy, sidebar, quiz toggles are
+ *     owned by ds.js and are left untouched.
+ *
+ * (In the assembly snippet the closing element tags are written literally;
+ * inside this file they are escaped as <\/style> / <\/script> so the file
+ * pastes verbatim without early-terminating its own element.)
+ */
+(function () {
+  'use strict';
+
+  var root = document.documentElement;
+  root.classList.add('xp-js');
+
+  var reduceMotion = false;
+  try {
+    reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  } catch (e) { /* matchMedia unavailable: assume motion is fine */ }
+  if (reduceMotion) { return; }
+
+  /* ---------------- 1. Hero detection + gentle parallax ---------------- */
+  var hero = document.querySelector('.banner, .hero');
+  if (!hero) {
+    /* No banner hero: wrap the volume title (h1) plus its lede paragraphs
+       in a layout-neutral div. Never touches headings ds.js needs. */
+    var main = document.querySelector('main');
+    var h1 = main ? main.querySelector('h1') : null;
+    if (h1 && h1.parentNode) {
+      var wrap = document.createElement('div');
+      wrap.className = 'xp-hero';
+      h1.parentNode.insertBefore(wrap, h1);
+      var node = h1, moved = 0, paras = 0;
+      while (node && moved < 8) {
+        var next = node.nextSibling;
+        var isPara = node.nodeType === 1 && node.tagName === 'P';
+        if (node !== h1 && !isPara) { break; }
+        wrap.appendChild(node);
+        moved += 1;
+        if (isPara) {
+          paras += 1;
+          if (paras >= 3) { break; }
+        }
+        node = next;
+      }
+      hero = wrap;
+    }
+  }
+
+  var heroH = 0, ticking = false, pxOn = false;
+  function measure() { heroH = hero ? hero.offsetHeight : 0; }
+  function render() {
+    ticking = false;
+    if (!hero || !heroH) { return; }
+    var y = window.pageYOffset || root.scrollTop || 0;
+    if (y <= 0) {
+      if (pxOn) { hero.style.transform = ''; hero.style.opacity = ''; pxOn = false; }
+      return;
+    }
+    var range = heroH * 1.4;
+    if (y < range) {
+      /* Drift up slightly slower than the scroll and fade a whisper —
+         the title recedes calmly instead of snapping away. */
+      var k = Math.min(y / range, 1);
+      hero.style.transform = 'translate3d(0,' + (-y * 0.06).toFixed(1) + 'px,0)';
+      hero.style.opacity = (1 - k * 0.22).toFixed(3);
+      pxOn = true;
+    } else if (pxOn) {
+      hero.style.transform = '';
+      hero.style.opacity = '';
+      pxOn = false;
+    }
+  }
+  function requestRender() {
+    if (!ticking) { ticking = true; window.requestAnimationFrame(render); }
+  }
+  if (hero) {
+    measure();
+    render();
+    window.addEventListener('scroll', requestRender, { passive: true });
+    window.addEventListener('resize', function () { measure(); requestRender(); });
+  }
+
+  /* ---------------- 2. Scroll-triggered reveals ---------------- */
+  var SELECTOR = [
+    'figure',
+    '.takeaway', '.exam-ask', '.trapbox', '.trap', '.board',
+    '.diagram-walkthrough', '.walkthrough', '.warn', '.callout',
+    '.ob-board', '.nums', '.watch-card', '.lab', '.pq', '.go-deeper-note'
+  ].join(', ');
+
+  var targets = [];
+  Array.prototype.forEach.call(document.querySelectorAll(SELECTOR), function (el) {
+    if (hero && hero.contains(el)) { return; } /* hero has its own motion */
+    targets.push(el);
+  });
+
+  function showAll(list) {
+    list.forEach(function (el) { el.classList.add('xp-reveal', 'xp-in'); });
+  }
+
+  if (!targets.length) { return; }
+
+  if (!('IntersectionObserver' in window)) { showAll(targets); return; }
+
+  var io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (en) {
+      if (en.isIntersecting) {
+        en.target.classList.add('xp-in');
+        io.unobserve(en.target);
+      }
+    });
+  }, { rootMargin: '0px 0px -6% 0px', threshold: 0.06 });
+
+  var vh = window.innerHeight || 800;
+  targets.forEach(function (el) {
+    el.classList.add('xp-reveal');
+    var r = el.getBoundingClientRect();
+    if (r.top < vh && r.bottom > 0) {
+      el.classList.add('xp-in'); /* in view on load: appear, no animation */
+    } else {
+      io.observe(el);
+    }
+  });
+})();
+
+</script>
+</body>, AFTER the ds.js script block, add:
+ *        <script>
+ *        /* ==== Experience layer behavior — additive ==== */
+ *        …experience.js verbatim…
+ *        [close the script element]
+ * (Closing tags are written out in the assembly snippet, not here, so this
+ * file can be pasted verbatim without early-terminating its own element.)
+ * ========================================================================== */
+
+/* ---------- 1. Smooth anchor scrolling (motion-safe readers only) ---------- */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+/* ---------- 2. Scroll-triggered reveals ----------
+   Hidden state exists ONLY under html.xp-js. No-JS readers, print, and
+   reduced-motion users always see full content. Uses the independent
+   `translate` property (not `transform`) so hover feedback below composes
+   without specificity fights. Opacity + translate only: zero layout shift. */
+html.xp-js .xp-reveal {
+  opacity: 0;
+  translate: 0 14px;
+}
+html.xp-js .xp-reveal.xp-in {
+  opacity: 1;
+  translate: 0 0;
+  transition:
+    opacity 0.55s ease,
+    translate 0.55s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+/* ---------- 3. Hero ---------- */
+/* Layout-neutral wrapper the script may add around a volume's title block.
+   Parallax itself is applied inline by the script (transform only). */
+.xp-hero {
+  position: relative;
+}
+
+/* ---------- 4. Calm hover feedback: cards + knowledge checks only ----------
+   translateY(-1px) + accent border. transform composes with the reveal's
+   independent `translate` property — no conflicts. */
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .pq,
+  .watch-card,
+  .ob-board,
+  .lab {
+    transition: transform 0.18s ease, border-color 0.18s ease;
+  }
+  .pq:hover,
+  .watch-card:hover,
+  .ob-board:hover,
+  .lab:hover {
+    transform: translateY(-1px);
+    border-color: var(--accent);
+  }
+  .pq:focus-within,
+  .watch-card:focus-within,
+  .ob-board:focus-within,
+  .lab:focus-within {
+    border-color: var(--accent);
+  }
+}
+
+/* ---------- 5. Reduced motion: everything static and visible ---------- */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  html.xp-js .xp-reveal {
+    opacity: 1;
+    translate: 0 0;
+    transition: none;
+  }
+  .xp-hero {
+    transform: none !important;
+    opacity: 1 !important;
+  }
+  .pq,
+  .watch-card,
+  .ob-board,
+  .lab {
+    transition: none;
+  }
+}
+
+/* ---------- 6. Print: never hide content ---------- */
+@media print {
+  html.xp-js .xp-reveal {
+    opacity: 1 !important;
+    translate: 0 0 !important;
+    transition: none;
+  }
+  .xp-hero {
+    transform: none !important;
+    opacity: 1 !important;
+  }
+}
+
+</style>
+</head>
+<body>
+<div id="ds-sidebar-root"></div>
+<main id="ds-content"><div class="ds-content-inner">
+<h1 id="aif-c01-crash-course">AIF-C01 Crash Course: AWS Certified AI Practitioner</h1>
+<style>
+details.cc-qa{border:1px solid var(--line,#2a2a2a);border-radius:8px;padding:.6rem .9rem;margin:.5rem 0;background:var(--card,#141414)}
+details.cc-qa summary{cursor:pointer;font-weight:600;list-style:none}
+details.cc-qa summary::-webkit-details-marker{display:none}
+details.cc-qa summary::before{content:"+ ";color:var(--accent,#4da3ff)}
+details.cc-qa[open] summary::before{content:"\2212 "}
+details.cc-qa blockquote{margin:.5rem 0 0;border-left:3px solid var(--accent,#4da3ff);padding-left:.8rem;color:inherit}
+.vid{margin:1.2rem 0}
+.vid-frame{position:relative;width:100%;aspect-ratio:16/9;background:#000;border-radius:10px;overflow:hidden;border:1px solid var(--line,#2a2a2a)}
+.vid-frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.vid-bar{display:flex;flex-wrap:wrap;gap:.35rem;margin-top:.5rem;align-items:center}
+.vid-bar .lbl{font-size:.85rem;opacity:.75;margin-right:.25rem}
+.vid-bar button{border:1px solid var(--line,#3a3a3a);background:var(--card,#161616);color:inherit;border-radius:6px;padding:.25rem .6rem;font-size:.85rem;cursor:pointer}
+.vid-bar button.on{border-color:var(--accent,#4da3ff);color:var(--accent,#4da3ff);font-weight:700}
+.vid-note{font-size:.9rem;opacity:.85;margin-top:.4rem}
+</style>
+
+<p>This volume covers the whole AIF-C01 exam in one linear pass. Small ideas first, then the big picture. No repetition, no padding. Read it once, then use the decision trees and practice questions to lock it in.</p>
+<h2 id="the-exam-in-30-seconds">The exam in 30 seconds</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Fact</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Exam</td>
+<td>AIF-C01, AWS Certified AI Practitioner</td>
+</tr>
+<tr>
+<td>Questions</td>
+<td>65 total: 50 scored + 15 unscored (you cannot tell which is which)</td>
+</tr>
+<tr>
+<td>Time</td>
+<td>90 minutes (about 83 seconds per question, keep moving)</td>
+</tr>
+<tr>
+<td>Pass</td>
+<td>700 out of 1000 (compensatory: no per-domain minimum)</td>
+</tr>
+<tr>
+<td>Cost</td>
+<td>$100 USD</td>
+</tr>
+<tr>
+<td>Valid</td>
+<td>3 years</td>
+</tr>
+<tr>
+<td>Where</td>
+<td>Pearson VUE test center or online proctored</td>
+</tr>
+<tr>
+<td>Formats</td>
+<td>Multiple choice, multiple response, ordering, matching, case study</td>
+</tr>
+<tr>
+<td>Scoring</td>
+<td>No partial credit. Unanswered counts as wrong, so answer everything. Guessing is free.</td>
+</tr>
+</tbody>
+</table></div>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Domain</th>
+<th>Weight</th>
+<th>Scored questions (of 50)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>D1 Fundamentals of AI and ML</td>
+<td>20%</td>
+<td>~10</td>
+</tr>
+<tr>
+<td>D2 Fundamentals of Generative AI</td>
+<td>24%</td>
+<td>~12</td>
+</tr>
+<tr>
+<td>D3 Applications of Foundation Models</td>
+<td>28%</td>
+<td>~14</td>
+</tr>
+<tr>
+<td>D4 Guidelines for Responsible AI</td>
+<td>14%</td>
+<td>~7</td>
+</tr>
+<tr>
+<td>D5 Security, Compliance, and Governance</td>
+<td>14%</td>
+<td>~7</td>
+</tr>
+</tbody>
+</table></div>
+<p>Domains 2 and 3 are 52% of the exam. That is where your time goes.</p>
+<div class="exam-ask"><p>How AWS asks: a short business scenario, then "which service" or "which approach". Two or three options are real AWS services doing a real job, just not this job. One option fits every constraint in the stem. Read the last sentence first (that is the actual question), then scan for the deciding word: "private data" points to RAG, "take actions" points to agents, "cheapest" points to prompt engineering or batch.</p></div>
+
+<div class="takeaway"><p>Out of scope, so do not study it: writing code, data and feature engineering, hyperparameter tuning, building ML pipelines, and deep security frameworks. The exam tests judgment, not implementation.</p></div>
+<h2 id="how-to-use-this-volume">How to use this volume</h2>
+<ul>
+<li><strong>20 minutes:</strong> read "The exam in 30 seconds" and the three decision trees (customization, inference, service map).</li>
+<li><strong>3 hours:</strong> read one domain at a time. Do each knowledge check before moving on.</li>
+<li><strong>1 day:</strong> do all 18 practice questions. Re-read every section you missed.</li>
+</ul>
+<div class="vid" data-vid="ypV8E1b5L1Q">
+<div class="vid-frame"><div class="yt-facade" data-vid="ypV8E1b5L1Q" data-title="AWS Certified AI Practitioner AIF-C01 Prep 2026 (GetCertPrep)" data-ytid="ytv-0"><button type="button" class="yt-facade-btn" aria-label="Play video: AWS Certified AI Practitioner AIF-C01 Prep 2026 (GetCertPrep)"><span class="yt-facade-play" aria-hidden="true"></span><span class="yt-facade-title">AWS Certified AI Practitioner AIF-C01 Prep 2026 (GetCertPrep)</span><span class="yt-facade-note">Click to load this video from YouTube</span></button></div>
+<div class="yt-speedbar" data-for="ytv-0">
+<span class="yt-speedbar-label">Speed:</span>
+<button type="button" data-rate="0.5">0.5x</button><button type="button" data-rate="0.75">0.75x</button><button type="button" data-rate="1" class="active">1x</button><button type="button" data-rate="1.25">1.25x</button><button type="button" data-rate="1.5">1.5x</button><button type="button" data-rate="1.75">1.75x</button><button type="button" data-rate="2">2x</button>
+</div></div>
+<div class="vid-bar" role="group" aria-label="Playback speed"><span class="lbl">Speed:</span><button type="button" data-speed="0.5">0.5x</button><button type="button" data-speed="0.75">0.75x</button><button type="button" data-speed="1" class="on">1x</button><button type="button" data-speed="1.25">1.25x</button><button type="button" data-speed="1.5">1.5x</button><button type="button" data-speed="1.75">1.75x</button><button type="button" data-speed="2">2x</button></div>
+<p class="vid-note"><strong>Watch:</strong> AWS Certified AI Practitioner AIF C01 Prep 2026, by GetCertPrep (about 50 minutes). Transcript-checked: walks ML basics, transformers, tokens and embeddings, Bedrock model selection and pricing, temperature and top-p, prompt engineering, then RAG and vector databases. A solid single-video pass over the whole exam.</p>
+</div>
+
+<h2 id="d1-fundamentals">D1 · Fundamentals of AI and ML (20%)</h2>
+<h3 id="ladder-1-the-ai-family-ai-ml-deep-learning-genai">Ladder 1: The AI family (AI → ML → deep learning → GenAI)</h3>
+<p><strong>Rung 1: The plainest picture.</strong> AI means machines doing tasks that need human-like judgment: recognizing speech, reading documents, making recommendations. Everything in this domain is a smaller circle inside that big idea.</p>
+<figure class="fig-light"><img src="assets/img/internet/aif-ai-ml-dl-genai.jpg" alt="The nesting of the field: AI is the outermost idea, machine learning sits inside it, deep learning inside that, generative AI at the center." loading="lazy"><figcaption>The nesting of the field: AI is the outermost idea, machine learning sits inside it, deep learning inside that, generative AI at the center.</figcaption><figcaption class="credit">Image: Wikimedia Commons</figcaption></figure>
+<p><strong>Rung 2: Add one layer.</strong> Machine learning is AI that learns from data instead of following hand-written rules. You show it thousands of examples, and it finds the pattern itself. It comes in three flavors: supervised (the examples include the right answers), unsupervised (no answers, it finds groups on its own), and reinforcement learning (it learns by trial and error, chasing rewards).</p>
+<figure class="fig-light"><img src="assets/img/mermaid/aif-rung-ml-learns.svg" alt="Machine learning in one picture: examples go in, training happens, a model comes out, and the model predicts on new data." loading="lazy"><figcaption>Machine learning in one picture: examples go in, training happens, a model comes out, and the model predicts on new data.</figcaption></figure>
+<p><strong>Rung 3: Exam grade.</strong> Deep learning is machine learning done with neural networks, which are stacks of simple computing units inspired by brain neurons. Generative AI is deep learning that creates new content: text, images, audio. The nesting from rung 1 is now exact: GenAI ⊂ deep learning ⊂ ML ⊂ AI. Agentic AI (exam guide v1.1) sits at the center too: GenAI systems that take actions through tools, not just produce text.</p>
+<figure class="fig-light"><img src="assets/img/internet/aif-neural-network.png" alt="A neural network: an input layer, hidden layers, and an output layer. Deep learning means many hidden layers stacked." loading="lazy"><figcaption>A neural network: an input layer, hidden layers, and an output layer. Deep learning means many hidden layers stacked.</figcaption><figcaption class="credit">Image: Wikimedia Commons</figcaption></figure>
+<h3 id="ladder-2-the-three-ways-models-learn">Ladder 2: The three ways models learn</h3>
+<p><strong>Rung 1: The plainest picture.</strong> Supervised learning is learning with an answer key. Every training example comes with its label: this photo is a cat, this transaction is fraud. The model studies labeled examples until it can label new ones.</p>
+<figure class="fig-light"><img src="assets/img/mermaid/aif-rung-supervised.svg" alt="Supervised vs unsupervised at a glance: with labels the model learns the categories; without labels it must discover the groups itself." loading="lazy"><figcaption>Supervised vs unsupervised at a glance: with labels the model learns the categories; without labels it must discover the groups itself.</figcaption></figure>
+<p><strong>Rung 2: Add one layer.</strong> Unsupervised learning gets no answer key: it looks for natural groups (customers who behave alike) or compresses data down to its essentials. Reinforcement learning gets no answer key either; instead an agent takes actions in an environment and learns from rewards and penalties, like training a dog with treats.</p>
+<figure class="fig-light"><img src="assets/img/internet/aif-reinforcement-learning.png" alt="Reinforcement learning as a loop: the agent acts, the environment responds with a new state and a reward, and the agent adjusts." loading="lazy"><figcaption>Reinforcement learning as a loop: the agent acts, the environment responds with a new state and a reward, and the agent adjusts.</figcaption><figcaption class="credit">Image: Wikimedia Commons</figcaption></figure>
+<p><strong>Rung 3: Exam grade.</strong> Match the stem to the type: labeled data and a target to predict means supervised; unlabeled data and "find groups" means unsupervised; an agent, actions, and rewards means reinforcement learning. Supervised splits further into classification (predict a category, like fraud or not) and regression (predict a number, like a price). Note the v1.1 connection: RLHF, the technique that aligns chat models with human preferences, is reinforcement learning with human rankings as the reward signal.</p>
+<figure class="fig-light"><img src="assets/img/mermaid/aif-rung-learning-map.svg" alt="The exam decision in one diagram: check what the data looks like, and the learning type follows." loading="lazy"><figcaption>The exam decision in one diagram: check what the data looks like, and the learning type follows.</figcaption></figure>
+
+<div class="exam-ask"><p>A company wants to predict which customers will cancel, using five years of labeled cancel-or-stay records. Which learning type?</p>
+<p>Supervised learning: the records are labeled, and the task predicts a category. If the stem had said "group customers by behavior with no labels", the answer would flip to unsupervised.</p></div>
+
+<details class="cc-qa"><summary>Knowledge check: name the learning type</summary><ol>
+<li>Sorting support tickets into "billing", "technical", "other" from labeled history. 2. Finding unusual network traffic with no labeled attacks. 3. A robot learning to walk by falling over.</li>
+</ol>
+<p><strong>Answers: 1. Supervised (classification: labeled tickets, category output). 2. Unsupervised (anomaly detection on unlabeled data). 3. Reinforcement learning (agent, actions, reward signal).</strong></p></details>
+<h3 id="ladder-3-training-inference-and-the-two-failure-modes">Ladder 3: Training, inference, and the two failure modes</h3>
+<p><strong>Rung 1: The plainest picture.</strong> Training is the learning phase: the model studies data and adjusts itself. Inference is the using phase: the finished model makes predictions on new data. Training happens once (or periodically); inference happens every time someone uses the system.</p>
+<figure class="fig-light"><img src="assets/img/mermaid/aif-rung-training-inference.svg" alt="The two phases side by side: training learns patterns from data with answers; inference applies them to new data without answers." loading="lazy"><figcaption>The two phases side by side: training learns patterns from data with answers; inference applies them to new data without answers.</figcaption></figure>
+<p><strong>Rung 2: Add one layer.</strong> Two things go wrong. Overfitting means the model memorized the training data, noise included, so it fails on new data: low training error, high test error. Underfitting means the model is too simple to catch the pattern: high error everywhere. You want the middle: the model learns the real pattern and ignores the noise.</p>
+<figure class="fig-light"><img src="assets/img/internet/aif-overfitting.png" alt="Overfitting vs underfitting: the wiggly curve memorizes every point including noise; the straight line misses the pattern; the smooth curve captures it." loading="lazy"><figcaption>Overfitting vs underfitting: the wiggly curve memorizes every point including noise; the straight line misses the pattern; the smooth curve captures it.</figcaption><figcaption class="credit">Image: Wikimedia Commons</figcaption></figure>
+<p><strong>Rung 3: Exam grade.</strong> To judge a model you need two kinds of numbers. Model metrics: accuracy (fraction correct overall), precision (of the items flagged positive, how many truly were), recall (of the truly positive items, how many got flagged). The exam's classic: a fraud model with high precision but low recall catches few criminals while rarely accusing the innocent. Read these off a confusion matrix: rows are actual classes, columns are predicted classes, and the four cells are true positives, false positives, true negatives, false negatives. Business metrics sit above: task completion rate, user satisfaction, cost per prediction. The bias-variance link: high bias underfits (too simple), high variance overfits (too twitchy). Fix overfitting with more data or simpler models; fix underfitting with richer features or bigger models.</p>
+<figure class="fig-light"><img src="assets/img/internet/aif-confusion-matrix.png" alt="A confusion matrix: actual classes on the rows, predicted classes on the columns. Precision and recall are computed from its four cells." loading="lazy"><figcaption>A confusion matrix: actual classes on the rows, predicted classes on the columns. Precision and recall are computed from its four cells.</figcaption><figcaption class="credit">Image: Wikimedia Commons</figcaption></figure>
+
+<details class="cc-qa"><summary>Knowledge check: precision vs recall</summary><p>A spam filter flags 100 emails as spam; 90 really are spam. Meanwhile 10 real spam emails slipped into the inbox. What are precision and recall?</p>
+<p><strong>Precision 90/100 = 90%. Recall 90/100 = 90% here too (90 caught of 100 total spam).</strong> The point: precision asks "of what you flagged, how much was right"; recall asks "of what was real, how much did you catch".</p></details>
+<h3 id="ladder-4-the-four-inference-types">Ladder 4: The four inference types</h3>
+<p><strong>Rung 1: The plainest picture.</strong> Real-time inference answers now: one request in, one answer back in milliseconds. A fraud check while you tap your card. Batch inference answers later: millions of rows scored on a schedule, like churn scores every Sunday night. The question is always "how fast must the answer come back?"</p>
+<figure class="fig-light"><img src="assets/img/mermaid/aif-rung-realtime-batch.svg" alt="The two extremes: real-time serves one request in milliseconds; batch scores millions of rows on a schedule." loading="lazy"><figcaption>The two extremes: real-time serves one request in milliseconds; batch scores millions of rows on a schedule.</figcaption></figure>
+<p><strong>Rung 2: Add one layer.</strong> Two more options fill the middle. Asynchronous inference handles one large payload that takes minutes: you submit, go away, collect the result later (a two-hour video to transcribe). Serverless inference removes server management entirely: it scales to zero when idle and you pay per use, which fits spiky, unpredictable traffic.</p>
+<figure class="fig-light"><img src="assets/img/mermaid/aif-rung-async-serverless.svg" alt="The middle options: async for single large jobs with delayed results; serverless for spiky traffic with no servers to manage." loading="lazy"><figcaption>The middle options: async for single large jobs with delayed results; serverless for spiky traffic with no servers to manage.</figcaption></figure>
+<p><strong>Rung 3: Exam grade.</strong> The exam hands you a scenario and expects the cheapest fit: interactive and instant means real-time; big single payload with minutes to spare means async; huge volume on a schedule means batch; unpredictable spikes with no ops team means serverless. Bedrock adds its own flavors: on-demand (pay per token), provisioned throughput (reserved capacity for steady heavy workloads), and cross-region inference (route across regions for availability).</p>
+<figure class="fig-light"><img src="assets/img/mermaid/aif-inference-chooser.svg" alt="The inference decision tree: latency need, payload size, volume pattern, and traffic shape pick the type." loading="lazy"><figcaption>The inference decision tree: latency need, payload size, volume pattern, and traffic shape pick the type.</figcaption></figure>
+
+<details class="cc-qa"><summary>Knowledge check: which inference type?</summary><ol>
+<li>A chatbot answering shoppers. 2. Transcribing one 3-hour board meeting. 3. Scoring 5 million loan applications nightly. 4. A demo app with 10 users today and maybe 10,000 tomorrow.</li>
+</ol>
+<p><strong>Answers: 1. Real-time (interactive). 2. Asynchronous (single large payload, minutes OK). 3. Batch (huge volume, scheduled). 4. Serverless (spiky, unpredictable).</strong></p></details>
+<h3 id="ladder-5-the-aws-ai-service-map">Ladder 5: The AWS AI service map</h3>
+<p><strong>Rung 1: The plainest picture.</strong> There are two ways to build. Train your own model from your data: that is SageMaker AI. Use a ready-made foundation model through an API: that is Bedrock. The exam's first split is always this one.</p>
+<figure class="fig-light"><img src="assets/img/mermaid/aif-rung-build-choice.svg" alt="The first decision: training your own model points to SageMaker AI; using a foundation model points to Bedrock." loading="lazy"><figcaption>The first decision: training your own model points to SageMaker AI; using a foundation model points to Bedrock.</figcaption></figure>
+<p><strong>Rung 2: Add one layer.</strong> For everyday AI tasks you do not build at all; you call a specialist service. Text: Comprehend finds insights in text, Translate changes languages, Kendra searches your documents. Voice: Transcribe turns speech into text, Polly turns text into speech. Vision and documents: Rekognition analyzes images and video, Textract reads text from documents. Each does one job well.</p>
+<figure class="fig-light"><img src="assets/img/mermaid/aif-rung-services.svg" alt="The specialist services grouped by what they consume: text, voice, and vision plus documents." loading="lazy"><figcaption>The specialist services grouped by what they consume: text, voice, and vision plus documents.</figcaption></figure>
+<p><strong>Rung 3: Exam grade.</strong> Name the service from the verb: "chatbot" means Lex; "search company documents" means Kendra; "read text from scanned forms" means Textract; "convert a call recording to text" means Transcribe; "synthesize voice" means Polly; "detect objects in photos" means Rekognition; "analyze sentiment" means Comprehend; "translate" means Translate. Personalize recommends products, Forecast (note: not in the v1.1 in-scope list, so the exam will not ask it) predicts demand, and for BI questions over data there is Q in QuickSight. Lex builds conversational interfaces; Q is the ready-made assistant. Services map to the ML lifecycle: S3 and Glue hold and prepare data, SageMaker AI trains, Bedrock and the specialist services serve, and MLOps (pipelines, monitoring, retraining) keeps it all running in production. When is AI the wrong answer? When a fixed rule or a database query solves it, when labeled data does not exist and cannot be made, or when the cost exceeds the value.</p>
+<figure class="fig-light"><img src="assets/img/mermaid/aif-ml-lifecycle.svg" alt="The ML lifecycle: data, training, deployment, and monitoring, with AWS services mapped to each stage." loading="lazy"><figcaption>The ML lifecycle: data, training, deployment, and monitoring, with AWS services mapped to each stage.</figcaption></figure>
+<div class="vid" data-vid="p-fF0m2Hk1Y">
+<div class="vid-frame"><div class="yt-facade" data-vid="p-fF0m2Hk1Y" data-title="AWS Certified AI Practitioner AIF-C01 Domain 1 (HOW TO // AI)" data-ytid="ytv-1"><button type="button" class="yt-facade-btn" aria-label="Play video: AWS Certified AI Practitioner AIF-C01 Domain 1 (HOW TO // AI)"><span class="yt-facade-play" aria-hidden="true"></span><span class="yt-facade-title">AWS Certified AI Practitioner AIF-C01 Domain 1 (HOW TO // AI)</span><span class="yt-facade-note">Click to load this video from YouTube</span></button></div>
+<div class="yt-speedbar" data-for="ytv-1">
+<span class="yt-speedbar-label">Speed:</span>
+<button type="button" data-rate="0.5">0.5x</button><button type="button" data-rate="0.75">0.75x</button><button type="button" data-rate="1" class="active">1x</button><button type="button" data-rate="1.25">1.25x</button><button type="button" data-rate="1.5">1.5x</button><button type="button" data-rate="1.75">1.75x</button><button type="button" data-rate="2">2x</button>
+</div></div>
+<div class="vid-bar" role="group" aria-label="Playback speed"><span class="lbl">Speed:</span><button type="button" data-speed="0.5">0.5x</button><button type="button" data-speed="0.75">0.75x</button><button type="button" data-speed="1" class="on">1x</button><button type="button" data-speed="1.25">1.25x</button><button type="button" data-speed="1.5">1.5x</button><button type="button" data-speed="1.75">1.75x</button><button type="button" data-speed="2">2x</button></div>
+<p class="vid-note"><strong>Watch:</strong> AWS Certified AI Practitioner AIF-C01 Domain 1, by HOW TO // AI (about 23 minutes). Transcript-checked: follows exam guide v1.1 through AI and ML fundamentals, the three learning types, neural networks, overfitting and underfitting, and inference types. Watch after D1 to lock in the vocabulary.</p>
+</div>
+
+<h2 id="d2-generative-ai">D2 · Fundamentals of Generative AI (24%)</h2>
+<h3 id="ladder-1-tokens-the-unit-of-everything">Ladder 1: Tokens, the unit of everything</h3>
+<p><strong>Rung 1: The plainest picture.</strong> Models do not read words; they read tokens, which are chunks of text smaller than words. "Unbelievable" might become "un", "believ", "able". Everything a model does is counted and priced in tokens.</p>
+<figure class="fig-light"><img src="assets/img/mermaid/aif-rung-tokens.svg" alt="Tokenization: a sentence is split into token chunks, and everything downstream is priced and processed per token." loading="lazy"><figcaption>Tokenization: a sentence is split into token chunks, and everything downstream is priced and processed per token.</figcaption></figure>
+<p><strong>Rung 2: Add one layer.</strong> The context window is the model's working memory: the maximum tokens it can consider at once, covering your prompt plus any retrieved documents plus the conversation so far. Feed it more than fits and the oldest content gets dropped. Long context is powerful and expensive, because cost grows with tokens in.</p>
+<figure class="fig-light"><img src="assets/img/mermaid/aif-rung-context.svg" alt="The context window as working memory: prompt, retrieved documents, and history all share it, and overflow drops the oldest content." loading="lazy"><figcaption>The context window as working memory: prompt, retrieved documents, and history all share it, and overflow drops the oldest content.</figcaption></figure>
+<p><strong>Rung 3: Exam grade.</strong> Token pricing is per input token and per output token, and output tokens cost more because generating text burns more compute. Prompt caching stores repeated prompt prefixes so you pay full price once and a discount after. Inference cost also depends on model size and request volume: bigger models and longer outputs cost more. When a stem asks about cutting cost, think: smaller model, shorter outputs, caching.</p>
+<figure class="fig-light"><img src="assets/img/mermaid/aif-rung-pricing.svg" alt="Token pricing: input tokens are cheaper, output tokens cost more, so long generated answers dominate the bill." loading="lazy"><figcaption>Token pricing: input tokens are cheaper, output tokens cost more, so long generated answers dominate the bill.</figcaption></figure>
+<h3 id="ladder-2-embeddings-meaning-as-coordinates">Ladder 2: Embeddings, meaning as coordinates</h3>
+<p><strong>Rung 1: The plainest picture.</strong> An embedding turns text into a list of numbers (a vector) that captures its meaning. Texts with similar meanings get similar numbers, so "king" sits near "queen" and far from "carburetor". Meaning becomes geometry: nearness equals relatedness.</p>
+<figure class="fig-light"><img src="assets/img/mermaid/aif-embedding-search.svg" alt="Embeddings turn text into vectors; similarity search then finds the stored vectors nearest to the question vector." loading="lazy"><figcaption>Embeddings turn text into vectors; similarity search then finds the stored vectors nearest to the question vector.</figcaption></figure>
+<p><strong>Rung 2: Add one layer.</strong> That geometry is what makes semantic search work: embed the question, then fetch the stored vectors closest to it. The retrieved documents mean something similar to the question even if they share no exact words. This is the retrieval half of RAG, coming up in D3.</p>
+<figure class="fig-light"><img src="assets/img/mermaid/aif-embedding-search.svg" alt="The same pipeline as the retrieval step: the question is embedded with the same model, and the nearest stored chunks come back." loading="lazy"><figcaption>The same pipeline as the retrieval step: the question is embedded with the same model, and the nearest stored chunks come back.</figcaption></figure>
+<p><strong>Rung 3: Exam grade.</strong> The exam-grade rule: the same embedding model must run at ingest time and at query time, because each model has its own private vector space and vectors from two models are not comparable. On AWS the vectors live in a vector store: OpenSearch Service, Aurora, Neptune, or RDS for PostgreSQL. Chunking quality decides retrieval quality, which is why Bedrock Knowledge Bases chunks your S3 documents before embedding them.</p>
+<figure class="fig-light"><img src="assets/img/mermaid/aif-rung-one-model.svg" alt="The same-model rule: documents and questions embedded with one model share a vector space, so nearest truly means nearest." loading="lazy"><figcaption>The same-model rule: documents and questions embedded with one model share a vector space, so nearest truly means nearest.</figcaption></figure>
+
+<details class="cc-qa"><summary>Knowledge check: why did search break?</summary><p>A team embedded 100,000 documents with Model X, then switched the query side to cheaper Model Y. Retrieval quality collapsed overnight. What broke?</p>
+<p><strong>The vector spaces no longer match.</strong> Model Y's question vectors live in a different geometry than Model X's document vectors, so "nearest" is meaningless. Fix: embed queries with Model X too, or re-embed everything with one model.</p></details>
+<h3 id="ladder-3-the-transformer">Ladder 3: The Transformer</h3>
+<p><strong>Rung 1: The plainest picture.</strong> The Transformer is the architecture behind modern language models. Its trick: read the whole sentence at once instead of word by word, then predict the next token, then the next, until the answer is complete. Every chatbot you have used is a Transformer predicting one token at a time.</p>
+<figure class="fig-light"><img src="assets/img/internet/aif-transformer.png" alt="The Transformer: the encoder stack reads the input, the decoder stack writes the output, and attention connects them." loading="lazy"><figcaption>The Transformer: the encoder stack reads the input, the decoder stack writes the output, and attention connects them.</figcaption><figcaption class="credit">Image: Wikimedia Commons</figcaption></figure>
+<p><strong>Rung 2: Add one layer.</strong> Two halves do the work. The encoder reads and understands the input, turning it into a rich representation. The decoder writes the output one token at a time. Attention is the wiring between them: when producing each token, the model looks back at the input and decides which parts matter most.</p>
+<figure class="fig-light"><img src="assets/img/mermaid/aif-rung-encoder-decoder.svg" alt="Encoder and decoder split the job: one understands the input, the other writes the output." loading="lazy"><figcaption>Encoder and decoder split the job: one understands the input, the other writes the output.</figcaption></figure>
+<p><strong>Rung 3: Exam grade.</strong> Self-attention is attention inside a single sentence: each word looks at every other word and weighs their relevance. In "the animal did not cross the street because it was too tired", self-attention links "it" back to "animal", not "street". That is how the model resolves meaning from context rather than word order. The exam tests this idea, not the math: attention means weighing which words matter for each prediction.</p>
+<figure class="fig-light"><img src="assets/img/mermaid/aif-rung-attention.svg" alt="Self-attention: each word weighs the other words, so &quot;it&quot; resolves to &quot;animal&quot; by meaning, not by position." loading="lazy"><figcaption>Self-attention: each word weighs the other words, so &quot;it&quot; resolves to &quot;animal&quot; by meaning, not by position.</figcaption></figure>
+<h3 id="ladder-4-diffusion-and-multimodal-models">Ladder 4: Diffusion and multimodal models</h3>
+<p><strong>Rung 1: The plainest picture.</strong> Diffusion models make images from text. They start with pure static noise and gradually remove it, guided by your description, until a picture emerges. Noise in, picture out: that is the whole idea.</p>
+<figure class="fig-light"><img src="assets/img/mermaid/aif-diffusion.svg" alt="Diffusion: start from random noise and reverse the noising process step by step, guided by the text prompt, until an image appears." loading="lazy"><figcaption>Diffusion: start from random noise and reverse the noising process step by step, guided by the text prompt, until an image appears.</figcaption></figure>
+<p><strong>Rung 2: Add one layer.</strong> Multimodal models accept and produce more than one kind of input: text, images, audio together. Embeddings are the bridge: text and images are mapped into one shared space, so the model can reason across them ("what is funny about this picture?"). A model that only handles text is unimodal; one that handles several types is multimodal.</p>
+<figure class="fig-light"><img src="assets/img/mermaid/aif-rung-multimodal.svg" alt="Multimodal models map text and images into one shared embedding space, then reason across both." loading="lazy"><figcaption>Multimodal models map text and images into one shared embedding space, then reason across both.</figcaption></figure>
+<p><strong>Rung 3: Exam grade.</strong> Match the model type to the task: text generation means large language models (Transformers); image generation from text means diffusion models; finding similar documents means embedding models. "Multimodal input" in a stem means the model takes more than text. Do not confuse diffusion (creates images) with embeddings (represents meaning as vectors).</p>
+<h3 id="ladder-5-foundation-models-lifecycle-and-selection">Ladder 5: Foundation models, lifecycle and selection</h3>
+<p><strong>Rung 1: The plainest picture.</strong> A foundation model is a huge model pre-trained once on massive data, then adapted to many tasks. Train once, reuse everywhere: that reuse is what makes it a "foundation".</p>
+<figure class="fig-light"><img src="assets/img/mermaid/aif-fm-lifecycle.svg" alt="The foundation model lifecycle: pre-train once on broad data, adapt to tasks, evaluate, deploy, and monitor." loading="lazy"><figcaption>The foundation model lifecycle: pre-train once on broad data, adapt to tasks, evaluate, deploy, and monitor.</figcaption></figure>
+<p><strong>Rung 2: Add one layer.</strong> The lifecycle runs in order: select and prepare data, pre-train the base model, adapt it (fine-tune or align), evaluate it, deploy it, then monitor it in production. Pre-training builds broad knowledge; adaptation aims it at your task. Adaptation is orders of magnitude cheaper than pre-training, which is why almost everyone adapts rather than trains from scratch.</p>
+<figure class="fig-light"><img src="assets/img/mermaid/aif-fm-lifecycle.svg" alt="The same lifecycle with the cost insight: pre-training is the expensive once-only step; adaptation is the cheap repeated step." loading="lazy"><figcaption>The same lifecycle with the cost insight: pre-training is the expensive once-only step; adaptation is the cheap repeated step.</figcaption></figure>
+<p><strong>Rung 3: Exam grade.</strong> Selecting a model means checking accuracy on your task, cost, latency, and whether its size fits your deployment. Open models (weights public, self-hostable) trade control for operational burden; closed models (API-only) trade convenience for dependence. Model distillation compresses a big capable model into a smaller cheaper one that mimics it: useful when latency or cost bites. Continued pre-training adds domain knowledge before any task adaptation.</p>
+<figure class="fig-light"><img src="assets/img/mermaid/aif-rung-selection.svg" alt="Model selection in one check: accuracy on your task, cost, latency, and size fit for deployment." loading="lazy"><figcaption>Model selection in one check: accuracy on your task, cost, latency, and size fit for deployment.</figcaption></figure>
+<h3 id="ladder-6-agents">Ladder 6: Agents</h3>
+<p><strong>Rung 1: The plainest picture.</strong> A chatbot answers questions. An agent takes actions: it books the flight, files the ticket, queries the database. Answers versus actions is the whole distinction.</p>
+<figure class="fig-light"><img src="assets/img/mermaid/aif-agent-loop.svg" alt="The agent loop: reason about the goal, act through a tool, observe the result, repeat until done." loading="lazy"><figcaption>The agent loop: reason about the goal, act through a tool, observe the result, repeat until done.</figcaption></figure>
+<p><strong>Rung 2: Add one layer.</strong> The agent runs a loop: reason about what to do next, act by calling a tool (an API, a database, a browser), observe the result, and repeat until the goal is reached. Tools are the agent's hands; without them it is just a chatbot. A multi-agent pattern splits the work: several specialized agents collaborate, like a researcher agent feeding a writer agent.</p>
+<figure class="fig-light"><img src="assets/img/mermaid/aif-agent-loop.svg" alt="The same loop with the key detail: tools are what turn reasoning into action, and observation is what keeps it on track." loading="lazy"><figcaption>The same loop with the key detail: tools are what turn reasoning into action, and observation is what keeps it on track.</figcaption></figure>
+<p><strong>Rung 3: Exam grade.</strong> The Model Context Protocol (MCP) is the open standard for connecting agents to external systems and data, so tools plug in consistently instead of through one-off integrations. Context engineering means deliberately assembling everything the agent needs (instructions, tools, retrieved facts) into its working context. The exam's agent trigger words: "take actions", "call APIs", "multi-step with tools". If the stem says "answer questions from documents", that is RAG, not agents.</p>
+<figure class="fig-light"><img src="assets/img/mermaid/aif-rung-mcp.svg" alt="MCP in one picture: the agent connects through one standard plug instead of a tangle of one-off integrations." loading="lazy"><figcaption>MCP in one picture: the agent connects through one standard plug instead of a tangle of one-off integrations.</figcaption></figure>
+
+<details class="cc-qa"><summary>Knowledge check: agent or chatbot?</summary><ol>
+<li>A support widget that answers FAQs from the help center. 2. A system that reads a complaint email, checks the order database, and issues a refund by itself.</li>
+</ol>
+<p><strong>Answers: 1. Chatbot (answers only, no actions). 2. Agent (multi-step: read, query, act through tools).</strong></p></details>
+<h3 id="ladder-7-aws-for-building-genai">Ladder 7: AWS for building GenAI</h3>
+<p><strong>Rung 1: The plainest picture.</strong> Amazon Bedrock is the front door: one API that serves many foundation models from Amazon and others. You pick a model, send a prompt, get text back. No training, no servers.</p>
+<figure class="fig-light"><img src="assets/img/mermaid/aif-rung-bedrock.svg" alt="Bedrock as the front door: one API to many models, with Knowledge Bases, Guardrails, and Agents built around it." loading="lazy"><figcaption>Bedrock as the front door: one API to many models, with Knowledge Bases, Guardrails, and Agents built around it.</figcaption></figure>
+<p><strong>Rung 2: Add one layer.</strong> Around that API, Bedrock bundles the pieces: Knowledge Bases for RAG over your documents, Guardrails for safety filters, Agents for tool-using workflows, Prompt Management for versioning prompts, and Model Evaluation for testing. Amazon Q is the ready-made assistant family: Q Business for company knowledge, Q Developer for coding help. PartyRock is the playground for trying prompts without code.</p>
+<figure class="fig-light"><img src="assets/img/mermaid/aif-rung-bedrock.svg" alt="The Bedrock bundle at exam level: one API surrounded by Knowledge Bases, Guardrails, Agents, Prompt Management, and Model Evaluation." loading="lazy"><figcaption>The Bedrock bundle at exam level: one API surrounded by Knowledge Bases, Guardrails, Agents, Prompt Management, and Model Evaluation.</figcaption></figure>
+
+<details class="cc-qa"><summary>Knowledge check: which AWS GenAI service?</summary><ol>
+<li>A team wants to query FMs from Amazon, Anthropic, and Meta through one API. 2. HR wants an assistant that answers questions from company wikis. 3. A developer wants code completions in the IDE.</li>
+</ol>
+<p><strong>Answers: 1. Amazon Bedrock (one API, many models). 2. Amazon Q Business (company knowledge assistant). 3. Amazon Q Developer (coding assistant).</strong></p></details>
+<h2 id="d3-foundation-model-apps">D3 · Applications of Foundation Models (28%)</h2>
+<h3 id="ladder-1-the-customization-ladder">Ladder 1: The customization ladder</h3>
+<p><strong>Rung 1: The plainest picture.</strong> The cheapest way to change a model's behavior costs nothing: rewrite the prompt. Better instructions, a few examples, a clearer format. This is prompt engineering, and it adds no new knowledge to the model.</p>
+<figure class="fig-light"><img src="assets/img/mermaid/aif-rung-prompt-anatomy.svg" alt="A prompt&#x27;s anatomy: context sets the role, the instruction gives the task, input data supplies the material, the output indicator sets the format." loading="lazy"><figcaption>A prompt&#x27;s anatomy: context sets the role, the instruction gives the task, input data supplies the material, the output indicator sets the format.</figcaption></figure>
+<p><strong>Rung 2: Add one layer.</strong> When the model needs facts it was never trained on, fetch them at query time and paste them into the prompt. That is RAG: the model answers from your documents, cites them, and never needs retraining. New knowledge without touching the weights.</p>
+<figure class="fig-light"><img src="assets/img/mermaid/aif-rag-pipeline.svg" alt="The RAG pipeline: embed the question, similarity-search the vector store, retrieve the top chunks, build an augmented prompt, generate a cited answer." loading="lazy"><figcaption>The RAG pipeline: embed the question, similarity-search the vector store, retrieve the top chunks, build an augmented prompt, generate a cited answer.</figcaption></figure>
+<p><strong>Rung 3: Add one layer.</strong> When the need is behavior rather than facts (your brand voice, your output format), continue training the model on your labeled examples. That is fine-tuning: the new behavior lands in the weights. It costs real money and compute, and the knowledge still goes stale.</p>
+<figure class="fig-light"><img src="assets/img/mermaid/aif-rung-finetune.svg" alt="Fine-tuning: a base foundation model plus your labeled examples becomes a customized model with your behavior in its weights." loading="lazy"><figcaption>Fine-tuning: a base foundation model plus your labeled examples becomes a customized model with your behavior in its weights.</figcaption></figure>
+<p><strong>Rung 4: Exam grade.</strong> The full decision tree, cheapest first: same knowledge with better answers means prompt engineering; new private or current facts means RAG; new behavior, tone, or style means fine-tuning; whole new base knowledge means pre-training (months, millions, only the largest companies). Two more terms: in-context learning is the fancy name for few-shot prompting (teaching by example with no weight changes), and model distillation compresses a big model into a smaller cheaper one that mimics it.</p>
+<figure class="fig-light"><img src="assets/img/mermaid/aif-customization-decision.svg" alt="The customization decision tree: the question &quot;what is missing&quot; picks the method, from prompt engineering up to pre-training." loading="lazy"><figcaption>The customization decision tree: the question &quot;what is missing&quot; picks the method, from prompt engineering up to pre-training.</figcaption></figure>
+
+<div class="takeaway"><p>The exam's favorite decision: "facts change over time" or "must cite sources" always points to RAG, never fine-tuning. "New tone, format, or behavior" points to fine-tuning or prompt engineering, never RAG.</p></div>
+<h3 id="ladder-2-prompt-engineering-rung-by-rung">Ladder 2: Prompt engineering, rung by rung</h3>
+<p><strong>Rung 1: The plainest picture.</strong> A prompt has parts, and naming them helps you fix weak prompts: context (who the model should be), instruction (what to do), input data (the material), output indicator (the format), and negative prompts (what never to do, like "do not invent details").</p>
+<figure class="fig-light"><img src="assets/img/mermaid/aif-rung-prompt-anatomy.svg" alt="The same anatomy as a checklist: when a prompt fails, check which part is missing or vague." loading="lazy"><figcaption>The same anatomy as a checklist: when a prompt fails, check which part is missing or vague.</figcaption></figure>
+<p><strong>Rung 2: Add one layer.</strong> Techniques stack by power: zero-shot (no examples), one-shot (one example), few-shot (a few examples, also called in-context learning), chain-of-thought ("think step by step" before answering, best for math and multi-step logic). Prompt templates make reusable skeletons with slots for the variable parts.</p>
+<figure class="fig-light"><img src="assets/img/mermaid/aif-rung-prompt-tech.svg" alt="Prompt techniques in climbing order: from zero examples up to showing the model the reasoning steps." loading="lazy"><figcaption>Prompt techniques in climbing order: from zero examples up to showing the model the reasoning steps.</figcaption></figure>
+<p><strong>Rung 3: Exam grade.</strong> Production prompting adds discipline: be specific and concise, iterate empirically, version prompts with Bedrock Prompt Management instead of pasting strings into code. And know the attacks: prompt injection (smuggled instructions in user input), jailbreaking (tricks past safety rules), poisoning (corrupted training or retrieval data), hijacking (the task gets redirected).</p>
+<figure class="fig-light"><img src="assets/img/mermaid/aif-rung-risks.svg" alt="The four prompt risks: injection smuggles instructions, jailbreaking bypasses rules, poisoning corrupts data, hijacking redirects the task." loading="lazy"><figcaption>The four prompt risks: injection smuggles instructions, jailbreaking bypasses rules, poisoning corrupts data, hijacking redirects the task.</figcaption></figure>
+
+<details class="cc-qa"><summary>Knowledge check: which technique?</summary><p>A model keeps getting multi-step word problems wrong. Which prompt technique helps most, and why?</p>
+<p><strong>Answer: chain-of-thought.</strong> Asking the model to reason step by step before answering improves multi-step reasoning. Few-shot shows examples; chain-of-thought shows the working.</p></details>
+<h3 id="ladder-3-inference-parameters">Ladder 3: Inference parameters</h3>
+<p><strong>Rung 1: The plainest picture.</strong> Temperature is the creativity knob, running from 0 to about 1. Near 0 the model picks the most likely token every time: focused, repeatable, a bit dull. Near 1 it samples more freely: varied, creative, less predictable. Factual work wants 0; brainstorming wants higher.</p>
+<figure class="fig-light"><img src="assets/img/mermaid/aif-rung-temperature.svg" alt="Temperature as a knob: near 0 one answer dominates; near 1 many answers are possible." loading="lazy"><figcaption>Temperature as a knob: near 0 one answer dominates; near 1 many answers are possible.</figcaption></figure>
+<p><strong>Rung 2: Exam grade.</strong> Top-p and top-k trim the candidate pool before sampling: smaller values mean safer, more predictable text. Max tokens caps the response length; hitting the cap truncates the answer mid-sentence. Practical rules: temperature 0 for anything factual or deterministic, and change one knob at a time so you know what helped.</p>
+<h3 id="ladder-4-fine-tuning-methods">Ladder 4: Fine-tuning methods</h3>
+<p><strong>Rung 1: The plainest picture.</strong> Instruction tuning teaches the model to follow directions: train it on instruction-and-response pairs until it answers in your style and format. Show it what good looks like, repeatedly.</p>
+<figure class="fig-light"><img src="assets/img/mermaid/aif-rung-finetune.svg" alt="Instruction tuning: pairs of instructions and ideal responses teach the model your desired behavior." loading="lazy"><figcaption>Instruction tuning: pairs of instructions and ideal responses teach the model your desired behavior.</figcaption></figure>
+<p><strong>Rung 2: Add one layer.</strong> The family grows: domain adaptation trains on your industry's text so the model speaks your vocabulary; transfer learning adapts a pre-trained model to a new but related task; continued pre-training adds domain knowledge before any instruction tuning; RLHF uses human rankings as rewards so the model learns which answers people prefer (this is how models get aligned and polite).</p>
+<figure class="fig-light"><img src="assets/img/mermaid/aif-rung-finetune.svg" alt="The same picture with the key distinction: fine-tuning changes behavior in the weights, while RAG would only supply facts." loading="lazy"><figcaption>The same picture with the key distinction: fine-tuning changes behavior in the weights, while RAG would only supply facts.</figcaption></figure>
+<p><strong>Rung 3: Exam grade.</strong> Data preparation decides whether fine-tuning works: curate the dataset (relevant, high quality), label it where the method needs labels, keep it representative of production, and mind governance (consent, PII, licensing). Final exam line: fine-tuning beats RAG when the need is behavior, not facts; RAG beats fine-tuning when facts change or must be cited.</p>
+<h3 id="ladder-5-evaluating-models">Ladder 5: Evaluating models</h3>
+<p><strong>Rung 1: The plainest picture.</strong> The simplest check is automatic: compare the model's output against a reference answer and score the overlap. Fast, cheap, repeatable. Human judges are the gold standard: slow, expensive, but they catch what metrics miss.</p>
+<figure class="fig-light"><img src="assets/img/mermaid/aif-rung-eval.svg" alt="Evaluation routes: automatic metrics for speed, human judges for truth, business metrics for whether users actually benefit." loading="lazy"><figcaption>Evaluation routes: automatic metrics for speed, human judges for truth, business metrics for whether users actually benefit.</figcaption></figure>
+<p><strong>Rung 2: Add one layer.</strong> The named metrics: ROUGE measures overlap with reference summaries (summarization), BLEU measures overlap for translation, BERTScore measures semantic similarity via embeddings instead of exact words. LLM-as-a-judge uses a strong model to score a weaker model's outputs: fast and cheap, with its own bias risk. Amazon Bedrock Model Evaluation runs automatic and human evaluations as a managed service.</p>
+<figure class="fig-light"><img src="assets/img/mermaid/aif-rung-eval.svg" alt="The same routes with the exam detail: ROUGE for summaries, BLEU for translation, BERTScore for meaning, LLM-as-a-judge for scale." loading="lazy"><figcaption>The same routes with the exam detail: ROUGE for summaries, BLEU for translation, BERTScore for meaning, LLM-as-a-judge for scale.</figcaption></figure>
+<p><strong>Rung 3: Exam grade.</strong> Then check business alignment, because a high BLEU score means nothing if users hate the product: task completion rate, user satisfaction, cost per interaction. Evaluate RAG systems on retrieval quality too (did it fetch the right chunks?), and agents on whether they completed the task with the right tool calls.</p>
+<figure class="fig-light"><img src="assets/img/mermaid/aif-rung-eval.svg" alt="Full evaluation coverage: automatic metrics and human judges on output quality, plus business metrics on real-world value." loading="lazy"><figcaption>Full evaluation coverage: automatic metrics and human judges on output quality, plus business metrics on real-world value.</figcaption></figure>
+
+<details class="cc-qa"><summary>Knowledge check: pick the metric</summary><p>A team fine-tuned a summarization model. Which automatic metric fits, and what is its blind spot?</p>
+<p><strong>Answer: ROUGE, which measures overlap with reference summaries.</strong> Blind spot: it rewards word overlap, so a perfectly good paraphrase can score badly. Pair it with human evaluation or LLM-as-a-judge for meaning.</p></details>
+<h3 id="ladder-6-agents-in-production-on-aws">Ladder 6: Agents in production on AWS</h3>
+<p><strong>Rung 1: The plainest picture.</strong> Bedrock Agents turn a foundation model into a worker: you give it a goal, instructions, and action groups (the tools it may call), and it reasons through multi-step tasks.</p>
+<figure class="fig-light"><img src="assets/img/mermaid/aif-rung-agent-aws.svg" alt="Agents on AWS: Bedrock Agents orchestrate, AgentCore hosts in production with identity and policy, Strands is the open-source SDK." loading="lazy"><figcaption>Agents on AWS: Bedrock Agents orchestrate, AgentCore hosts in production with identity and policy, Strands is the open-source SDK.</figcaption></figure>
+<p><strong>Rung 2: Add one layer.</strong> Demos are easy; production is the exam's concern. Amazon Bedrock AgentCore is the production home: a runtime plus Identity (which identity the agent acts as) plus Policy (what the agent is allowed to do). Strands Agents is the open-source SDK for building agents in code.</p>
+<figure class="fig-light"><img src="assets/img/mermaid/aif-rung-agent-aws.svg" alt="The same map with the production insight: Identity says who the agent is, Policy says what it may touch." loading="lazy"><figcaption>The same map with the production insight: Identity says who the agent is, Policy says what it may touch.</figcaption></figure>
+<p><strong>Rung 3: Exam grade.</strong> The exam's agent trigger words stay constant: "take actions", "call APIs", "multi-step with tools". If the stem says "answer questions from documents", pick RAG. If it says the agent must file tickets, query systems, or book things, pick Bedrock Agents on AgentCore.</p>
+<div class="vid" data-vid="iQNc3D_WTG0">
+<div class="vid-frame"><div class="yt-facade" data-vid="iQNc3D_WTG0" data-title="AIF-C01 Exam Prep: RAG, Bedrock Agents and Amazon Q, 15 Questions Explained (How To Center)" data-ytid="ytv-2"><button type="button" class="yt-facade-btn" aria-label="Play video: AIF-C01 Exam Prep: RAG, Bedrock Agents and Amazon Q, 15 Questions Explained (How To Center)"><span class="yt-facade-play" aria-hidden="true"></span><span class="yt-facade-title">AIF-C01 Exam Prep: RAG, Bedrock Agents and Amazon Q, 15 Questions Explained (How To Center)</span><span class="yt-facade-note">Click to load this video from YouTube</span></button></div>
+<div class="yt-speedbar" data-for="ytv-2">
+<span class="yt-speedbar-label">Speed:</span>
+<button type="button" data-rate="0.5">0.5x</button><button type="button" data-rate="0.75">0.75x</button><button type="button" data-rate="1" class="active">1x</button><button type="button" data-rate="1.25">1.25x</button><button type="button" data-rate="1.5">1.5x</button><button type="button" data-rate="1.75">1.75x</button><button type="button" data-rate="2">2x</button>
+</div></div>
+<div class="vid-bar" role="group" aria-label="Playback speed"><span class="lbl">Speed:</span><button type="button" data-speed="0.5">0.5x</button><button type="button" data-speed="0.75">0.75x</button><button type="button" data-speed="1" class="on">1x</button><button type="button" data-speed="1.25">1.25x</button><button type="button" data-speed="1.5">1.5x</button><button type="button" data-speed="1.75">1.75x</button><button type="button" data-speed="2">2x</button></div>
+<p class="vid-note"><strong>Watch:</strong> AWS AI Practitioner Exam Prep: RAG, Bedrock Agents and Amazon Q, 15 Questions Explained, by How To Center. Transcript-checked: 15 exam-style Domain 3 questions with full explanations of why each wrong option is wrong, covering vector stores, Bedrock Agents, Q Business vs Q Developer, model selection, fine-tuning tradeoffs, provisioned throughput, and grounding. Pause and answer before the reveal.</p>
+</div>
+<h2 id="d4-responsible-ai">D4 · Guidelines for Responsible AI (14%)</h2>
+<h3 id="ladder-1-bias-and-fairness">Ladder 1: Bias and fairness</h3>
+<p><strong>Rung 1: The plainest picture.</strong> Bias means the system treats some groups worse than others. A hiring model that favors one group, a voice assistant that misunderstands one accent. The model learned it from the data, and now it repeats it at scale.</p>
+<figure class="fig-light"><img src="assets/img/mermaid/aif-rung-bias.svg" alt="Bias in one picture: biased training data teaches the model the bias, and the model produces unfair predictions." loading="lazy"><figcaption>Bias in one picture: biased training data teaches the model the bias, and the model produces unfair predictions.</figcaption></figure>
+<p><strong>Rung 2: Add one layer.</strong> Bias enters through three doors. Historical bias: the data reflects past discrimination (old hiring records that favored one group). Sampling bias: the data does not represent everyone (a voice model trained on one accent). Label bias: the labels themselves encode prejudice. A model can be highly accurate on average and still be unfair to a subgroup.</p>
+<figure class="fig-light"><img src="assets/img/mermaid/aif-rung-bias.svg" alt="The same picture with the exam question attached: which door did the bias enter through, historical, sampling, or label?" loading="lazy"><figcaption>The same picture with the exam question attached: which door did the bias enter through, historical, sampling, or label?</figcaption></figure>
+<p><strong>Rung 3: Exam grade.</strong> The guide's fairness features: fairness (no group systematically disadvantaged), inclusivity (works for diverse users), safety, veracity (truthful outputs). Fight bias with subgroup analysis (measure performance per group, not just overall) and healthy datasets (inclusive, diverse, curated from trustworthy sources, balanced). The D1 link: high bias underfits, high variance overfits; a biased model is often a high-bias model. Legal risks the exam names: IP infringement from reproducing copyrighted text, discrimination liability from biased outputs, loss of customer trust, and hallucinations presented as fact. Sustainability counts too: training and running large models costs real energy, so the smallest model that meets the need is the responsible pick.</p>
+<h3 id="ladder-2-the-responsible-ai-toolkit">Ladder 2: The responsible-AI toolkit</h3>
+<p><strong>Rung 1: The plainest picture.</strong> Two tools do the daily work. Guardrails sit around the model and filter what goes in and out: block toxicity, redact PII, refuse off-topic requests. Clarify inspects the model itself: it finds bias in data and models and explains individual predictions.</p>
+<figure class="fig-light"><img src="assets/img/mermaid/aif-rung-guardrails.svg" alt="Guardrails as filters: inputs are screened before the model, outputs are screened after, and only safe answers reach the user." loading="lazy"><figcaption>Guardrails as filters: inputs are screened before the model, outputs are screened after, and only safe answers reach the user.</figcaption></figure>
+<p><strong>Rung 2: Add one layer.</strong> Three more complete the kit. Model Cards document a model's facts: intended use, training data, metrics, limitations. A2I (Augmented AI) routes low-confidence or sensitive predictions to human reviewers. Model Monitor watches deployed models for drift and quality drops, because a model that was fair at launch can drift.</p>
+<figure class="fig-light"><img src="assets/img/mermaid/aif-rung-toolkit.svg" alt="The toolkit at a glance: Clarify finds bias, Guardrails block bad content, Model Cards document, A2I brings in humans." loading="lazy"><figcaption>The toolkit at a glance: Clarify finds bias, Guardrails block bad content, Model Cards document, A2I brings in humans.</figcaption></figure>
+<p><strong>Rung 3: Exam grade.</strong> Match the tool to the verb: "detect bias" means Clarify; "filter outputs" means Guardrails; "document the model" means Model Cards; "human review" means A2I; "watch production" means Model Monitor. Guardrails also run contextual grounding checks that catch hallucinations.</p>
+<figure class="fig-light"><img src="assets/img/mermaid/aif-rung-toolkit.svg" alt="The toolkit at exam level: each tool answers a different verb, detect, block, document, review, or watch." loading="lazy"><figcaption>The toolkit at exam level: each tool answers a different verb, detect, block, document, review, or watch.</figcaption></figure>
+
+<div class="takeaway"><p>Exam pairing: Clarify finds bias, Guardrails blocks bad content, Model Cards document the model, A2I brings in humans. Match the tool to the verb in the stem: "detect bias" is Clarify, "filter outputs" is Guardrails.</p></div>
+
+<details class="cc-qa"><summary>Knowledge check: which responsible-AI tool?</summary><ol>
+<li>A bank must prove its loan model does not discriminate by zip code. 2. A chatbot must refuse to output personal phone numbers. 3. A hospital wants a doctor to review every AI-flagged scan before action.</li>
+</ol>
+<p><strong>Answers: 1. SageMaker Clarify (detect bias, subgroup analysis). 2. Bedrock Guardrails (filter PII in outputs). 3. Amazon A2I (human review workflow).</strong></p></details>
+<h3 id="ladder-3-transparency-and-explainability">Ladder 3: Transparency and explainability</h3>
+<p><strong>Rung 1: The plainest picture.</strong> Transparent means you can see how the system works: open weights, documented data, clear licensing. Explainable means you can say why it made a specific decision. These are different things, and the exam separates them exactly this way.</p>
+<figure class="fig-light"><img src="assets/img/mermaid/aif-rung-transparency.svg" alt="Transparent vs explainable: you can have full visibility into a model and still not know why it made one decision." loading="lazy"><figcaption>Transparent vs explainable: you can have full visibility into a model and still not know why it made one decision.</figcaption></figure>
+<p><strong>Rung 2: Exam grade.</strong> A model can be transparent without being explainable: you can read every weight of a huge neural network and still not know why it denied a loan. The tradeoff the exam names: the most capable models tend to be the least interpretable, so measure both and choose consciously. Helpers: Model Cards and Clarify, Bedrock Model Evaluations, open models with open data. Human-centered design keeps people in charge: show users when AI is involved, give feedback mechanisms ("this answer was wrong"), and keep a human in the loop for high-stakes calls.</p>
+<figure class="fig-light"><img src="assets/img/mermaid/aif-rung-transparency.svg" alt="The exam-grade distinction: transparency is visibility into the system, explainability is an account of one decision." loading="lazy"><figcaption>The exam-grade distinction: transparency is visibility into the system, explainability is an account of one decision.</figcaption></figure>
+<h2 id="d5-security-governance">D5 · Security, Compliance, and Governance (14%)</h2>
+<h3 id="ladder-1-the-shared-responsibility-model-for-ai">Ladder 1: The shared responsibility model for AI</h3>
+<p><strong>Rung 1: The plainest picture.</strong> AWS secures the building: data centers, network, hardware. You secure your rooms: your data, who can access it, how it is encrypted. If you leave your door open, that is on you.</p>
+<figure class="fig-light"><img src="assets/img/mermaid/aif-rung-shared-resp.svg" alt="Shared responsibility: AWS secures the cloud itself; you secure what you put in it." loading="lazy"><figcaption>Shared responsibility: AWS secures the cloud itself; you secure what you put in it.</figcaption></figure>
+<p><strong>Rung 2: Add one layer.</strong> For AI workloads the split gets specific. AWS handles the managed infrastructure under Bedrock and SageMaker. You handle IAM (who can call what, with least privilege), encryption settings and KMS keys, network access (VPC, PrivateLink), and the AI choices themselves: which model, how guardrails are configured, what the prompts contain.</p>
+<figure class="fig-light"><img src="assets/img/mermaid/aif-rung-shared-resp.svg" alt="The same split with the AI details: your side holds IAM, KMS, network access, prompts, documents, and model choice." loading="lazy"><figcaption>The same split with the AI details: your side holds IAM, KMS, network access, prompts, documents, and model choice.</figcaption></figure>
+<p><strong>Rung 3: Exam grade.</strong> Two Bedrock privacy facts the exam loves: Bedrock does not train its base models on your prompts or data, and your fine-tuned customizations stay private to your account. Your inputs are encrypted and never shared with model providers. Data residency (some data must stay in a specific region) and retention rules are also your responsibility.</p>
+<figure class="fig-light"><img src="assets/img/mermaid/aif-rung-shared-resp.svg" alt="Your side of the split at exam level: IAM, KMS, network access, prompts, documents, model choice, and the two Bedrock privacy facts." loading="lazy"><figcaption>Your side of the split at exam level: IAM, KMS, network access, prompts, documents, model choice, and the two Bedrock privacy facts.</figcaption></figure>
+
+<details class="cc-qa"><summary>Knowledge check: who is responsible?</summary><p>A company stores customer chat logs in S3 and uses them to fine-tune a Bedrock model. The S3 bucket is left public. Whose failure is that under the shared responsibility model?</p>
+<p><strong>Answer: the customer's.</strong> AWS secures the S3 infrastructure; access control on the bucket is the customer's job. Same for IAM policies, KMS settings, and what data they choose to upload.</p></details>
+<h3 id="ladder-2-securing-the-ai-system">Ladder 2: Securing the AI system</h3>
+<p><strong>Rung 1: The plainest picture.</strong> Lock the doors first. IAM roles and policies with least privilege: grant only the access needed, nothing more. A Bedrock-calling app gets permission to invoke models, not admin over the account. Encrypt data at rest with KMS and in transit with TLS. Secrets (API keys, passwords) go in Secrets Manager, never in code.</p>
+<figure class="fig-light"><img src="assets/img/mermaid/aif-rung-secure.svg" alt="The three locks: IAM for least-privilege access, KMS for encryption, Secrets Manager for credentials." loading="lazy"><figcaption>The three locks: IAM for least-privilege access, KMS for encryption, Secrets Manager for credentials.</figcaption></figure>
+<p><strong>Rung 2: Add one layer.</strong> Then shrink the attack surface. Keep traffic off the public internet with VPC endpoints (PrivateLink) to Bedrock and S3. Scan S3 with Macie to find PII before it ever reaches a training set. Filter live inputs and outputs with Bedrock Guardrails: toxicity filters, PII redaction, topic blocking, grounding checks. For agents, AgentCore Identity says who the agent acts as and Policy caps what it may do.</p>
+<figure class="fig-light"><img src="assets/img/mermaid/aif-rung-secure.svg" alt="The same locks extended: network isolation, PII scanning, and content filtering layer on top of access control." loading="lazy"><figcaption>The same locks extended: network isolation, PII scanning, and content filtering layer on top of access control.</figcaption></figure>
+<p><strong>Rung 3: Exam grade.</strong> Name the AI-specific threats: prompt injection (malicious instructions smuggled in input), data leakage (the model revealing private training or retrieved data), toxicity in outputs. Defenses: validate and filter inputs, give tools least-privilege access, filter and validate outputs, and keep an audit trail with CloudTrail logging every API call. Grounding fights hallucinations: RAG grounding (answers from retrieved documents), output validation (check answers against rules), confidence scoring (route low-confidence answers to humans via A2I). Data lineage answers "where did this data come from": document origins with cataloging and Model Cards, cite sources in RAG answers.</p>
+<h3 id="ladder-3-governance-and-compliance">Ladder 3: Governance and compliance</h3>
+<p><strong>Rung 1: The plainest picture.</strong> Governance means rules for data's whole life: how it is collected, where it lives, how long it is kept, who touched it. Without rules, nobody can prove anything to an auditor.</p>
+<figure class="fig-light"><img src="assets/img/mermaid/aif-rung-govern.svg" alt="The data lifecycle that governance covers: collect, store, use, then retain or delete on a defined schedule." loading="lazy"><figcaption>The data lifecycle that governance covers: collect, store, use, then retain or delete on a defined schedule.</figcaption></figure>
+<p><strong>Rung 2: Add one layer.</strong> AWS provides the toolkit. CloudTrail logs every API call: the audit trail. Config checks resources against compliance rules and records configuration history. Audit Manager collects evidence for audits automatically. Artifact gives on-demand access to AWS's own compliance reports (SOC, ISO, PCI). Trusted Advisor checks your account against best practices. Inspector finds software vulnerabilities in EC2 and containers.</p>
+<figure class="fig-light"><img src="assets/img/mermaid/aif-rung-govern.svg" alt="The same lifecycle with the watchers attached: logging, compliance rules, evidence collection, and best-practice checks." loading="lazy"><figcaption>The same lifecycle with the watchers attached: logging, compliance rules, evidence collection, and best-practice checks.</figcaption></figure>
+<p><strong>Rung 3: Exam grade.</strong> Match the tool to the verb: "log API calls" is always CloudTrail; "check compliance rules" is Config; "gather audit evidence" is Audit Manager; "read AWS compliance reports" is Artifact; "best-practice advice" is Trusted Advisor. Processes matter as much as tools: written policies, a regular review cadence, team training on AI risks, and the Generative AI Security Scoping Matrix for deciding how much scrutiny each use case needs. Transparency standards: document what the system does, what data it uses, and where humans stay in the loop.</p>
+<figure class="fig-light"><img src="assets/img/mermaid/aif-rung-govern.svg" alt="Governance at exam level: the lifecycle stages each get their watchers, loggers, and evidence collectors." loading="lazy"><figcaption>Governance at exam level: the lifecycle stages each get their watchers, loggers, and evidence collectors.</figcaption></figure>
+
+<div class="takeaway"><p>Exam pairing: Config checks compliance, Audit Manager gathers audit evidence, Artifact holds AWS's compliance reports, CloudTrail logs API calls, Trusted Advisor gives best-practice advice. "Prove to an auditor" points to Audit Manager or Artifact. "Log API activity" is always CloudTrail.</p></div>
+<h2 id="decision-trees">Decision trees: the whole exam on one page</h2>
+<p><strong>Which customization?</strong> Same knowledge, better answers: prompt engineering. New private or current facts: RAG. New behavior, tone, or style: fine-tuning. Whole new knowledge from scratch: pre-training.</p>
+<p><strong>Which inference?</strong> Interactive and instant: real-time. Big single payloads, minutes OK: asynchronous. Scheduled bulk, cheapest: batch. Spiky traffic, pay per use: serverless.</p>
+<p><strong>Which service?</strong> Train your own model: SageMaker AI. Use an FM via API: Bedrock. Chatbot: Lex. Search company docs: Kendra. Text insights: Comprehend. Images: Rekognition. Speech to text: Transcribe. Text to speech: Polly. Translate: Translate. Read documents: Textract. Recommend: Personalize. Ask BI questions: Quick. Code assistant: Q Developer or Kiro. Run agents in production: AgentCore.</p>
+<p><strong>Which responsible-AI tool?</strong> Detect bias: Clarify. Filter content: Guardrails. Document the model: Model Cards. Human review: A2I. Watch production: Model Monitor.</p>
+<p><strong>Which governance tool?</strong> Log API calls: CloudTrail. Check compliance rules: Config. Gather audit evidence: Audit Manager. Read AWS compliance reports: Artifact. Best-practice checks: Trusted Advisor.</p>
+<h2 id="confusion-pairs">Confusion pairs: the traps</h2>
+<p>Read each pair once. The exam separates them exactly this way.</p>
+<ul>
+<li><strong>Bedrock vs SageMaker AI:</strong> Bedrock serves foundation models you do not train. SageMaker AI trains and hosts models you build.</li>
+<li><strong>RAG vs fine-tuning:</strong> RAG adds facts at query time (weights unchanged). Fine-tuning bakes behavior into weights.</li>
+<li><strong>Comprehend vs Kendra:</strong> Comprehend analyzes text. Kendra searches your documents.</li>
+<li><strong>Lex vs Q:</strong> Lex builds chatbots. Q is the ready-made AI assistant.</li>
+<li><strong>Transcribe vs Polly:</strong> Transcribe turns speech into text. Polly turns text into speech.</li>
+<li><strong>Translate vs Comprehend:</strong> Translate changes languages. Comprehend extracts meaning.</li>
+<li><strong>Rekognition vs Textract:</strong> Rekognition sees images and video. Textract reads text from documents.</li>
+<li><strong>Temperature vs top-p:</strong> Temperature sets randomness of the whole distribution. Top-p trims which tokens are candidates.</li>
+<li><strong>Batch vs asynchronous:</strong> Batch is many predictions on a schedule. Async is one large payload with a delayed result.</li>
+<li><strong>Guardrails vs Clarify:</strong> Guardrails filter live inputs and outputs. Clarify analyzes data and models for bias.</li>
+<li><strong>Macie vs Config:</strong> Macie finds sensitive data in S3. Config checks resources against compliance rules.</li>
+<li><strong>KMS vs Secrets Manager:</strong> KMS manages encryption keys. Secrets Manager stores secrets like passwords and API keys.</li>
+<li><strong>Pre-training vs fine-tuning vs continued pre-training:</strong> Pre-training builds base knowledge from scratch. Fine-tuning adapts behavior for a task. Continued pre-training adds domain knowledge before fine-tuning.</li>
+<li><strong>Accuracy vs precision vs recall:</strong> Accuracy is overall correctness. Precision is correctness of positive predictions. Recall is coverage of actual positives.</li>
+</ul>
+<h2 id="api-look">One look at the API (not on the exam)</h2>
+<p>Coding is out of scope. This is just so the words "API call" mean something concrete. Heavily commented, plain English throughout.</p>
+<pre><code class="language-python"># You will never write this on the exam. It shows what &quot;calling a
+# foundation model through Bedrock&quot; looks like under the hood.
+import boto3  # boto3 is the Python library for calling AWS services
+
+# A client is your handle to one AWS service. Here: the Bedrock Runtime,
+# which is the service that runs inference (getting answers from models).
+client = boto3.client(&quot;bedrock-runtime&quot;, region_name=&quot;us-east-1&quot;)
+
+# converse() is the single API for chat-style calls on Bedrock.
+# modelId picks the foundation model. messages holds the conversation.
+# inferenceConfig carries the knobs from D3: temperature and max tokens.
+response = client.converse(
+    modelId=&quot;amazon.nova-micro-v1:0&quot;,  # small, cheap, fast: pick per the selection factors
+    messages=[{&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: [{&quot;text&quot;: &quot;Summarize refunds in one sentence.&quot;}]}],
+    inferenceConfig={&quot;temperature&quot;: 0, &quot;maxTokens&quot;: 100},  # 0 = focused, factual
+)
+
+# The answer text lives inside the response. stopReason tells you how the
+# model finished: &quot;end_turn&quot; means done, &quot;max_tokens&quot; means it hit the cap.
+print(response[&quot;output&quot;][&quot;message&quot;][&quot;content&quot;][0][&quot;text&quot;])
+print(response[&quot;stopReason&quot;])
+</code></pre>
+<h2 id="community">From the community</h2>
+<p>Genuinely useful, each checked before linking:</p>
+<ul>
+<li><a href="https://dev.to/dale-rose/i-scored-10001000-on-aws-certified-ai-practitioner-aif-c01-heres-every-resource-i-used-4alf">I scored 1000/1000 on AIF-C01: every resource I used</a>, a perfect scorer's four-layer study system: video lectures first for the mental model, then docs, then practice questions, then revision. Confirms the freeCodeCamp course and Maarek course as the two most-cited resources.</li>
+<li><a href="https://www.learnzapp.com/blog/aws-ai-practitioner-certification-guide/">AWS AI Practitioner Certification Guide 2026</a>, domain-by-domain guide with the decision tree this volume mirrors: new facts need RAG, new behavior needs fine-tuning, better outputs need prompt engineering.</li>
+<li><a href="https://open-exam-prep.com/blog/aws-ai-practitioner-exam-guide-2026">AIF-C01 study plan and exam guide walkthrough</a>, a realistic two-week plan plus notes on 2026 Bedrock features now in scope (AgentCore policy controls, cross-region inference, guardrail grounding checks).</li>
+</ul>
+<h2 id="practice-questions">Practice questions</h2>
+<p>Twenty exam-style questions across every format the exam uses. Cover the options, commit to an answer, then reveal.</p>
+<div class="pq" id="pq-d1-1">
+<p class="pq-meta"><span class="constraint">Domain 1</span><span class="constraint">Multiple choice</span> <span class="pq-ref">supervised learning</span></p>
+<p class="pq-question">A bank labels 50,000 past transactions as "fraud" or "legitimate", then trains a model to score new transactions as they arrive. Which learning type and task does this describe?</p>
+<ul class="pq-options">
+<li class="pq-option correct"><strong>A) </strong>Supervised learning, classification</li>
+<li class="pq-option wrong"><strong>B) </strong>Unsupervised learning, clustering</li>
+<li class="pq-option wrong"><strong>C) </strong>Reinforcement learning</li>
+<li class="pq-option wrong"><strong>D) </strong>Supervised learning, regression</li>
+</ul>
+<button class="pq-reveal" type="button">Reveal answer</button>
+<div class="pq-answer">
+<p><span class="correct">Correct: A.</span> The data is labeled (fraud/legitimate) and the model predicts a category for new transactions, which is supervised classification.
+<span class="wrong">B is wrong:</span> clustering works on unlabeled data to find natural groups; here the labels exist. C is wrong: no agent, environment, or reward signal is involved. D is wrong: regression predicts a number (like a price), not a category.</p>
+</div>
+</div>
+
+<div class="pq" id="pq-d1-2">
+<p class="pq-meta"><span class="constraint">Domain 1</span><span class="constraint">Multiple choice</span> <span class="pq-ref">inference types</span></p>
+<p class="pq-question">A retailer scores 2 million customers for churn risk every Sunday night. Nobody waits for the results. Which inference type gives the lowest cost?</p>
+<ul class="pq-options">
+<li class="pq-option correct"><strong>A) </strong>Batch inference</li>
+<li class="pq-option wrong"><strong>B) </strong>Real-time inference</li>
+<li class="pq-option wrong"><strong>C) </strong>Asynchronous inference</li>
+<li class="pq-option wrong"><strong>D) </strong>Serverless inference</li>
+</ul>
+<button class="pq-reveal" type="button">Reveal answer</button>
+<div class="pq-answer">
+<p><span class="correct">Correct: A.</span> Batch handles huge volumes on a schedule with the lowest cost per prediction, and latency does not matter here.
+<span class="wrong">B is wrong:</span> real-time is for millisecond interactive responses and costs more per request. C is wrong: async fits single large payloads with delayed results, not scheduled bulk scoring. D is wrong: serverless fits spiky unpredictable traffic, not a fixed weekly job.</p>
+</div>
+</div>
+
+<div class="pq" id="pq-d1-3">
+<p class="pq-meta"><span class="constraint">Domain 1</span><span class="constraint">Matching</span> <span class="pq-ref">core vocabulary</span></p>
+<p class="pq-question">Match each term to its definition. Terms: 1. Training 2. Inference 3. Overfitting. Definitions: a. Using a finished model to make predictions on new data b. Teaching a model patterns from data c. Memorizing training data so the model fails on new data.</p>
+<ul class="pq-options">
+<li class="pq-option correct"><strong>A) </strong>1-b, 2-a, 3-c</li>
+<li class="pq-option wrong"><strong>B) </strong>1-a, 2-b, 3-c</li>
+<li class="pq-option wrong"><strong>C) </strong>1-b, 2-c, 3-a</li>
+<li class="pq-option wrong"><strong>D) </strong>1-c, 2-a, 3-b</li>
+</ul>
+<button class="pq-reveal" type="button">Reveal answer</button>
+<div class="pq-answer">
+<p><span class="correct">Correct: A.</span> Training teaches (b), inference predicts on new data (a), overfitting memorizes (c).
+<span class="wrong">B is wrong:</span> it swaps training and inference. C is wrong: inference is not overfitting. D is wrong: training is not memorizing; overfitting is the failure mode, not the process.</p>
+</div>
+</div>
+
+<div class="pq" id="pq-d1-4">
+<p class="pq-meta"><span class="constraint">Domain 1</span><span class="constraint">Multiple choice</span> <span class="pq-ref">AWS AI services</span></p>
+<p class="pq-question">A company wants to analyze 100,000 product reviews to find whether each one is positive, negative, or neutral. Which AWS service fits?</p>
+<ul class="pq-options">
+<li class="pq-option correct"><strong>A) </strong>Amazon Comprehend</li>
+<li class="pq-option wrong"><strong>B) </strong>Amazon Rekognition</li>
+<li class="pq-option wrong"><strong>C) </strong>Amazon Translate</li>
+<li class="pq-option wrong"><strong>D) </strong>Amazon Polly</li>
+</ul>
+<button class="pq-reveal" type="button">Reveal answer</button>
+<div class="pq-answer">
+<p><span class="correct">Correct: A.</span> Comprehend performs NLP on text, including sentiment analysis.
+<span class="wrong">B is wrong:</span> Rekognition analyzes images and video, not text sentiment. C is wrong: Translate changes languages; it does not score sentiment. D is wrong: Polly turns text into speech.</p>
+</div>
+</div>
+
+<div class="pq" id="pq-d2-5">
+<p class="pq-meta"><span class="constraint">Domain 2</span><span class="constraint">Multiple choice</span> <span class="pq-ref">token pricing</span></p>
+<p class="pq-question">Which statement about token-based pricing for foundation models is true?</p>
+<ul class="pq-options">
+<li class="pq-option wrong"><strong>A) </strong>You pay a flat monthly fee per model regardless of usage</li>
+<li class="pq-option correct"><strong>B) </strong>You pay per input token and per output token, and output tokens usually cost more</li>
+<li class="pq-option wrong"><strong>C) </strong>Prompt caching increases your token costs</li>
+<li class="pq-option wrong"><strong>D) </strong>Larger context windows are always free</li>
+</ul>
+<button class="pq-reveal" type="button">Reveal answer</button>
+<div class="pq-answer">
+<p><span class="correct">Correct: B.</span> Pricing is per token in each direction, with output priced higher because generation costs more compute.
+<span class="wrong">A is wrong:</span> on-demand pricing is usage-based, not flat. C is wrong: prompt caching discounts repeated prompt prefixes; it lowers cost. D is wrong: context length affects price tiers; nothing about it is free.</p>
+</div>
+</div>
+
+<div class="pq" id="pq-d2-6">
+<p class="pq-meta"><span class="constraint">Domain 2</span><span class="constraint">Multiple choice</span> <span class="pq-ref">embeddings</span></p>
+<p class="pq-question">A team embedded its documents with embedding model X, then switched the query side to model Y to save money. Retrieval quality collapsed. What is the most likely cause?</p>
+<ul class="pq-options">
+<li class="pq-option correct"><strong>A) </strong>Vectors from different embedding models are not comparable</li>
+<li class="pq-option wrong"><strong>B) </strong>The vector store ran out of storage</li>
+<li class="pq-option wrong"><strong>C) </strong>The temperature setting is too high</li>
+<li class="pq-option wrong"><strong>D) </strong>Chunking ran too quickly</li>
+</ul>
+<button class="pq-reveal" type="button">Reveal answer</button>
+<div class="pq-answer">
+<p><span class="correct">Correct: A.</span> Each embedding model has its own vector space. Ingest and query must use the same model or "nearest" becomes meaningless.
+<span class="wrong">B is wrong:</span> storage limits cause errors, not silent quality collapse. C is wrong: temperature affects generation randomness, not retrieval. D is wrong: chunking speed does not change vector geometry.</p>
+</div>
+</div>
+
+<div class="pq" id="pq-d2-7">
+<p class="pq-meta"><span class="constraint">Domain 2</span><span class="constraint">Multiple choice</span> <span class="pq-ref">diffusion models</span></p>
+<p class="pq-question">A marketing team wants product images generated from text descriptions. Which model type fits?</p>
+<ul class="pq-options">
+<li class="pq-option correct"><strong>A) </strong>Diffusion model</li>
+<li class="pq-option wrong"><strong>B) </strong>Embedding model</li>
+<li class="pq-option wrong"><strong>C) </strong>Classification model</li>
+<li class="pq-option wrong"><strong>D) </strong>Clustering model</li>
+</ul>
+<button class="pq-reveal" type="button">Reveal answer</button>
+<div class="pq-answer">
+<p><span class="correct">Correct: A.</span> Diffusion models generate images by reversing a noise-adding process, guided by text.
+<span class="wrong">B is wrong:</span> embedding models turn text into vectors for search; they do not create images. C is wrong: classification picks categories. D is wrong: clustering finds groups in data.</p>
+</div>
+</div>
+
+<div class="pq" id="pq-d2-8">
+<p class="pq-meta"><span class="constraint">Domain 2</span><span class="constraint">Multiple response</span> <span class="pq-ref">agentic AI</span></p>
+<p class="pq-question">Which TWO statements correctly describe the Model Context Protocol (MCP)?</p>
+<ul class="pq-options">
+<li class="pq-option correct"><strong>A) </strong>It is an open standard for connecting agents to external systems and data</li>
+<li class="pq-option wrong"><strong>B) </strong>It is a Bedrock feature that trains base models on your prompts</li>
+<li class="pq-option correct"><strong>C) </strong>It lets tools plug into agents in a consistent, reusable way</li>
+<li class="pq-option wrong"><strong>D) </strong>It replaces IAM roles for agent permissions</li>
+<li class="pq-option wrong"><strong>E) </strong>It is a defense against prompt injection</li>
+</ul>
+<button class="pq-reveal" type="button">Reveal answer</button>
+<div class="pq-answer">
+<p><span class="correct">Correct: A and C.</span> MCP standardizes how agents reach tools and data, so integrations work the same everywhere.
+<span class="wrong">B is wrong:</span> MCP connects; it does not train. Bedrock does not train base models on prompts at all. D is wrong: IAM still governs permissions. E is wrong: injection defense comes from input validation and guardrails, not MCP.</p>
+</div>
+</div>
+
+<div class="pq" id="pq-d3-9">
+<p class="pq-meta"><span class="constraint">Domain 3</span><span class="constraint">Multiple choice</span> <span class="pq-ref">RAG vs fine-tuning</span></p>
+<p class="pq-question">A company's 4,000-page support manual changes every week. Support answers must quote the manual and cite the page. Which approach fits?</p>
+<ul class="pq-options">
+<li class="pq-option correct"><strong>A) </strong>RAG with Bedrock Knowledge Bases over the manual</li>
+<li class="pq-option wrong"><strong>B) </strong>Fine-tune a foundation model on the manual once</li>
+<li class="pq-option wrong"><strong>C) </strong>Pre-train a new model on the manual</li>
+<li class="pq-option wrong"><strong>D) </strong>Zero-shot prompting with no retrieval</li>
+</ul>
+<button class="pq-reveal" type="button">Reveal answer</button>
+<div class="pq-answer">
+<p><span class="correct">Correct: A.</span> Weekly changes make fine-tuning go stale within days, while RAG retrieves current pages at query time and can cite them.
+<span class="wrong">B is wrong:</span> fine-tuning bakes knowledge into weights that would be outdated next week, and it cannot cite pages. C is wrong: pre-training from scratch is the most expensive option and absurd for this need. D is wrong: the base model never saw the private manual, so it would hallucinate.</p>
+</div>
+</div>
+
+<div class="pq" id="pq-d3-10">
+<p class="pq-meta"><span class="constraint">Domain 3</span><span class="constraint">Multiple choice</span> <span class="pq-ref">fine-tuning</span></p>
+<p class="pq-question">A company wants its support bot to answer every reply in a warm, playful brand voice. Product facts rarely change. Which approach fits?</p>
+<ul class="pq-options">
+<li class="pq-option correct"><strong>A) </strong>Fine-tune on example conversations written in the brand voice</li>
+<li class="pq-option wrong"><strong>B) </strong>RAG over the product documentation</li>
+<li class="pq-option wrong"><strong>C) </strong>Pre-train a model from scratch</li>
+<li class="pq-option wrong"><strong>D) </strong>Set temperature to maximum</li>
+</ul>
+<button class="pq-reveal" type="button">Reveal answer</button>
+<div class="pq-answer">
+<p><span class="correct">Correct: A.</span> The need is behavior (tone and style), not facts. Fine-tuning bakes the voice into the weights.
+<span class="wrong">B is wrong:</span> RAG supplies facts; the facts are not the problem here. C is wrong: pre-training is orders of magnitude more expensive than needed. D is wrong: high temperature adds randomness, not a consistent brand voice.</p>
+</div>
+</div>
+
+<div class="pq" id="pq-d3-11">
+<p class="pq-meta"><span class="constraint">Domain 3</span><span class="constraint">Ordering</span> <span class="pq-ref">FM lifecycle</span></p>
+<p class="pq-question">Order the foundation model lifecycle steps from first to last. Steps: 1. Pre-training 2. Data selection 3. Deployment 4. Fine-tuning 5. Evaluation.</p>
+<ul class="pq-options">
+<li class="pq-option correct"><strong>A) </strong>2, 1, 4, 5, 3</li>
+<li class="pq-option wrong"><strong>B) </strong>1, 2, 4, 5, 3</li>
+<li class="pq-option wrong"><strong>C) </strong>2, 4, 1, 5, 3</li>
+<li class="pq-option wrong"><strong>D) </strong>2, 1, 5, 4, 3</li>
+</ul>
+<button class="pq-reveal" type="button">Reveal answer</button>
+<div class="pq-answer">
+<p><span class="correct">Correct: A.</span> Select data, pre-train on it, fine-tune for the task, evaluate, then deploy.
+<span class="wrong">B is wrong:</span> pre-training cannot come before data selection. C is wrong: fine-tuning happens after pre-training, not before. D is wrong: evaluation comes before deployment, not after fine-tuning is skipped.</p>
+</div>
+</div>
+
+<div class="pq" id="pq-d3-12">
+<p class="pq-meta"><span class="constraint">Domain 3</span><span class="constraint">Multiple choice</span> <span class="pq-ref">inference parameters</span></p>
+<p class="pq-question">A model extracts invoice totals and must return the identical answer every time for the same invoice. Which setting helps most?</p>
+<ul class="pq-options">
+<li class="pq-option correct"><strong>A) </strong>Temperature near 0</li>
+<li class="pq-option wrong"><strong>B) </strong>Temperature near 1</li>
+<li class="pq-option wrong"><strong>C) </strong>Top-p at its maximum</li>
+<li class="pq-option wrong"><strong>D) </strong>Max tokens at its maximum</li>
+</ul>
+<button class="pq-reveal" type="button">Reveal answer</button>
+<div class="pq-answer">
+<p><span class="correct">Correct: A.</span> Temperature near 0 makes output focused and repeatable, which is what factual extraction needs.
+<span class="wrong">B is wrong:</span> high temperature adds creative variation, the opposite of repeatable. C is wrong: widening top-p adds candidate tokens, increasing variation. D is wrong: max tokens caps length; it does not control determinism.</p>
+</div>
+</div>
+
+<div class="pq" id="pq-d3-13">
+<p class="pq-meta"><span class="constraint">Domain 3</span><span class="constraint">Multiple choice</span> <span class="pq-ref">prompt techniques</span></p>
+<p class="pq-question">A prompt shows three example input-output pairs before the real request, so the model copies the pattern. Which technique is this?</p>
+<ul class="pq-options">
+<li class="pq-option correct"><strong>A) </strong>Few-shot prompting</li>
+<li class="pq-option wrong"><strong>B) </strong>Zero-shot prompting</li>
+<li class="pq-option wrong"><strong>C) </strong>Chain-of-thought prompting</li>
+<li class="pq-option wrong"><strong>D) </strong>Model distillation</li>
+</ul>
+<button class="pq-reveal" type="button">Reveal answer</button>
+<div class="pq-answer">
+<p><span class="correct">Correct: A.</span> Giving examples inside the prompt is few-shot prompting (in-context learning).
+<span class="wrong">B is wrong:</span> zero-shot gives no examples. C is wrong: chain-of-thought asks for step-by-step reasoning, not examples. D is wrong: distillation compresses a model; it is not a prompting technique.</p>
+</div>
+</div>
+
+<div class="pq" id="pq-d3-14">
+<p class="pq-meta"><span class="constraint">Domain 3</span><span class="constraint">Multiple choice</span> <span class="pq-ref">evaluation metrics</span></p>
+<p class="pq-question">A team fine-tuned a summarization model and wants automatic scoring of generated summaries against reference summaries. Which metric fits?</p>
+<ul class="pq-options">
+<li class="pq-option correct"><strong>A) </strong>ROUGE</li>
+<li class="pq-option wrong"><strong>B) </strong>Click-through rate</li>
+<li class="pq-option wrong"><strong>C) </strong>Temperature</li>
+<li class="pq-option wrong"><strong>D) </strong>Token count</li>
+</ul>
+<button class="pq-reveal" type="button">Reveal answer</button>
+<div class="pq-answer">
+<p><span class="correct">Correct: A.</span> ROUGE measures overlap between generated and reference summaries; it is the standard automatic metric for summarization.
+<span class="wrong">B is wrong:</span> click-through is a product metric, not a text-quality metric. C is wrong: temperature is an inference parameter. D is wrong: token count measures length, not quality.</p>
+</div>
+</div>
+
+<div class="pq" id="pq-d3-15">
+<p class="pq-meta"><span class="constraint">Domain 3</span><span class="constraint">Case study</span> <span class="pq-ref">RAG architecture</span></p>
+<p class="pq-question">Case study: Northwind Traders runs an online store. Support agents answer from a 4,000-page product manual that changes weekly. Leadership wants a chat assistant that quotes the manual, cites the page for every answer, and never invents policies. Phase 2 will let the assistant file return tickets in the order system by itself.
+Question 1: Which approach fits phase 1?</p>
+<ul class="pq-options">
+<li class="pq-option wrong"><strong>A) </strong>Fine-tune a foundation model on the manual</li>
+<li class="pq-option correct"><strong>B) </strong>RAG with Bedrock Knowledge Bases over the manual</li>
+<li class="pq-option wrong"><strong>C) </strong>Pre-train a new model on the manual</li>
+<li class="pq-option wrong"><strong>D) </strong>Prompt the base model with no retrieval</li>
+</ul>
+<button class="pq-reveal" type="button">Reveal answer</button>
+<div class="pq-answer">
+<p><span class="correct">Correct: B.</span> Weekly changes rule out fine-tuning (knowledge goes stale), citations require retrieval, and no behavior change is needed.
+<span class="wrong">A is wrong:</span> baked-in weights cannot stay current with weekly changes and cannot cite pages. C is wrong: pre-training from scratch is the most expensive path and unjustified. D is wrong: the base model never saw the private manual and would hallucinate.</p>
+</div>
+</div>
+
+<div class="pq" id="pq-d3-16">
+<p class="pq-meta"><span class="constraint">Domain 3</span><span class="constraint">Case study</span> <span class="pq-ref">agents</span></p>
+<p class="pq-question">Same case study as the previous question. Question 2: In phase 2 the assistant must file return tickets in the order system on its own. Which AWS approach fits?</p>
+<ul class="pq-options">
+<li class="pq-option wrong"><strong>A) </strong>Bedrock Knowledge Bases</li>
+<li class="pq-option correct"><strong>B) </strong>Bedrock Agents with action groups calling the order API</li>
+<li class="pq-option wrong"><strong>C) </strong>Bedrock Guardrails</li>
+<li class="pq-option wrong"><strong>D) </strong>SageMaker Clarify</li>
+</ul>
+<button class="pq-reveal" type="button">Reveal answer</button>
+<div class="pq-answer">
+<p><span class="correct">Correct: B.</span> Filing tickets means taking actions through tools across steps, which is the agent pattern.
+<span class="wrong">A is wrong:</span> Knowledge Bases retrieve documents; they do not call APIs. C is wrong: Guardrails filter content; they do not act. D is wrong: Clarify detects bias in models; it is unrelated to actions.</p>
+</div>
+</div>
+
+<div class="pq" id="pq-d4-17">
+<p class="pq-meta"><span class="constraint">Domain 4</span><span class="constraint">Multiple choice</span> <span class="pq-ref">bias detection</span></p>
+<p class="pq-question">A bank must check its loan-approval model for discrimination across demographic groups before launch. Which AWS service fits?</p>
+<ul class="pq-options">
+<li class="pq-option correct"><strong>A) </strong>Amazon SageMaker Clarify</li>
+<li class="pq-option wrong"><strong>B) </strong>Amazon Bedrock Guardrails</li>
+<li class="pq-option wrong"><strong>C) </strong>Amazon Macie</li>
+<li class="pq-option wrong"><strong>D) </strong>AWS Artifact</li>
+</ul>
+<button class="pq-reveal" type="button">Reveal answer</button>
+<div class="pq-answer">
+<p><span class="correct">Correct: A.</span> Clarify detects bias in data and models and explains predictions, including subgroup analysis.
+<span class="wrong">B is wrong:</span> Guardrails filter live inputs and outputs; they do not analyze training bias. C is wrong: Macie finds PII in S3; it does not assess model fairness. D is wrong: Artifact provides AWS compliance reports; it does not test your model.</p>
+</div>
+</div>
+
+<div class="pq" id="pq-d4-18">
+<p class="pq-meta"><span class="constraint">Domain 4</span><span class="constraint">Multiple response</span> <span class="pq-ref">responsible AI</span></p>
+<p class="pq-question">Which TWO are named in the exam guide as features of responsible AI?</p>
+<ul class="pq-options">
+<li class="pq-option correct"><strong>A) </strong>Fairness</li>
+<li class="pq-option correct"><strong>B) </strong>Veracity</li>
+<li class="pq-option wrong"><strong>C) </strong>Maximum parameter count</li>
+<li class="pq-option wrong"><strong>D) </strong>Nondeterministic outputs</li>
+</ul>
+<button class="pq-reveal" type="button">Reveal answer</button>
+<div class="pq-answer">
+<p><span class="correct">Correct: A and B.</span> Fairness (no group systematically disadvantaged) and veracity (truthful outputs) are guide-named features, alongside inclusivity and safety.
+<span class="wrong">C is wrong:</span> model size is a selection factor, not a responsible-AI feature. D is wrong: nondeterminism is a GenAI limitation, not a goal.</p>
+</div>
+</div>
+
+<div class="pq" id="pq-d5-19">
+<p class="pq-meta"><span class="constraint">Domain 5</span><span class="constraint">Multiple choice</span> <span class="pq-ref">shared responsibility</span></p>
+<p class="pq-question">A company stores customer training data in S3 and fine-tunes a model on Bedrock. Who is responsible for encrypting the S3 data and controlling who can access it?</p>
+<ul class="pq-options">
+<li class="pq-option correct"><strong>A) </strong>The customer, using KMS and IAM</li>
+<li class="pq-option wrong"><strong>B) </strong>AWS, automatically with no customer action</li>
+<li class="pq-option wrong"><strong>C) </strong>The foundation model provider</li>
+<li class="pq-option wrong"><strong>D) </strong>The auditor who reviews the system</li>
+</ul>
+<button class="pq-reveal" type="button">Reveal answer</button>
+<div class="pq-answer">
+<p><span class="correct">Correct: A.</span> Under the shared responsibility model, data protection and access control are the customer's job; AWS secures the underlying infrastructure.
+<span class="wrong">B is wrong:</span> AWS provides the tools (KMS, IAM) but the customer must configure them. C is wrong: model providers do not manage your S3 buckets. D is wrong: auditors verify; they do not implement.</p>
+</div>
+</div>
+
+<div class="pq" id="pq-d5-20">
+<p class="pq-meta"><span class="constraint">Domain 5</span><span class="constraint">Multiple choice</span> <span class="pq-ref">governance</span></p>
+<p class="pq-question">An auditor asks for a record of every Bedrock API call made in the last quarter, including who called what and when. Which service provides this?</p>
+<ul class="pq-options">
+<li class="pq-option correct"><strong>A) </strong>AWS CloudTrail</li>
+<li class="pq-option wrong"><strong>B) </strong>AWS Config</li>
+<li class="pq-option wrong"><strong>C) </strong>AWS Artifact</li>
+<li class="pq-option wrong"><strong>D) </strong>Amazon Inspector</li>
+</ul>
+<button class="pq-reveal" type="button">Reveal answer</button>
+<div class="pq-answer">
+<p><span class="correct">Correct: A.</span> CloudTrail logs every API call with caller identity and timestamp: the audit trail.
+<span class="wrong">B is wrong:</span> Config tracks resource configuration compliance, not API call history. C is wrong: Artifact holds AWS's own compliance reports, not your API logs. D is wrong: Inspector finds software vulnerabilities; it does not log API calls.</p>
+</div>
+</div>
+
+</div></main>
+<script>
+window.DS_TRACK = "aipc01";
+window.DS_TRACK_TITLE = "AIP-C01 Study Guide";
+window.DS_MANIFEST = [
+  { file: "index.html", label: "Start · Exam Overview & Study Map" },
+  { file: "prereq-aif-c01.html", label: "Prereq · AIF-C01 AI Practitioner Crash Course" },
+  { file: "prereq-aws-cloud-foundations.html", label: "Prereq · AWS Cloud Foundations" },
+  { file: "prereq-ml-specialty.html", label: "Prereq · ML Specialty Essentials" },
+  { file: "volume-d1-foundation-models.html", label: "D1 · Foundation Models, Data & Compliance (31%)" },
+  { file: "volume-d2-implementation-integration.html", label: "D2 · Implementation & Integration (26%)" },
+  { file: "volume-d3-safety-security-governance.html", label: "D3 · Safety, Security & Governance (20%)" },
+  { file: "volume-d4-optimization.html", label: "D4 · Optimization (12%)" },
+  { file: "volume-d5-testing-validation.html", label: "D5 · Testing & Validation (11%)" },
+  { file: "volume-maarek-labs.html", label: "Hands-On Labs" },
+  { file: "volume-question-bank.html", label: "Question Bank" },
+  { file: "volume-question-patterns.html", label: "Question Patterns · How AWS Asks" },
+  { file: "volume-system-design.html", label: "System Design Guide" },
+  { file: "volume-crash-course.html", label: "Crash Course · One-Volume Sprint" },
+  { file: "volume-appendix-gaps.html", label: "Appendix · Coverage Gaps" },
+];
+</script>
+<script>
+/* ==== DS runtime — do not edit per-file (build.py inlines) ==== */
+/* ==========================================================================
+   DS — Canonical Design System behavior (shared across study-guide tracks)
+   Inlined verbatim into a single <script> before </body> in each volume.
+   Zero per-page config except an optional manifest override:
+     <script>window.DS_TRACK = "aipc01";
+             window.DS_MANIFEST = [{file:"index.html",label:"…"}, …];<\/script>
+   must appear BEFORE this script to take effect.
+   Auto-builds: sidebar nav (from the page's own h2/h3), scroll-spy, search
+   filter, completion checkmarks (localStorage), reading progress bar,
+   prev/next footer, copy buttons, .pq reveal toggles, keyboard shortcuts,
+   mobile drawer. Leaves <details>/<summary> fully native.
+   ========================================================================== */
+(function () {
+  "use strict";
+
+  var TRACK = window.DS_TRACK || "ccarp";
+
+  var TRACK_TITLE = window.DS_TRACK_TITLE ||
+    (TRACK === "aipc01" ? "AIP-C01 Study Guide" : "CCAR-P Study Guide");
+
+  /* Official CCAR-P volume order (hardcoded). Each entry: filename + short
+     human label shown in the prev/next footer. */
+  var MANIFEST = window.DS_MANIFEST || [
+    { file: "index.html",                                label: "Start · Exam Overview & Study Map" },
+    { file: "01-solution-design-architecture.html",      label: "D1 · Solution Design & Architecture (17%)" },
+    { file: "02-models-prompting-context.html",          label: "D2 · Models, Prompting & Context (13%)" },
+    { file: "03-integration.html",                       label: "D3 · Integration (19%)" },
+    { file: "04-evaluation-testing-optimization.html",   label: "D4 · Evaluation, Testing & Optimization (16%)" },
+    { file: "05-governance-safety-risk.html",             label: "D5 · Governance, Safety & Risk (14%)" },
+    { file: "06-stakeholder-communication-lifecycle.html", label: "D6 · Stakeholder Communication & Lifecycle (14%)" },
+    { file: "07-developer-productivity-enablement.html", label: "D7 · Developer Productivity & Enablement (7%)" },
+    { file: "08-question-bank.html",                     label: "Question Bank" },
+    { file: "09-system-design-guide.html",               label: "System Design Guide" }
+  ];
+
+  document.documentElement.classList.add("ds-js");
+
+  var main = document.getElementById("ds-content");
+  if (!main) return; // minimal DOM contract not met — bail quietly
+
+  var sidebarRoot = document.getElementById("ds-sidebar-root");
+
+  /* ---------- helpers ---------- */
+
+  function slugify(s) {
+    var out = String(s).toLowerCase().trim()
+      .replace(/[^a-z0-9\u00c0-\u024f]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .replace(/-+/g, "-");
+    return out || "section";
+  }
+
+  function storeGet(k) { try { return window.localStorage.getItem(k); } catch (e) { return null; } }
+  function storeSet(k, v) { try { window.localStorage.setItem(k, v); } catch (e) { /* private mode */ } }
+  function storeDel(k) { try { window.localStorage.removeItem(k); } catch (e) { /* private mode */ } }
+
+  var pageFile = (window.location.pathname.split("/").pop() || "index.html")
+    .split("?")[0].split("#")[0] || "index.html";
+
+  /* ---------- 1. Ensure every h2/h3 has a unique slugified id ---------- */
+
+  var usedIds = {};
+  var headings = Array.prototype.slice.call(main.querySelectorAll("h2, h3"));
+  headings.forEach(function (h) {
+    var base = (h.id && h.id.trim()) ? h.id.trim() : slugify(h.textContent);
+    var id = base, n = 1;
+    while (usedIds[id]) { n += 1; id = base + "-" + n; }
+    usedIds[id] = true;
+    h.id = id;
+    if (h.tagName === "H2") h.setAttribute("tabindex", "-1"); // focus target for Alt+Arrow jumps
+  });
+
+  /* ---------- 2. Wrap main content at 72ch ---------- */
+
+  var inner = document.createElement("div");
+  inner.className = "ds-content-inner";
+  while (main.firstChild) inner.appendChild(main.firstChild);
+  main.appendChild(inner);
+
+  /* ---------- 2b. Site chrome: header (track title, breadcrumbs, volume
+     nav, prev/next) + footer sitemap. Built from window.DS_MANIFEST so
+     every page gets identical chrome; regenerates on every build. ---------- */
+
+  function manifestIndex() {
+    for (var i = 0; i < MANIFEST.length; i++) {
+      if (MANIFEST[i].file === pageFile) return i;
+    }
+    return -1;
+  }
+  var mi = manifestIndex();
+
+  function volLink(entry, text, cls, title) {
+    var a = document.createElement("a");
+    if (cls) a.className = cls;
+    a.href = entry.file;
+    a.textContent = text;
+    if (title) a.setAttribute("title", title);
+    return a;
+  }
+
+  var headerEl = document.createElement("header");
+  headerEl.className = "ds-site-header";
+
+  var topRow = document.createElement("div");
+  topRow.className = "ds-site-header-top";
+  var trackLink = document.createElement("a");
+  trackLink.className = "ds-track-title";
+  trackLink.href = "index.html";
+  trackLink.textContent = TRACK_TITLE;
+  topRow.appendChild(trackLink);
+
+  var hpn = document.createElement("nav");
+  hpn.className = "ds-hpn";
+  hpn.setAttribute("aria-label", "Previous and next volume");
+  if (mi > 0) hpn.appendChild(volLink(MANIFEST[mi - 1], "\u2190 Prev", null, "Previous: " + MANIFEST[mi - 1].label));
+  if (mi !== -1 && mi < MANIFEST.length - 1) hpn.appendChild(volLink(MANIFEST[mi + 1], "Next \u2192", null, "Next: " + MANIFEST[mi + 1].label));
+  if (hpn.firstChild) topRow.appendChild(hpn);
+  headerEl.appendChild(topRow);
+
+  var crumb = document.createElement("nav");
+  crumb.className = "ds-crumb";
+  crumb.setAttribute("aria-label", "Breadcrumb");
+  var ol = document.createElement("ol");
+  var homeLi = document.createElement("li");
+  if (mi === 0) {
+    var homeCur = document.createElement("span");
+    homeCur.setAttribute("aria-current", "page");
+    homeCur.textContent = "Home";
+    homeLi.appendChild(homeCur);
+  } else {
+    homeLi.appendChild(volLink({ file: "index.html", label: "Home" }, "Home", null, "Track home"));
+  }
+  ol.appendChild(homeLi);
+  if (mi > 0) {
+    var curLi = document.createElement("li");
+    var curSpan = document.createElement("span");
+    curSpan.setAttribute("aria-current", "page");
+    curSpan.textContent = MANIFEST[mi].label;
+    curLi.appendChild(curSpan);
+    ol.appendChild(curLi);
+  }
+  crumb.appendChild(ol);
+  headerEl.appendChild(crumb);
+
+  var volNav = document.createElement("nav");
+  volNav.setAttribute("aria-label", "All volumes");
+  var volUl = document.createElement("ul");
+  volUl.className = "ds-volnav";
+  MANIFEST.forEach(function (entry, i) {
+    var li = document.createElement("li");
+    var a = volLink(entry, entry.label);
+    if (i === mi) a.setAttribute("aria-current", "page");
+    li.appendChild(a);
+    volUl.appendChild(li);
+  });
+  volNav.appendChild(volUl);
+  headerEl.appendChild(volNav);
+  main.insertBefore(headerEl, inner);
+
+  var footerEl = document.createElement("footer");
+  footerEl.className = "ds-site-footer";
+  var fKicker = document.createElement("p");
+  fKicker.className = "ds-footer-kicker";
+  fKicker.textContent = "Sitemap";
+  footerEl.appendChild(fKicker);
+  footerEl.appendChild(volLink({ file: "index.html", label: "Track home" }, "Track home", "ds-footer-home", "Back to the study guide home"));
+  var fNav = document.createElement("nav");
+  fNav.setAttribute("aria-label", "Sitemap");
+  var fUl = document.createElement("ul");
+  MANIFEST.forEach(function (entry, i) {
+    var li = document.createElement("li");
+    var a = volLink(entry, entry.label);
+    if (i === mi) a.setAttribute("aria-current", "page");
+    li.appendChild(a);
+    fUl.appendChild(li);
+  });
+  fNav.appendChild(fUl);
+  footerEl.appendChild(fNav);
+  main.appendChild(footerEl);
+
+  /* ---------- 3. Global chrome: skip link, progress bar, hamburger, overlay ---------- */
+
+  var skip = document.createElement("a");
+  skip.href = "#ds-content";
+  skip.className = "ds-skip";
+  skip.textContent = "Skip to content";
+  document.body.insertBefore(skip, document.body.firstChild);
+
+  var progress = document.createElement("div");
+  progress.id = "ds-progress";
+  progress.setAttribute("aria-hidden", "true");
+  document.body.appendChild(progress);
+
+  var burger = document.createElement("button");
+  burger.id = "ds-hamburger";
+  burger.type = "button";
+  burger.setAttribute("aria-label", "Open navigation menu");
+  burger.setAttribute("aria-expanded", "false");
+  burger.setAttribute("aria-controls", "ds-sidebar-root");
+  burger.innerHTML = "<span></span><span></span><span></span>";
+  document.body.appendChild(burger);
+
+  var overlay = document.createElement("div");
+  overlay.id = "ds-overlay";
+  overlay.setAttribute("aria-hidden", "true");
+  document.body.appendChild(overlay);
+
+  function drawerOpen() {
+    document.body.classList.add("ds-drawer-open");
+    burger.setAttribute("aria-expanded", "true");
+    burger.setAttribute("aria-label", "Close navigation menu");
+  }
+  function drawerClose() {
+    document.body.classList.remove("ds-drawer-open");
+    burger.setAttribute("aria-expanded", "false");
+    burger.setAttribute("aria-label", "Open navigation menu");
+  }
+  burger.addEventListener("click", function () {
+    if (document.body.classList.contains("ds-drawer-open")) drawerClose();
+    else drawerOpen();
+  });
+  overlay.addEventListener("click", drawerClose);
+
+  /* ---------- 4. Build the sidebar from h2/h3 ---------- */
+
+  var linkById = {};
+  var sectionIds = []; // h2 ids in order (for Alt+Arrow jumps)
+  var searchInput = null;
+
+  if (sidebarRoot) {
+    sidebarRoot.setAttribute("role", "navigation");
+    sidebarRoot.setAttribute("aria-label", "Study guide sections");
+
+    var sideInner = document.createElement("div");
+    sideInner.className = "ds-side-inner";
+
+    var volBlock = document.createElement("div");
+    volBlock.className = "ds-side-volumes";
+    var volH = document.createElement("h2");
+    volH.textContent = "Volumes";
+    volBlock.appendChild(volH);
+    var volList = document.createElement("ul");
+    MANIFEST.forEach(function (entry, i) {
+      var li = document.createElement("li");
+      var a = document.createElement("a");
+      a.href = entry.file;
+      a.textContent = entry.label;
+      if (i === manifestIndex()) a.setAttribute("aria-current", "page");
+      li.appendChild(a);
+      volList.appendChild(li);
+    });
+    volBlock.appendChild(volList);
+    sideInner.appendChild(volBlock);
+
+    var searchWrap = document.createElement("div");
+    searchWrap.className = "ds-side-search";
+    var searchLabel = document.createElement("label");
+    searchLabel.className = "ds-visually-hidden";
+    searchLabel.setAttribute("for", "ds-nav-search");
+    searchLabel.textContent = "Filter sections";
+    searchInput = document.createElement("input");
+    searchInput.id = "ds-nav-search";
+    searchInput.type = "search";
+    searchInput.setAttribute("placeholder", "Filter sections…  ( / )");
+    searchInput.setAttribute("aria-label", "Filter sections");
+    searchWrap.appendChild(searchLabel);
+    searchWrap.appendChild(searchInput);
+    sideInner.appendChild(searchWrap);
+
+    var nav = document.createElement("ul");
+    nav.className = "ds-nav";
+    sideInner.appendChild(nav);
+    sidebarRoot.appendChild(sideInner);
+
+    function makeDone(title, id) {
+      var key = TRACK + ":" + pageFile + ":done:" + id;
+      var wrap = document.createElement("span");
+      wrap.className = "ds-done-wrap";
+      var cb = document.createElement("input");
+      cb.type = "checkbox";
+      cb.className = "ds-done";
+      cb.setAttribute("aria-label", "Mark section complete: " + title);
+      cb.checked = storeGet(key) === "1";
+      cb.addEventListener("change", function () {
+        if (cb.checked) storeSet(key, "1"); else storeDel(key);
+        var row = cb.closest(".ds-nav-row");
+        if (row) row.classList.toggle("done", cb.checked);
+      });
+      wrap.appendChild(cb);
+      if (cb.checked) {
+        // row class applied after row exists (see below via queue)
+        setTimeout(function () {
+          var row = cb.closest(".ds-nav-row");
+          if (row) row.classList.add("done");
+        }, 0);
+      }
+      return wrap;
+    }
+
+    var subCounter = 0;
+    var currentSub = null;
+
+    headings.forEach(function (h) {
+      var title = h.textContent.trim();
+      if (h.tagName === "H2") {
+        sectionIds.push(h.id);
+        subCounter += 1;
+        var subId = "ds-sub-" + subCounter;
+
+        var chapterLi = document.createElement("li");
+        chapterLi.className = "ds-nav-chapter";
+
+        var row = document.createElement("div");
+        row.className = "ds-nav-row";
+
+        var toggle = document.createElement("button");
+        toggle.type = "button";
+        toggle.className = "ds-nav-toggle";
+        toggle.textContent = "▾";
+        toggle.setAttribute("aria-expanded", "true");
+        toggle.setAttribute("aria-controls", subId);
+        toggle.setAttribute("aria-label", "Collapse section: " + title);
+
+        var sub = document.createElement("ul");
+        sub.className = "ds-nav-sub";
+        sub.id = subId;
+
+        toggle.addEventListener("click", function () {
+          var open = toggle.getAttribute("aria-expanded") === "true";
+          toggle.setAttribute("aria-expanded", String(!open));
+          toggle.setAttribute("aria-label", (open ? "Expand" : "Collapse") + " section: " + title);
+          toggle.textContent = open ? "▸" : "▾";
+          sub.hidden = open;
+        });
+
+        var a = document.createElement("a");
+        a.className = "ds-nav-link";
+        a.href = "#" + h.id;
+        a.textContent = title;
+        a.setAttribute("data-target", h.id);
+
+        row.appendChild(toggle);
+        row.appendChild(a);
+        row.appendChild(makeDone(title, h.id));
+        chapterLi.appendChild(row);
+        chapterLi.appendChild(sub);
+        nav.appendChild(chapterLi);
+        currentSub = sub;
+        linkById[h.id] = a;
+      } else if (currentSub) { // h3 → subsection of the current chapter
+        var sli = document.createElement("li");
+        sli.className = "ds-nav-row ds-nav-subrow";
+        var sa = document.createElement("a");
+        sa.className = "ds-nav-link";
+        sa.href = "#" + h.id;
+        sa.textContent = title;
+        sa.setAttribute("data-target", h.id);
+        sli.appendChild(sa);
+        sli.appendChild(makeDone(title, h.id));
+        currentSub.appendChild(sli);
+        linkById[h.id] = sa;
+      }
+    });
+
+    // Live filter
+    searchInput.addEventListener("input", function () {
+      var q = searchInput.value.trim().toLowerCase();
+      Array.prototype.forEach.call(nav.querySelectorAll(".ds-nav-chapter"), function (ch) {
+        var chapterLink = ch.querySelector(".ds-nav-row > .ds-nav-link");
+        var chapterText = chapterLink ? chapterLink.textContent.toLowerCase() : "";
+        var subMatch = false;
+        Array.prototype.forEach.call(ch.querySelectorAll(".ds-nav-subrow"), function (sr) {
+          var m = !q || sr.textContent.toLowerCase().indexOf(q) !== -1;
+          sr.style.display = m ? "" : "none";
+          if (m) subMatch = true;
+        });
+        ch.style.display = (!q || chapterText.indexOf(q) !== -1 || subMatch) ? "" : "none";
+      });
+    });
+
+    // Close the mobile drawer when a nav link is tapped
+    nav.addEventListener("click", function (e) {
+      var a = e.target && e.target.closest ? e.target.closest("a.ds-nav-link") : null;
+      if (a && window.innerWidth <= 900) drawerClose();
+    });
+
+    /* ---------- 5. Scroll-spy ---------- */
+
+    var spyLinks = headings
+      .map(function (h) { return linkById[h.id]; })
+      .filter(function (a) { return !!a; });
+
+    function setActive(id) {
+      spyLinks.forEach(function (a) {
+        a.classList.toggle("active", a.getAttribute("data-target") === id);
+      });
+    }
+
+    if ("IntersectionObserver" in window && headings.length) {
+      var spy = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) setActive(entry.target.id);
+        });
+      }, { rootMargin: "-30% 0px -60% 0px", threshold: 0 });
+      headings.forEach(function (h) { spy.observe(h); });
+    }
+  }
+
+  /* ---------- 6. Reading progress bar ---------- */
+
+  var ticking = false;
+  function updateProgress() {
+    var el = document.documentElement;
+    var max = el.scrollHeight - el.clientHeight;
+    var pct = max > 0 ? (el.scrollTop / max) * 100 : 0;
+    progress.style.width = pct.toFixed(2) + "%";
+    ticking = false;
+  }
+  window.addEventListener("scroll", function () {
+    if (!ticking) { ticking = true; window.requestAnimationFrame(updateProgress); }
+  }, { passive: true });
+  window.addEventListener("resize", updateProgress);
+  updateProgress();
+
+  /* ---------- 7. Prev / next volume footer (from manifest) ---------- */
+
+  if (mi !== -1) {
+    var pn = document.createElement("nav");
+    pn.className = "ds-prevnext";
+    pn.setAttribute("aria-label", "Previous and next volume");
+
+    function pnLink(entry, cls, kicker) {
+      var a = document.createElement("a");
+      a.className = cls;
+      a.href = entry.file;
+      var k = document.createElement("span");
+      k.className = "ds-pn-kicker";
+      k.textContent = kicker;
+      var lab = document.createElement("span");
+      lab.className = "ds-pn-label";
+      lab.textContent = entry.label;
+      a.appendChild(k);
+      a.appendChild(lab);
+      return a;
+    }
+
+    if (mi > 0) pn.appendChild(pnLink(MANIFEST[mi - 1], "ds-prev", "Previous"));
+    else {
+      var spacer = document.createElement("span");
+      spacer.className = "ds-prev-empty";
+      spacer.setAttribute("aria-hidden", "true");
+      pn.appendChild(spacer);
+    }
+    if (mi < MANIFEST.length - 1) pn.appendChild(pnLink(MANIFEST[mi + 1], "ds-next", "Next"));
+
+    inner.appendChild(pn);
+  }
+  // If the current page is not in the manifest, no prev/next is rendered.
+
+  /* ---------- 8. Copy buttons on every <pre> ---------- */
+
+  Array.prototype.forEach.call(inner.querySelectorAll("pre"), function (pre) {
+    if (pre.querySelector(".ds-copy-btn")) return; // don't double-inject
+    var btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "ds-copy-btn";
+    btn.textContent = "Copy";
+    btn.setAttribute("aria-label", "Copy code block");
+    btn.addEventListener("click", function () {
+      var code = pre.querySelector("code");
+      var text = code ? code.innerText : pre.innerText;
+      function feedback(ok) {
+        btn.textContent = ok ? "Copied" : "Failed";
+        window.setTimeout(function () { btn.textContent = "Copy"; }, 1500);
+      }
+      function legacyCopy() {
+        var ta = document.createElement("textarea");
+        ta.value = text;
+        ta.style.position = "fixed";
+        ta.style.opacity = "0";
+        document.body.appendChild(ta);
+        ta.select();
+        var ok = false;
+        try { ok = document.execCommand("copy"); } catch (e) { /* ignore */ }
+        document.body.removeChild(ta);
+        feedback(ok);
+      }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(
+          function () { feedback(true); },
+          function () { legacyCopy(); }
+        );
+      } else {
+        legacyCopy();
+      }
+    });
+    pre.appendChild(btn);
+  });
+
+  /* ---------- 9. .pq reveal toggles (details/summary left native) ---------- */
+
+  Array.prototype.forEach.call(inner.querySelectorAll(".pq"), function (pq) {
+    if (pq.tagName === "DETAILS") return; // native disclosure — do not touch
+    var btn = pq.querySelector(".pq-reveal");
+    var ans = pq.querySelector(".pq-answer");
+    if (!btn || !ans || btn.tagName !== "BUTTON") return;
+    btn.setAttribute("aria-expanded", "false");
+    btn.setAttribute("aria-controls", ans.id || "");
+    btn.addEventListener("click", function () {
+      var open = ans.classList.toggle("open");
+      btn.setAttribute("aria-expanded", String(open));
+      btn.textContent = open ? "Hide answer" : "Reveal answer";
+    });
+  });
+
+  /* ---------- 10. Keyboard shortcuts ---------- */
+
+  document.addEventListener("keydown", function (e) {
+    var active = document.activeElement;
+    var inField = active && /^(INPUT|TEXTAREA|SELECT)$/.test(active.tagName);
+
+    // "/" focuses the sidebar search (when not typing somewhere)
+    if (e.key === "/" && !inField && !e.ctrlKey && !e.metaKey && !e.altKey && searchInput) {
+      e.preventDefault();
+      if (window.innerWidth <= 900 && !document.body.classList.contains("ds-drawer-open")) drawerOpen();
+      searchInput.focus();
+      return;
+    }
+
+    // Esc closes the mobile drawer; otherwise clears the search
+    if (e.key === "Escape") {
+      if (document.body.classList.contains("ds-drawer-open")) {
+        drawerClose();
+        burger.focus();
+      } else if (active === searchInput) {
+        searchInput.value = "";
+        searchInput.dispatchEvent(new Event("input", { bubbles: true }));
+        searchInput.blur();
+      }
+      return;
+    }
+
+    // Alt+ArrowDown / Alt+ArrowUp jump to next/previous h2 section
+    if (e.altKey && (e.key === "ArrowDown" || e.key === "ArrowUp") && sectionIds.length) {
+      e.preventDefault();
+      var dir = e.key === "ArrowDown" ? 1 : -1;
+      var y = window.scrollY + 120;
+      var idx = -1;
+      sectionIds.forEach(function (id, i) {
+        var el = document.getElementById(id);
+        if (el && el.getBoundingClientRect().top + window.scrollY <= y) idx = i;
+      });
+      var target = idx + dir;
+      if (target < 0) target = 0;
+      if (target >= sectionIds.length) target = sectionIds.length - 1;
+      var tel = document.getElementById(sectionIds[target]);
+      if (tel) {
+        tel.scrollIntoView({ behavior: "smooth", block: "start" });
+        if (tel.focus) tel.focus({ preventScroll: true });
+      }
+    }
+  });
+})();
+
+</script>
+<script>
+(function(){
+  if (window.__aipYtWired) return; window.__aipYtWired = true;
+  var players = {};
+  var apiLoaded = false;
+  function loadApi(){
+    if (apiLoaded || window.YT) return; apiLoaded = true;
+    var t = document.createElement('script'); t.src = 'https://www.youtube.com/iframe_api';
+    document.head.appendChild(t);
+  }
+  function wireBar(bar, id){
+    if (!bar || !(window.YT && YT.Player)) return;
+    if (!players[id]) { try { players[id] = new YT.Player(id); } catch (e) { return; } }
+    if (bar.__wired) return; bar.__wired = true;
+    bar.addEventListener('click', function(ev){
+      var b = ev.target && ev.target.closest ? ev.target.closest('button[data-rate]') : null;
+      if (!b) return;
+      var p = players[id];
+      if (p && p.setPlaybackRate) { try { p.setPlaybackRate(parseFloat(b.getAttribute('data-rate'))); } catch (e) {} }
+      bar.querySelectorAll('button').forEach(function(x){ x.classList.remove('active'); });
+      b.classList.add('active');
+    });
+  }
+  document.querySelectorAll('.yt-facade').forEach(function(fac){
+    fac.querySelector('.yt-facade-btn').addEventListener('click', function(){
+      var vid = fac.getAttribute('data-vid');
+      var ytid = fac.getAttribute('data-ytid');
+      var title = fac.getAttribute('data-title');
+      var fr = document.createElement('iframe');
+      fr.className = 'yt-player loaded';
+      fr.id = ytid;
+      fr.title = title;
+      fr.src = 'https://www.youtube-nocookie.com/embed/' + vid + '?enablejsapi=1&rel=0&autoplay=1';
+      fr.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+      fr.allowFullscreen = true;
+      fac.replaceWith(fr);
+      loadApi();
+      var bar = document.querySelector('.yt-speedbar[data-for="' + ytid + '"]');
+      var n = 0; var iv = setInterval(function(){
+        wireBar(bar, ytid);
+        if ((window.YT && YT.Player) || ++n > 40) clearInterval(iv);
+      }, 500);
+    });
+  });
+})();
+</script>
+</body>
+</html>
