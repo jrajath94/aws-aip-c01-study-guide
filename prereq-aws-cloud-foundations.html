@@ -1175,7 +1175,8 @@ footer p{text-align:left}
 .yt-facade-title { font-weight: 600; font-size: 16px; text-align: center; }
 .yt-facade-note { font-size: 13px; color: #bdbdbd; }
 .prereq-video iframe.yt-player.loaded { width: 100%; aspect-ratio: 16/9; border: 0; border-radius: 8px; }
-/* ==== Experience layer v1 (additive, 2026-09-28) ==== */
+</style>
+<style>
 /* Hallmark · pre-emit critique: P5 H4 E5 S4 R5 V5
  * ==========================================================================
  * Experience layer for study volumes — ADDITIVE ONLY.
@@ -1194,147 +1195,10 @@ footer p{text-align:left}
  *        /* ==== Experience layer — additive, do not edit per-file ==== */
  *        …this file verbatim…
  *        [close the style element]
- *   2. Before <script>
-/* ==== Experience layer v1 behavior (additive, 2026-09-28) ==== */
-/* ==== Experience layer behavior — additive ====
- * Calm, GPU-friendly page motion for study volumes. No-JS safe: every hidden
- * state in experience.css is gated on `html.xp-js`, which only this script
- * adds — without it the page is fully readable. Respects
- * prefers-reduced-motion (exits early; CSS keeps everything static).
- *
- * Three jobs:
- *  1. Hero parallax — detects the volume hero (.banner/.hero, else wraps the
- *     h1 + lede block in .xp-hero) and drifts it gently as the reader
- *     scrolls on. Transform/opacity only, rAF-throttled, passive listener.
- *  2. Scroll reveals — one IntersectionObserver fades+rises figures, key
- *     callouts and knowledge checks exactly once. Elements already in view
- *     on load appear immediately (no load flash).
- *  3. Nothing else: progress bar, scroll-spy, sidebar, quiz toggles are
- *     owned by ds.js and are left untouched.
- *
- * (In the assembly snippet the closing element tags are written literally;
- * inside this file they are escaped as <\/style> / <\/script> so the file
- * pastes verbatim without early-terminating its own element.)
- */
-(function () {
-  'use strict';
-
-  var root = document.documentElement;
-  root.classList.add('xp-js');
-
-  var reduceMotion = false;
-  try {
-    reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  } catch (e) { /* matchMedia unavailable: assume motion is fine */ }
-  if (reduceMotion) { return; }
-
-  /* ---------------- 1. Hero detection + gentle parallax ---------------- */
-  var hero = document.querySelector('.banner, .hero');
-  if (!hero) {
-    /* No banner hero: wrap the volume title (h1) plus its lede paragraphs
-       in a layout-neutral div. Never touches headings ds.js needs. */
-    var main = document.querySelector('main');
-    var h1 = main ? main.querySelector('h1') : null;
-    if (h1 && h1.parentNode) {
-      var wrap = document.createElement('div');
-      wrap.className = 'xp-hero';
-      h1.parentNode.insertBefore(wrap, h1);
-      var node = h1, moved = 0, paras = 0;
-      while (node && moved < 8) {
-        var next = node.nextSibling;
-        var isPara = node.nodeType === 1 && node.tagName === 'P';
-        if (node !== h1 && !isPara) { break; }
-        wrap.appendChild(node);
-        moved += 1;
-        if (isPara) {
-          paras += 1;
-          if (paras >= 3) { break; }
-        }
-        node = next;
-      }
-      hero = wrap;
-    }
-  }
-
-  var heroH = 0, ticking = false, pxOn = false;
-  function measure() { heroH = hero ? hero.offsetHeight : 0; }
-  function render() {
-    ticking = false;
-    if (!hero || !heroH) { return; }
-    var y = window.pageYOffset || root.scrollTop || 0;
-    if (y <= 0) {
-      if (pxOn) { hero.style.transform = ''; hero.style.opacity = ''; pxOn = false; }
-      return;
-    }
-    var range = heroH * 1.4;
-    if (y < range) {
-      /* Drift up slightly slower than the scroll and fade a whisper —
-         the title recedes calmly instead of snapping away. */
-      var k = Math.min(y / range, 1);
-      hero.style.transform = 'translate3d(0,' + (-y * 0.06).toFixed(1) + 'px,0)';
-      hero.style.opacity = (1 - k * 0.22).toFixed(3);
-      pxOn = true;
-    } else if (pxOn) {
-      hero.style.transform = '';
-      hero.style.opacity = '';
-      pxOn = false;
-    }
-  }
-  function requestRender() {
-    if (!ticking) { ticking = true; window.requestAnimationFrame(render); }
-  }
-  if (hero) {
-    measure();
-    render();
-    window.addEventListener('scroll', requestRender, { passive: true });
-    window.addEventListener('resize', function () { measure(); requestRender(); });
-  }
-
-  /* ---------------- 2. Scroll-triggered reveals ---------------- */
-  var SELECTOR = [
-    'figure',
-    '.takeaway', '.exam-ask', '.trapbox', '.trap', '.board',
-    '.diagram-walkthrough', '.walkthrough', '.warn', '.callout',
-    '.ob-board', '.nums', '.watch-card', '.lab', '.pq', '.go-deeper-note'
-  ].join(', ');
-
-  var targets = [];
-  Array.prototype.forEach.call(document.querySelectorAll(SELECTOR), function (el) {
-    if (hero && hero.contains(el)) { return; } /* hero has its own motion */
-    targets.push(el);
-  });
-
-  function showAll(list) {
-    list.forEach(function (el) { el.classList.add('xp-reveal', 'xp-in'); });
-  }
-
-  if (!targets.length) { return; }
-
-  if (!('IntersectionObserver' in window)) { showAll(targets); return; }
-
-  var io = new IntersectionObserver(function (entries) {
-    entries.forEach(function (en) {
-      if (en.isIntersecting) {
-        en.target.classList.add('xp-in');
-        io.unobserve(en.target);
-      }
-    });
-  }, { rootMargin: '0px 0px -6% 0px', threshold: 0.06 });
-
-  var vh = window.innerHeight || 800;
-  targets.forEach(function (el) {
-    el.classList.add('xp-reveal');
-    var r = el.getBoundingClientRect();
-    if (r.top < vh && r.bottom > 0) {
-      el.classList.add('xp-in'); /* in view on load: appear, no animation */
-    } else {
-      io.observe(el);
-    }
-  });
-})();
-
-</script>
-</body>, AFTER the ds.js script block, add:
+ *   2. Immediately before the document's LAST closing body tag (the real
+ *      one at the end of the file — some volumes mention a literal closing
+ *      body tag inside their docs prose; ignore those), AFTER the ds.js
+ *      script block, add:
  *        <script>
  *        /* ==== Experience layer behavior — additive ==== */
  *        …experience.js verbatim…
@@ -2868,6 +2732,151 @@ window.DS_MANIFEST = [
     });
   });
 })();
+</script>
+<script>
+/* ==== Experience layer behavior — additive ====
+ * Calm, GPU-friendly page motion for study volumes. No-JS safe: every hidden
+ * state in experience.css is gated on `html.xp-js`, which only this script
+ * adds — without it the page is fully readable. Respects
+ * prefers-reduced-motion (exits early; CSS keeps everything static).
+ *
+ * Three jobs:
+ *  1. Hero parallax — detects the volume hero (.banner/.hero, else wraps the
+ *     h1 + lede block in .xp-hero) and drifts it gently as the reader
+ *     scrolls on. Transform/opacity only, rAF-throttled, passive listener.
+ *  2. Scroll reveals — one IntersectionObserver fades+rises figures, key
+ *     callouts and knowledge checks exactly once. Elements already in view
+ *     on load appear immediately (no load flash).
+ *  3. Nothing else: progress bar, scroll-spy, sidebar, quiz toggles are
+ *     owned by ds.js and are left untouched.
+ *
+ * (In the assembly snippet the closing element tags are written literally;
+ * inside this file they are escaped as <\/style> / <\/script> so the file
+ * pastes verbatim without early-terminating its own element.)
+ */
+(function () {
+  'use strict';
+
+  var root = document.documentElement;
+
+  var reduceMotion = false;
+  try {
+    reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  } catch (e) { /* matchMedia unavailable: assume motion is fine */ }
+  if (reduceMotion) { return; } /* leave no footprint: no xp-js, CSS stays static */
+
+  /* From here on the reader is fine with calm motion: mark the document so
+     the CSS reveal/parallax states may apply. Without this class (no-JS or
+     reduced-motion) every hidden state stays off and the page is fully
+     readable. */
+  root.classList.add('xp-js');
+
+  /* ---------------- 1. Hero detection + gentle parallax ---------------- */
+  var hero = document.querySelector('.banner, .hero');
+  if (!hero) {
+    /* No banner hero: wrap the volume title (h1) plus its lede paragraphs
+       in a layout-neutral div. Never touches headings ds.js needs. */
+    var main = document.querySelector('main');
+    var h1 = main ? main.querySelector('h1') : null;
+    if (h1 && h1.parentNode) {
+      var wrap = document.createElement('div');
+      wrap.className = 'xp-hero';
+      h1.parentNode.insertBefore(wrap, h1);
+      var node = h1, moved = 0, paras = 0;
+      while (node && moved < 8) {
+        var next = node.nextSibling;
+        if (node.nodeType === 3) { node = next; continue; } /* skip whitespace text nodes */
+        var isPara = node.nodeType === 1 && node.tagName === 'P';
+        if (node !== h1 && !isPara) { break; }
+        wrap.appendChild(node);
+        moved += 1;
+        if (isPara) {
+          paras += 1;
+          if (paras >= 3) { break; }
+        }
+        node = next;
+      }
+      hero = wrap;
+    }
+  }
+
+  var heroH = 0, ticking = false, pxOn = false;
+  function measure() { heroH = hero ? hero.offsetHeight : 0; }
+  function render() {
+    ticking = false;
+    if (!hero || !heroH) { return; }
+    var y = window.pageYOffset || root.scrollTop || 0;
+    if (y <= 0) {
+      if (pxOn) { hero.style.transform = ''; hero.style.opacity = ''; pxOn = false; }
+      return;
+    }
+    var range = heroH * 1.4;
+    if (y < range) {
+      /* Drift up slightly slower than the scroll and fade a whisper —
+         the title recedes calmly instead of snapping away. */
+      var k = Math.min(y / range, 1);
+      hero.style.transform = 'translate3d(0,' + (-y * 0.06).toFixed(1) + 'px,0)';
+      hero.style.opacity = (1 - k * 0.22).toFixed(3);
+      pxOn = true;
+    } else if (pxOn) {
+      hero.style.transform = '';
+      hero.style.opacity = '';
+      pxOn = false;
+    }
+  }
+  function requestRender() {
+    if (!ticking) { ticking = true; window.requestAnimationFrame(render); }
+  }
+  if (hero) {
+    measure();
+    render();
+    window.addEventListener('scroll', requestRender, { passive: true });
+    window.addEventListener('resize', function () { measure(); requestRender(); });
+  }
+
+  /* ---------------- 2. Scroll-triggered reveals ---------------- */
+  var SELECTOR = [
+    'figure',
+    '.takeaway', '.exam-ask', '.trapbox', '.trap', '.board',
+    '.diagram-walkthrough', '.walkthrough', '.warn', '.callout',
+    '.ob-board', '.nums', '.watch-card', '.lab', '.pq', '.go-deeper-note'
+  ].join(', ');
+
+  var targets = [];
+  Array.prototype.forEach.call(document.querySelectorAll(SELECTOR), function (el) {
+    if (hero && hero.contains(el)) { return; } /* hero has its own motion */
+    targets.push(el);
+  });
+
+  function showAll(list) {
+    list.forEach(function (el) { el.classList.add('xp-reveal', 'xp-in'); });
+  }
+
+  if (!targets.length) { return; }
+
+  if (!('IntersectionObserver' in window)) { showAll(targets); return; }
+
+  var io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (en) {
+      if (en.isIntersecting) {
+        en.target.classList.add('xp-in');
+        io.unobserve(en.target);
+      }
+    });
+  }, { rootMargin: '0px 0px -6% 0px', threshold: 0.06 });
+
+  var vh = window.innerHeight || 800;
+  targets.forEach(function (el) {
+    el.classList.add('xp-reveal');
+    var r = el.getBoundingClientRect();
+    if (r.top < vh && r.bottom > 0) {
+      el.classList.add('xp-in'); /* in view on load: appear, no animation */
+    } else {
+      io.observe(el);
+    }
+  });
+})();
+
 </script>
 </body>
 </html>
