@@ -1159,12 +1159,135 @@ footer p{text-align:left}
   #ds-content .ds-site-footer,
   .ds-side-volumes { display: none !important; }
 }
+</style>
+<style>
+/* Hallmark · pre-emit critique: P5 H4 E5 S4 R5 V5
+ * ==========================================================================
+ * Experience layer for study volumes — ADDITIVE ONLY.
+ * Never edits content markup or DS chrome; references DS tokens only
+ * (--accent, --border). No new colors, no gradients, no decorative filler.
+ *
+ * Motion stance: calm delight. Opacity/translate only (GPU-friendly),
+ * one IntersectionObserver, one rAF-throttled scroll listener, zero layout
+ * shift, prefers-reduced-motion respected, fully usable with JS disabled
+ * (every hidden state is gated on html.xp-js, which only this layer's
+ * companion script adds).
+ *
+ * Wiring (final assembly, per volume — same model as ds.css/ds.js):
+ *   1. In <head>, AFTER the DS style block, add:
+ *        <style>
+ *        /* ==== Experience layer — additive, do not edit per-file ==== */
+ *        …this file verbatim…
+ *        [close the style element]
+ *   2. Immediately before the document's LAST closing body tag (the real
+ *      one at the end of the file — some volumes mention a literal closing
+ *      body tag inside their docs prose; ignore those), AFTER the ds.js
+ *      script block, add:
+ *        <script>
+ *        /* ==== Experience layer behavior — additive ==== */
+ *        …experience.js verbatim…
+ *        [close the script element]
+ * (Closing tags are written out in the assembly snippet, not here, so this
+ * file can be pasted verbatim without early-terminating its own element.)
+ * ========================================================================== */
+
+/* ---------- 1. Smooth anchor scrolling (motion-safe readers only) ---------- */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+/* ---------- 2. Scroll-triggered reveals ----------
+   Hidden state exists ONLY under html.xp-js. No-JS readers, print, and
+   reduced-motion users always see full content. Uses the independent
+   `translate` property (not `transform`) so hover feedback below composes
+   without specificity fights. Opacity + translate only: zero layout shift. */
+html.xp-js .xp-reveal {
+  opacity: 0;
+  translate: 0 14px;
+}
+html.xp-js .xp-reveal.xp-in {
+  opacity: 1;
+  translate: 0 0;
+  transition:
+    opacity 0.55s ease,
+    translate 0.55s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+/* ---------- 3. Hero ---------- */
+/* Layout-neutral wrapper the script may add around a volume's title block.
+   Parallax itself is applied inline by the script (transform only). */
+.xp-hero {
+  position: relative;
+}
+
+/* ---------- 4. Calm hover feedback: cards + knowledge checks only ----------
+   translateY(-1px) + accent border. transform composes with the reveal's
+   independent `translate` property — no conflicts. */
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .pq,
+  .watch-card,
+  .ob-board,
+  .lab {
+    transition: transform 0.18s ease, border-color 0.18s ease;
+  }
+  .pq:hover,
+  .watch-card:hover,
+  .ob-board:hover,
+  .lab:hover {
+    transform: translateY(-1px);
+    border-color: var(--accent);
+  }
+  .pq:focus-within,
+  .watch-card:focus-within,
+  .ob-board:focus-within,
+  .lab:focus-within {
+    border-color: var(--accent);
+  }
+}
+
+/* ---------- 5. Reduced motion: everything static and visible ---------- */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  html.xp-js .xp-reveal {
+    opacity: 1;
+    translate: 0 0;
+    transition: none;
+  }
+  .xp-hero {
+    transform: none !important;
+    opacity: 1 !important;
+  }
+  .pq,
+  .watch-card,
+  .ob-board,
+  .lab {
+    transition: none;
+  }
+}
+
+/* ---------- 6. Print: never hide content ---------- */
+@media print {
+  html.xp-js .xp-reveal {
+    opacity: 1 !important;
+    translate: 0 0 !important;
+    transition: none;
+  }
+  .xp-hero {
+    transform: none !important;
+    opacity: 1 !important;
+  }
+}
 
 </style>
 </head>
 <body>
 <div id="ds-sidebar-root"></div>
 <main id="ds-content"><div class="ds-content-inner">
+
 <h1 id="gap-appendix-17-topics-the-other-volumes-skip">Gap Appendix: 17 Topics the Other Volumes Skip</h1>
 <p>A completionist pass over every gap in the coverage map. Each topic is taught from zero, with a visual, a walkthrough, and an explicit statement of how AWS will ask about it.</p>
 <h2 id="read-this-first-what-this-volume-is-and-why-it-exists">Read this first. What this volume is and why it exists.</h2>
@@ -1175,9 +1298,7 @@ footer p{text-align:left}
 </ul>
 <p>Entries marked UNVERIFIED could not be confirmed in live AWS documentation on the verification date and should be treated as lower confidence. Numbers that are volatile (pricing, quotas) are labeled illustrative.</p>
 <h2 id="scope">Scope and gap types</h2>
-<p>Every entry follows the same shape: what it is, why it exists, how it works, concrete numbers, the common misunderstanding AWS exploits, a diagram with a walkthrough, and a "how AWS will ask" line. Two gap types matter:</p>
-<p>Hard gapThe topic appears in no other volume. The entry here is the complete teaching, condensed to exam size.
-PartialSome other volume mentions the name or teaches the surrounding concept. The entry here teaches the missing piece and points at the existing home volume for context.</p>
+<p>Every entry gives you the concept, the reason it exists, the mechanics, concrete numbers, the misunderstanding AWS exploits, a diagram with a walkthrough, and a "how AWS will ask" line. Two gap types matter: a <strong>hard gap</strong> appears in no other volume, so the entry here is the complete teaching condensed to exam size; a <strong>partial</strong> is mentioned elsewhere but never taught as a topic, so the entry here teaches the missing piece and points at the home volume for context.</p>
 <h2 id="ladder">Decision ladder placement</h2>
 <p>Each entry ends with a one-line placement on the GenAI decision ladder so you can answer "which service" questions fast:</p>
 <pre><code>  GenAI decision ladder (where each gap topic sits)
@@ -1203,21 +1324,10 @@ PartialSome other volume mentions the name or teaches the surrounding concept. T
 <h2 id="1-ingestion-gaps-appflow-and-transfer-family">1. Ingestion gaps: AppFlow and Transfer Family</h2>
 <p>Two managed services that get data INTO AWS. Both are exam favorites for "choose the ingestion service" scenarios because they look interchangeable until you learn the one-line difference.</p>
 <h3 id="appflow">Amazon AppFlow</h3>
-<h4 id="what-it-is">What it is</h4>
-<p>Amazon AppFlow is a fully managed integration service that moves data between SaaS applications (software you use over the internet, like Salesforce or ServiceNow) and AWS services, in both directions, without writing custom connectors. Think of it as a managed pipe with a form: you pick the source, pick the destination, describe the fields, and AppFlow runs the transfer.</p>
-<h4 id="why-it-exists">Why it exists</h4>
-<p>GenAI applications are hungry for enterprise data, and that data lives in SaaS tools: support tickets in Zendesk, cases in Salesforce, employee records in Workday. Without AppFlow, engineers write and maintain brittle one-off API scripts that break when the SaaS vendor changes pagination or rate limits. AppFlow replaces that glue code with a managed flow, and it solves the credential problem too: connection credentials are stored centrally instead of in code.</p>
-<h4 id="how-it-works">How it works</h4>
-<ol>
-<li><strong>Connector profile.</strong> You authenticate once to the SaaS app (OAuth or credentials). AppFlow stores the credentials in AWS Secrets Manager, so the flow never embeds secrets.</li>
-<li><strong>Flow definition.</strong> A flow names a source, a destination, field mappings (which source field goes to which destination field), optional transformations (masking, truncation, concatenation), and filters (only records matching a condition).</li>
-<li><strong>Trigger.</strong> Flows run on demand, on a schedule, or event-driven (triggered when the SaaS app emits a change event), so syncs can be near real time.</li>
-<li><strong>Incremental pulls.</strong> Flows can pull only records changed since the last run instead of full snapshots, which keeps large SaaS datasets cheap to sync.</li>
-<li><strong>Destinations.</strong> Common destinations are Amazon S3, Amazon Redshift, Salesforce itself, and other AWS services.
-   The data lands ready for Glue ETL or a Knowledge Base ingestion job. Flows also integrate with the AWS Glue Data Catalog so the synced data is queryable.</li>
-</ol>
-<h4 id="concrete-numbers">Concrete numbers</h4>
-<p>AppFlow pricing is flow-based (illustrative: on the order of a dollar per flow run plus data processed, not per seat). The exam does not test exact pricing; it tests the trigger and mapping concepts. What matters numerically: a scheduled flow syncing 10 million records once a day costs roughly the same compute whether the records changed or not, which is why <strong>incremental pulls</strong> are the cost answer in scenario questions.</p>
+<p>Amazon AppFlow is a fully managed integration service that moves data between SaaS applications (software you use over the internet, like Salesforce or ServiceNow) and AWS services, in both directions, without writing custom connectors. GenAI applications are hungry for enterprise data, and that data lives in SaaS tools: support tickets in Zendesk, cases in Salesforce, employee records in Workday. Without AppFlow, engineers write and maintain brittle one-off API scripts that break when the SaaS vendor changes pagination or rate limits. AppFlow replaces that glue code with a managed flow, and it solves the credential problem too: connection credentials are stored centrally instead of in code.</p>
+<p>A flow works in four steps. First, a connector profile authenticates once to the SaaS app (OAuth or credentials); AppFlow stores the credentials in AWS Secrets Manager, so the flow never embeds secrets. Second, a flow definition names a source, a destination, field mappings (which source field goes to which destination field), optional transformations (masking, truncation, concatenation), and filters (only records matching a condition). Third, a trigger runs the flow on demand, on a schedule, or event-driven when the SaaS app emits a change event, so syncs can be near real time. Fourth, incremental pulls fetch only records changed since the last run instead of full snapshots. Common destinations are Amazon S3, Amazon Redshift, Salesforce itself, and other AWS services; the data lands ready for Glue ETL or a Knowledge Base ingestion job, and flows integrate with the Glue Data Catalog so the synced data is queryable.</p>
+<p>On numbers: AppFlow pricing is flow-based (illustrative, on the order of a dollar per flow run plus data processed, not per seat). The exam does not test exact pricing; it tests the trigger and mapping concepts. What matters numerically: a scheduled flow syncing 10 million records once a day costs roughly the same compute whether the records changed or not, which is why incremental pulls are the cost answer in scenario questions.</p>
+
 <div class="takeaway"><p>Key exam facts.</p>
 <p>(1) AppFlow = SaaS to AWS data movement, no code. (2) Flows support on-demand, scheduled, and event-driven triggers. (3) Incremental pulls sync only changed records. (4) Credentials live in Secrets Manager via connector profiles. (5) Private connections can run over AWS PrivateLink so SaaS traffic never crosses the public internet.</p></div>
 
@@ -1255,19 +1365,10 @@ Downstream, Glue or a Knowledge Base treats the S3 prefix as a normal data sourc
 <p>B is correct. AppFlow natively supports SaaS sources, scheduled triggers, incremental pulls, and field-level masking, which is exactly the requirement set.</p>
 <p>A is wrong because a custom Lambda re-implements pagination, retry, and credential handling that AppFlow provides managed, so it is not least overhead. C is wrong because EventBridge routes events but does not map fields or mask data. D is wrong because DMS replicates databases, not SaaS APIs, and has no masking transform.</p>
 <h3 id="transfer-family">AWS Transfer Family</h3>
-<h4 id="what-it-is">What it is</h4>
-<p>AWS Transfer Family is a fully managed file-transfer service that runs SFTP (SSH File Transfer Protocol), FTPS (FTP over TLS/SSL), FTP (plain File Transfer Protocol), and AS2 (Applicability Statement 2, a B2B messaging protocol) servers, backed by Amazon S3 or Amazon EFS. Partners keep using the same file-transfer clients they have used for years; the files land directly in your S3 bucket.</p>
-<h4 id="why-it-exists">Why it exists</h4>
-<p>Enterprises exchange data as file drops: a partner uploads a nightly CSV over SFTP, a vendor sends invoices over AS2. Before Transfer Family, you ran your own SFTP servers on EC2 (patching, scaling, key management) and then copied files into S3. Transfer Family removes the server fleet: the protocol endpoint is managed, and S3 is the storage, so a file drop is one hop away from a GenAI ingestion pipeline.</p>
-<h4 id="how-it-works">How it works</h4>
-<ol>
-<li>You create a Transfer Family server for a protocol (for example SFTP) and point it at an S3 bucket (or EFS file system).</li>
-<li>Users authenticate with SSH keys, passwords, or an external identity provider; each user is mapped to a home directory inside the bucket.</li>
-<li>Uploads and downloads go straight to S3 objects. An S3 event notification can then trigger the next step: Lambda validation, Bedrock Data Automation, or a Knowledge Base ingestion job.</li>
-<li><strong>Endpoint rules matter.</strong> Public endpoints support SFTP only. Plain FTP is supported only on VPC-internal endpoints, because unencrypted FTP must never cross the public internet.</li>
-</ol>
-<h4 id="concrete-numbers">Concrete numbers</h4>
-<p>Pricing is per protocol-enabled endpoint per hour plus data transferred (illustrative; exact figures change). The exam-relevant number is not the price but the protocol matrix:</p>
+<p>AWS Transfer Family is a fully managed file-transfer service that runs SFTP (SSH File Transfer Protocol), FTPS (FTP over TLS/SSL), FTP (plain File Transfer Protocol), and AS2 (Applicability Statement 2, a B2B messaging protocol) servers, backed by Amazon S3 or Amazon EFS. Enterprises exchange data as file drops: a partner uploads a nightly CSV over SFTP, a vendor sends invoices over AS2. Before Transfer Family, you ran your own SFTP servers on EC2, handling patching, scaling, and key management, then copied files into S3. Transfer Family removes the server fleet: the protocol endpoint is managed and S3 is the storage, so a file drop is one hop away from a GenAI ingestion pipeline while partners keep using the clients they have used for years.</p>
+<p>Setup runs in three steps. You create a Transfer Family server for a protocol (for example SFTP) and point it at an S3 bucket or EFS file system. Users authenticate with SSH keys, passwords, or an external identity provider, each mapped to a home directory inside the bucket. Uploads and downloads go straight to S3 objects, and an S3 event notification can then trigger the next step: Lambda validation, Bedrock Data Automation, or a Knowledge Base ingestion job. One rule set matters more than the rest: public endpoints support SFTP only, while plain FTP is supported only on VPC-internal endpoints, because unencrypted FTP must never cross the public internet.</p>
+<p>Pricing is per protocol-enabled endpoint per hour plus data transferred (illustrative; exact figures change). The exam-relevant number is not the price but the protocol matrix in the table below.</p>
+
 <div class="table-wrap"><table>
 <thead>
 <tr>
@@ -1299,6 +1400,7 @@ Downstream, Glue or a Knowledge Base treats the S3 prefix as a normal data sourc
 </tr>
 </tbody>
 </table></div>
+
 <div class="takeaway"><p>Key exam facts.</p>
 <p>(1) Transfer Family = managed SFTP/FTPS/FTP/AS2 servers with S3 or EFS storage. (2) Plain FTP works only on VPC-internal endpoints. (3) Files land as S3 objects, so S3 event notifications chain naturally into GenAI ingestion.</p></div>
 
@@ -1333,20 +1435,10 @@ Downstream, Glue or a Knowledge Base treats the S3 prefix as a normal data sourc
 <h2 id="2-analytics-gaps-quicksight-neptune-analytics-q-apps">2. Analytics gaps: QuickSight, Neptune Analytics, Q Apps</h2>
 <p>Three services that sit at the ends of the GenAI pipeline: analytics over vector/graph data, dashboards over everything, and no-code apps for the people who will never read this guide.</p>
 <h3 id="quicksight">Amazon QuickSight</h3>
-<h4 id="what-it-is">What it is</h4>
-<p>Amazon QuickSight is a serverless business-intelligence (BI) service: interactive dashboards, paginated reports, and embedded analytics with no servers to manage. Its in-memory engine is called SPICE (Super-fast Parallel In-memory Calculation Engine), which imports data and answers dashboard queries from memory instead of hitting the source database on every click.</p>
-<h4 id="why-it-exists">Why it exists</h4>
-<p>GenAI applications produce data worth watching: token spend per team, eval scores over time, RAG retrieval hit rates, user feedback. Engineers query that data in Athena or OpenSearch, but product owners and finance need dashboards. QuickSight turns the same S3/Athena/Redshift/RDS data into shareable dashboards with row-level security (each viewer sees only their rows) and ML-powered insights (anomaly detection and forecasting) without standing up a BI server.</p>
-<h4 id="how-it-works">How it works</h4>
-<ol>
-<li>Connect a data source (S3, Athena, Redshift, RDS, SaaS via AppFlow) and either query it directly or import it into SPICE for fast repeated queries.</li>
-<li>Build analyses with drag-and-drop visuals, then publish them as dashboards.</li>
-<li>Add ML insights: anomaly detection flags unusual spend spikes; forecasting projects next month's token usage; natural-language Q lets users type a question and get a chart.</li>
-<li>Share with row-level and column-level security so teams see only their data. Dashboards can also be embedded into your own application.</li>
-<li><strong>Editions.</strong> Standard is the basic tier; Enterprise adds the ML insights, row/column-level security, and encryption at rest. Exam scenarios that mention anomaly detection or per-team data isolation are pointing at Enterprise.</li>
-</ol>
-<h4 id="concrete-numbers">Concrete numbers</h4>
-<p>SPICE capacity is sold in GB blocks (illustrative: tens of cents per GB-month); per-reader pricing is session-based on Enterprise. The exam does not test exact figures. The operational number that matters: SPICE datasets refresh on a schedule you set (as frequent as every 15 minutes on Enterprise), so a "near real-time dashboard" scenario needs direct query mode, not SPICE import.</p>
+<p>Amazon QuickSight is a serverless business-intelligence (BI) service: interactive dashboards, paginated reports, and embedded analytics with no servers to manage. Its in-memory engine is called SPICE (Super-fast Parallel In-memory Calculation Engine), which imports data and answers dashboard queries from memory instead of hitting the source database on every click. GenAI applications produce data worth watching: token spend per team, eval scores over time, RAG retrieval hit rates, user feedback. Engineers query that data in Athena or OpenSearch, but product owners and finance need dashboards. QuickSight turns the same S3, Athena, Redshift, and RDS data into shareable dashboards with row-level security (each viewer sees only their rows) and ML-powered insights (anomaly detection and forecasting) without standing up a BI server.</p>
+<p>The flow: connect a data source (S3, Athena, Redshift, RDS, or a SaaS app via AppFlow) and either query it directly or import it into SPICE for fast repeated queries; build analyses with drag-and-drop visuals, then publish them as dashboards; add ML insights, where anomaly detection flags unusual spend spikes, forecasting projects next month's token usage, and natural-language Q lets users type a question and get a chart; share with row-level and column-level security so teams see only their data, or embed dashboards into your own application. Editions matter: Standard is the basic tier, while Enterprise adds the ML insights, row and column-level security, and encryption at rest. Exam scenarios that mention anomaly detection or per-team data isolation are pointing at Enterprise.</p>
+<p>SPICE capacity is sold in GB blocks (illustrative, tens of cents per GB-month); per-reader pricing is session-based on Enterprise. The exam does not test exact figures. The operational number that matters: SPICE datasets refresh on a schedule you set (as frequent as every 15 minutes on Enterprise), so a "near real-time dashboard" scenario needs direct query mode, not SPICE import.</p>
+
 <div class="takeaway"><p>Key exam facts.</p>
 <p>(1) QuickSight = serverless BI; SPICE = in-memory engine. (2) Enterprise edition adds ML insights (anomaly detection, forecasting), natural-language Q, and row/column-level security. (3) Direct query mode for fresher data; SPICE for speed.</p></div>
 
@@ -1380,21 +1472,10 @@ QuickSight aggregates business data across many sources (S3, Athena, Redshift) w
 <p>B is correct. QuickSight Enterprise provides interactive dashboards over S3 data, row-level security for per-team isolation, and anomaly detection for spike alerts.</p>
 <p>A is wrong because OpenSearch Dashboards visualizes OpenSearch indices, not S3 billing-style data with governed sharing. C is wrong because CloudWatch dashboards lack row-level security and business-user exploration. D is wrong because saved queries are not interactive dashboards with access control.</p>
 <h3 id="neptune-analytics">Neptune Analytics</h3>
-<h4 id="what-it-is">What it is</h4>
-<p>Neptune Analytics is a serverless graph-analytics engine from the Amazon Neptune family. It loads graph data into memory and runs analytical queries over it, including vector similarity search. Do not confuse it with Neptune Database (the transactional graph database covered in D1 ch11 for GraphRAG): Neptune Analytics is the analytics engine you point at a graph when you need fast traversals and nearest-neighbor vector queries over millions of nodes.</p>
-<h4 id="why-it-exists">Why it exists</h4>
-<p>GraphRAG (retrieval over a knowledge graph, D1 ch11) works well on Neptune Database for transactional workloads. But some questions are analytical: "find the 50 most similar incident reports to this one," "detect communities of related entities." Those need an engine optimized for bulk graph computation and vector search, not for single-record reads and writes. Neptune Analytics fills that slot, and its vector search makes it a candidate vector store for RAG pipelines that also need graph structure.</p>
-<h4 id="how-it-works">How it works</h4>
-<ol>
-<li>You create a graph and load data (from S3 or from a Neptune Database snapshot). The graph holds nodes, edges, and vector properties.</li>
-<li>Vector search uses HNSW (Hierarchical Navigable Small World), an approximate nearest-neighbor index that trades a tiny accuracy loss for large speedups on big vector sets.</li>
-<li>You query vectors with the <code>vectors.topK.byEmbedding</code> API, passing an embedding and asking for the top K most similar vectors. <strong>The older name <code>vectors.topKByEmbedding</code> is deprecated.</strong> The exam may show the old name as a distractor.</li>
-<li><strong>Vector dimensions are fixed at graph creation</strong> (up to 65,000 dimensions) and cannot be changed afterward. If your embedding model changes dimension, you create a new graph.</li>
-<li>Because it is serverless and in-memory, you pay for the graph's memory footprint while it runs, not for provisioned instances.</li>
-</ol>
-<h4 id="concrete-numbers">Concrete numbers</h4>
-<p>Maximum vector dimension at graph creation: 65,000. HNSW search is approximate: expect recall in the high 90s percent range in exchange for millisecond queries over millions of vectors (illustrative.
-Tune the HNSW parameters for your recall target). The deprecated API name is the highest-value fact on this page: AWS loves deprecation-rename questions.</p>
+<p>Neptune Analytics is a serverless graph-analytics engine from the Amazon Neptune family. It loads graph data into memory and runs analytical queries over it, including vector similarity search. Do not confuse it with Neptune Database (the transactional graph database covered in D1 ch11 for GraphRAG): Neptune Analytics is the analytics engine you point at a graph when you need fast traversals and nearest-neighbor vector queries over millions of nodes. GraphRAG works well on Neptune Database for transactional workloads, but some questions are analytical: "find the 50 most similar incident reports to this one," "detect communities of related entities." Those need an engine optimized for bulk graph computation and vector search, not for single-record reads and writes. Neptune Analytics fills that slot, and its vector search makes it a candidate vector store for RAG pipelines that also need graph structure.</p>
+<p>You create a graph and load data from S3 or from a Neptune Database snapshot. The graph holds nodes, edges, and vector properties. Vector search uses HNSW (Hierarchical Navigable Small World), an approximate nearest-neighbor index that trades a tiny accuracy loss for large speedups on big vector sets. You query vectors with the <code>vectors.topK.byEmbedding</code> API, passing an embedding and asking for the top K most similar vectors. The older name <code>vectors.topKByEmbedding</code> is deprecated, and the exam may show it as a distractor. Vector dimensions are fixed at graph creation (up to 65,000 dimensions) and cannot be changed afterward, so if your embedding model changes dimension, you create a new graph. Because the engine is serverless and in-memory, you pay for the graph's memory footprint while it runs, not for provisioned instances.</p>
+<p>Concrete numbers: maximum vector dimension at graph creation is 65,000. HNSW search is approximate; expect recall in the high 90s percent range in exchange for millisecond queries over millions of vectors (illustrative; tune the HNSW parameters for your recall target). The deprecated API name is the highest-value fact on this page: AWS loves deprecation-rename questions.</p>
+
 <div class="takeaway"><p>Key exam facts.</p>
 <p>(1) Neptune Analytics = serverless graph-analytics engine with vector search (HNSW). (2) Current vector API:</p>
 <p>vectors.topK.byEmbedding</p>
@@ -1439,21 +1520,10 @@ Tune the HNSW parameters for your recall target). The deprecated API name is the
 <p>B is correct. <code>topKByEmbedding</code> is deprecated in favor of <code>topK.byEmbedding</code>, and vector dimensions are immutable after graph creation, so a dimension change requires a new graph.</p>
 <p>A is wrong because the API name is deprecated and dimensions cannot change in place. C is wrong because Neptune Database is the transactional engine, not the analytics vector API. D is wrong because HNSW tuning affects recall, not dimension mutability.</p>
 <h3 id="q-apps">Amazon Q Apps</h3>
-<h4 id="what-it-is">What it is</h4>
-<p>Amazon Q Apps are reusable, no-code generative AI applications built inside Amazon Q Business. A non-technical user describes what they want in natural language (or starts from an existing Q Business conversation), and Q generates an app made of cards: input cards (text, file upload), output cards (generated text), and action cards (calls to plugins). Cards reference each other with <code>@</code> mentions, so the output of one card becomes the input of the next. Finished apps are published to the organization's app library for anyone to use.</p>
-<h4 id="why-it-exists">Why it exists</h4>
-<p>Q Business gives every employee a chat assistant, but chat is ephemeral: the same good prompt gets retyped every week. Q Apps turn a useful conversation into a durable tool. The marketing team builds a "campaign brief generator" once.
-The whole team reuses it. IT keeps control because Q Apps inherit Q Business governance: admin guardrails, Identity Center access control, and connector permissions apply automatically.</p>
-<h4 id="how-it-works">How it works</h4>
-<ol>
-<li>A user describes the app in natural language, or converts a Q Business conversation into an app.</li>
-<li>Q generates a set of cards. Typical cards: a text-input card ("paste the meeting notes"), a file-upload card, a text-output card ("summary"), and an action card that calls a plugin (for example, creating a Jira ticket).</li>
-<li>Cards are wired together with <code>@</code> mentions: the summary card references the input card, the Jira card references the summary card.</li>
-<li>The app is published to the organization library. Colleagues run it without seeing or editing the underlying prompts.</li>
-<li>Access and guardrails come from Q Business itself: the app can only reach data the user is permitted to see, and admin guardrails apply to its outputs. Q Apps are part of the Q Business Pro tier.</li>
-</ol>
-<h4 id="concrete-numbers">Concrete numbers</h4>
+<p>Amazon Q Apps are reusable, no-code generative AI applications built inside Amazon Q Business. A non-technical user describes what they want in natural language (or starts from an existing Q Business conversation), and Q generates an app made of cards: input cards (text, file upload), output cards (generated text), and action cards (calls to plugins). Cards reference each other with <code>@</code> mentions, so the output of one card becomes the input of the next. Finished apps are published to the organization's app library for anyone to use. Q Business gives every employee a chat assistant, but chat is ephemeral: the same good prompt gets retyped every week. Q Apps turn a useful conversation into a durable tool: the marketing team builds a "campaign brief generator" once, and the whole team reuses it. IT keeps control because Q Apps inherit Q Business governance: admin guardrails, Identity Center access control, and connector permissions apply automatically.</p>
+<p>Building one: the user describes the app in natural language or converts a Q Business conversation into an app; Q generates a set of cards, typically a text-input card ("paste the meeting notes"), a file-upload card, a text-output card ("summary"), and an action card that calls a plugin (for example, creating a Jira ticket); the cards are wired together with <code>@</code> mentions, so the summary card references the input card and the Jira card references the summary card; the app is published to the organization library, where colleagues run it without seeing or editing the underlying prompts. Access and guardrails come from Q Business itself: the app can only reach data the user is permitted to see, and admin guardrails apply to its outputs. Q Apps are part of the Q Business Pro tier.</p>
 <p>Q Apps are licensed through Q Business Pro (per-user per-month, illustrative). There is no infrastructure number to memorize; the exam-relevant facts are the card model, the <code>@</code> wiring, library sharing, and governance inheritance.</p>
+
 <div class="takeaway"><p>Key exam facts.</p>
 <p>(1) Q Apps = no-code GenAI apps inside Q Business (Pro tier). (2) Built from natural language or an existing conversation. (3) Card model: input, output, file upload, action/plugin cards wired with</p>
 <p>@</p>
@@ -1496,21 +1566,10 @@ The finished app is shared like a template, not like code.</p>
 <h2 id="3-security-and-inference-primitives">3. Security and inference primitives</h2>
 <p>The guards around your app and the dials inside your model calls. Each entry here is small, but AWS tests them as single-line discriminators: one phrase in the question picks the winner.</p>
 <h3 id="secrets-manager">AWS Secrets Manager</h3>
-<h4 id="what-it-is">What it is</h4>
-<p>AWS Secrets Manager stores secrets (database passwords, API keys, OAuth tokens) encrypted with KMS, and its headline feature is automatic rotation: it can change a secret on a schedule without human involvement and without breaking the applications that read it. The companion service D3 ch8 covers is IAM and KMS; Secrets Manager is the secrets lifecycle layer on top.</p>
-<h4 id="why-it-exists">Why it exists</h4>
-<p>Hardcoded credentials leak; manually rotated passwords get skipped. Rotation is operationally scary because changing a password breaks every client holding the old one. Secrets Manager solves this with a staged rotation: the new password is created and tested while the old one still works, and only then does the new one become current. Applications read the secret at runtime through the API instead of embedding it.</p>
-<h4 id="how-it-works">How it works</h4>
-<ol>
-<li><strong>Rotation schedule.</strong> You set a rotation interval, for example every 30 days (<code>rotate-secret --rotation-rules AutomaticallyAfterDays=30</code>).</li>
-<li><strong>Lambda rotation function.</strong> Rotation is performed by a Lambda function. AWS provides ready-made rotation functions for RDS (MySQL, PostgreSQL, Oracle, SQL Server), Redshift, DocumentDB, Neptune, and MongoDB Atlas.
-   Anything else uses a custom Lambda you write.</li>
-<li><strong>The four steps.</strong> Every rotation runs <code>createSecret</code> (generate the new value, staged as AWSPENDING), <code>setSecret</code> (set it on the database), <code>testSecret</code> (verify the new credential works), <code>finishSecret</code> (promote AWSPENDING to AWSCURRENT). If any step fails, the old secret stays current and nothing breaks.</li>
-<li><strong>Reading.</strong> Applications call <code>GetSecretValue</code> (or use the Secrets Manager JDBC driver / container injection) and cache briefly. Because rotation is staged, a reader that fetched the secret seconds before rotation still holds a valid credential.</li>
-</ol>
-<h4 id="concrete-numbers">Concrete numbers</h4>
-<p>Rotation intervals are commonly 30, 60, or 90 days.
-The API accepts any day count. Secrets Manager charges per secret per month plus API calls (illustrative). The exam tests the four-step sequence and the staging labels AWSPENDING and AWSCURRENT, not the price.</p>
+<p>AWS Secrets Manager stores secrets (database passwords, API keys, OAuth tokens) encrypted with KMS, and its headline feature is automatic rotation: it can change a secret on a schedule without human involvement and without breaking the applications that read it. Hardcoded credentials leak, and manually rotated passwords get skipped. Rotation is operationally scary because changing a password breaks every client holding the old one. Secrets Manager solves this with a staged rotation: the new password is created and tested while the old one still works, and only then does the new one become current. Applications read the secret at runtime through the API instead of embedding it.</p>
+<p>Rotation works like this. You set a rotation interval, for example every 30 days (<code>rotate-secret --rotation-rules AutomaticallyAfterDays=30</code>). Rotation is performed by a Lambda function; AWS provides ready-made rotation functions for RDS (MySQL, PostgreSQL, Oracle, SQL Server), Redshift, DocumentDB, Neptune, and MongoDB Atlas, and anything else uses a custom Lambda you write. Every rotation runs four steps in order: <code>createSecret</code> (generate the new value, staged as AWSPENDING), <code>setSecret</code> (set it on the database), <code>testSecret</code> (verify the new credential works), <code>finishSecret</code> (promote AWSPENDING to AWSCURRENT). If any step fails, the old secret stays current and nothing breaks. Applications call <code>GetSecretValue</code> (or use the Secrets Manager JDBC driver or container injection) and cache briefly; because rotation is staged, a reader that fetched the secret seconds before rotation still holds a valid credential.</p>
+<p>Rotation intervals are commonly 30, 60, or 90 days, and the API accepts any day count. Secrets Manager charges per secret per month plus API calls (illustrative). The exam tests the four-step sequence and the staging labels AWSPENDING and AWSCURRENT, not the price.</p>
+
 <div class="takeaway"><p>Key exam facts.</p>
 <p>(1) Automatic rotation via Lambda functions with create, set, test, finish steps. (2) Staging labels AWSPENDING (new, being tested) and AWSCURRENT (live). (3) Built-in rotation for RDS engines, Redshift, DocumentDB, Neptune, MongoDB Atlas.
 Custom Lambda for the rest. (4) Secrets are KMS-encrypted at rest.</p></div>
@@ -1549,20 +1608,10 @@ The phrase "automatically rotate the database password every 30 days" is Secrets
 <p>B is correct. Secrets Manager rotation stages the new secret as AWSPENDING, tests it, then promotes it to AWSCURRENT, and runtime reads mean no restarts.</p>
 <p>A is wrong because Parameter Store has no built-in rotation engine and a runbook is manual. C is wrong because S3 has no rotation or staging semantics. D is wrong because embedding passwords in deployments is the anti-pattern rotation exists to kill.</p>
 <h3 id="waf">AWS WAF</h3>
-<h4 id="what-it-is">What it is</h4>
-<p>AWS WAF (Web Application Firewall) filters HTTP requests before they reach your application. You attach a web ACL (access control list) to CloudFront, an Application Load Balancer, API Gateway, or AppSync.
-The ACL holds rules evaluated in priority order, each ending in an action: Allow, Block, Count (log only), CAPTCHA, or Challenge (silent browser check).</p>
-<h4 id="why-it-exists">Why it exists</h4>
-<p>Your GenAI app's front door (API Gateway in front of a Bedrock proxy, an ALB in front of the chat UI) faces the internet. SQL injection, cross-site scripting, and bot floods are not GenAI-specific, but a prompt-injection probe campaign looks exactly like a bot flood at the HTTP layer. WAF applies the OWASP Top 10 defenses AWS maintains so your application code does not have to.</p>
-<h4 id="how-it-works">How it works</h4>
-<ol>
-<li>Create a web ACL in the right scope: <strong>CloudFront scope (global) must be created in us-east-1</strong>; Regional scope covers ALB, API Gateway, and AppSync in their own region.</li>
-<li>Add rules in priority order. The workhorse is the AWS managed rule group <code>AWSManagedRulesCommonRuleSet</code>, which covers the OWASP Top 10; add <code>AWSManagedRulesKnownBadInputsRuleSet</code>, the SQLi rule group, IP reputation lists, and Bot Control as needed.</li>
-<li>Choose actions per rule. New rules start in Count mode to observe false positives before switching to Block.</li>
-<li>WAF logs go to S3, CloudWatch Logs, or Kinesis Data Firehose for analysis; pair with Shield (DDoS, automatic at the edge) for volumetric attacks WAF cannot see.</li>
-</ol>
-<h4 id="concrete-numbers">Concrete numbers</h4>
+<p>AWS WAF (Web Application Firewall) filters HTTP requests before they reach your application. You attach a web ACL (access control list) to CloudFront, an Application Load Balancer, API Gateway, or AppSync. The ACL holds rules evaluated in priority order, each ending in an action: Allow, Block, Count (log only), CAPTCHA, or Challenge (silent browser check). Your GenAI app's front door (API Gateway in front of a Bedrock proxy, an ALB in front of the chat UI) faces the internet. SQL injection, cross-site scripting, and bot floods are not GenAI-specific, but a prompt-injection probe campaign looks exactly like a bot flood at the HTTP layer. WAF applies the OWASP Top 10 defenses AWS maintains so your application code does not have to.</p>
+<p>Setup: create a web ACL in the right scope. CloudFront scope (global) must be created in us-east-1; Regional scope covers ALB, API Gateway, and AppSync in their own region. Add rules in priority order. The workhorse is the AWS managed rule group <code>AWSManagedRulesCommonRuleSet</code>, which covers the OWASP Top 10; add <code>AWSManagedRulesKnownBadInputsRuleSet</code>, the SQLi rule group, IP reputation lists, and Bot Control as needed. Choose actions per rule, and start new rules in Count mode to observe false positives before switching to Block. WAF logs go to S3, CloudWatch Logs, or Kinesis Data Firehose for analysis; pair with Shield (automatic DDoS protection at the edge) for volumetric attacks WAF cannot see.</p>
 <p>You pay per web ACL per month plus per million requests evaluated (illustrative). The exam-relevant facts are the scope rule (CloudFront ACLs live in us-east-1), the action set, and the managed rule group names, not the price.</p>
+
 <div class="takeaway"><p>Key exam facts.</p>
 <p>(1) Web ACL with priority-ordered rules; actions Allow, Block, Count, CAPTCHA, Challenge. (2) Managed groups:</p>
 <p>AWSManagedRulesCommonRuleSet</p>
@@ -1601,24 +1650,10 @@ WAF inspects layer 7 (HTTP bodies, SQLi strings, bot signatures). "Block request
 <p>A is correct. CloudFront-scope ACLs must be created in us-east-1, the managed groups cover OWASP Top 10 and bots, and Count mode observes before blocking.</p>
 <p>B is wrong because CloudFront requires the us-east-1 (global) scope, not Regional. C is wrong because security groups cannot inspect HTTP payloads. D is wrong because Shield protects against DDoS, not application-layer attacks.</p>
 <h3 id="cloudfront">Amazon CloudFront</h3>
-<h4 id="what-it-is">What it is</h4>
-<p>Amazon CloudFront is AWS's content delivery network (CDN): a global network of edge locations (points of presence) that cache content close to users. A distribution is the CloudFront configuration mapping your domain to origins (S3 buckets, load balancers, API Gateway) with cache behaviors (path-pattern rules controlling what is cached and for how long).</p>
-<h4 id="why-it-exists">Why it exists</h4>
-<p>Users are far from your origin region; every request crossing an ocean adds latency. CloudFront serves cache hits from the nearest edge in milliseconds and routes cache misses over the AWS backbone, which is faster than the public internet. For GenAI apps it also terminates TLS at the edge, absorbs DDoS with Shield Standard, and hosts WAF inspection before traffic reaches your API.</p>
-<h4 id="how-it-works">How it works</h4>
-<ol>
-<li>A viewer requests <code>app.example.com/chat</code>. DNS routes them to the nearest edge location.</li>
-<li>Cache behaviors match the path: <code>/static/*</code> might cache for a day from S3; <code>/api/*</code> might forward to API Gateway with no caching.</li>
-<li>Cache hit: the edge answers immediately. Cache miss: the edge fetches from the origin once, stores it per the TTL, and serves it.</li>
-<li><strong>Private S3 origins use OAC.</strong> Origin Access Control lets CloudFront authenticate to a private bucket via the bucket policy. The older OAI (Origin Access Identity) is legacy. Note: OAC works with the S3 REST endpoint, not the S3 website endpoint.</li>
-<li><strong>Signed URLs vs signed cookies.</strong> A signed URL grants access to one file.
-   Signed cookies grant access to many files (for example a whole premium video course). Geo restriction blocks or allows whole countries at the edge.</li>
-<li><strong>Custom-domain certificates must be in us-east-1</strong> (ACM), because CloudFront is a global service, exactly like the WAF scope rule above.</li>
-</ol>
-<h4 id="concrete-numbers">Concrete numbers</h4>
-<p>Default TTLs are measured in hours to a day (configurable per behavior).
-Invalidations clear cached objects before TTL expiry and are the "I deployed a fix but users see the old page" answer. Edge count is in the hundreds across 90+ countries (illustrative.
-The exam tests concepts, not the count).</p>
+<p>Amazon CloudFront is AWS's content delivery network (CDN): a global network of edge locations (points of presence) that cache content close to users. A distribution is the CloudFront configuration mapping your domain to origins (S3 buckets, load balancers, API Gateway) with cache behaviors (path-pattern rules controlling what is cached and for how long). Users are far from your origin region, and every request crossing an ocean adds latency. CloudFront serves cache hits from the nearest edge in milliseconds and routes cache misses over the AWS backbone, which is faster than the public internet. For GenAI apps it also terminates TLS at the edge, absorbs DDoS with Shield Standard, and hosts WAF inspection before traffic reaches your API.</p>
+<p>The request path: a viewer requests <code>app.example.com/chat</code>, and DNS routes them to the nearest edge location. Cache behaviors match the path: <code>/static/*</code> might cache for a day from S3, <code>/api/*</code> might forward to API Gateway with no caching. On a cache hit the edge answers immediately; on a miss the edge fetches from the origin once, stores it per the TTL, and serves it. Private S3 origins use OAC (Origin Access Control), which lets CloudFront authenticate to a private bucket via the bucket policy; the older OAI (Origin Access Identity) is legacy, and OAC works with the S3 REST endpoint, not the S3 website endpoint. For access control, a signed URL grants access to one file, while signed cookies grant access to many files (for example a whole premium video course); geo restriction blocks or allows whole countries at the edge. Custom-domain certificates must be in us-east-1 (ACM), because CloudFront is a global service, exactly like the WAF scope rule.</p>
+<p>Default TTLs are measured in hours to a day (configurable per behavior). Invalidations clear cached objects before TTL expiry and are the "I deployed a fix but users see the old page" answer. The edge count is in the hundreds across 90+ countries (illustrative; the exam tests concepts, not the count).</p>
+
 <div class="takeaway"><p>Key exam facts.</p>
 <p>(1) Distributions map domains to origins with path-based cache behaviors. (2) OAC is the current private-S3 mechanism; OAI is legacy. (3) Signed URL = one file.
 Signed cookies = many files. (4) ACM certificate for CloudFront lives in us-east-1. (5) Shield Standard is included; WAF attaches at the edge.</p></div>
@@ -1658,21 +1693,10 @@ A library of premium files is signed cookies. The us-east-1 trap appears for bot
 <p>A is correct. OAC is the current mechanism for private S3 origins, and signed cookies cover many files with one authentication, which fits a library.</p>
 <p>B is wrong because OAI is legacy and the bucket must not be public. C is wrong because OAC does not work with the S3 website endpoint. D is wrong because the bucket must not be public and per-video signed URLs are the wrong tool for library-wide access.</p>
 <h3 id="counttokens">The CountTokens API</h3>
-<h4 id="what-it-is">What it is</h4>
-<p>CountTokens is a Bedrock runtime API (<code>POST /model/{modelId}/count-tokens</code>) that returns the number of tokens a given input would consume, without running inference. It accepts the same input formats as <code>InvokeModel</code> and <code>Converse</code>, and the count it returns matches what you would be billed for. It is free to call.</p>
-<h4 id="why-it-exists">Why it exists</h4>
-<p>D4 teaches token-efficient design: prompt caching, context pruning, maxTokens limits. But every one of those techniques needs a measurement step first. Before CountTokens, teams estimated tokens with client-side tokenizers that drifted from the model's real tokenizer, so cost projections and "will this fit in context" checks were unreliable. CountTokens gives the authoritative number from the service itself.</p>
-<h4 id="how-it-works">How it works</h4>
-<ol>
-<li>Send the same request body you would send to <code>InvokeModel</code> or <code>Converse</code>, but to the <code>count-tokens</code> endpoint.</li>
-<li>The response returns the input token count. No tokens are generated, no inference runs, no charge accrues.</li>
-<li>Use it to validate that a RAG prompt fits the model's context window before the call, to project batch-job cost, and to measure whether a prompt-compression change actually saved tokens.</li>
-<li><strong>Careful with model identifiers.</strong> Community reports indicate CountTokens can reject inference-profile model IDs that <code>InvokeModel</code> accepts; when in doubt, test with the base model ID. UNVERIFIED in official docs.
-   Treat as a caution, not a rule.</li>
-</ol>
-<h4 id="concrete-numbers">Concrete numbers</h4>
-<p>The API is free: zero cost per call. A typical use: a RAG prompt with 8 retrieved chunks at roughly 400 tokens each plus 200 tokens of instructions counts about 3,400 input tokens (illustrative).
-At a model price of a few dollars per million input tokens, 10,000 such calls cost on the order of a hundred dollars. CountTokens turns that arithmetic from guesswork into a measurement.</p>
+<p>CountTokens is a Bedrock runtime API (<code>POST /model/{modelId}/count-tokens</code>) that returns the number of tokens a given input would consume, without running inference. It accepts the same input formats as <code>InvokeModel</code> and <code>Converse</code>, and the count it returns matches what you would be billed for. It is free to call. Token-efficient design (prompt caching, context pruning, maxTokens limits) needs a measurement step first; before CountTokens, teams estimated tokens with client-side tokenizers that drifted from the model's real tokenizer, so cost projections and "will this fit in context" checks were unreliable. CountTokens gives the authoritative number from the service itself.</p>
+<p>Send the same request body you would send to <code>InvokeModel</code> or <code>Converse</code>, but to the <code>count-tokens</code> endpoint. The response returns the input token count. No tokens are generated, no inference runs, no charge accrues. Use it to validate that a RAG prompt fits the model's context window before the call, to project batch-job cost, and to measure whether a prompt-compression change actually saved tokens. One caution, marked UNVERIFIED in official docs: community reports indicate CountTokens can reject inference-profile model IDs that <code>InvokeModel</code> accepts, so when in doubt, test with the base model ID.</p>
+<p>The API is free: zero cost per call. A typical use: a RAG prompt with 8 retrieved chunks at roughly 400 tokens each plus 200 tokens of instructions counts about 3,400 input tokens (illustrative). At a model price of a few dollars per million input tokens, 10,000 such calls cost on the order of a hundred dollars. CountTokens turns that arithmetic from guesswork into a measurement.</p>
+
 <div class="takeaway"><p>Key exam facts.</p>
 <p>(1) CountTokens estimates input tokens without inference, free of charge. (2) It accepts the same formats as InvokeModel/Converse and matches billed tokens. (3) Use it for context-window fit checks and cost projection.</p></div>
 
@@ -1705,21 +1729,10 @@ A real invocation costs money and generates output. CountTokens is the free, exa
 <p>B is correct. CountTokens accepts the same formats as InvokeModel/Converse, returns the billed token count, runs no inference, and is free.</p>
 <p>A is wrong because it still runs inference and incurs charges. C is wrong because it also invokes the model and bills for it. D is wrong because it configures logging, not token counting.</p>
 <h3 id="topk">top_k: the sampling parameter AWS hides from Converse</h3>
-<h4 id="what-it-is">What it is</h4>
-<p>Top_k is a decoding parameter: at each generation step, the model considers only the k most likely next tokens and samples among them. Small k (for example 10) makes output focused and deterministic.
-Large k (for example 200) allows rarer, more creative tokens. It is the sibling of temperature (randomness scale) and top_p (nucleus sampling over cumulative probability), both taught in D4.</p>
-<h4 id="why-it-exists">Why it exists</h4>
-<p>Temperature and top_p shape the probability distribution, but sometimes you want a hard cutoff: "never consider anything outside the top 50 candidates, no matter what." top_k gives that cutoff. It is especially useful for constrained tasks like classification or structured extraction, where a long tail of weird tokens is pure risk.</p>
-<h4 id="how-it-works-and-the-exam-trap">How it works, and the exam trap</h4>
-<ol>
-<li>In raw <code>InvokeModel</code> request bodies, top_k (usually written <code>top_k</code> or <code>topK</code> depending on the provider) is a normal provider parameter.</li>
-<li><strong>In the Converse API, <code>inferenceConfig</code> documents only four fields: <code>maxTokens</code>, <code>stopSequences</code>, <code>temperature</code>, and <code>topP</code>. There is no standard <code>topK</code> field in Converse <code>inferenceConfig</code>.</strong></li>
-<li>To set top_k through Converse, you pass it inside <code>additionalModelRequestFields</code>, the provider-specific escape hatch, using the provider's own field name. Alternatively, use <code>InvokeModel</code> with the raw body.</li>
-<li>Confusingly, topK <em>does</em> exist in the Bedrock Agents <code>InferenceConfiguration</code>. Same name, different API, different rules.</li>
-</ol>
-<h4 id="concrete-numbers">Concrete numbers</h4>
-<p>Typical top_k values range from 1 (greedy within the top candidate, nearly deterministic) to a few hundred (illustrative; provider defaults vary). The operational guidance mirrors top_p: for factual extraction use low top_k with low temperature.
-For brainstorming use higher values. Do not combine aggressive top_k with aggressive top_p without testing; they interact.</p>
+<p>Top_k is a decoding parameter: at each generation step, the model considers only the k most likely next tokens and samples among them. Small k (for example 10) makes output focused and deterministic. Large k (for example 200) allows rarer, more creative tokens. It is the sibling of temperature (randomness scale) and top_p (nucleus sampling over cumulative probability), both taught in D4. Temperature and top_p shape the probability distribution, but sometimes you want a hard cutoff: "never consider anything outside the top 50 candidates, no matter what." Top_k gives that cutoff. It is especially useful for constrained tasks like classification or structured extraction, where a long tail of weird tokens is pure risk.</p>
+<p>How it works, and the exam trap: in raw <code>InvokeModel</code> request bodies, top_k (usually written <code>top_k</code> or <code>topK</code> depending on the provider) is a normal provider parameter. But in the Converse API, <code>inferenceConfig</code> documents only four fields: <code>maxTokens</code>, <code>stopSequences</code>, <code>temperature</code>, and <code>topP</code>. There is no standard <code>topK</code> field in Converse <code>inferenceConfig</code>. To set top_k through Converse, you pass it inside <code>additionalModelRequestFields</code>, the provider-specific escape hatch, using the provider's own field name. Alternatively, use <code>InvokeModel</code> with the raw body. Confusingly, topK does exist in the Bedrock Agents <code>InferenceConfiguration</code>: same name, different API, different rules.</p>
+<p>Typical top_k values range from 1 (greedy within the top candidate, nearly deterministic) to a few hundred (illustrative; provider defaults vary). The operational guidance mirrors top_p: for factual extraction use low top_k with low temperature; for brainstorming use higher values. Do not combine aggressive top_k with aggressive top_p without testing; they interact.</p>
+
 <div class="takeaway"><p>Key exam facts.</p>
 <p>(1) top_k limits sampling to the k most likely tokens. (2) Converse</p>
 <p>inferenceConfig</p>
@@ -1768,22 +1781,10 @@ For brainstorming use higher values. Do not combine aggressive top_k with aggres
 <p>B is wrong because temperature does not enable topK. C is wrong because topK is not deprecated.
 It is only absent from that one config object. D is wrong because guardrailConfig controls safety filters, not sampling.</p>
 <h3 id="evidently">CloudWatch Evidently</h3>
-<h4 id="what-it-is">What it is</h4>
-<p>CloudWatch Evidently is an experimentation and feature-flag service inside CloudWatch. Feature flags turn features on or off for subsets of users without redeploying.
-Experiments (A/B tests) route traffic between variants and measure which one wins on a chosen metric, with statistical analysis built in. The two key APIs are <code>EvaluateFeature</code> (ask which variant a user gets) and <code>PutProjectEvents</code> (report the outcome metric).</p>
-<h4 id="why-it-exists">Why it exists</h4>
-<p>D5 ch7 teaches A/B testing prompts via Prompt Management variants, but that only covers prompt text. Real GenAI experiments vary models, retrieval depth, temperature, or whole pipelines, and they need traffic splitting plus statistics. Evidently provides both: the application calls <code>EvaluateFeature</code> per request to pick variant A or B, then reports the result (user thumbs-up, task success) with <code>PutProjectEvents</code>, and Evidently computes whether B beats A significantly.</p>
-<h4 id="how-it-works">How it works</h4>
-<ol>
-<li>Define a feature with variations (for example, <code>model: claude-haiku</code> vs <code>model: claude-sonnet</code>, or <code>topK: 10</code> vs <code>topK: 50</code>).</li>
-<li>Define an experiment: what fraction of traffic goes to each variation, and which metric decides the winner (for example, user satisfaction events).</li>
-<li>At request time the app calls <code>EvaluateFeature</code> with the user identity and gets back the assigned variation plus the variation's configuration values.</li>
-<li>The app runs the request with those values, then calls <code>PutProjectEvents</code> with the outcome.</li>
-<li>Evidently aggregates and reports statistical significance. When the experiment concludes, the winning variation becomes the default; the flag mechanism also supports plain gradual rollouts with no experiment attached.</li>
-</ol>
-<h4 id="concrete-numbers">Concrete numbers</h4>
-<p>Evidently pricing is per evaluation and per event (illustrative.
-Small). The numbers that matter are experimental: run enough traffic that the result is statistically significant, which Evidently computes for you. A common exam scenario splits 90/10 (safe default vs. challenger) to limit blast radius.</p>
+<p>CloudWatch Evidently is an experimentation and feature-flag service inside CloudWatch. Feature flags turn features on or off for subsets of users without redeploying. Experiments (A/B tests) route traffic between variants and measure which one wins on a chosen metric, with statistical analysis built in. The two key APIs are <code>EvaluateFeature</code> (ask which variant a user gets) and <code>PutProjectEvents</code> (report the outcome metric). Prompt Management variants cover prompt text, but real GenAI experiments vary models, retrieval depth, temperature, or whole pipelines, and they need traffic splitting plus statistics. Evidently provides both: the application calls <code>EvaluateFeature</code> per request to pick variant A or B, then reports the result (user thumbs-up, task success) with <code>PutProjectEvents</code>, and Evidently computes whether B beats A significantly.</p>
+<p>The loop: define a feature with variations (for example, <code>model: claude-haiku</code> vs <code>model: claude-sonnet</code>, or <code>topK: 10</code> vs <code>topK: 50</code>); define an experiment with the traffic fraction per variation and the metric that decides the winner (for example, user satisfaction events); at request time the app calls <code>EvaluateFeature</code> with the user identity and gets back the assigned variation plus the variation's configuration values; the app runs the request with those values, then calls <code>PutProjectEvents</code> with the outcome; Evidently aggregates and reports statistical significance. When the experiment concludes, the winning variation becomes the default. The flag mechanism also supports plain gradual rollouts with no experiment attached.</p>
+<p>Evidently pricing is per evaluation and per event (illustrative, small). The numbers that matter are experimental: run enough traffic that the result is statistically significant, which Evidently computes for you. A common exam scenario splits 90/10 (safe default vs. challenger) to limit blast radius.</p>
+
 <div class="takeaway"><p>Key exam facts.</p>
 <p>(1) Evidently = feature flags + A/B experiments with built-in statistics. (2)</p>
 <p>EvaluateFeature</p>
@@ -1827,20 +1828,10 @@ Small). The numbers that matter are experimental: run enough traffic that the re
 <p>A is correct. Evidently is the purpose-built A/B testing service: <code>EvaluateFeature</code> assigns variants per request and <code>PutProjectEvents</code> feeds the outcome metric into statistical analysis.</p>
 <p>B is wrong because AppConfig does gradual rollouts without experiment statistics. C is wrong because prompt variants cover prompt text, not model selection, and eyeballing is not statistical. D is wrong because weighted aliases split traffic but provide no experiment framework.</p>
 <h3 id="ttft">TTFT: time to first token</h3>
-<h4 id="what-it-is">What it is</h4>
-<p>TTFT (time to first token) is the latency from the moment your request is sent until the first token of the response arrives. It is the metric users actually feel in a streaming chat: the pause before text starts appearing. Its siblings: TPOT (time per output token, the steady streaming rate after the first token) and end-to-end latency (TTFT plus everything after).</p>
-<h4 id="why-it-exists">Why it exists</h4>
-<p>D4 ch6 teaches streaming to improve perceived latency, but "streaming helps" is not measurable without naming the metric. TTFT isolates the painful part (prefill: processing your whole prompt before generating anything) from the cheap part (decoding one token at a time). Amazon Bedrock emits TTFT as a native CloudWatch metric, so you can alarm on it, which turns "the app feels slow" into a graph.</p>
-<h4 id="how-it-works">How it works</h4>
-<ol>
-<li>Use a streaming API: <code>ConverseStream</code> or <code>InvokeModelWithResponseStream</code>. TTFT is only meaningful for streaming; non-streaming calls have a single end-to-end latency.</li>
-<li>Bedrock publishes <code>TimeToFirstToken</code> to the <code>AWS/Bedrock</code> CloudWatch namespace (alongside <code>InvocationLatency</code>, which covers all invocations). No code changes or opt-in are required.</li>
-<li>What drives TTFT up: long prompts (the whole prompt is processed before the first token), large models, cold provisioned throughput, and queueing under throttling. What drives it down: shorter prompts, prompt caching (cached prefix skips recomputation), smaller/faster models, streaming.</li>
-<li>Set CloudWatch alarms on p95 TTFT so regressions page someone instead of silently annoying users.</li>
-</ol>
-<h4 id="concrete-numbers">Concrete numbers</h4>
-<p>Illustrative magnitudes: a short prompt on a fast model can show TTFT in the hundreds of milliseconds.
-A 100k-token prompt can push TTFT into many seconds, because prefill work grows with prompt length. The exam tests the concept and the metric name, not specific millisecond values.</p>
+<p>TTFT (time to first token) is the latency from the moment your request is sent until the first token of the response arrives. It is the metric users actually feel in a streaming chat: the pause before text starts appearing. Its siblings: TPOT (time per output token, the steady streaming rate after the first token) and end-to-end latency (TTFT plus everything after). Streaming improves perceived latency, but "streaming helps" is not measurable without naming the metric. TTFT isolates the painful part (prefill: processing your whole prompt before generating anything) from the cheap part (decoding one token at a time). Amazon Bedrock emits TTFT as a native CloudWatch metric, so you can alarm on it, which turns "the app feels slow" into a graph.</p>
+<p>Use a streaming API: <code>ConverseStream</code> or <code>InvokeModelWithResponseStream</code>. TTFT is only meaningful for streaming; non-streaming calls have a single end-to-end latency. Bedrock publishes <code>TimeToFirstToken</code> to the <code>AWS/Bedrock</code> CloudWatch namespace (alongside <code>InvocationLatency</code>, which covers all invocations). No code changes or opt-in are required. What drives TTFT up: long prompts (the whole prompt is processed before the first token), large models, cold provisioned throughput, and queueing under throttling. What drives it down: shorter prompts, prompt caching (a cached prefix skips recomputation), smaller or faster models, and streaming. Set CloudWatch alarms on p95 TTFT so regressions page someone instead of silently annoying users.</p>
+<p>Illustrative magnitudes: a short prompt on a fast model can show TTFT in the hundreds of milliseconds. A 100k-token prompt can push TTFT into many seconds, because prefill work grows with prompt length. The exam tests the concept and the metric name, not specific millisecond values.</p>
+
 <div class="takeaway"><p>Key exam facts.</p>
 <p>(1) TTFT = request sent to first token received; streaming only. (2) Bedrock emits</p>
 <p>TimeToFirstToken</p>
@@ -1890,24 +1881,10 @@ A 100k-token prompt can push TTFT into many seconds, because prefill work grows 
 <h2 id="4-data-and-model-mechanics">4. Data and model mechanics</h2>
 <p>The unglamorous machinery under the GenAI pipeline: turning documents into text, text into chunks, vectors into smaller vectors, and models into running endpoints.</p>
 <h3 id="textract">Amazon Textract</h3>
-<h4 id="what-it-is">What it is</h4>
-<p>Amazon Textract is a managed document-analysis service: it extracts printed text, handwriting, forms (key-value pairs), tables, and layout structure from documents and images, with no model to train. D1 ch9 teaches the ingestion pipeline.
-This entry teaches the Textract API surface the exam names.</p>
-<h4 id="why-it-exists">Why it exists</h4>
-<p>RAG needs text, but enterprise knowledge lives in PDFs, scanned contracts, and photographed forms. Plain OCR returns a soup of words.
-Textract returns structure: which text is a table cell, which words form a key-value pair, where the checkboxes are. That structure is what lets a chunking pipeline keep a table together instead of shredding it across chunks.</p>
-<h4 id="how-it-works">How it works</h4>
-<ol>
-<li><strong>Synchronous APIs</strong> (single-page documents, immediate response): <code>DetectDocumentText</code> for raw OCR (words and lines).
-   <code>AnalyzeDocument</code> for structure, with <code>FeatureTypes</code> selecting <code>TABLES</code>, <code>FORMS</code>, <code>QUERIES</code> (ask a natural-language question and get an answer pair), <code>LAYOUT</code> (titles, headers, lists, reading order), and <code>SIGNATURES</code>.</li>
-<li><strong>Asynchronous APIs</strong> (multi-page PDFs/TIFFs in S3): <code>StartDocumentTextDetection</code> / <code>StartDocumentAnalysis</code> return a job ID; results come from <code>GetDocumentTextDetection</code> / <code>GetDocumentAnalysis</code>, with SNS notification on completion.</li>
-<li><strong>Specialized APIs:</strong><code>AnalyzeExpense</code> extracts invoices and receipts into standardized fields (totals, line items); <code>AnalyzeID</code> extracts identity documents (passports, driver's licenses) into typed fields.</li>
-<li><strong>Output model:</strong> a graph of <code>Block</code> objects (PAGE, LINE, WORD, TABLE, CELL, KEY_VALUE_SET, SELECTION_ELEMENT for checkboxes) with bounding boxes, confidence scores, and relationships linking keys to values and tables to cells.</li>
-<li><strong>Human review:</strong> route low-confidence results to Amazon A2I (Augmented AI) for human verification, the standard answer for "high-stakes documents."</li>
-</ol>
-<h4 id="concrete-numbers">Concrete numbers</h4>
-<p>Synchronous calls handle single pages up to a few MB; asynchronous jobs handle multi-page documents up to hundreds of MB from S3 (illustrative.
-Check current quotas). Each feature type adds cost, so request only the <code>FeatureTypes</code> you need. Confidence scores are per block; a common A2I threshold routes anything below roughly 90% confidence to humans (illustrative).</p>
+<p>Amazon Textract is a managed document-analysis service: it extracts printed text, handwriting, forms (key-value pairs), tables, and layout structure from documents and images, with no model to train. RAG needs text, but enterprise knowledge lives in PDFs, scanned contracts, and photographed forms. Plain OCR returns a soup of words. Textract returns structure: which text is a table cell, which words form a key-value pair, where the checkboxes are. That structure is what lets a chunking pipeline keep a table together instead of shredding it across chunks.</p>
+<p>The API surface splits three ways. Synchronous APIs handle single-page documents with an immediate response: <code>DetectDocumentText</code> for raw OCR (words and lines), and <code>AnalyzeDocument</code> for structure, with <code>FeatureTypes</code> selecting <code>TABLES</code>, <code>FORMS</code>, <code>QUERIES</code> (ask a natural-language question and get an answer pair), <code>LAYOUT</code> (titles, headers, lists, reading order), and <code>SIGNATURES</code>. Asynchronous APIs handle multi-page PDFs and TIFFs in S3: <code>StartDocumentTextDetection</code> and <code>StartDocumentAnalysis</code> return a job ID, results come from <code>GetDocumentTextDetection</code> and <code>GetDocumentAnalysis</code>, with SNS notification on completion. Specialized APIs cover standard document types: <code>AnalyzeExpense</code> extracts invoices and receipts into standardized fields (totals, line items), and <code>AnalyzeID</code> extracts identity documents (passports, driver's licenses) into typed fields. The output model is a graph of <code>Block</code> objects (PAGE, LINE, WORD, TABLE, CELL, KEY_VALUE_SET, SELECTION_ELEMENT for checkboxes) with bounding boxes, confidence scores, and relationships linking keys to values and tables to cells. Route low-confidence results to Amazon A2I (Augmented AI) for human verification, the standard answer for high-stakes documents.</p>
+<p>Synchronous calls handle single pages up to a few MB; asynchronous jobs handle multi-page documents up to hundreds of MB from S3 (illustrative; check current quotas). Each feature type adds cost, so request only the <code>FeatureTypes</code> you need. Confidence scores are per block; a common A2I threshold routes anything below roughly 90% confidence to humans (illustrative).</p>
+
 <div class="takeaway"><p>Key exam facts.</p>
 <p>(1) Sync:</p>
 <p>DetectDocumentText</p>
@@ -1971,21 +1948,10 @@ Check current quotas). Each feature type adds cost, so request only the <code>Fe
 <p>B is correct. Multi-page S3 documents require the async API, TABLES/FORMS buy the structure, and A2I handles low-confidence review.</p>
 <p>A is wrong because raw OCR returns no table or form structure. C is wrong because the sync API does not handle multi-page PDFs. D is wrong because Comprehend analyzes text, it does not perform document OCR.</p>
 <h3 id="divider-strings">Divider strings for chunking</h3>
-<h4 id="what-it-is">What it is</h4>
-<p>A divider string is a unique delimiter you insert between logical sections of a document during preprocessing, so that a later split-on-delimiter chunker breaks the text exactly at section boundaries. Example: before chunking, a Lambda preprocessor inserts <code>\n\n###SECTION###\n\n</code> between detected headings.
-The chunker then splits on that marker instead of on blind character counts. UNVERIFIED: this is a course-taught preprocessing technique, not an AWS-documented feature. Treat it as a pattern, not a service.</p>
-<h4 id="why-it-exists">Why it exists</h4>
-<p>D1 ch13 teaches chunking strategies (fixed-size, hierarchical, semantic). Fixed-size chunking has a failure mode: it can split mid-table, mid-procedure, or mid-argument, producing chunks that confuse retrieval. Divider strings are the cheap fix: one preprocessing pass marks the true boundaries, and the chunker respects them, so each chunk stays semantically whole.</p>
-<h4 id="how-it-works">How it works</h4>
-<ol>
-<li>After Textract or BDA extraction, a Lambda preprocessor scans the text for structural signals (headings, page breaks, table boundaries).</li>
-<li>It inserts a divider string that never occurs naturally in the text (a random-looking token is safer than a common word).</li>
-<li>The chunking step splits on the divider first, then applies size limits within each section: sections longer than the target get sub-split; tiny adjacent sections may merge.</li>
-<li>Each chunk keeps metadata noting its source section, which improves citation and reranking later.</li>
-</ol>
-<h4 id="concrete-numbers">Concrete numbers</h4>
-<p>Illustrative: with a 512-token target chunk size, divider-first splitting on a 40-page manual typically yields chunks averaging near the target with far fewer mid-sentence breaks than pure fixed-size splitting. There are no AWS quotas here.
-This is application code, so numbers are illustrative by nature.</p>
+<p>A divider string is a unique delimiter you insert between logical sections of a document during preprocessing, so that a later split-on-delimiter chunker breaks the text exactly at section boundaries. Example: before chunking, a Lambda preprocessor inserts <code>\n\n###SECTION###\n\n</code> between detected headings. The chunker then splits on that marker instead of on blind character counts. UNVERIFIED: this is a course-taught preprocessing technique, not an AWS-documented feature. Treat it as a pattern, not a service. Fixed-size chunking has a failure mode: it can split mid-table, mid-procedure, or mid-argument, producing chunks that confuse retrieval. Divider strings are the cheap fix: one preprocessing pass marks the true boundaries, and the chunker respects them, so each chunk stays semantically whole.</p>
+<p>The mechanics: after Textract or BDA extraction, a Lambda preprocessor scans the text for structural signals (headings, page breaks, table boundaries); it inserts a divider string that never occurs naturally in the text (a random-looking token is safer than a common word); the chunking step splits on the divider first, then applies size limits within each section, so sections longer than the target get sub-split and tiny adjacent sections may merge; each chunk keeps metadata noting its source section, which improves citation and reranking later.</p>
+<p>Illustrative: with a 512-token target chunk size, divider-first splitting on a 40-page manual typically yields chunks averaging near the target with far fewer mid-sentence breaks than pure fixed-size splitting. There are no AWS quotas here. This is application code, so numbers are illustrative by nature.</p>
+
 <div class="takeaway"><p>Key exam facts.</p>
 <p>(1) Divider strings are inserted during preprocessing to mark true section boundaries. (2) The chunker splits on the divider before applying size limits. (3) Result: semantically whole chunks, better retrieval.</p></div>
 
@@ -2019,56 +1985,9 @@ The fix for boundary violations is boundary-aware splitting. The trigger phrase 
 <p>B is correct. Boundary-aware splitting keeps tables and procedures whole; blind size changes cannot fix boundary violations.</p>
 <p>A is wrong because smaller blind chunks create more fragments, not fewer. C is wrong because embeddings do not repair broken chunk boundaries. D is wrong because retrieving more fragments does not make any single fragment coherent.</p>
 <h3 id="vector-opt">Binary vectors and FP16 quantization</h3>
-<h4 id="what-it-is">What it is</h4>
-<p>Vector embeddings are usually stored as 32-bit floats (float32): 4 bytes per dimension. Quantization stores them in fewer bits per dimension: binary vectors use 1 bit per dimension (32x smaller), and FP16 scalar quantization uses 16 bits (2x smaller). You trade a small accuracy loss for large memory and cost savings in the vector index.</p>
-<h4 id="why-it-exists">Why it exists</h4>
-<p>D1 ch11 compares vector stores, but a 1,536-dimension float32 vector costs 6 KB, and ten million of them cost 60 GB of index memory. That memory bill is often the largest line item in a RAG system. Quantization attacks it directly: binary vectors shrink the same index to under 2 GB, which can drop you to a smaller instance class or let you hold the whole index in memory.</p>
-<h4 id="how-it-works">How it works</h4>
-<ol>
-<li><strong>Binary quantization.</strong> Each float dimension becomes one bit (sign). 32x compression versus float32. Distance becomes Hamming distance, which is extremely fast. Best for large-scale first-pass retrieval where approximate ranking is fine.</li>
-<li><strong>2-bit and 4-bit quantization.</strong> Middle grounds at 16x and 8x compression for better accuracy than binary.</li>
-<li><strong>FP16 scalar quantization.</strong> Halves memory (2x) with minimal accuracy change. On OpenSearch, <code>SQfp16</code> uses the Faiss engine (OpenSearch 2.13 and later); Lucene-based scalar quantization arrived in OpenSearch 2.16.</li>
-<li><strong>The standard pattern:</strong> retrieve a larger candidate set with quantized vectors, then rerank the top candidates with full-precision vectors or a reranker model. AWS testing showed accuracy impact around 2% for binary quantization in tested workloads (illustrative.
-   Measure on your own data).</li>
-<li><strong>OpenSearch neural plugin.</strong> The k-NN and neural search plugin is what enables vector search on Amazon OpenSearch Service in the first place; quantization options are configured on the index's vector field.</li>
-</ol>
-<h4 id="concrete-numbers">Concrete numbers</h4>
-<div class="table-wrap"><table>
-<thead>
-<tr>
-<th>Format</th>
-<th>Bits per dimension</th>
-<th>Compression vs float32</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>float32</td>
-<td>32</td>
-<td>1x (baseline)</td>
-</tr>
-<tr>
-<td>FP16</td>
-<td>16</td>
-<td>2x</td>
-</tr>
-<tr>
-<td>4-bit</td>
-<td>4</td>
-<td>8x</td>
-</tr>
-<tr>
-<td>2-bit</td>
-<td>2</td>
-<td>16x</td>
-</tr>
-<tr>
-<td>binary</td>
-<td>1</td>
-<td>32x</td>
-</tr>
-</tbody>
-</table></div>
+<p>Vector embeddings are usually stored as 32-bit floats (float32): 4 bytes per dimension. Quantization stores them in fewer bits per dimension: binary vectors use 1 bit per dimension (32x smaller), and FP16 scalar quantization uses 16 bits (2x smaller). You trade a small accuracy loss for large memory and cost savings in the vector index. A 1,536-dimension float32 vector costs 6 KB, and ten million of them cost 60 GB of index memory. That memory bill is often the largest line item in a RAG system. Quantization attacks it directly: binary vectors shrink the same index to under 2 GB, which can drop you to a smaller instance class or let you hold the whole index in memory.</p>
+<p>The levels: binary quantization turns each float dimension into one bit (sign), for 32x compression versus float32, and distance becomes Hamming distance, which is extremely fast; it is best for large-scale first-pass retrieval where approximate ranking is fine. 2-bit and 4-bit quantization are middle grounds at 16x and 8x compression for better accuracy than binary. FP16 scalar quantization halves memory (2x) with minimal accuracy change; on OpenSearch, <code>SQfp16</code> uses the Faiss engine (OpenSearch 2.13 and later), and Lucene-based scalar quantization arrived in OpenSearch 2.16. The standard pattern is to retrieve a larger candidate set with quantized vectors, then rerank the top candidates with full-precision vectors or a reranker model. AWS testing showed accuracy impact around 2% for binary quantization in tested workloads (illustrative; measure on your own data). The OpenSearch neural plugin (k-NN and neural search) is what enables vector search on Amazon OpenSearch Service in the first place; quantization options are configured on the index's vector field.</p>
+
 <div class="takeaway"><p>Key exam facts.</p>
 <p>(1) Binary = 1 bit/dim, 32x compression; FP16 = 2x. (2) Use quantized vectors for candidate retrieval, then rerank at full precision. (3) OpenSearch: Faiss-engine SQfp16 from 2.13; Lucene scalar quantization from 2.16.
 Neural/k-NN plugin enables vector search.</p></div>
@@ -2108,20 +2027,10 @@ It is approximate, which is why the rerank step exists.</p></div>
 <p>B is correct. Binary quantization gives 32x compression for the retrieval pass, and the full-precision rerank recovers ranking quality.</p>
 <p>A is wrong because it pays more instead of optimizing. C is wrong because random deletion destroys recall. D is wrong because changing dimensions without reindexing produces meaningless vectors.</p>
 <h3 id="sagemaker-large">SageMaker large-model tuning specifics</h3>
-<h4 id="what-it-is">What it is</h4>
-<p>D2 ch11 teaches SageMaker deployment (persistent endpoints, batch transform). This entry covers the large-model specifics the exam names: the timeout and volume knobs you turn when deploying a model with tens or hundreds of gigabytes of weights, and the instance families AWS points at for big GPU models versus small CPU tasks.</p>
-<h4 id="why-it-exists">Why it exists</h4>
-<p>Deploying a small classifier and deploying a 70B-parameter LLM are different operations. Large model artifacts take a long time to download from S3, and containers take a long time to load weights into GPU memory before they can answer a health check. SageMaker's defaults assume small models; without tuning, the deployment fails with timeout errors that look like broken code but are really just impatience.</p>
-<h4 id="how-it-works">How it works</h4>
-<ol>
-<li><strong>Production variant fields.</strong> On the endpoint configuration's production variant, set <code>ModelDataDownloadTimeoutInSeconds</code> (how long SageMaker waits for the model artifact download) and <code>ContainerStartupHealthCheckTimeoutInSeconds</code> (how long it waits for the container to become healthy after download). Large models need both raised substantially.</li>
-<li><strong><code>VolumeSizeInGB</code>.</strong> The EBS volume attached to the instance must fit the model artifact plus the container plus headroom. SageMaker supports very large models (up to the 500 GB class); size the volume accordingly.</li>
-<li><strong>Instance selection.</strong> Large GPU models go on GPU families such as <code>ml.p4d.24xlarge</code> (high-end NVIDIA GPUs, large GPU memory). Small CPU tasks such as named-entity recognition go on compute families such as <code>ml.c5.9xlarge</code>. The exam's favorite discriminator is exactly this pairing: big generative model versus small CPU-friendly task.</li>
-<li><strong>Failure signature.</strong> A deployment that fails during creation with download or health-check timeouts, on an instance type that looks big enough, is a timeout-tuning problem, not a model problem.</li>
-</ol>
-<h4 id="concrete-numbers">Concrete numbers</h4>
-<p>Model sizes up to the 500 GB class are deployable (illustrative upper bound; check current quotas). Default timeouts are measured in minutes and suit small models.
-Large-model deployments commonly need tens of minutes for download plus container startup (illustrative; tune to your artifact size and instance network throughput).</p>
+<p>This entry covers the large-model SageMaker specifics the exam names: the timeout and volume knobs you turn when deploying a model with tens or hundreds of gigabytes of weights, and the instance families AWS points at for big GPU models versus small CPU tasks. Deploying a small classifier and deploying a 70B-parameter LLM are different operations. Large model artifacts take a long time to download from S3, and containers take a long time to load weights into GPU memory before they can answer a health check. SageMaker's defaults assume small models; without tuning, the deployment fails with timeout errors that look like broken code but are really just impatience.</p>
+<p>Three knobs. On the endpoint configuration's production variant, set <code>ModelDataDownloadTimeoutInSeconds</code> (how long SageMaker waits for the model artifact download) and <code>ContainerStartupHealthCheckTimeoutInSeconds</code> (how long it waits for the container to become healthy after download). Large models need both raised substantially. Set <code>VolumeSizeInGB</code> so the attached EBS volume fits the model artifact plus the container plus headroom; SageMaker supports very large models (up to the 500 GB class). For instance selection, large GPU models go on GPU families such as <code>ml.p4d.24xlarge</code> (high-end NVIDIA GPUs, large GPU memory), while small CPU tasks such as named-entity recognition go on compute families such as <code>ml.c5.9xlarge</code>. The exam's favorite discriminator is exactly this pairing: big generative model versus small CPU-friendly task. The failure signature to memorize: a deployment that fails during creation with download or health-check timeouts, on an instance type that looks big enough, is a timeout-tuning problem, not a model problem.</p>
+<p>Model sizes up to the 500 GB class are deployable (illustrative upper bound; check current quotas). Default timeouts are measured in minutes and suit small models. Large-model deployments commonly need tens of minutes for download plus container startup (illustrative; tune to your artifact size and instance network throughput).</p>
+
 <div class="takeaway"><p>Key exam facts.</p>
 <p>(1) Raise</p>
 <p>ModelDataDownloadTimeoutInSeconds</p>
@@ -2170,21 +2079,10 @@ The timeouts do. A second trap swaps the instance families: putting a small NER 
 <p>A is wrong because GPU memory was already sufficient.
 The bottleneck is download time. C is wrong because it changes the model rather than fixing the deployment configuration. D is wrong because batch transform does not change artifact download behavior and mismatches the endpoint requirement.</p>
 <h3 id="emr">Amazon EMR</h3>
-<h4 id="what-it-is">What it is</h4>
-<p>Amazon EMR (Elastic MapReduce) is a managed big-data platform for running open-source distributed frameworks: Apache Spark, Hadoop (MapReduce/YARN), Hive, Presto/Trino, HBase, and Flink. AWS provisions, configures, and scales the cluster.
-You submit data-processing jobs. Three flavors: EMR on EC2 (classic clusters), EMR on EKS (run on your Kubernetes cluster), and EMR Serverless (submit a Spark or Hive job with no cluster to manage).</p>
-<h4 id="why-it-exists-and-the-genai-connection">Why it exists, and the GenAI connection</h4>
-<p>GenAI training and large-scale RAG ingestion need heavy data processing: deduplicating billions of web documents, joining click logs, computing embeddings in bulk. EMR is the managed home for that Spark-scale ETL. It is peripheral to the exam's GenAI core, but it appears as the "big ETL" answer in data-pipeline scenarios, and the exam expects you to distinguish it from Glue.</p>
-<h4 id="how-it-works">How it works</h4>
-<ol>
-<li><strong>Cluster topology.</strong> A primary node coordinates; core nodes run tasks and host HDFS; optional task nodes are compute-only (ideal for Spot instances).</li>
-<li><strong>Storage.</strong> EMRFS lets the cluster read and write S3 directly (durable, decoupled); HDFS on core nodes is fast but ephemeral. The AWS Glue Data Catalog serves as the shared Hive metastore across clusters.</li>
-<li><strong>Work submission.</strong> Jobs run as steps (Spark/Hive applications) with configurable concurrency; bootstrap actions install dependencies at launch.</li>
-<li><strong>EMR vs Glue.</strong> Glue is serverless Spark for standard ETL with minimal tuning. EMR gives full control over framework versions, instance types, and cluster topology for large, long-running, or highly customized jobs. EMR Serverless sits between: no cluster to manage, pay per job.</li>
-</ol>
-<h4 id="concrete-numbers">Concrete numbers</h4>
-<p>EMR on EC2 adds a per-instance-hour EMR surcharge on top of EC2 cost.
-EMR Serverless bills per vCPU-second and memory-second with a one-minute minimum on some dimensions (illustrative). Cost levers the exam names: Spot instances for task nodes, S3 (not HDFS) for durable data, auto-termination of idle clusters.</p>
+<p>Amazon EMR (Elastic MapReduce) is a managed big-data platform for running open-source distributed frameworks: Apache Spark, Hadoop (MapReduce/YARN), Hive, Presto/Trino, HBase, and Flink. AWS provisions, configures, and scales the cluster. You submit data-processing jobs. Three flavors: EMR on EC2 (classic clusters), EMR on EKS (run on your Kubernetes cluster), and EMR Serverless (submit a Spark or Hive job with no cluster to manage). GenAI training and large-scale RAG ingestion need heavy data processing: deduplicating billions of web documents, joining click logs, computing embeddings in bulk. EMR is the managed home for that Spark-scale ETL. It is peripheral to the exam's GenAI core, but it appears as the "big ETL" answer in data-pipeline scenarios, and the exam expects you to distinguish it from Glue.</p>
+<p>Cluster topology: a primary node coordinates; core nodes run tasks and host HDFS; optional task nodes are compute-only (ideal for Spot instances). Storage: EMRFS lets the cluster read and write S3 directly (durable, decoupled); HDFS on core nodes is fast but ephemeral; the AWS Glue Data Catalog serves as the shared Hive metastore across clusters. Jobs run as steps (Spark/Hive applications) with configurable concurrency; bootstrap actions install dependencies at launch. The EMR vs Glue decision: Glue is serverless Spark for standard ETL with minimal tuning; EMR gives full control over framework versions, instance types, and cluster topology for large, long-running, or highly customized jobs; EMR Serverless sits between, with no cluster to manage and pay-per-job billing.</p>
+<p>EMR on EC2 adds a per-instance-hour EMR surcharge on top of EC2 cost. EMR Serverless bills per vCPU-second and memory-second with a one-minute minimum on some dimensions (illustrative). Cost levers the exam names: Spot instances for task nodes, S3 (not HDFS) for durable data, auto-termination of idle clusters.</p>
+
 <div class="takeaway"><p>Key exam facts.</p>
 <p>(1) EMR = managed Spark/Hadoop/Hive/Presto/HBase/Flink. (2) Flavors: EC2 clusters, EKS, Serverless. (3) EMRFS (S3, durable) vs HDFS (ephemeral). (4) Glue for standard serverless ETL; EMR for large, long-running, or customized big-data jobs.</p></div>
 
@@ -2380,12 +2278,16 @@ All figures are ASCII in styled pre blocks, which guarantees rendering on an off
 </tbody>
 </table></div>
 <p>Last verified: 2026-09-28. This appendix covers all 17 items in the coverage-map gap list: 5 hard gaps and 12 partials. Companion volumes: D1 through D5, the question bank, the system design volume, and the labs volume (<code>volume-maarek-labs.html</code>).</p>
-</div></main>
+</div>
+</main>
 <script>
 window.DS_TRACK = "aipc01";
 window.DS_TRACK_TITLE = "AIP-C01 Study Guide";
 window.DS_MANIFEST = [
   { file: "index.html", label: "Start · Exam Overview & Study Map" },
+  { file: "prereq-aif-c01.html", label: "Prereq · AIF-C01 AI Practitioner Crash Course" },
+  { file: "prereq-aws-cloud-foundations.html", label: "Prereq · AWS Cloud Foundations" },
+  { file: "prereq-ml-specialty.html", label: "Prereq · ML Specialty Essentials" },
   { file: "volume-d1-foundation-models.html", label: "D1 · Foundation Models, Data & Compliance (31%)" },
   { file: "volume-d2-implementation-integration.html", label: "D2 · Implementation & Integration (26%)" },
   { file: "volume-d3-safety-security-governance.html", label: "D3 · Safety, Security & Governance (20%)" },
@@ -2396,7 +2298,7 @@ window.DS_MANIFEST = [
   { file: "volume-question-patterns.html", label: "Question Patterns · How AWS Asks" },
   { file: "volume-system-design.html", label: "System Design Guide" },
   { file: "volume-crash-course.html", label: "Crash Course · One-Volume Sprint" },
-  { file: "volume-appendix-gaps.html", label: "Appendix · Coverage Gaps" }
+  { file: "volume-appendix-gaps.html", label: "Appendix · Coverage Gaps" },
 ];
 </script>
 <script>
@@ -2961,6 +2863,151 @@ window.DS_MANIFEST = [
         tel.scrollIntoView({ behavior: "smooth", block: "start" });
         if (tel.focus) tel.focus({ preventScroll: true });
       }
+    }
+  });
+})();
+
+</script>
+<script>
+/* ==== Experience layer behavior — additive ====
+ * Calm, GPU-friendly page motion for study volumes. No-JS safe: every hidden
+ * state in experience.css is gated on `html.xp-js`, which only this script
+ * adds — without it the page is fully readable. Respects
+ * prefers-reduced-motion (exits early; CSS keeps everything static).
+ *
+ * Three jobs:
+ *  1. Hero parallax — detects the volume hero (.banner/.hero, else wraps the
+ *     h1 + lede block in .xp-hero) and drifts it gently as the reader
+ *     scrolls on. Transform/opacity only, rAF-throttled, passive listener.
+ *  2. Scroll reveals — one IntersectionObserver fades+rises figures, key
+ *     callouts and knowledge checks exactly once. Elements already in view
+ *     on load appear immediately (no load flash).
+ *  3. Nothing else: progress bar, scroll-spy, sidebar, quiz toggles are
+ *     owned by ds.js and are left untouched.
+ *
+ * (In the assembly snippet the closing element tags are written literally;
+ * inside this file they are escaped as <\/style> / <\/script> so the file
+ * pastes verbatim without early-terminating its own element.)
+ */
+(function () {
+  'use strict';
+
+  var root = document.documentElement;
+
+  var reduceMotion = false;
+  try {
+    reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  } catch (e) { /* matchMedia unavailable: assume motion is fine */ }
+  if (reduceMotion) { return; } /* leave no footprint: no xp-js, CSS stays static */
+
+  /* From here on the reader is fine with calm motion: mark the document so
+     the CSS reveal/parallax states may apply. Without this class (no-JS or
+     reduced-motion) every hidden state stays off and the page is fully
+     readable. */
+  root.classList.add('xp-js');
+
+  /* ---------------- 1. Hero detection + gentle parallax ---------------- */
+  var hero = document.querySelector('.banner, .hero');
+  if (!hero) {
+    /* No banner hero: wrap the volume title (h1) plus its lede paragraphs
+       in a layout-neutral div. Never touches headings ds.js needs. */
+    var main = document.querySelector('main');
+    var h1 = main ? main.querySelector('h1') : null;
+    if (h1 && h1.parentNode) {
+      var wrap = document.createElement('div');
+      wrap.className = 'xp-hero';
+      h1.parentNode.insertBefore(wrap, h1);
+      var node = h1, moved = 0, paras = 0;
+      while (node && moved < 8) {
+        var next = node.nextSibling;
+        if (node.nodeType === 3) { node = next; continue; } /* skip whitespace text nodes */
+        var isPara = node.nodeType === 1 && node.tagName === 'P';
+        if (node !== h1 && !isPara) { break; }
+        wrap.appendChild(node);
+        moved += 1;
+        if (isPara) {
+          paras += 1;
+          if (paras >= 3) { break; }
+        }
+        node = next;
+      }
+      hero = wrap;
+    }
+  }
+
+  var heroH = 0, ticking = false, pxOn = false;
+  function measure() { heroH = hero ? hero.offsetHeight : 0; }
+  function render() {
+    ticking = false;
+    if (!hero || !heroH) { return; }
+    var y = window.pageYOffset || root.scrollTop || 0;
+    if (y <= 0) {
+      if (pxOn) { hero.style.transform = ''; hero.style.opacity = ''; pxOn = false; }
+      return;
+    }
+    var range = heroH * 1.4;
+    if (y < range) {
+      /* Drift up slightly slower than the scroll and fade a whisper —
+         the title recedes calmly instead of snapping away. */
+      var k = Math.min(y / range, 1);
+      hero.style.transform = 'translate3d(0,' + (-y * 0.06).toFixed(1) + 'px,0)';
+      hero.style.opacity = (1 - k * 0.22).toFixed(3);
+      pxOn = true;
+    } else if (pxOn) {
+      hero.style.transform = '';
+      hero.style.opacity = '';
+      pxOn = false;
+    }
+  }
+  function requestRender() {
+    if (!ticking) { ticking = true; window.requestAnimationFrame(render); }
+  }
+  if (hero) {
+    measure();
+    render();
+    window.addEventListener('scroll', requestRender, { passive: true });
+    window.addEventListener('resize', function () { measure(); requestRender(); });
+  }
+
+  /* ---------------- 2. Scroll-triggered reveals ---------------- */
+  var SELECTOR = [
+    'figure',
+    '.takeaway', '.exam-ask', '.trapbox', '.trap', '.board',
+    '.diagram-walkthrough', '.walkthrough', '.warn', '.callout',
+    '.ob-board', '.nums', '.watch-card', '.lab', '.pq', '.go-deeper-note'
+  ].join(', ');
+
+  var targets = [];
+  Array.prototype.forEach.call(document.querySelectorAll(SELECTOR), function (el) {
+    if (hero && hero.contains(el)) { return; } /* hero has its own motion */
+    targets.push(el);
+  });
+
+  function showAll(list) {
+    list.forEach(function (el) { el.classList.add('xp-reveal', 'xp-in'); });
+  }
+
+  if (!targets.length) { return; }
+
+  if (!('IntersectionObserver' in window)) { showAll(targets); return; }
+
+  var io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (en) {
+      if (en.isIntersecting) {
+        en.target.classList.add('xp-in');
+        io.unobserve(en.target);
+      }
+    });
+  }, { rootMargin: '0px 0px -6% 0px', threshold: 0.06 });
+
+  var vh = window.innerHeight || 800;
+  targets.forEach(function (el) {
+    el.classList.add('xp-reveal');
+    var r = el.getBoundingClientRect();
+    if (r.top < vh && r.bottom > 0) {
+      el.classList.add('xp-in'); /* in view on load: appear, no animation */
+    } else {
+      io.observe(el);
     }
   });
 })();
