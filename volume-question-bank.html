@@ -1159,6 +1159,128 @@ footer p{text-align:left}
   #ds-content .ds-site-footer,
   .ds-side-volumes { display: none !important; }
 }
+</style>
+<style>
+/* Hallmark · pre-emit critique: P5 H4 E5 S4 R5 V5
+ * ==========================================================================
+ * Experience layer for study volumes — ADDITIVE ONLY.
+ * Never edits content markup or DS chrome; references DS tokens only
+ * (--accent, --border). No new colors, no gradients, no decorative filler.
+ *
+ * Motion stance: calm delight. Opacity/translate only (GPU-friendly),
+ * one IntersectionObserver, one rAF-throttled scroll listener, zero layout
+ * shift, prefers-reduced-motion respected, fully usable with JS disabled
+ * (every hidden state is gated on html.xp-js, which only this layer's
+ * companion script adds).
+ *
+ * Wiring (final assembly, per volume — same model as ds.css/ds.js):
+ *   1. In <head>, AFTER the DS style block, add:
+ *        <style>
+ *        /* ==== Experience layer — additive, do not edit per-file ==== */
+ *        …this file verbatim…
+ *        [close the style element]
+ *   2. Immediately before the document's LAST closing body tag (the real
+ *      one at the end of the file — some volumes mention a literal closing
+ *      body tag inside their docs prose; ignore those), AFTER the ds.js
+ *      script block, add:
+ *        <script>
+ *        /* ==== Experience layer behavior — additive ==== */
+ *        …experience.js verbatim…
+ *        [close the script element]
+ * (Closing tags are written out in the assembly snippet, not here, so this
+ * file can be pasted verbatim without early-terminating its own element.)
+ * ========================================================================== */
+
+/* ---------- 1. Smooth anchor scrolling (motion-safe readers only) ---------- */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+/* ---------- 2. Scroll-triggered reveals ----------
+   Hidden state exists ONLY under html.xp-js. No-JS readers, print, and
+   reduced-motion users always see full content. Uses the independent
+   `translate` property (not `transform`) so hover feedback below composes
+   without specificity fights. Opacity + translate only: zero layout shift. */
+html.xp-js .xp-reveal {
+  opacity: 0;
+  translate: 0 14px;
+}
+html.xp-js .xp-reveal.xp-in {
+  opacity: 1;
+  translate: 0 0;
+  transition:
+    opacity 0.55s ease,
+    translate 0.55s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+/* ---------- 3. Hero ---------- */
+/* Layout-neutral wrapper the script may add around a volume's title block.
+   Parallax itself is applied inline by the script (transform only). */
+.xp-hero {
+  position: relative;
+}
+
+/* ---------- 4. Calm hover feedback: cards + knowledge checks only ----------
+   translateY(-1px) + accent border. transform composes with the reveal's
+   independent `translate` property — no conflicts. */
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .pq,
+  .watch-card,
+  .ob-board,
+  .lab {
+    transition: transform 0.18s ease, border-color 0.18s ease;
+  }
+  .pq:hover,
+  .watch-card:hover,
+  .ob-board:hover,
+  .lab:hover {
+    transform: translateY(-1px);
+    border-color: var(--accent);
+  }
+  .pq:focus-within,
+  .watch-card:focus-within,
+  .ob-board:focus-within,
+  .lab:focus-within {
+    border-color: var(--accent);
+  }
+}
+
+/* ---------- 5. Reduced motion: everything static and visible ---------- */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  html.xp-js .xp-reveal {
+    opacity: 1;
+    translate: 0 0;
+    transition: none;
+  }
+  .xp-hero {
+    transform: none !important;
+    opacity: 1 !important;
+  }
+  .pq,
+  .watch-card,
+  .ob-board,
+  .lab {
+    transition: none;
+  }
+}
+
+/* ---------- 6. Print: never hide content ---------- */
+@media print {
+  html.xp-js .xp-reveal {
+    opacity: 1 !important;
+    translate: 0 0 !important;
+    transition: none;
+  }
+  .xp-hero {
+    transform: none !important;
+    opacity: 1 !important;
+  }
+}
 
 </style>
 </head>
@@ -1169,8 +1291,8 @@ footer p{text-align:left}
 <p>140 exam-style questions across all five domains, weighted like the real exam, plus 52 bonus professional-bar questions (Q141-Q192), plus 8 field-research questions from September 2026 passer reports (Q193-Q200), plus a 75-question mock exam. Generic content only.</p>
 <p>FACT-CHECK 2026-09-28: all 140 questions plus the 75-question mock were checked against live AWS documentation on 2026-09-28. Every distractor uses a real service or feature that is wrong for a real, current reason.
 No fictional service names were found. PROFESSIONAL-BAR AUDIT 2026-09-28: 55 associate-level questions rewritten in place (same ids, same correct letters, mock-exam links and answer key unchanged).
-52 bonus professional-bar questions added as Q141-Q192 (ids q-d1-201..216, q-d2-201..213, q-d3-201..211, q-d4-201..206, q-d5-201..206); all new content original, no copied bank items. 8 field-research questions added as Q193-Q200 (ids q-d3-212, q-d3-213, q-d4-207, q-d4-208, q-d5-207, q-d1-217, q-d2-214, q-d2-215), built from September 2026 passer-report trap patterns.</p>
-<div class="panel"><p><strong>Last verified: 2026-09-28 against AWS documentation.</strong> Correct answers, service facts, and API names were checked against current AWS docs on this date. No dollar pricing is asserted anywhere in this bank, so nothing here goes stale with rate changes.</p></div>
+The 52 bonus questions (ids q-d1-201..216, q-d2-201..213, q-d3-201..211, q-d4-201..206, q-d5-201..206) are all original content, no copied bank items. The 8 field-research questions (ids q-d3-212, q-d3-213, q-d4-207, q-d4-208, q-d5-207, q-d1-217, q-d2-214, q-d2-215) are built from September 2026 passer-report trap patterns.</p>
+<div class="panel"><p><strong>Last verified: 2026-09-28 against AWS documentation.</strong> No dollar pricing is asserted anywhere in this bank, so nothing here goes stale with rate changes.</p></div>
 
 <figure><img src="assets/img/mermaid/09-bank-mix.svg" alt="The 192-question bank follows the exam&#x27;s domain weights: 60 questions for D1, 49 for D2, 39 for D3, 23 for D4, and 21 for D5." loading="lazy"><figcaption>The 192-question bank follows the exam&#x27;s domain weights: 60 questions for D1, 49 for D2, 39 for D3, 23 for D4, and 21 for D5.</figcaption><figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
 
@@ -1184,21 +1306,22 @@ guessing, so never leave a question blank.</p></div>
 more managed, more serverless, lower-operational-overhead answer. Custom builds are almost never correct unless the
 scenario explicitly requires something no managed service does.</p></div>
 <h2 id="sec-d1">Domain 1: Foundation Model Integration, Data Management, and Compliance (31% of the exam, 44 questions)</h2>
+<figure><img src="assets/img/mermaid/91-bank-d1.svg" alt="Domain 1 bank map: model selection, RAG and Knowledge Bases, embeddings and vector search, prompt engineering, fine-tuning" loading="lazy"><figcaption>Domain 1 bank map: model selection, RAG and Knowledge Bases, embeddings and vector search, prompt engineering, fine-tuning</figcaption><figcaption class="credit"><em>Domain 1 bank map: model selection, RAG and Knowledge Bases, embeddings and vector search, prompt engineering, fine-tuning</em></figcaption></figure>
 <p><strong>Decision reference.</strong> Climb in order and stop at the cheapest rung that works.</p>
 <div class="ladder">
-<div class="rung"><span class="rung-n">1</span><div><b><strong>Prompt engineering</strong>: New format, tone, few-shot, chain-of-thought. No new knowledge.</b><span></span></div></div>
-<div class="rung"><span class="rung-n">2</span><div><b><strong>RAG / Knowledge Bases</strong>: Private, current, or cited facts the model was not trained on.</b><span></span></div></div>
+<div class="rung"><span class="rung-n">1</span><div><b><strong>Prompt engineering</strong>: New format, tone, few-shot (examples given in the prompt), chain-of-thought (asking the model to reason step by step). No new knowledge.</b><span></span></div></div>
+<div class="rung"><span class="rung-n">2</span><div><b><strong>RAG (retrieval-augmented generation) / Knowledge Bases</strong>: Private, current, or cited facts the model was not trained on.</b><span></span></div></div>
 <div class="rung"><span class="rung-n">3</span><div><b><strong>Agents</strong>: Actions: API calls, databases, multi-step tool use, session memory.</b><span></span></div></div>
 <div class="rung"><span class="rung-n">4</span><div><b><strong>Fine-tuning</strong>: New behavior baked into weights. Labeled data in S3, then usually Provisioned Throughput.</b><span></span></div></div>
 <div class="rung"><span class="rung-n">5</span><div><b><strong>Custom model</strong>: Last resort. Out of scope for this exam as a build task.</b><span></span></div></div>
 </div>
 <p><strong>How to read this diagram.</strong></p>
 <div class="diagram-walkthrough"><ol>
-<li>Rung 1 is the default: if the need is only format, tone, or examples, prompt engineering solves it with zero infrastructure.</li>
-<li>Rung 2 is for knowledge: documents that change (quarterly policies) or need citations point to RAG with Knowledge Bases.</li>
-<li>Rung 3 is for actions: when the task calls APIs, queries databases, or reasons across tools, that is agentic.</li>
-<li>Rung 4 is for behavior: a consistent voice or classification repeated millions of times gets baked into weights via fine-tuning.</li>
-<li>Rung 5 almost never appears as a correct answer on this exam; distractors love it anyway.</li>
+<li>Need is format, tone, or examples only? Stay on rung 1: zero infrastructure.</li>
+<li>Need private, current, or cited facts? Move to rung 2.</li>
+<li>Need the system to call APIs, query databases, or chain tools? Rung 3.</li>
+<li>Need a repeatable behavior or voice the base model lacks? Rung 4: bake it into the weights with labeled data.</li>
+<li>Tempted by a full custom model? Rung 5 is almost never the exam's answer; distractors love it.</li>
 <li>If this ladder breaks (you skip rungs), you pay training costs for a retrieval problem or retraining for a prompt problem.</li>
 </ol></div>
 
@@ -1965,6 +2088,7 @@ S3 text files give editing without versioning or variants.</p>
 </div>
 </div>
 <h2 id="sec-d2">Domain 2: Implementation and Integration (26% of the exam, 36 questions)</h2>
+<figure><img src="assets/img/mermaid/92-bank-d2.svg" alt="Domain 2 bank map: Bedrock Agents, the Converse API, Lambda and API Gateway, Step Functions, event-driven pipelines" loading="lazy"><figcaption>Domain 2 bank map: Bedrock Agents, the Converse API, Lambda and API Gateway, Step Functions, event-driven pipelines</figcaption><figcaption class="credit"><em>Domain 2 bank map: Bedrock Agents, the Converse API, Lambda and API Gateway, Step Functions, event-driven pipelines</em></figcaption></figure>
 <p><strong>Decision reference.</strong> Pick the API by matching the row to the scenario's need.</p>
 <div class="table-wrap"><table>
 <thead>
@@ -1975,7 +2099,7 @@ S3 text files give editing without versioning or variants.</p>
 </thead>
 <tbody>
 <tr>
-<td>Unified requests across providers, tool use, inline guardrails</td>
+<td>Unified requests across providers, tool use (the model calling your functions), inline guardrails</td>
 <td><strong>Converse / ConverseStream</strong></td>
 </tr>
 <tr>
@@ -1998,12 +2122,12 @@ S3 text files give editing without versioning or variants.</p>
 </table></div>
 <p><strong>How to read this diagram.</strong></p>
 <div class="diagram-walkthrough"><ol>
-<li>Row 1: same code for Claude, Llama, Titan with tool use means Converse, always.</li>
-<li>Row 2: embeddings or provider-exotic parameters mean InvokeModel; Converse cannot do embeddings.</li>
-<li>Row 3: nobody waiting and hours acceptable means batch at roughly half price.</li>
-<li>Row 4: steady baseline plus latency SLA means Provisioned Throughput, and the code must call the provisioned ARN or throttling continues.</li>
-<li>Row 5: tokens appearing as generated means ConverseStream; API Gateway timeouts push long streams to WebSockets or SSE.</li>
-<li>If this table breaks (wrong row), you get ValidationException from mismatched bodies or throttling from bypassed reservations.</li>
+<li>Same code across providers with tool use? Converse. No exceptions.</li>
+<li>Embeddings or provider-only parameters? InvokeModel; Converse cannot do embeddings.</li>
+<li>"Nobody waiting" or "hours OK"? Batch inference, S3 in and S3 out.</li>
+<li>"Steady baseline" or "latency SLA"? Provisioned Throughput, and the code must call the provisioned model's ARN (its unique resource name), or throttling continues.</li>
+<li>Tokens appearing as generated? ConverseStream; API Gateway timeouts push delivery to WebSockets or SSE (server-sent events).</li>
+<li>Wrong row means ValidationException from mismatched bodies, or throttling from bypassed reservations.</li>
 </ol></div>
 
 <div class="pq" id="q-d2-001">
@@ -2625,6 +2749,7 @@ The assistant still calls Bedrock behind the Amplify-built API.</p>
 </div>
 </div>
 <h2 id="sec-d3">Domain 3: AI Safety, Security, and Governance (20% of the exam, 28 questions)</h2>
+<figure><img src="assets/img/mermaid/93-bank-d3.svg" alt="Domain 3 bank map: Guardrails, PII and data security, IAM with KMS and VPC, responsible AI" loading="lazy"><figcaption>Domain 3 bank map: Guardrails, PII and data security, IAM with KMS and VPC, responsible AI</figcaption><figcaption class="credit"><em>Domain 3 bank map: Guardrails, PII and data security, IAM with KMS and VPC, responsible AI</em></figcaption></figure>
 <p><strong>Decision reference.</strong> Match the scenario verb in the question stem to the control in the left column.</p>
 <div class="table-wrap"><table>
 <thead>
@@ -2652,7 +2777,7 @@ The assistant still calls Bedrock behind the Amplify-built API.</p>
 </tr>
 <tr>
 <td>Sensitive info filters</td>
-<td>PII entity detection, block or mask</td>
+<td>PII (personally identifiable information) entity detection, block or mask</td>
 <td>redact SSNs</td>
 </tr>
 <tr>
@@ -2669,12 +2794,12 @@ The assistant still calls Bedrock behind the Amplify-built API.</p>
 </table></div>
 <p><strong>How to read this diagram.</strong></p>
 <div class="diagram-walkthrough"><ol>
-<li>Profanity, violence, or jailbreak language maps to content filters, with prompt attack as its own category.</li>
-<li>A ban on discussing a subject (investment advice, diagnoses) maps to denied topics, never to content filters.</li>
-<li>Specific exact strings map to word filters; PII patterns map to sensitive info filters, never the reverse.</li>
-<li>Is this claim in the source maps to contextual grounding; does this violate the formal rule maps to Automated Reasoning.</li>
+<li>Profanity, violence, or jailbreak language: content filters, with prompt attack as its own category.</li>
+<li>A ban on discussing a subject (investment advice, diagnoses): denied topics, never content filters.</li>
+<li>Specific exact strings: word filters. PII patterns: sensitive info filters. Never the reverse.</li>
+<li>"Is this claim in the source?": contextual grounding. "Does this violate the formal rule?": Automated Reasoning.</li>
 <li>The exam's favorite confusion set lives in this table: read the verb, pick the row.</li>
-<li>If this table breaks (wrong control), the guardrail deploys but the requirement silently goes unenforced.</li>
+<li>Wrong control means the guardrail deploys but the requirement silently goes unenforced.</li>
 </ol></div>
 
 <div class="pq" id="q-d3-001">
@@ -3163,22 +3288,23 @@ Cards document the model, trails document its use. The exam tests knowing docume
 </div>
 </div>
 <h2 id="sec-d4">Domain 4: Operational Efficiency and Optimization (12% of the exam, 17 questions)</h2>
+<figure><img src="assets/img/mermaid/94-bank-d4.svg" alt="Domain 4 bank map: pricing and tokens, caching and batch, provisioned throughput, latency and quotas" loading="lazy"><figcaption>Domain 4 bank map: pricing and tokens, caching and batch, provisioned throughput, latency and quotas</figcaption><figcaption class="credit"><em>Domain 4 bank map: pricing and tokens, caching and batch, provisioned throughput, latency and quotas</em></figcaption></figure>
 <p><strong>Decision reference.</strong> Match the cost lever to the traffic shape and symptom, not to the buzzword.</p>
 <div class="ladder">
 <div class="rung"><span class="rung-n">1</span><div><b><strong>On-demand</strong>: Spiky, experimental, unpredictable. Pay per token.</b><span></span></div></div>
-<div class="rung"><span class="rung-n">2</span><div><b><strong>Prompt caching</strong>: Repeated large static prefixes. Cheaper cached input tokens via cachePoint.</b><span></span></div></div>
+<div class="rung"><span class="rung-n">2</span><div><b><strong>Prompt caching</strong>: Repeated large static prefixes. Cheaper cached input tokens via cachePoint (the request marker that flags the cacheable prefix).</b><span></span></div></div>
 <div class="rung"><span class="rung-n">3</span><div><b><strong>Batch inference</strong>: Non-interactive, hours OK. About 50 percent cheaper.</b><span></span></div></div>
 <div class="rung"><span class="rung-n">4</span><div><b><strong>Provisioned Throughput</strong>: Steady baseline, latency SLA, no throttling. Hourly commit.</b><span></span></div></div>
 <div class="rung"><span class="rung-n">5</span><div><b><strong>Smaller model / cascade</strong>: Route simple queries cheap; escalate hard ones on low confidence.</b><span></span></div></div>
 </div>
 <p><strong>How to read this diagram.</strong></p>
 <div class="diagram-walkthrough"><ol>
-<li>Spiky unpredictable traffic stays on-demand; reserved capacity for bursts wastes money.</li>
-<li>The same long system prompt on every call is the prompt caching signature.</li>
-<li>Nobody waiting and hours acceptable is batch pricing, roughly half off.</li>
-<li>Steady baseline plus throttling or latency SLA is Provisioned Throughput.</li>
-<li>Mostly simple queries with some hard ones is a cascade: cheap first, escalate on low confidence.</li>
-<li>If this ladder breaks (wrong lever), you pay peak prices in quiet hours or throttle under steady load.</li>
+<li>Spiky or unpredictable traffic: on-demand. Reserving capacity for bursts wastes money.</li>
+<li>One long static prefix on every call: prompt caching.</li>
+<li>Nobody waiting, hours fine: batch.</li>
+<li>Steady baseline with throttling or a latency SLA: Provisioned Throughput.</li>
+<li>Mostly simple queries, some hard ones: a cascade, cheap first, escalate on low confidence.</li>
+<li>Wrong lever costs real money: peak prices in quiet hours, or throttling under steady load.</li>
 </ol></div>
 
 <div class="pq" id="q-d4-001">
@@ -3478,22 +3604,23 @@ The Cost and Usage Report reconciles those against the bill. CloudTrail records 
 </div>
 </div>
 <h2 id="sec-d5">Domain 5: Testing, Validation, and Troubleshooting (11% of the exam, 15 questions)</h2>
+<figure><img src="assets/img/mermaid/95-bank-d5.svg" alt="Domain 5 bank map: model evaluation, RAG eval with the RAGAS triad, red teaming, troubleshooting with logs and traces" loading="lazy"><figcaption>Domain 5 bank map: model evaluation, RAG eval with the RAGAS triad, red teaming, troubleshooting with logs and traces</figcaption><figcaption class="credit"><em>Domain 5 bank map: model evaluation, RAG eval with the RAGAS triad, red teaming, troubleshooting with logs and traces</em></figcaption></figure>
 <p><strong>Decision reference.</strong> Debug in this order. Skipping steps is how hours get lost.</p>
 <div class="ladder">
 <div class="rung"><span class="rung-n">1</span><div><b><strong>Content handling</strong>: Context overflow: chunking, prompt compression, truncation analysis.</b><span></span></div></div>
-<div class="rung"><span class="rung-n">2</span><div><b><strong>API integration</strong>: ValidationException means the provider body; misleading AccessDenied means region availability.</b><span></span></div></div>
+<div class="rung"><span class="rung-n">2</span><div><b><strong>API integration</strong>: ValidationException (the API's error for a request body the provider's schema rejects) means the request body is wrong; a misleading AccessDenied often means the model is not available in that region.</b><span></span></div></div>
 <div class="rung"><span class="rung-n">3</span><div><b><strong>Prompt problems</strong>: Version comparison, systematic refinement, regression suites.</b><span></span></div></div>
 <div class="rung"><span class="rung-n">4</span><div><b><strong>Retrieval problems</strong>: Embedding quality, chunking, relevance. Retrieval before generation, always.</b><span></span></div></div>
 <div class="rung"><span class="rung-n">5</span><div><b><strong>Capacity vs routing</strong>: PT throttling: check the provisioned ARN target first, then size units.</b><span></span></div></div>
 </div>
 <p><strong>How to read this diagram.</strong></p>
 <div class="diagram-walkthrough"><ol>
-<li>Step 1 first: whole documents in prompts cause silent truncation; fix with chunking plus retrieval.</li>
-<li>Step 2: ValidationException with good permissions is the request body; AccessDenied in one region is availability.</li>
-<li>Step 3: changed behavior means version comparison plus regression data, not temperature tuning.</li>
-<li>Step 4: confident-but-wrong on RAG is retrieval until proven otherwise; never fix it with a bigger model.</li>
-<li>Step 5: PT throttling means check routing to the provisioned ARN before buying more units.</li>
-<li>If this order breaks (generation fixed first), you tune the wrong layer while the real bug sits upstream.</li>
+<li>Start at step 1: whole documents in prompts cause silent truncation. Fix with chunking plus retrieval.</li>
+<li>ValidationException with good permissions means the request body. AccessDenied in one region means availability.</li>
+<li>Changed behavior means version comparison plus regression data, not temperature tuning.</li>
+<li>Confident-but-wrong on RAG means retrieval until proven otherwise. Never fix it with a bigger model.</li>
+<li>PT throttling means check routing to the provisioned ARN before buying more units.</li>
+<li>Fixing generation first tunes the wrong layer while the real bug sits upstream.</li>
 </ol></div>
 
 <div class="pq" id="q-d5-001">
@@ -3757,7 +3884,7 @@ Everything else is guessing.</p>
 </div>
 </div>
 <h2 id="bonus">Bonus Professional-Bar Practice Questions (52 questions, Q141-Q192)</h2>
-<div class="panel"><p><strong>How to use these.</strong> The 140-question bank above is weighted like the real exam. These 52 bonus questions are calibrated one notch harder: longer multi-constraint stems, plausible-but-wrong distractors, and the traps AWS actually sets. Work them after the main bank. Generic content only.</p></div>
+<div class="panel"><p><strong>How to use these.</strong> These 52 bonus questions are calibrated one notch harder than the main bank: longer multi-constraint stems, plausible-but-wrong distractors, and the traps AWS actually sets. Work them after the main bank.</p></div>
 <p><strong>Domain 1: Foundation Model Integration, Data Management, and Compliance</strong> (Q141-Q156)</p>
 <div class="pq" id="q-d1-201">
 
@@ -4675,7 +4802,8 @@ BYOI is the capability that reaches outside.</p>
 </div>
 </div>
 <h2 id="field-research">Field Research Questions: 2026 passer-report patterns (8 questions, Q193-Q200)</h2>
-<p>Eight questions built from September 2026 passer reports and prep-material analysis. Each targets a pattern the main bank underweights: detect-vs-block guardrails, proactive token alerts, fabricated service features, adjective precision, audit-trail selection, Step Functions flavor choice, provisioned-throughput misuse, and the evaluation ladder.</p>
+<figure><img src="assets/img/mermaid/97-bank-field.svg" alt="Field research loop: 2026 passer reports reveal trap patterns, new question stems update the bank, and you re-attempt until 85 percent" loading="lazy"><figcaption>Field research loop: 2026 passer reports reveal trap patterns, new question stems update the bank, and you re-attempt until 85 percent</figcaption><figcaption class="credit"><em>Field research loop: 2026 passer reports reveal trap patterns, new question stems update the bank, and you re-attempt until 85 percent</em></figcaption></figure>
+<p>Eight questions built from September 2026 passer reports and prep-material analysis. Each targets a pattern the main bank underweights: detect-vs-block guardrails (does the filter flag the hit or stop the request?), proactive token alerts (warnings before the context limit is reached), fabricated service features (distractors naming features that do not exist), adjective precision (small stem words like most or least that flip the answer), audit-trail selection (CloudTrail vs CloudWatch Logs vs custom metrics), Step Functions flavor choice (Standard vs Express), provisioned-throughput misuse (calling the base model ARN instead of the provisioned one), and the evaluation ladder (automatic metrics vs LLM-as-judge vs human evaluation).</p>
 <div class="pq" id="q-d3-212">
 
 <p class="pq-question"><em>D3 · HARD · ONE ANSWER</em>, q-d3-212 · 3.2 Guardrails
@@ -4812,6 +4940,7 @@ BYOI is the capability that reaches outside.</p>
 </div>
 </div>
 <h2 id="mock">75-Question Full Mock Exam</h2>
+<figure><img src="assets/img/mermaid/96-bank-mock.svg" alt="The 75-question mock exam mirrors the real domain weights: 23 questions in D1, 20 in D2, 15 in D3, 9 in D4, 8 in D5, in 180 minutes" loading="lazy"><figcaption>The 75-question mock exam mirrors the real domain weights: 23 questions in D1, 20 in D2, 15 in D3, 9 in D4, 8 in D5, in 180 minutes</figcaption><figcaption class="credit"><em>The 75-question mock exam mirrors the real domain weights: 23 questions in D1, 20 in D2, 15 in D3, 9 in D4, 8 in D5, in 180 minutes</em></figcaption></figure>
 <div class="panel"><p><strong>Exam conditions.</strong> 75 questions, 180 minutes on the real exam. Work through the
 75 questions below in order without opening the answers. Each row links to the question; attempt it, reveal the
 explanation to check yourself, then come back. Track your score with the scoring guide at the end.</p></div>
@@ -5742,9 +5871,10 @@ explanation to check yourself, then come back. Track your score with the scoring
 </tbody>
 </table></div>
 <h2 id="scoring">Scoring Guide</h2>
+<figure><img src="assets/img/mermaid/96-bank-mock.svg" alt="How the mock maps to the real exam: 75 questions in 180 minutes across the five domains at their real weights" loading="lazy"><figcaption>How the mock maps to the real exam: 75 questions in 180 minutes across the five domains at their real weights</figcaption><figcaption class="credit"><em>How the mock maps to the real exam: 75 questions in 180 minutes across the five domains at their real weights</em></figcaption></figure>
 <div class="panel"><p><strong>How to score yourself.</strong> Count one point per question only if you selected every correct option
-and nothing else (multiple-response is all-or-nothing, exactly like the real exam). The real exam uses scaled scoring
-(100 to 1000, pass at 750) with compensatory scoring across domains, so there is no official raw-score conversion.
+and nothing else. The real exam uses scaled scoring
+(100 to 1000, pass at 750) with compensatory scoring across domains (a strong domain can offset a weak one), so there is no official raw-score conversion.
 As a readiness rule of thumb, aim for <strong>80% or higher (60 of 75)</strong> under timed conditions before booking the exam.
 Below 70%, revisit the domains you missed most and re-attempt their bank questions.</p></div>
 
@@ -5754,6 +5884,9 @@ window.DS_TRACK = "aipc01";
 window.DS_TRACK_TITLE = "AIP-C01 Study Guide";
 window.DS_MANIFEST = [
   { file: "index.html", label: "Start · Exam Overview & Study Map" },
+  { file: "prereq-aif-c01.html", label: "Prereq · AIF-C01 AI Practitioner Crash Course" },
+  { file: "prereq-aws-cloud-foundations.html", label: "Prereq · AWS Cloud Foundations" },
+  { file: "prereq-ml-specialty.html", label: "Prereq · ML Specialty Essentials" },
   { file: "volume-d1-foundation-models.html", label: "D1 · Foundation Models, Data & Compliance (31%)" },
   { file: "volume-d2-implementation-integration.html", label: "D2 · Implementation & Integration (26%)" },
   { file: "volume-d3-safety-security-governance.html", label: "D3 · Safety, Security & Governance (20%)" },
@@ -5764,7 +5897,7 @@ window.DS_MANIFEST = [
   { file: "volume-question-patterns.html", label: "Question Patterns · How AWS Asks" },
   { file: "volume-system-design.html", label: "System Design Guide" },
   { file: "volume-crash-course.html", label: "Crash Course · One-Volume Sprint" },
-  { file: "volume-appendix-gaps.html", label: "Appendix · Coverage Gaps" }
+  { file: "volume-appendix-gaps.html", label: "Appendix · Coverage Gaps" },
 ];
 </script>
 <script>
@@ -6329,6 +6462,151 @@ window.DS_MANIFEST = [
         tel.scrollIntoView({ behavior: "smooth", block: "start" });
         if (tel.focus) tel.focus({ preventScroll: true });
       }
+    }
+  });
+})();
+
+</script>
+<script>
+/* ==== Experience layer behavior — additive ====
+ * Calm, GPU-friendly page motion for study volumes. No-JS safe: every hidden
+ * state in experience.css is gated on `html.xp-js`, which only this script
+ * adds — without it the page is fully readable. Respects
+ * prefers-reduced-motion (exits early; CSS keeps everything static).
+ *
+ * Three jobs:
+ *  1. Hero parallax — detects the volume hero (.banner/.hero, else wraps the
+ *     h1 + lede block in .xp-hero) and drifts it gently as the reader
+ *     scrolls on. Transform/opacity only, rAF-throttled, passive listener.
+ *  2. Scroll reveals — one IntersectionObserver fades+rises figures, key
+ *     callouts and knowledge checks exactly once. Elements already in view
+ *     on load appear immediately (no load flash).
+ *  3. Nothing else: progress bar, scroll-spy, sidebar, quiz toggles are
+ *     owned by ds.js and are left untouched.
+ *
+ * (In the assembly snippet the closing element tags are written literally;
+ * inside this file they are escaped as <\/style> / <\/script> so the file
+ * pastes verbatim without early-terminating its own element.)
+ */
+(function () {
+  'use strict';
+
+  var root = document.documentElement;
+
+  var reduceMotion = false;
+  try {
+    reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  } catch (e) { /* matchMedia unavailable: assume motion is fine */ }
+  if (reduceMotion) { return; } /* leave no footprint: no xp-js, CSS stays static */
+
+  /* From here on the reader is fine with calm motion: mark the document so
+     the CSS reveal/parallax states may apply. Without this class (no-JS or
+     reduced-motion) every hidden state stays off and the page is fully
+     readable. */
+  root.classList.add('xp-js');
+
+  /* ---------------- 1. Hero detection + gentle parallax ---------------- */
+  var hero = document.querySelector('.banner, .hero');
+  if (!hero) {
+    /* No banner hero: wrap the volume title (h1) plus its lede paragraphs
+       in a layout-neutral div. Never touches headings ds.js needs. */
+    var main = document.querySelector('main');
+    var h1 = main ? main.querySelector('h1') : null;
+    if (h1 && h1.parentNode) {
+      var wrap = document.createElement('div');
+      wrap.className = 'xp-hero';
+      h1.parentNode.insertBefore(wrap, h1);
+      var node = h1, moved = 0, paras = 0;
+      while (node && moved < 8) {
+        var next = node.nextSibling;
+        if (node.nodeType === 3) { node = next; continue; } /* skip whitespace text nodes */
+        var isPara = node.nodeType === 1 && node.tagName === 'P';
+        if (node !== h1 && !isPara) { break; }
+        wrap.appendChild(node);
+        moved += 1;
+        if (isPara) {
+          paras += 1;
+          if (paras >= 3) { break; }
+        }
+        node = next;
+      }
+      hero = wrap;
+    }
+  }
+
+  var heroH = 0, ticking = false, pxOn = false;
+  function measure() { heroH = hero ? hero.offsetHeight : 0; }
+  function render() {
+    ticking = false;
+    if (!hero || !heroH) { return; }
+    var y = window.pageYOffset || root.scrollTop || 0;
+    if (y <= 0) {
+      if (pxOn) { hero.style.transform = ''; hero.style.opacity = ''; pxOn = false; }
+      return;
+    }
+    var range = heroH * 1.4;
+    if (y < range) {
+      /* Drift up slightly slower than the scroll and fade a whisper —
+         the title recedes calmly instead of snapping away. */
+      var k = Math.min(y / range, 1);
+      hero.style.transform = 'translate3d(0,' + (-y * 0.06).toFixed(1) + 'px,0)';
+      hero.style.opacity = (1 - k * 0.22).toFixed(3);
+      pxOn = true;
+    } else if (pxOn) {
+      hero.style.transform = '';
+      hero.style.opacity = '';
+      pxOn = false;
+    }
+  }
+  function requestRender() {
+    if (!ticking) { ticking = true; window.requestAnimationFrame(render); }
+  }
+  if (hero) {
+    measure();
+    render();
+    window.addEventListener('scroll', requestRender, { passive: true });
+    window.addEventListener('resize', function () { measure(); requestRender(); });
+  }
+
+  /* ---------------- 2. Scroll-triggered reveals ---------------- */
+  var SELECTOR = [
+    'figure',
+    '.takeaway', '.exam-ask', '.trapbox', '.trap', '.board',
+    '.diagram-walkthrough', '.walkthrough', '.warn', '.callout',
+    '.ob-board', '.nums', '.watch-card', '.lab', '.pq', '.go-deeper-note'
+  ].join(', ');
+
+  var targets = [];
+  Array.prototype.forEach.call(document.querySelectorAll(SELECTOR), function (el) {
+    if (hero && hero.contains(el)) { return; } /* hero has its own motion */
+    targets.push(el);
+  });
+
+  function showAll(list) {
+    list.forEach(function (el) { el.classList.add('xp-reveal', 'xp-in'); });
+  }
+
+  if (!targets.length) { return; }
+
+  if (!('IntersectionObserver' in window)) { showAll(targets); return; }
+
+  var io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (en) {
+      if (en.isIntersecting) {
+        en.target.classList.add('xp-in');
+        io.unobserve(en.target);
+      }
+    });
+  }, { rootMargin: '0px 0px -6% 0px', threshold: 0.06 });
+
+  var vh = window.innerHeight || 800;
+  targets.forEach(function (el) {
+    el.classList.add('xp-reveal');
+    var r = el.getBoundingClientRect();
+    if (r.top < vh && r.bottom > 0) {
+      el.classList.add('xp-in'); /* in view on load: appear, no animation */
+    } else {
+      io.observe(el);
     }
   });
 })();
