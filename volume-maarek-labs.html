@@ -1291,10 +1291,12 @@ html.xp-js .xp-reveal.xp-in {
 <p>Maarek labs and hands-on patterns</p>
 <h2 id="how-to-use-this-volume">How to use this volume</h2>
 <p>Hands on. Each chapter is one lab from the course lab pack, rebuilt in plain words. Every chapter follows the same shape: what the lab teaches, when you would use it in production, how it works under the hood, an architecture diagram with a numbered walkthrough, the exam angles and traps, and one practice question with full explanations.</p>
+<figure><img src="assets/img/mermaid/98-labs-ladder.svg" alt="Chapter climb map: nine labs ordered from simplest to hardest, each naming its prerequisites" loading="lazy"><figcaption>The chapter climb: nine labs from simplest to hardest, each rung naming what it assumes. Read in order; later labs build on earlier ones.</figcaption><figcaption class="credit">Drawn for this volume.</figcaption></figure>
 <p>Code shown here is adapted for teaching, written fresh for this volume. It is not copied from the course files. The lab sources are course material; this volume explains the concepts in its own words.</p>
 <p>Fact check: AWS service names, features, model IDs, and API shapes in this volume were verified against live AWS documentation on <strong>2026-09-28</strong>. Anything that could not be verified is marked UNVERIFIED inline. Limits and defaults change. Check the docs at build time.</p>
 <h2 id="1-lab-strands-agent-with-custom-tools">1. Lab: Strands agent with custom tools</h2>
 <p>Build a working agent in a few lines of Python: one model, a tool list, a system prompt, and a custom function the model can call.</p>
+<p class="prereq"><strong>Prerequisites:</strong> None. This is the starting point: one model, a few tools, and the agent loop, all defined here.</p>
 <h3 id="what-this-lab-teaches">What this lab teaches</h3>
 <p>Strands Agents is an open-source Python SDK for building agents. An agent has three parts: a model (the brain), tools (the hands), and a prompt (the personality and instructions). You create an <code>Agent</code>, hand it a list of tools, and call it like a function with a question. The SDK runs the agent loop for you.</p>
 <p>The agent loop is the core idea. A single model call cannot use tools on its own, so the loop runs the cycle: send the prompt to the model; the model replies with text or with a request to call a tool; the SDK runs the tool and returns the result to the model; repeat until the model produces a final answer. Strands is model-driven, meaning the model decides at each step whether it needs a tool and which one.</p>
@@ -1302,13 +1304,13 @@ html.xp-js .xp-reveal.xp-in {
 <p>The <code>strands-agents-tools</code> package ships ready-made tools such as a calculator and a current-time tool, so a lab agent mixes built-in tools with custom ones. The <code>callback_handler</code> controls streaming output; setting it to <code>None</code> silences intermediate steps.</p>
 <h3 id="why-it-exists-when-you-would-use-it-in-production">Why it exists: when you would use it in production</h3>
 <p>Without a framework, every team hand-writes the same loop: parse the model's tool request blocks, validate arguments, execute code, format results, handle errors, track conversation state. That loop is where most agent bugs live. Strands owns the loop so your code is only the business logic: the tools themselves.</p>
-<p>You reach for Strands when you need full code control over an agent: custom retry logic, your own tools, your own deployment target. It is the code-first alternative to the fully managed Bedrock Agents console experience. You can run a Strands agent on a laptop, in a container, on Lambda, or on AgentCore Runtime (chapter 3).</p>
+<p>You reach for Strands when you need full code control over an agent: custom retry logic, your own tools, your own deployment target. It is the code-first alternative to the fully managed Bedrock Agents console experience. You can run a Strands agent on a laptop, in a container, on Lambda, or on AgentCore Runtime (chapter 6).</p>
 <h3 id="how-it-works-under-the-hood">How it works under the hood</h3>
 <p>Step by step, for the pattern <code>Agent(tools=[calculator, current_time, count_keyword], system_prompt=...)</code>:</p>
 <ol>
 <li>You define tools. Each <code>@tool</code> function registers its name, its docstring (description), and a JSON schema built from its type hints.</li>
 <li>You create the <code>Agent</code>. The system prompt is prepended to every conversation. The tool list is converted into the tool definitions the model API expects.</li>
-<li>You call the agent with a message, for example three tasks at once. The SDK sends the system prompt, the message, and the tool definitions to the model (Strands uses the Bedrock Converse API under the hood for Bedrock models).</li>
+<li>You call the agent with a message, for example three tasks at once. The SDK sends the system prompt, the message, and the tool definitions to the model (Strands uses the Bedrock Converse API under the hood for Bedrock models; Converse is Bedrock's unified request format for text generation and tool use, one shape across model providers).</li>
 <li>The model returns one or more tool calls. The SDK executes each Python function with the arguments the model chose.</li>
 <li>Tool results return to the model as tool result blocks. The model may call more tools or finish with text.</li>
 <li>The call returns an agent result object whose string form is the final answer.</li>
@@ -1380,9 +1382,9 @@ print(agent(&quot;How many words are in 'cloud nine'?&quot;))
 </ul>
 <div class="exam-ask"><p>Exam angles and traps.</p>
 <ul>
-<li>Scenario: a team wants a Python agent that calls internal functions with minimal boilerplate and full code control. The answer names Strands Agents (or the Agent Squad framework from chapter 2) with <code>@tool</code> functions. Distractors: hand-rolling the tool loop with raw InvokeModel calls (works but high operational burden), or the Bedrock Agents console when the scenario stresses code-first deployment on their own infrastructure.</li>
+<li>Scenario: a team wants a Python agent that calls internal functions with minimal boilerplate and full code control. The answer names Strands Agents (or the Agent Squad framework from chapter 3) with <code>@tool</code> functions. Distractors: hand-rolling the tool loop with raw InvokeModel calls (works but high operational burden), or the Bedrock Agents console when the scenario stresses code-first deployment on their own infrastructure.</li>
 <li>Trap: "Strands replaces Bedrock Agents." They are alternatives for different needs: Bedrock Agents is the managed service with action groups and aliases; Strands is the SDK you host yourself, including on AgentCore.</li>
-<li>Tools execute with your code's permissions. A tool that calls AWS APIs needs IAM scope; the exam tests least privilege on tool permissions.</li>
+<li>Tools execute with your code's permissions. A tool that calls AWS APIs needs IAM (Identity and Access Management, the AWS permission system) scope; the exam tests least privilege on tool permissions.</li>
 <li>Strands' Bedrock model provider uses the Converse API, not the legacy InvokeModel path. If a question mixes Strands with provider-specific InvokeModel bodies, that is the trap.</li>
 </ul></div>
 <h4 id="practice-question">Practice question</h4>
@@ -1395,8 +1397,108 @@ print(agent(&quot;How many words are in 'cloud nine'?&quot;))
 <p>A is wrong because hand-rolling the loop duplicates what the framework does and adds operational burden; the exam prefers the framework or managed path when the scenario does not demand custom loop behavior.</p>
 <p>C is wrong for two reasons: the premise is false (code-first frameworks call internal functions easily, that is their main strength), and the scenario explicitly asks for code control and self-hosted deployment, which points away from the console-first managed agent.</p>
 <p>D is wrong because models cannot reliably "call URLs from the system prompt." Tool use needs a real tool interface with schemas, not prompt text. This distractor tests whether you confuse prompt content with tool definitions.</p>
-<h2 id="2-lab-multi-agent-squad-routing">2. Lab: Multi-agent squad routing</h2>
+<p class="note"><strong>Next:</strong> Lab 2 trades the agent's freedom for determinism, chaining prompts into a Bedrock Flows pipeline.</p>
+<h2 id="2-lab-bedrock-flows-from-json">2. Lab: Bedrock Flows from JSON</h2>
+<p class="note"><strong>Why this chapter comes next.</strong> Lab 1 built an agent that reasons freely. Some workflows should not be left to the model's judgment: they must run the same steps every time. This lab trades the agent's freedom for a deterministic prompt pipeline.</p>
+<p>Chain prompts into a deterministic pipeline. The lab's prompt list becomes a real flow definition: nodes, connections, and conditions.</p>
+<p class="prereq"><strong>Prerequisites:</strong> None. You define the flow as JSON; no agent code is needed.</p>
+<h3 id="what-this-lab-teaches">What this lab teaches</h3>
+<p>Amazon Bedrock Flows (called Prompt Flows in older material) build deterministic multi-step GenAI workflows. You define a flow as JSON with two arrays: <code>nodes</code>, where each node is one step, and <code>connections</code>, which wire the steps together into paths. The lab's <code>PromptChaining.json</code> holds a simple list of three prompts: name a city, describe it, describe its cuisine. In a real flow definition, each of those prompts becomes a Prompt node, and Data connections pipe each node's output into the next node's input.</p>
+<p>Node types cover the building blocks: Input and Output (entry and exit), Prompt (one model call with a template), Agent (hand a step to an agent), KnowledgeBase (a retrieval step: it pulls answers from your documents using retrieval-augmented generation, RAG, where the model answers from retrieved passages instead of from its training; the full RAG story is in chapter 7), Condition (branch on logic), Iterator (loop over a list), LambdaFunction (custom code), plus storage nodes. A connection is either <code>Data</code>, which moves a named output to a named input, or <code>Conditional</code>, which follows a path only when its condition expression is true.</p>
+<h3 id="why-it-exists-when-you-would-use-it-in-production">Why it exists: when you would use it in production</h3>
+<p>Not every workflow needs an autonomous agent. When the path is fixed, three prompts in, one answer out, an agent's reasoning loop is expensive overhead and nondeterministic. Flows give you a visual builder plus a JSON definition you can version in git, test, and deploy. Product teams can edit prompt text without engineers redeploying code, and the definition's structure makes the pipeline auditable: you can see exactly which step feeds which.</p>
+<h3 id="how-it-works-under-the-hood">How it works under the hood</h3>
+<p>A flow definition follows this shape (adapted for teaching, mirroring the lab's three prompts):</p>
+<pre><code>{
+  &quot;nodes&quot;: [
+    {&quot;name&quot;: &quot;FlowInput&quot;,  &quot;type&quot;: &quot;Input&quot;},
+    {&quot;name&quot;: &quot;NameCity&quot;,   &quot;type&quot;: &quot;Prompt&quot;,
+     &quot;configuration&quot;: {&quot;prompt&quot;: {&quot;template&quot;: &quot;Name a random city...&quot;}}},
+    {&quot;name&quot;: &quot;DescribeCity&quot;, &quot;type&quot;: &quot;Prompt&quot;,
+     &quot;configuration&quot;: {&quot;prompt&quot;: {&quot;template&quot;: &quot;Describe this city: {{city}}&quot;}}},
+    {&quot;name&quot;: &quot;FlowOutput&quot;, &quot;type&quot;: &quot;Output&quot;}
+  ],
+  &quot;connections&quot;: [
+    {&quot;name&quot;: &quot;c1&quot;, &quot;source&quot;: &quot;FlowInput&quot;, &quot;target&quot;: &quot;NameCity&quot;,
+     &quot;type&quot;: &quot;Data&quot;,
+     &quot;configuration&quot;: {&quot;data&quot;: {&quot;sourceOutput&quot;: &quot;document&quot;, &quot;targetInput&quot;: &quot;input&quot;}}},
+    {&quot;name&quot;: &quot;c2&quot;, &quot;source&quot;: &quot;NameCity&quot;, &quot;target&quot;: &quot;DescribeCity&quot;,
+     &quot;type&quot;: &quot;Data&quot;,
+     &quot;configuration&quot;: {&quot;data&quot;: {&quot;sourceOutput&quot;: &quot;modelCompletion&quot;, &quot;targetInput&quot;: &quot;city&quot;}}}
+  ]
+}
+</code></pre>
+<p>Reading it: each connection names a source node and a target node. The <code>data</code> block maps a named output of the source (<code>sourceOutput</code>) to a named input of the target (<code>targetInput</code>), which is why prompt templates use <code>{{variable}}</code> placeholders. A <code>Conditional</code> connection instead carries a <code>condition</code> expression, and the flow follows the first matching branch. Expressions use JSONPath-style references to node outputs.</p>
+<p>Lifecycle: after editing a flow you run PrepareFlow, which packages the latest changes into the DRAFT version for testing. For production you create an alias pointing at a numbered version, so prompt edits never move production traffic by accident. DRAFT is the editable working copy. A version is an immutable numbered snapshot of a prepared DRAFT. An alias is a named pointer, for example "prod", aimed at one version, so prompt edits never move production traffic by accident. Bedrock Agents use the same DRAFT, version, and alias discipline; you will meet it again in chapter 5.</p>
+<p>One detail on the Iterator node: community sources describe it as sequential, processing list items one at a time rather than in parallel. UNVERIFIED: the sequential-iterator behavior was not confirmed in the live AWS docs during this build. Treat it as community-reported.</p>
+<div class="exam-ask"><p>Common misunderstanding.</p>
+<p>Flows and agents solve different problems. A fixed three-step chain is a flow. A task where the model must decide which tools to call, in which order, with retries, is an agent. Putting an agent's job into a flow gives you rigidity. Putting a flow's job into an agent gives you cost and nondeterminism.</p></div>
+<pre><code>  Input (&quot;go&quot;)
+    |
+    v
+ +-----------+  Data: modelCompletion -&gt; city  +--------------+
+ | Prompt:   | ------------------------------&gt; | Prompt:      |
+ | NameCity  |                                 | DescribeCity |
+ +-----------+                                 +--------------+
+                                                     |
+                          Data: modelCompletion -&gt; city
+                                                     v
+                                               +--------------+
+                                               | Prompt:      |
+                                               | Cuisine      |
+                                               +--------------+
+                                                     |
+                                                     v
+                                                   Output
+
+  With a branch:
+
+ +-----------+  Conditional: $.sentiment == &quot;negative&quot;  +----------+
+ | Condition | ---------------------------------------&gt; | Prompt:  |
+ | node      |                                          | Apology  |
+ +-----------+  Conditional: otherwise                   +----------+
+                 --------------------------------------&gt; +----------+
+                                                         | Prompt:  |
+                                                         | Thanks   |
+                                                         +----------+
+</code></pre>
+<p>Figure 2.1: Top: the lab's prompt chain as flow nodes and Data connections. Bottom: a Condition node branching on an expression. Caption: ASCII diagram drawn for this volume.</p>
+<p>How to read this diagram</p>
+<ol>
+<li>Top half: follow the arrows down. Each box is a node; each arrow is a connection of type Data.</li>
+<li>Read each arrow's label as "take this named output, feed it into that named input." The <code>{{city}}</code> placeholder in the prompt template is the receiving end.</li>
+<li>Bottom half: a Condition node has two Conditional connections. The flow evaluates the condition expression and follows the first match. Exactly one path runs.</li>
+<li>Input and Output nodes are the flow's boundary: one entry point, and one or more exits.</li>
+</ol>
+<p>What breaks if a component fails</p>
+<ul>
+<li>If a <code>targetInput</code> name does not match a placeholder in the prompt template, the step runs with an empty variable. Name mismatches are the most common flow bug.</li>
+<li>If you edit nodes and skip PrepareFlow, the DRAFT version still holds the old definition and your tests lie to you.</li>
+<li>If a condition expression references a field that does not exist, the branch never matches and the flow takes the fallback path silently.</li>
+</ul>
+<div class="exam-ask"><p>Exam angles and traps.</p>
+<ul>
+<li>Scenario: "a three-stage prompt chain with branching; the marketing team edits prompt text weekly; no engineer redeploys." The most correct answer is Bedrock Flows (Prompt Management, Bedrock's versioned prompt store where every prompt gets numbered immutable versions, for the versioned prompts; Flows for the chain). Distractors: Bedrock Agents (overkill for a fixed deterministic chain), Step Functions (the right answer when the workflow needs timeouts, human approvals, or non-GenAI orchestration, but heavier than Flows for a pure prompt chain), hardcoding prompts in Lambda (violates the no-redeploy constraint).</li>
+<li>Second angle: "the flow ignores recent edits" points at the missed PrepareFlow step.</li>
+<li>Flows versus Step Functions is a favorite confusion pair. Rule of thumb: prompt-centric fixed chains go to Flows. General orchestration with waits, retries across services, and human approvals goes to Step Functions. Scenarios often allow both; the "most correct" is the one matching the constraint words.</li>
+<li>Connection types are Data and Conditional. If an option mentions other connection types, it is invented.</li>
+<li>Prompt variants are for A/B testing; prompt versions are immutable releases. The exam swaps these.</li>
+</ul></div>
+<h4 id="practice-question">Practice question</h4>
+<p>A media company runs a fixed pipeline: extract topics from an article, draft a headline from the topics, then classify the headline's tone. Editors tweak the prompt wording every week, and engineering must not redeploy for wording changes. Which approach is MOST correct?</p>
+<p>A. Build a Bedrock Agent with three action groups, one per stage, and let the agent decide the order at runtime.</p>
+<p>B. Define a Bedrock Flow with three Prompt nodes chained by Data connections, manage the prompts with Prompt Management versions, and expose a flow alias for production.</p>
+<p>C. Hardcode the three prompts in a Lambda function behind API Gateway and redeploy weekly.</p>
+<p>D. Use Step Functions with three Lambda tasks that each call InvokeModel, because Flows cannot chain prompts.</p>
+<p>B is correct. The pipeline is fixed and prompt-centric, which is exactly what Flows are for. Data connections pipe each stage's output into the next; Prompt Management versions let editors change wording without code deploys. The alias pins production to a tested version.</p>
+<p>A is wrong because an agent adds reasoning overhead and nondeterminism to a fixed pipeline; nothing here needs dynamic tool choice.</p>
+<p>C is wrong because it directly violates the no-redeploy constraint the scenario states.</p>
+<p>D is wrong because its premise is false: chaining prompts is the core Flows use case. Step Functions would be the answer if the scenario needed human approvals or cross-service waits, which it does not.</p>
+<p class="note"><strong>Next:</strong> Lab 3 goes from one worker to many, with a classifier routing each request to the right specialist.</p>
+<h2 id="3-lab-multi-agent-squad-routing">3. Lab: Multi-agent squad routing</h2>
+<p class="note"><strong>Why this chapter comes next.</strong> Labs 1 and 2 each built one worker. Real systems need several specialists behind one entry point. This lab adds the classifier that routes each request to the right specialist agent.</p>
 <p>One entry point, many specialist agents. A classifier reads each request and routes it to the right specialist.</p>
+<p class="prereq"><strong>Prerequisites:</strong> Chapter 1 (the Strands agent with a custom tool, which this lab registers as a specialist).</p>
 <h3 id="what-this-lab-teaches">What this lab teaches</h3>
 <p>Agent Squad is an open-source multi-agent orchestration framework (pip package name <code>agent-squad</code>). Instead of one giant agent that does everything, you register several specialist agents with one orchestrator. Each request goes through a classifier, usually a small fast model, which picks the best specialist for that request. The orchestrator then hands the request to the chosen agent and returns its answer with routing metadata.</p>
 <p>The framework also supports composite agents: a ChainAgent runs a fixed pipeline where each agent's output feeds the next, and a SupervisorAgent coordinates workers. For chat history it uses a ChatStorage layer: in-memory by default, DynamoDB or SQL for production.</p>
@@ -1467,7 +1569,7 @@ print(response.metadata.agent_name)   # which specialist was picked
        v
   Answer + metadata.agent_name (&quot;which agent answered&quot;)
 </code></pre>
-<p>Figure 2.1: Agent Squad request flow. The classifier picks one specialist per request; history persists per user and session. Caption: ASCII diagram drawn for this volume.</p>
+<p>Figure 3.1: Agent Squad request flow. The classifier picks one specialist per request; history persists per user and session. Caption: ASCII diagram drawn for this volume.</p>
 <p>How to read this diagram</p>
 <ol>
 <li>Start at the top: a user request enters <code>route_request</code> with a user id and session id.</li>
@@ -1499,198 +1601,11 @@ print(response.metadata.agent_name)   # which specialist was picked
 <p>A and C are correct. A gives intent-based routing with a real classifier reading the agent catalog. C gives durable per-session history plus the audit trail (which agent answered) the scenario demands.</p>
 <p>B is wrong because in-memory storage dies with the process; "must survive restarts" rules it out. This is the classic durable-versus-ephemeral trap.</p>
 <p>D is wrong because merging specialists destroys tool isolation and makes the prompt a bottleneck; the scenario's whole point is specialist routing, and the exam rewards the orchestrator pattern over the mega-prompt.</p>
-<h2 id="3-lab-agentcore-runtime-deployment">3. Lab: AgentCore Runtime deployment</h2>
-<p>Take the laptop agent and ship it: containerize it, satisfy the runtime contract, and let AgentCore host it with sessions, tools, memory, and identity.</p>
-<h3 id="what-this-lab-teaches">What this lab teaches</h3>
-<p>Amazon Bedrock AgentCore is the managed platform for running agents in production. It has five parts you must be able to name. <strong>Runtime</strong> (serverless hosting for your agent container), <strong>Gateway</strong> (turns your APIs and Lambda functions into MCP-compatible tools; MCP is the Model Context Protocol, the standard interface agents use to call tools), <strong>Memory</strong> (managed short-term and long-term agent context), <strong>Identity</strong> (agent authentication and access to third-party apps), <strong>Observability</strong> (tracing and monitoring with OpenTelemetry). The lab focuses on Runtime: packaging the Strands agent from chapter 1 as a container that AgentCore can host.</p>
-<p>The Runtime speaks to your container over plain HTTP with a fixed contract: listen on port 8080, answer <code>POST /invocations</code> with your agent logic, and answer <code>GET /ping</code> as a health check. The <code>bedrock-agentcore</code> Python SDK provides <code>BedrockAgentCoreApp</code>, a small wrapper that implements this contract for you. You mark one function with <code>@app.entrypoint</code>, and it receives the JSON payload from each <code>/invocations</code> call.</p>
-<h3 id="why-it-exists-when-you-would-use-it-in-production">Why it exists: when you would use it in production</h3>
-<p>A laptop agent has no sessions, no scaling, no safe credential handling, and no audit trail. AgentCore gives you managed sessions (the platform keeps a session alive across calls and can keep it warm for background work), a standard way to expose tools through Gateway instead of hand-wiring each integration, and memory that outlives any single container. The migration story the exam cares about: Bedrock Agents to AgentCore when you need framework freedom (Strands, LangGraph, CrewAI) without giving up managed hosting.</p>
-<h3 id="how-it-works-under-the-hood">How it works under the hood</h3>
-<p>The lab's <code>agentcore.py</code> plus <code>Dockerfile</code> follow this sequence:</p>
-<ol>
-<li><code>app = BedrockAgentCoreApp()</code> creates the wrapper. The <code>@app.entrypoint</code> decorator marks <code>invoke(payload, context)</code> as the handler. The payload is the deserialized JSON body of the <code>POST /invocations</code> request. The context carries runtime information such as the session id.</li>
-<li>Inside the handler, the code builds the Strands agent exactly as in chapter 1 and runs it on <code>payload.get("prompt", "")</code>. The handler returns a plain dict, which the SDK serializes back as the JSON response.</li>
-<li><code>app.run()</code> starts an HTTP server on port 8080. The same line runs the agent locally for testing and serves it inside the container in production. Test with <code>curl -X POST http://localhost:8080/invocations</code> before you deploy.</li>
-<li>The Dockerfile builds the image: a slim Python base, install from <code>requirements.txt</code> (the <code>bedrock-agentcore</code> SDK, <code>strands-agents</code>, <code>strands-agents-tools</code>), add the OpenTelemetry distro so traces flow to Observability, set the region, create a non-root user, expose port 8080, and start the module.</li>
-<li>The platform requires <code>linux/arm64</code> images. The container must bind <code>0.0.0.0:8080</code>, not localhost, or the platform's health checks cannot reach it.</li>
-</ol>
-<p>Adapted teaching snippet (written for this volume):</p>
-<pre><code>from bedrock_agentcore.runtime import BedrockAgentCoreApp
-
-# WHAT: the app object. It wires your function into the platform's HTTP contract.
-# WHY: AgentCore Runtime only speaks two routes: POST /invocations and GET /ping.
-#   BedrockAgentCoreApp provides both; you only write the handler.
-app = BedrockAgentCoreApp()
-
-# WHAT: @app.entrypoint marks invoke() as the request handler.
-# WHY the signature: payload is the JSON body the caller POSTed; context carries
-#   session info. payload.get(&quot;prompt&quot;, &quot;&quot;) tolerates callers that send no prompt.
-# WHAT BREAKS: returning anything but a JSON-serializable dict breaks the
-#   response serialization. Raising inside invoke() surfaces as a 500 to the caller.
-@app.entrypoint
-def invoke(payload, context):
-    answer = run_my_agent(payload.get(&quot;prompt&quot;, &quot;&quot;))
-    return {&quot;answer&quot;: str(answer)}
-
-# WHAT: app.run() starts the HTTP server on port 8080.
-# WHY the __main__ guard: the same file runs locally for testing AND inside the
-#   container in production. Local test: curl -X POST localhost:8080/invocations.
-# WHAT BREAKS: binding localhost instead of 0.0.0.0 works on your laptop but
-#   fails the platform health checks; the session gets reaped. The SDK binds
-#   0.0.0.0 by default, do not override it.
-if __name__ == &quot;__main__&quot;:
-    app.run()  # serves POST /invocations and GET /ping on port 8080
-</code></pre>
-<p>Gateway deserves one extra line because the exam names it: it converts existing APIs and Lambda functions into MCP-compatible tools, so agents built in any framework can call them through the Model Context Protocol instead of through bespoke integrations. Identity handles the OAuth and credential side so your agent code never holds raw secrets.</p>
-<div class="exam-ask"><p>Common misunderstanding.</p>
-<p>AgentCore Runtime is not "Lambda for agents." Lambda caps executions at 15 minutes and has no session concept. Runtime manages long-lived agent sessions with health checks and idle timeouts. Picking Lambda for a long-running agent session is a standard exam trap.</p></div>
-<pre><code>  Developer laptop                    AWS
-  +----------------+     +-------------------------------+
-  | agentcore.py + |     |  AgentCore Runtime            |
-  | Dockerfile     |---&gt; |  session per caller           |
-  | docker build   | ECR |       |                       |
-  +----------------+ --&gt; |       v                       |
-                         |  Container (arm64, :8080)     |
-  Caller ---------------&gt;|  POST /invocations -&gt; handler |
-                         |  GET  /ping        -&gt; health |
-                         |       |                       |
-                         |       +--&gt; Gateway: MCP tools |
-                         |       +--&gt; Memory: session +  |
-                         |       |    long-term context  |
-                         |       +--&gt; Identity: OAuth /  |
-                         |            credentials        |
-                         |       +--&gt; Observability:     |
-                         |            OTEL traces        |
-                         +-------------------------------+
-</code></pre>
-<p>Figure 3.1: Deploying a Strands agent on AgentCore Runtime. The container contract is two HTTP routes; the platform supplies sessions, tools, memory, identity, and traces. Caption: ASCII diagram drawn for this volume.</p>
-<p>How to read this diagram</p>
-<ol>
-<li>Start left: the developer builds the image from the agent code and Dockerfile, then pushes it to a container registry (ECR).</li>
-<li>The Runtime launches the container and manages one session per caller. Sessions survive across calls; the platform polls <code>/ping</code> to know the container is alive.</li>
-<li>Each caller request is a <code>POST /invocations</code> with a JSON payload. The <code>@app.entrypoint</code> function handles it and returns JSON.</li>
-<li>Inside the session, the agent reaches four platform services: Gateway for MCP tools, Memory for context that outlives the container, Identity for credentials, and Observability for traces.</li>
-</ol>
-<p>What breaks if a component fails</p>
-<ul>
-<li>If the image is built for the wrong CPU architecture, the container never starts. Build for <code>linux/arm64</code>.</li>
-<li>If the server binds localhost instead of <code>0.0.0.0</code>, health checks fail and the session is reaped even though the agent works locally.</li>
-<li>If <code>/ping</code> is missing or slow, the platform treats the session as dead. The SDK's built-in handler exists so you do not hand-roll this.</li>
-</ul>
-<div class="exam-ask"><p>Exam angles and traps.</p>
-<ul>
-<li>Scenario: a team built an agent in an open-source framework and needs managed hosting with sessions, tool access via MCP, and no server management. The answer is AgentCore Runtime, with Gateway for the tools. Distractors: ECS with a hand-built session store (you own sessions, scaling, and health checks), Lambda (15-minute cap, no sessions), Bedrock Agents (managed but locks you into its framework and console model).</li>
-<li>Map each need to a component: "tools for any framework" points at Gateway, "remember users across weeks" at Memory, "call Salesforce on the user's behalf" at Identity.</li>
-<li>Name all five components cold: Runtime, Gateway, Memory, Identity, Observability. Questions often test Gateway versus Memory versus Identity by scenario verb.</li>
-<li>The container contract is <code>POST /invocations</code> plus <code>GET /ping</code> on port 8080. A question about "the deployed agent never receives traffic" points at the contract, not the model.</li>
-<li>Migration direction matters: Bedrock Agents to AgentCore is the documented path when teams outgrow the managed agent framework. The reverse is not a thing.</li>
-</ul></div>
-<h4 id="practice-question">Practice question</h4>
-<p>A team has a working Strands agent on a developer laptop. For production they need: managed hosting with per-caller sessions, the agent's existing REST APIs exposed as tools usable through MCP, user preferences remembered across weeks, and no server management. Which combination is MOST correct? (Select TWO.)</p>
-<p>A. Deploy the agent container to AgentCore Runtime and expose the REST APIs through AgentCore Gateway.</p>
-<p>B. Store user preferences in AgentCore Memory.</p>
-<p>C. Package the agent as a Lambda function with a 15-minute timeout and keep preferences in Lambda environment variables.</p>
-<p>D. Rebuild the agent as a Bedrock Agent because AgentCore Runtime only hosts Bedrock Agents.</p>
-<p>A and B are correct. Runtime gives managed sessions and hosting for any-framework agents; Gateway converts existing APIs into MCP tools; Memory is the managed store for long-lived agent context. Together they satisfy every requirement.</p>
-<p>C is wrong twice over: Lambda caps at 15 minutes and has no session concept, and environment variables are not a user-preference store. This is the "Lambda for everything" trap.</p>
-<p>D is wrong because the premise is false: Runtime hosts any-framework agents, which is exactly its purpose, and the Bedrock-Agents-to-AgentCore migration path exists precisely for teams that started managed and need framework freedom, not the reverse.</p>
-<h2 id="4-lab-bedrock-flows-from-json">4. Lab: Bedrock Flows from JSON</h2>
-<p>Chain prompts into a deterministic pipeline. The lab's prompt list becomes a real flow definition: nodes, connections, and conditions.</p>
-<h3 id="what-this-lab-teaches">What this lab teaches</h3>
-<p>Amazon Bedrock Flows (called Prompt Flows in older material) build deterministic multi-step GenAI workflows. You define a flow as JSON with two arrays: <code>nodes</code>, where each node is one step, and <code>connections</code>, which wire the steps together into paths. The lab's <code>PromptChaining.json</code> holds a simple list of three prompts: name a city, describe it, describe its cuisine. In a real flow definition, each of those prompts becomes a Prompt node, and Data connections pipe each node's output into the next node's input.</p>
-<p>Node types cover the building blocks: Input and Output (entry and exit), Prompt (one model call with a template), Agent (hand a step to an agent), KnowledgeBase (a retrieval step), Condition (branch on logic), Iterator (loop over a list), LambdaFunction (custom code), plus storage nodes. A connection is either <code>Data</code>, which moves a named output to a named input, or <code>Conditional</code>, which follows a path only when its condition expression is true.</p>
-<h3 id="why-it-exists-when-you-would-use-it-in-production">Why it exists: when you would use it in production</h3>
-<p>Not every workflow needs an autonomous agent. When the path is fixed, three prompts in, one answer out, an agent's reasoning loop is expensive overhead and nondeterministic. Flows give you a visual builder plus a JSON definition you can version in git, test, and deploy. Product teams can edit prompt text without engineers redeploying code, and the definition's structure makes the pipeline auditable: you can see exactly which step feeds which.</p>
-<h3 id="how-it-works-under-the-hood">How it works under the hood</h3>
-<p>A flow definition follows this shape (adapted for teaching, mirroring the lab's three prompts):</p>
-<pre><code>{
-  &quot;nodes&quot;: [
-    {&quot;name&quot;: &quot;FlowInput&quot;,  &quot;type&quot;: &quot;Input&quot;},
-    {&quot;name&quot;: &quot;NameCity&quot;,   &quot;type&quot;: &quot;Prompt&quot;,
-     &quot;configuration&quot;: {&quot;prompt&quot;: {&quot;template&quot;: &quot;Name a random city...&quot;}}},
-    {&quot;name&quot;: &quot;DescribeCity&quot;, &quot;type&quot;: &quot;Prompt&quot;,
-     &quot;configuration&quot;: {&quot;prompt&quot;: {&quot;template&quot;: &quot;Describe this city: {{city}}&quot;}}},
-    {&quot;name&quot;: &quot;FlowOutput&quot;, &quot;type&quot;: &quot;Output&quot;}
-  ],
-  &quot;connections&quot;: [
-    {&quot;name&quot;: &quot;c1&quot;, &quot;source&quot;: &quot;FlowInput&quot;, &quot;target&quot;: &quot;NameCity&quot;,
-     &quot;type&quot;: &quot;Data&quot;,
-     &quot;configuration&quot;: {&quot;data&quot;: {&quot;sourceOutput&quot;: &quot;document&quot;, &quot;targetInput&quot;: &quot;input&quot;}}},
-    {&quot;name&quot;: &quot;c2&quot;, &quot;source&quot;: &quot;NameCity&quot;, &quot;target&quot;: &quot;DescribeCity&quot;,
-     &quot;type&quot;: &quot;Data&quot;,
-     &quot;configuration&quot;: {&quot;data&quot;: {&quot;sourceOutput&quot;: &quot;modelCompletion&quot;, &quot;targetInput&quot;: &quot;city&quot;}}}
-  ]
-}
-</code></pre>
-<p>Reading it: each connection names a source node and a target node. The <code>data</code> block maps a named output of the source (<code>sourceOutput</code>) to a named input of the target (<code>targetInput</code>), which is why prompt templates use <code>{{variable}}</code> placeholders. A <code>Conditional</code> connection instead carries a <code>condition</code> expression, and the flow follows the first matching branch. Expressions use JSONPath-style references to node outputs.</p>
-<p>Lifecycle: after editing a flow you run PrepareFlow, which packages the latest changes into the DRAFT version for testing. For production you create an alias pointing at a numbered version, so prompt edits never move production traffic by accident. The same DRAFT-then-alias discipline you know from Bedrock Agents applies here.</p>
-<p>One detail on the Iterator node: community sources describe it as sequential, processing list items one at a time rather than in parallel. UNVERIFIED: the sequential-iterator behavior was not confirmed in the live AWS docs during this build. Treat it as community-reported.</p>
-<div class="exam-ask"><p>Common misunderstanding.</p>
-<p>Flows and agents solve different problems. A fixed three-step chain is a flow. A task where the model must decide which tools to call, in which order, with retries, is an agent. Putting an agent's job into a flow gives you rigidity. Putting a flow's job into an agent gives you cost and nondeterminism.</p></div>
-<pre><code>  Input (&quot;go&quot;)
-    |
-    v
- +-----------+  Data: modelCompletion -&gt; city  +--------------+
- | Prompt:   | ------------------------------&gt; | Prompt:      |
- | NameCity  |                                 | DescribeCity |
- +-----------+                                 +--------------+
-                                                     |
-                          Data: modelCompletion -&gt; city
-                                                     v
-                                               +--------------+
-                                               | Prompt:      |
-                                               | Cuisine      |
-                                               +--------------+
-                                                     |
-                                                     v
-                                                   Output
-
-  With a branch:
-
- +-----------+  Conditional: $.sentiment == &quot;negative&quot;  +----------+
- | Condition | ---------------------------------------&gt; | Prompt:  |
- | node      |                                          | Apology  |
- +-----------+  Conditional: otherwise                   +----------+
-                 --------------------------------------&gt; +----------+
-                                                         | Prompt:  |
-                                                         | Thanks   |
-                                                         +----------+
-</code></pre>
-<p>Figure 4.1: Top: the lab's prompt chain as flow nodes and Data connections. Bottom: a Condition node branching on an expression. Caption: ASCII diagram drawn for this volume.</p>
-<p>How to read this diagram</p>
-<ol>
-<li>Top half: follow the arrows down. Each box is a node; each arrow is a connection of type Data.</li>
-<li>Read each arrow's label as "take this named output, feed it into that named input." The <code>{{city}}</code> placeholder in the prompt template is the receiving end.</li>
-<li>Bottom half: a Condition node has two Conditional connections. The flow evaluates the condition expression and follows the first match. Exactly one path runs.</li>
-<li>Input and Output nodes are the flow's boundary: one entry point, and one or more exits.</li>
-</ol>
-<p>What breaks if a component fails</p>
-<ul>
-<li>If a <code>targetInput</code> name does not match a placeholder in the prompt template, the step runs with an empty variable. Name mismatches are the most common flow bug.</li>
-<li>If you edit nodes and skip PrepareFlow, the DRAFT version still holds the old definition and your tests lie to you.</li>
-<li>If a condition expression references a field that does not exist, the branch never matches and the flow takes the fallback path silently.</li>
-</ul>
-<div class="exam-ask"><p>Exam angles and traps.</p>
-<ul>
-<li>Scenario: "a three-stage prompt chain with branching; the marketing team edits prompt text weekly; no engineer redeploys." The most correct answer is Bedrock Flows (Prompt Management for the versioned prompts, Flows for the chain). Distractors: Bedrock Agents (overkill for a fixed deterministic chain), Step Functions (the right answer when the workflow needs timeouts, human approvals, or non-GenAI orchestration, but heavier than Flows for a pure prompt chain), hardcoding prompts in Lambda (violates the no-redeploy constraint).</li>
-<li>Second angle: "the flow ignores recent edits" points at the missed PrepareFlow step.</li>
-<li>Flows versus Step Functions is a favorite confusion pair. Rule of thumb: prompt-centric fixed chains go to Flows. General orchestration with waits, retries across services, and human approvals goes to Step Functions. Scenarios often allow both; the "most correct" is the one matching the constraint words.</li>
-<li>Connection types are Data and Conditional. If an option mentions other connection types, it is invented.</li>
-<li>Prompt variants are for A/B testing; prompt versions are immutable releases. The exam swaps these.</li>
-</ul></div>
-<h4 id="practice-question">Practice question</h4>
-<p>A media company runs a fixed pipeline: extract topics from an article, draft a headline from the topics, then classify the headline's tone. Editors tweak the prompt wording every week, and engineering must not redeploy for wording changes. Which approach is MOST correct?</p>
-<p>A. Build a Bedrock Agent with three action groups, one per stage, and let the agent decide the order at runtime.</p>
-<p>B. Define a Bedrock Flow with three Prompt nodes chained by Data connections, manage the prompts with Prompt Management versions, and expose a flow alias for production.</p>
-<p>C. Hardcode the three prompts in a Lambda function behind API Gateway and redeploy weekly.</p>
-<p>D. Use Step Functions with three Lambda tasks that each call InvokeModel, because Flows cannot chain prompts.</p>
-<p>B is correct. The pipeline is fixed and prompt-centric, which is exactly what Flows are for. Data connections pipe each stage's output into the next; Prompt Management versions let editors change wording without code deploys. The alias pins production to a tested version.</p>
-<p>A is wrong because an agent adds reasoning overhead and nondeterminism to a fixed pipeline; nothing here needs dynamic tool choice.</p>
-<p>C is wrong because it directly violates the no-redeploy constraint the scenario states.</p>
-<p>D is wrong because its premise is false: chaining prompts is the core Flows use case. Step Functions would be the answer if the scenario needed human approvals or cross-service waits, which it does not.</p>
-<h2 id="5-lab-lambda-as-bedrock-front-end">5. Lab: Lambda as Bedrock front end</h2>
+<p class="note"><strong>Next:</strong> Lab 4 puts the stable front door in front: API Gateway and Lambda as the Bedrock front end.</p>
+<h2 id="4-lab-lambda-as-bedrock-front-end">4. Lab: Lambda as Bedrock front end</h2>
+<p class="note"><strong>Why this chapter comes next.</strong> Labs 1 through 3 ran on your laptop. Production needs a stable front door first. This lab puts API Gateway and Lambda in front of Bedrock calls, the serving path every later lab assumes.</p>
 <p>Put a stable HTTP front door in front of your model calls: API Gateway for the endpoint, Lambda for the logic.</p>
+<p class="prereq"><strong>Prerequisites:</strong> None beyond basic AWS ideas; Lambda, API Gateway, and AppConfig are introduced from scratch here.</p>
 <h3 id="what-this-lab-teaches">What this lab teaches</h3>
 <p>AWS Lambda is serverless compute: you upload a function, AWS runs it on events, and you pay per invocation. API Gateway is the managed front door: it gives you a stable HTTPS endpoint with authentication, throttling, and request routing, and it forwards requests to Lambda. The lab's <code>lambda-code.py</code> shows the Lambda proxy integration shape: the handler receives an event, does work, and returns a dict with <code>statusCode</code>, <code>headers</code>, and a JSON-string <code>body</code>. API Gateway translates that dict into the HTTP response the caller sees.</p>
 <p>For GenAI, this pair is the standard synchronous front end. The client calls your API; API Gateway authenticates and throttles. Lambda validates the request, picks the model, calls Bedrock, and returns the answer. The lab's hello-world handler is the skeleton you flesh out with a Bedrock call.</p>
@@ -1699,7 +1614,7 @@ if __name__ == &quot;__main__&quot;:
 <h3 id="how-it-works-under-the-hood">How it works under the hood</h3>
 <ol>
 <li>The client sends an HTTPS request to the API Gateway endpoint. Gateway checks the auth method (IAM, Cognito authorizer, or API key), applies the throttling limit, and forwards the request to Lambda as a proxy event.</li>
-<li>The Lambda handler parses the event body, validates it (required fields, sane lengths, no prompt-injection payload aimed at downstream systems), and reads the current model identifier from AppConfig at runtime.</li>
+<li>The Lambda handler parses the event body, validates it (required fields, sane lengths, no prompt-injection payload aimed at downstream systems), and reads the current model identifier from AppConfig (the AWS runtime configuration store) at runtime.</li>
 <li>Lambda calls Bedrock, usually the Converse API for its unified request shape, waits for the response, and formats the proxy response: <code>{"statusCode": 200, "headers": {"Content-Type": "application/json"}, "body": json.dumps(result)}</code>.</li>
 <li>API Gateway returns that to the client. Failures surface as 4xx for bad input and 5xx for downstream errors; the handler must never leak stack traces or credentials in error bodies.</li>
 </ol>
@@ -1746,7 +1661,7 @@ def lambda_handler(event, context):
        +---- proxy response --------+
        (statusCode, headers, body)
 </code></pre>
-<p>Figure 5.1: The synchronous GenAI front end. The gateway owns the endpoint contract; Lambda owns the logic; AppConfig owns the model choice. Caption: ASCII diagram drawn for this volume.</p>
+<p>Figure 4.1: The synchronous GenAI front end. The gateway owns the endpoint contract; Lambda owns the logic; AppConfig owns the model choice. Caption: ASCII diagram drawn for this volume.</p>
 <p>How to read this diagram</p>
 <ol>
 <li>Start at the top: the client only ever talks to the gateway URL. It never sees Bedrock or AWS credentials.</li>
@@ -1778,8 +1693,11 @@ def lambda_handler(event, context):
 <p>A, B, and C are correct. A gives the stable authenticated endpoint with throttling and keeps credentials server-side. B makes the model choice runtime configuration, satisfying no-redeploy. C is the compute layer that validates input and calls Bedrock through the unified Converse interface.</p>
 <p>D is wrong because it ships AWS credentials to the device and gives every client raw model access with no throttling or validation; it also requires app updates to change models.</p>
 <p>E is wrong because a stack update is a deployment, which directly violates the no-redeploy constraint. This is the CloudFormation-for-runtime-config trap.</p>
-<h2 id="6-lab-lambda-as-agent-action">6. Lab: Lambda as agent action</h2>
+<p class="note"><strong>Next:</strong> Lab 5 flips Lambda around: it becomes the agent's hands via the action-group contract.</p>
+<h2 id="5-lab-lambda-as-agent-action">5. Lab: Lambda as agent action</h2>
+<p class="note"><strong>Why this chapter comes next.</strong> Lab 4 showed Lambda serving the client. Now flip it around: Lambda becomes the agent's hands, the exact request and response contract Bedrock Agents use to call your code.</p>
 <p>Give a Bedrock Agent real hands. The lab's weather function shows the exact event the agent sends and the exact response it expects back.</p>
+<p class="prereq"><strong>Prerequisites:</strong> Chapter 4 (Lambda handlers and the proxy response shape), because action-group Lambdas reuse that shape.</p>
 <h3 id="what-this-lab-teaches">What this lab teaches</h3>
 <p>A Bedrock Agent reasons, but it acts through action groups. An action group binds the agent to a Lambda function plus a schema describing the available functions. There are two schema styles: function details, where you list simple named functions with parameters, and an OpenAPI schema, where you describe REST-style operations. The lab's <code>weather.py</code> implements the function-details style: a <code>get_weather</code>-style function taking a city and units.</p>
 <p>The contract has two halves. The input event the agent sends contains the agent name, the action group name, the function name, a <code>parameters</code> list of name-type-value entries, and a <code>messageVersion</code>. The response the Lambda must return wraps the result as <code>messageVersion</code>, <code>response.actionGroup</code>, <code>response.function</code>, and <code>response.functionResponse.responseBody.TEXT.body</code>. With an OpenAPI schema instead, the event carries <code>apiPath</code> and <code>httpMethod</code>, and the response carries an HTTP status code. This shape is documented in the Bedrock user guide page on configuring Lambda functions for agents.</p>
@@ -1839,7 +1757,7 @@ def lambda_handler(event, context):
        v
   Final answer: &quot;75 degrees and sunny in Paris.&quot;
 </code></pre>
-<p>Figure 6.1: A Bedrock Agent invoking a Lambda action. The event and response shapes are a fixed contract. Caption: ASCII diagram drawn for this volume.</p>
+<p>Figure 5.1: A Bedrock Agent invoking a Lambda action. The event and response shapes are a fixed contract. Caption: ASCII diagram drawn for this volume.</p>
 <p>How to read this diagram</p>
 <ol>
 <li>Start at the top with the user question. The agent's loop, not your code, decides a tool is needed.</li>
@@ -1883,97 +1801,175 @@ def lambda_handler(event, context):
 <p>B is wrong because the Lambda does not invoke Bedrock in this flow; Bedrock invokes the Lambda. InvokeAgent is not part of this path.</p>
 <p>C is wrong because the question says the action is being attempted; a model without function support would never reach the tool-call stage.</p>
 <p>D is wrong because sessionId is not a required field of the action-group response; the failure is in the body shape, not a missing field.</p>
-<h2 id="7-lab-cicd-with-eval-gates">7. Lab: CI/CD with eval gates</h2>
-<figure><img src="assets/img/internet/img-33.webp" alt="Prompt CI/CD: prompts live in a source file or registry, pass code review and evaluation, then roll out through staging and canary traffic to production with version tags." loading="lazy"><figcaption>Prompt CI/CD: prompts live in a source file or registry, pass code review and evaluation, then roll out through staging and canary traffic to production with version tags.</figcaption><figcaption class="credit">Source: Third-party MLOps guide, via image search Sept 2026.</figcaption></figure>
-<p>Ship prompt and model changes like code: pipeline stages, build specs, and an evaluation gate that blocks bad releases.</p>
+<p class="note"><strong>Next:</strong> Lab 6 ships the agent: containerize it and deploy to AgentCore Runtime.</p>
+<h2 id="6-lab-agentcore-runtime-deployment">6. Lab: AgentCore Runtime deployment</h2>
+<p class="note"><strong>Why this chapter comes next.</strong> Your agent works locally and has hands. This lab ships it: containerize it, satisfy the runtime contract, and let AgentCore host it with sessions, memory, and identity.</p>
+<p>Take the laptop agent and ship it: containerize it, satisfy the runtime contract, and let AgentCore host it with sessions, tools, memory, and identity.</p>
+<p class="prereq"><strong>Prerequisites:</strong> Chapter 1 (the Strands agent you containerize); chapter 5 introduced the Bedrock Agents you are migrating from.</p>
 <h3 id="what-this-lab-teaches">What this lab teaches</h3>
-<p>CI/CD on AWS is a pipeline of stages: source, build, test, deploy. AWS CodePipeline orchestrates the stages. AWS CodeBuild runs the build, driven by a <code>buildspec.yml</code> file with phases: <code>install</code>, <code>pre_build</code>, <code>build</code>, and <code>post_build</code>. AWS CodeDeploy ships the artifact to its target. The lab pack's <code>buildspec.yml</code> shows the skeleton: install a runtime, echo through the phases, and run a check in the build phase that fails the build when the check fails.</p>
-<p>For GenAI, the build phase gains an evaluation gate. A prompt or model change is a behavior change, and behavior needs tests. The gate runs an eval suite, compares metrics against thresholds, and fails the build on regression. The pipeline stops, the bad prompt never deploys, and the team gets a red build instead of a production incident.</p>
+<p>Amazon Bedrock AgentCore is the managed platform for running agents in production. It has five parts you must be able to name. <strong>Runtime</strong> (serverless hosting for your agent container), <strong>Gateway</strong> (turns your APIs and Lambda functions into MCP-compatible tools; MCP is the Model Context Protocol, the standard interface agents use to call tools), <strong>Memory</strong> (managed short-term and long-term agent context), <strong>Identity</strong> (agent authentication and access to third-party apps), <strong>Observability</strong> (tracing and monitoring with OpenTelemetry). The lab focuses on Runtime: packaging the Strands agent from chapter 1 as a container that AgentCore can host.</p>
+<figure><img src="assets/img/mermaid/99-labs-agentcore.svg" alt="AgentCore five components: Runtime hosts your container; Gateway, Memory, Identity, and Observability are platform services" loading="lazy"><figcaption>AgentCore has five parts: Runtime hosts your container; Gateway, Memory, Identity, and Observability are platform services the agent calls.</figcaption><figcaption class="credit">Drawn for this volume.</figcaption></figure>
+<p>The Runtime speaks to your container over plain HTTP with a fixed contract: listen on port 8080, answer <code>POST /invocations</code> with your agent logic, and answer <code>GET /ping</code> as a health check. The <code>bedrock-agentcore</code> Python SDK provides <code>BedrockAgentCoreApp</code>, a small wrapper that implements this contract for you. You mark one function with <code>@app.entrypoint</code>, and it receives the JSON payload from each <code>/invocations</code> call.</p>
 <h3 id="why-it-exists-when-you-would-use-it-in-production">Why it exists: when you would use it in production</h3>
-<p>Teams that edit prompts in the console and paste them into production get silent regressions: a reworded system prompt that drops refusal behavior, a model swap that changes tone, a new few-shot example that biases outputs. CI/CD makes prompt and config changes reviewable, testable, and reversible. The eval gate is the GenAI equivalent of a unit test suite: it encodes "the behavior we promise" and blocks anything that breaks it.</p>
+<p>A laptop agent has no sessions, no scaling, no safe credential handling, and no audit trail. AgentCore gives you managed sessions (the platform keeps a session alive across calls and can keep it warm for background work), a standard way to expose tools through Gateway instead of hand-wiring each integration, and memory that outlives any single container. The migration story the exam cares about: Bedrock Agents (chapter 5) to AgentCore when you need framework freedom (Strands, LangGraph, CrewAI) without giving up managed hosting.</p>
 <h3 id="how-it-works-under-the-hood">How it works under the hood</h3>
+<p>The lab's <code>agentcore.py</code> plus <code>Dockerfile</code> follow this sequence:</p>
 <ol>
-<li>A developer pushes a change to the prompt templates or model configuration in git. CodePipeline's source stage picks it up.</li>
-<li>CodeBuild runs <code>buildspec.yml</code>. The install phase sets up the runtime; pre_build prepares; the build phase runs two suites: fast unit checks (schema validation of prompt templates, config linting) and the eval gate.</li>
-<li>The eval gate invokes the candidate prompt or model against a golden dataset and scores it: faithfulness for RAG answers, toxicity and refusal checks for safety, format compliance for structured outputs. Scores are compared to thresholds stored with the repo. Any threshold breach fails the build.</li>
-<li>On green, the pipeline continues: an optional manual approval stage for high-risk changes, then deployment. Deployment for GenAI usually means shifting a flow alias or agent alias to the new version, or a canary (a rollout that sends a small slice of traffic first while CloudWatch alarms watch token error rates and latency).</li>
-<li>On red, the pipeline halts and the previous version keeps serving. Rollback is shifting the alias back, which is instant because versions are immutable.</li>
+<li><code>app = BedrockAgentCoreApp()</code> creates the wrapper. The <code>@app.entrypoint</code> decorator marks <code>invoke(payload, context)</code> as the handler. The payload is the deserialized JSON body of the <code>POST /invocations</code> request. The context carries runtime information such as the session id.</li>
+<li>Inside the handler, the code builds the Strands agent exactly as in chapter 1 and runs it on <code>payload.get("prompt", "")</code>. The handler returns a plain dict, which the SDK serializes back as the JSON response.</li>
+<li><code>app.run()</code> starts an HTTP server on port 8080. The same line runs the agent locally for testing and serves it inside the container in production. Test with <code>curl -X POST http://localhost:8080/invocations</code> before you deploy.</li>
+<li>The Dockerfile builds the image: a slim Python base, install from <code>requirements.txt</code> (the <code>bedrock-agentcore</code> SDK, <code>strands-agents</code>, <code>strands-agents-tools</code>), add the OpenTelemetry distro so traces flow to Observability, set the region, create a non-root user, expose port 8080, and start the module.</li>
+<li>The platform requires <code>linux/arm64</code> images. The container must bind <code>0.0.0.0:8080</code>, not localhost, or the platform's health checks cannot reach it.</li>
 </ol>
-<p>Adapted teaching snippet (a buildspec eval gate, written for this volume):</p>
-<pre><code>version: 0.2
-phases:
-  install:
-    runtime-versions:
-      python: 3.12
-  build:
-    commands:
-      - echo &quot;Validating prompt templates&quot;
-      - python validate_prompts.py prompts/
-      - echo &quot;Running eval gate against golden dataset&quot;
-      - python eval_gate.py --dataset golden/qa.jsonl
-          --min-faithfulness 0.85 --max-toxicity 0.02
-      # any non-zero exit fails the build and stops the pipeline
+<p>Adapted teaching snippet (written for this volume):</p>
+<pre><code>from bedrock_agentcore.runtime import BedrockAgentCoreApp
+
+# WHAT: the app object. It wires your function into the platform's HTTP contract.
+# WHY: AgentCore Runtime only speaks two routes: POST /invocations and GET /ping.
+#   BedrockAgentCoreApp provides both; you only write the handler.
+app = BedrockAgentCoreApp()
+
+# WHAT: @app.entrypoint marks invoke() as the request handler.
+# WHY the signature: payload is the JSON body the caller POSTed; context carries
+#   session info. payload.get(&quot;prompt&quot;, &quot;&quot;) tolerates callers that send no prompt.
+# WHAT BREAKS: returning anything but a JSON-serializable dict breaks the
+#   response serialization. Raising inside invoke() surfaces as a 500 to the caller.
+@app.entrypoint
+def invoke(payload, context):
+    answer = run_my_agent(payload.get(&quot;prompt&quot;, &quot;&quot;))
+    return {&quot;answer&quot;: str(answer)}
+
+# WHAT: app.run() starts the HTTP server on port 8080.
+# WHY the __main__ guard: the same file runs locally for testing AND inside the
+#   container in production. Local test: curl -X POST localhost:8080/invocations.
+# WHAT BREAKS: binding localhost instead of 0.0.0.0 works on your laptop but
+#   fails the platform health checks; the session gets reaped. The SDK binds
+#   0.0.0.0 by default, do not override it.
+if __name__ == &quot;__main__&quot;:
+    app.run()  # serves POST /invocations and GET /ping on port 8080
 </code></pre>
-<p>The eval suite itself can use Bedrock's evaluation features: programmatic metrics for objective checks, LLM-as-a-judge for quality dimensions like faithfulness and style, and human review for the subjective ones. The pipeline runs the automated tiers on every change and reserves human review for releases that cross risk thresholds.</p>
+<p>Gateway deserves one extra line because the exam names it: it converts existing APIs and Lambda functions into MCP-compatible tools, so agents built in any framework can call them through the Model Context Protocol instead of through bespoke integrations. Identity handles the OAuth and credential side so your agent code never holds raw secrets.</p>
 <div class="exam-ask"><p>Common misunderstanding.</p>
-<p>An eval gate is not "run the model once and eyeball it." It is a repeatable suite with thresholds, checked into the repo, run on every change. Manual console spot-checks are the thing the gate replaces.</p></div>
-<pre><code>  git push (prompts/ + config)
-       |
-       v
- +------------------+     +-------------------------------+
- | CodePipeline     |----&gt;| CodeBuild (buildspec.yml)     |
- | source stage     |     | install -&gt; pre_build -&gt; build |
- +------------------+     |   unit checks (schemas)       |
-                          |   EVAL GATE: golden dataset   |
-                          |   faithfulness &gt;= 0.85        |
-                          |   toxicity     &lt;= 0.02        |
-                          +---------------+---------------+
-                                          |
-                       fail: stop here    |    pass: continue
-                                          v
-                          +-------------------------------+
-                          | approval (manual, high risk)  |
-                          +---------------+---------------+
-                                          v
-                          +-------------------------------+
-                          | deploy: shift alias / canary    |
-                          | CloudWatch alarms on errors   |
-                          +-------------------------------+
+<p>AgentCore Runtime is not "Lambda for agents." Lambda caps executions at 15 minutes and has no session concept. Runtime manages long-lived agent sessions with health checks and idle timeouts. Picking Lambda for a long-running agent session is a standard exam trap.</p></div>
+<pre><code>  Developer laptop                    AWS
+  +----------------+     +-------------------------------+
+  | agentcore.py + |     |  AgentCore Runtime            |
+  | Dockerfile     |---&gt; |  session per caller           |
+  | docker build   | ECR |       |                       |
+  +----------------+ --&gt; |       v                       |
+                         |  Container (arm64, :8080)     |
+  Caller ---------------&gt;|  POST /invocations -&gt; handler |
+                         |  GET  /ping        -&gt; health |
+                         |       |                       |
+                         |       +--&gt; Gateway: MCP tools |
+                         |       +--&gt; Memory: session +  |
+                         |       |    long-term context  |
+                         |       +--&gt; Identity: OAuth /  |
+                         |            credentials        |
+                         |       +--&gt; Observability:     |
+                         |            OTEL traces        |
+                         +-------------------------------+
 </code></pre>
-<p>Figure 7.1: A GenAI pipeline with an evaluation gate. The gate is a build phase that fails the pipeline on metric regression. Caption: ASCII diagram drawn for this volume.</p>
+<p>Figure 6.1: Deploying a Strands agent on AgentCore Runtime. The container contract is two HTTP routes; the platform supplies sessions, tools, memory, identity, and traces. Caption: ASCII diagram drawn for this volume.</p>
 <p>How to read this diagram</p>
 <ol>
-<li>Start at the top: the only trigger is a git push. Console edits that bypass the repo bypass the gate, which is why the repo is the source of truth.</li>
-<li>The build box shows the phases in order. The eval gate sits inside the build phase, after the fast unit checks, because evals cost model calls and should run only on sane inputs.</li>
-<li>Read the two exit arrows: fail stops the pipeline immediately; pass continues to approval and deploy.</li>
-<li>Deploy means alias shift or canary, never overwriting the serving version in place. Alarms watch the rollout.</li>
+<li>Start left: the developer builds the image from the agent code and Dockerfile, then pushes it to a container registry (ECR, Elastic Container Registry).</li>
+<li>The Runtime launches the container and manages one session per caller. Sessions survive across calls; the platform polls <code>/ping</code> to know the container is alive.</li>
+<li>Each caller request is a <code>POST /invocations</code> with a JSON payload. The <code>@app.entrypoint</code> function handles it and returns JSON.</li>
+<li>Inside the session, the agent reaches four platform services: Gateway for MCP tools, Memory for context that outlives the container, Identity for credentials, and Observability for traces.</li>
 </ol>
 <p>What breaks if a component fails</p>
 <ul>
-<li>If thresholds are set once and never recalibrated, the gate either blocks everything or blocks nothing. Review thresholds when the dataset or product changes.</li>
-<li>If the golden dataset goes stale, the gate tests yesterday's product. Refresh it from production traffic samples.</li>
-<li>If evals run against the production model endpoint instead of the candidate, the gate measures the wrong thing. Pin the candidate version explicitly.</li>
+<li>If the image is built for the wrong CPU architecture, the container never starts. Build for <code>linux/arm64</code>.</li>
+<li>If the server binds localhost instead of <code>0.0.0.0</code>, health checks fail and the session is reaped even though the agent works locally.</li>
+<li>If <code>/ping</code> is missing or slow, the platform treats the session as dead. The SDK's built-in handler exists so you do not hand-roll this.</li>
 </ul>
 <div class="exam-ask"><p>Exam angles and traps.</p>
 <ul>
-<li>Scenario: "validate a new prompt version before rollout" or "a prompt change caused a production incident; prevent recurrence." The most correct answer is a pipeline with automated regression testing and a canary or alias-based deployment. Distractors: manual testing in the console as the complete answer (not repeatable, not a gate), deploying straight to production because "prompts are not code" (they are behavior changes and need gates), or unit tests alone with no behavioral eval (unit tests cannot catch tone or faithfulness regressions).</li>
-<li>Second angle: "which eval method for brand voice at scale" points at LLM-as-a-judge in the gate plus human spot checks.</li>
-<li>Programmatic eval for objective metrics, LLM-as-a-judge for quality at scale, human eval for subjective judgment. Match the method to the metric; the exam tests this mapping.</li>
-<li>Canary plus alias shift is the deployment answer. Blue-green full swaps are fine too, but the exam's GenAI scenarios usually say canary.</li>
-<li>A failing eval gate must stop the pipeline. An option that "alerts but deploys anyway" is never the most correct for a safety regression.</li>
+<li>Scenario: a team built an agent in an open-source framework and needs managed hosting with sessions, tool access via MCP, and no server management. The answer is AgentCore Runtime, with Gateway for the tools. Distractors: ECS with a hand-built session store (you own sessions, scaling, and health checks), Lambda (15-minute cap, no sessions), Bedrock Agents (managed but locks you into its framework and console model).</li>
+<li>Map each need to a component: "tools for any framework" points at Gateway, "remember users across weeks" at Memory, "call Salesforce on the user's behalf" at Identity.</li>
+<li>Name all five components cold: Runtime, Gateway, Memory, Identity, Observability. Questions often test Gateway versus Memory versus Identity by scenario verb.</li>
+<li>The container contract is <code>POST /invocations</code> plus <code>GET /ping</code> on port 8080. A question about "the deployed agent never receives traffic" points at the contract, not the model.</li>
+<li>Migration direction matters: Bedrock Agents to AgentCore is the documented path when teams outgrow the managed agent framework. The reverse is not a thing.</li>
 </ul></div>
 <h4 id="practice-question">Practice question</h4>
-<p>A team edits Bedrock prompts weekly. Last month a reworded system prompt silently dropped the product's refusal behavior for disallowed content, and nobody noticed for a week. Which approach MOST reduces the chance of recurrence?</p>
-<p>A. Require two engineers to eyeball each prompt change in the console before pasting it into production.</p>
-<p>B. Check prompts into git and run a CodePipeline where CodeBuild executes an eval gate on a golden dataset with toxicity and refusal thresholds; failures block deployment.</p>
-<p>C. Write unit tests asserting the prompt template files are valid JSON.</p>
-<p>D. Deploy prompt changes on Fridays so the team can monitor them over the weekend.</p>
-<p>B is correct. It makes prompt changes reviewable (git), repeatable (pipeline), and behaviorally tested (eval gate with the exact metrics that regressed: toxicity and refusal). A threshold breach stops the pipeline before production.</p>
-<p>A is wrong because manual eyeballing is not repeatable and does not scale; it is the process the incident already proved insufficient.</p>
-<p>C is wrong because schema validity says nothing about behavior; a valid-JSON prompt can still refuse nothing.</p>
-<p>D is wrong and slightly comic: deployment timing is not a safety control. Friday deploys are famously the opposite of safe.</p>
+<p>A team has a working Strands agent on a developer laptop. For production they need: managed hosting with per-caller sessions, the agent's existing REST APIs exposed as tools usable through MCP, user preferences remembered across weeks, and no server management. Which combination is MOST correct? (Select TWO.)</p>
+<p>A. Deploy the agent container to AgentCore Runtime and expose the REST APIs through AgentCore Gateway.</p>
+<p>B. Store user preferences in AgentCore Memory.</p>
+<p>C. Package the agent as a Lambda function with a 15-minute timeout and keep preferences in Lambda environment variables.</p>
+<p>D. Rebuild the agent as a Bedrock Agent because AgentCore Runtime only hosts Bedrock Agents.</p>
+<p>A and B are correct. Runtime gives managed sessions and hosting for any-framework agents; Gateway converts existing APIs into MCP tools; Memory is the managed store for long-lived agent context. Together they satisfy every requirement.</p>
+<p>C is wrong twice over: Lambda caps at 15 minutes and has no session concept, and environment variables are not a user-preference store. This is the "Lambda for everything" trap.</p>
+<p>D is wrong because the premise is false: Runtime hosts any-framework agents, which is exactly its purpose, and the Bedrock-Agents-to-AgentCore migration path exists precisely for teams that started managed and need framework freedom, not the reverse.</p>
+<p class="note"><strong>Next:</strong> Lab 7 covers the infrastructure underneath: KMS, X-Ray, SQS, and the foundations.</p>
+<h2 id="7-supporting-labs-kms-x-ray-sqs-and-foundations">7. Supporting labs: KMS, X-Ray, SQS, and foundations</h2>
+<p class="note"><strong>Why this chapter comes next.</strong> The agents are built and deployed. This chapter covers the infrastructure underneath them: encryption, tracing, messaging, and the building blocks every GenAI architecture assumes.</p>
+<p>The remaining lab files, mapped to their exam roles: encryption, tracing, messaging, and the building blocks under every GenAI architecture.</p>
+<p class="prereq"><strong>Prerequisites:</strong> None; these are the service building blocks the other chapters assume.</p>
+<h3 id="what-this-chapter-covers">What this chapter covers</h3>
+<p>The lab pack includes supporting exercises that are not GenAI-specific but appear constantly in GenAI architectures and exam scenarios. Each gets its exam framing here so no file is left unmapped.</p>
+<p>One concept ties several of these labs together: RAG (retrieval-augmented generation). Instead of training a model on your documents, you retrieve the relevant passages at query time and hand them to the model as context. A Bedrock knowledge base is the managed implementation of this pattern; the book.txt and bylaws files below are the raw material such a pipeline ingests.</p>
+<h4 id="kms-encryption-for-model-data">KMS: encryption for model data</h4>
+<p>AWS Key Management Service manages the encryption keys that protect data at rest. The lab's CLI script walks the envelope pattern: encrypt a file with a KMS key, store the ciphertext, decrypt it back with the same key. In GenAI architectures KMS keys encrypt fine-tuning datasets in S3, Bedrock model invocation logs, and flow definitions. The exam tests two things: that sensitive training or log data is encrypted with customer-managed keys, and that VPC endpoints keep Bedrock traffic off the public internet. A question about "encrypt the data used to customize a model" points at KMS plus S3 server-side encryption, not at the model service itself.</p>
+<h4 id="x-ray-tracing-the-agents-path">X-Ray: tracing the agent's path</h4>
+<p>AWS X-Ray traces requests as they cross service boundaries, showing each segment's latency. The lab's CloudFormation template wires X-Ray into a sample app. For GenAI, X-Ray answers "where did the 8 seconds go" across a multi-step agent run: the classifier call, the specialist's model call, the Lambda tool, the DynamoDB read. The exam pairs X-Ray with CloudWatch Logs Insights for GenAI observability: X-Ray for the trace across calls, Logs Insights for prompt and response forensics. A distractor offers CloudTrail for latency debugging; CloudTrail is audit logging, not performance tracing.</p>
+<h4 id="sqs-decoupling-the-pipeline">SQS: decoupling the pipeline</h4>
+<p>Amazon SQS is a managed message queue: send, receive, delete. The lab script covers the basics. In GenAI pipelines SQS decouples ingestion from processing: uploads land, a queue buffers them, Lambda workers drain the queue into chunking and embedding. The exam tests SQS for fan-out and buffering, and it tests what SQS is not: it is not a configuration store (that is AppConfig), not a state store (that is DynamoDB), and not a vector store.</p>
+<h4 id="foundations-cli-ec2-metadata-user-data-kinesis-cloudformation-basics">Foundations: CLI, EC2 metadata, user data, Kinesis, CloudFormation basics</h4>
+<ul>
+<li><strong>CLI and EC2 metadata:</strong> the metadata script shows how code on EC2 discovers its own identity and credentials. Exam angle: IAM roles for EC2 instead of baked-in keys, and IMDSv2 (Instance Metadata Service version 2, the session-token-based metadata endpoint) for metadata security.</li>
+<li><strong>EC2 user data:</strong> bootstrap scripts that configure an instance at launch. Exam angle: user data runs once at launch; it is not a configuration management system and not a place for secrets.</li>
+<li><strong>Kinesis data streams:</strong> the lab script creates a stream for ordered, replayable ingestion. Exam angle: Kinesis for streaming data into processing (for example, a live transcript feed into a summarizer), versus SQS for simple buffering.</li>
+<li><strong>CloudFormation basics:</strong> the two templates build from a bare instance to one with a security group and elastic IP. Exam angle: declarative infrastructure, and the reason CloudFormation is wrong for runtime model switching (it is a deployment mechanism).</li>
+</ul>
+<h4 id="the-two-big-files-booktxt-and-the-bylaws-document">The two big files: book.txt and the bylaws document</h4>
+<p>The 260 KB <code>book.txt</code> and the bylaws Word document are sample knowledge sources. Their exam role is the RAG ingestion story: raw text loses structure like headings and tables, so pipelines use extraction (Textract, Comprehend), structure-preserving conversion, and divider markers to improve chunking before embeddings are built. When a scenario says "10,000 mixed files a day into a knowledge base," these files are what that ingestion pipeline eats.</p>
+<pre><code>  Raw sources (book.txt, .docx, uploads)
+       |
+       v
+ +------------------+     +------------------+
+ | Ingestion        |----&gt;| SQS buffer       |
+ | Lambda / BDA     |     | workers drain    |
+ | extract structure|     +------------------+
+ +------------------+              |
+       | KMS encrypts at rest      v
+       v                  +------------------+
+ +------------------+    | Chunk + embed    |
+ | S3 (versioned,    |---&gt;| -&gt; vector store  |
+ | KMS-encrypted)   |    +------------------+
+ +------------------+
+       X-Ray traces every hop; CloudWatch alarms on failures
+</code></pre>
+<p>Figure 7.1: Where the supporting labs fit in a GenAI ingestion pipeline. Caption: ASCII diagram drawn for this volume.</p>
+<p>How to read this diagram</p>
+<ol>
+<li>Start at the top: raw documents enter. Ingestion (Lambda preprocessing or Bedrock Data Automation) extracts structure so chunking works.</li>
+<li>SQS buffers the work so a surge of uploads does not overwhelm the embedders. Workers drain at their own pace.</li>
+<li>S3 holds the raw and processed files, versioned and encrypted with KMS. Nothing here is public.</li>
+<li>Chunking and embedding feed the vector store. X-Ray traces the whole path; CloudWatch watches for failures.</li>
+</ol>
+<p>What breaks if a component fails</p>
+<ul>
+<li>If structure extraction is skipped, tables and headings shatter across chunks and retrieval quality collapses. This is the "bad RAG answers" root cause the exam hides in ingestion.</li>
+<li>If the queue has no dead-letter handling, poison messages retry forever and block the pipeline.</li>
+<li>If encryption is missing on the bucket, a compliance scenario fails no matter how good the retrieval is.</li>
+</ul>
+<div class="exam-ask"><p>These labs answer the "which service for this job" questions: KMS for encryption at rest, X-Ray for cross-service latency tracing, SQS for buffering between pipeline stages, Kinesis for ordered replayable streams. The traps are always the wrong-plane tools: CloudTrail for metrics, S3 for session state, ElastiCache for durable vectors.</p></div>
+<h4 id="practice-question">Practice question</h4>
+<p>A RAG ingestion pipeline processes thousands of documents daily. Requirements: buffer upload surges, encrypt stored documents with customer-managed keys, and trace end-to-end latency when a document stalls. Which combination is MOST correct? (Select THREE.)</p>
+<p>A. Buffer incoming documents with SQS so embedding workers drain at their own pace.</p>
+<p>B. Encrypt the S3 buckets with KMS customer-managed keys.</p>
+<p>C. Enable X-Ray tracing across the ingestion Lambdas to find slow hops.</p>
+<p>D. Store the documents in ElastiCache for durability and query CloudTrail for latency metrics.</p>
+<p>E. Skip structure extraction because the embedding model will figure out tables on its own.</p>
+<p>A, B, and C are correct. A decouples surge from processing. B meets the customer-managed encryption requirement. C gives cross-service latency traces, which is exactly the stalled-document question.</p>
+<p>D is wrong twice: ElastiCache is ephemeral cache, not durable document storage, and CloudTrail is audit logging, not a metrics or tracing plane. This is the wrong-plane double trap.</p>
+<p>E is wrong because raw unstructured text shatters tables across chunks; structure extraction before chunking is what keeps retrieval quality up.</p>
+<p class="note"><strong>Next:</strong> Lab 8 codifies the stack as CDK, from click-ops to repeatable infrastructure.</p>
 <h2 id="8-lab-cdk-for-genai-infrastructure">8. Lab: CDK for GenAI infrastructure</h2>
+<p class="note"><strong>Why this chapter comes next.</strong> Lab 4's serving path was built by hand. This lab codifies the whole GenAI stack in CDK so it is repeatable, reviewable, and auditable.</p>
 <p>Define the whole GenAI stack in a real programming language and let it compile to CloudFormation.</p>
+<p class="prereq"><strong>Prerequisites:</strong> Chapter 4 (the serving path this stack codifies) and chapter 7 (the services it wires together).</p>
 <h3 id="what-this-lab-teaches">What this lab teaches</h3>
 <p>The AWS Cloud Development Kit (CDK) lets you define cloud infrastructure in familiar languages such as TypeScript or Python. You write constructs, small building blocks like a Lambda function, an S3 bucket, or a DynamoDB table, and compose them into a stack. Running <code>cdk synth</code> compiles your code into a CloudFormation template; <code>cdk deploy</code> creates or updates the stack from that template. The lab's stack file builds a realistic pattern: an S3 bucket for uploads, a Lambda function with an IAM role, and a DynamoDB table, wired together with outputs.</p>
 <p>For GenAI workloads the same pattern hosts the serving path: the Lambda that calls Bedrock, the API Gateway in front of it, the DynamoDB table for session state, and the IAM policies scoping each piece. IAM is where CDK earns its keep for GenAI: the Lambda's role gets exactly <code>bedrock:InvokeModel</code> on the specific model ARNs it may call, plus logging permissions, and nothing else.</p>
@@ -2000,7 +1996,7 @@ fnRole.addToPolicy(new iam.PolicyStatement({
 </code></pre>
 <p>The lab's stack also demonstrates the event-source pattern: a Lambda subscribed to S3 events, so every upload triggers processing. For GenAI ingestion pipelines, that pattern feeds new documents into chunking and embedding without a polling loop.</p>
 <div class="exam-ask"><p>Common misunderstanding.</p>
-<p>CDK is deploy-time infrastructure, not runtime configuration. Switching models at runtime is AppConfig's job (chapter 5). A question that asks for model switching "without redeploy" and offers a CDK redeploy as the answer is testing whether you confuse the two planes.</p></div>
+<p>CDK is deploy-time infrastructure, not runtime configuration. Switching models at runtime is AppConfig's job (chapter 4). A question that asks for model switching "without redeploy" and offers a CDK redeploy as the answer is testing whether you confuse the two planes.</p></div>
 <pre><code>  app code (TypeScript / Python)
        |
        | cdk synth
@@ -2054,66 +2050,98 @@ fnRole.addToPolicy(new iam.PolicyStatement({
 <p>A is wrong twice: console builds are not repeatable across environments, and AdministratorAccess on a serving role is the opposite of least privilege.</p>
 <p>C is wrong because it confuses the planes: model switching at runtime is AppConfig's job, and CDK redeploys are deployments, not runtime configuration.</p>
 <p>D is wrong because a template on a shared drive with no versioning or pipeline is click-ops with extra steps; it fails repeatability and auditability.</p>
-<h2 id="9-supporting-labs-kms-x-ray-sqs-and-foundations">9. Supporting labs: KMS, X-Ray, SQS, and foundations</h2>
-<p>The remaining lab files, mapped to their exam roles: encryption, tracing, messaging, and the building blocks under every GenAI architecture.</p>
-<h3 id="what-this-chapter-covers">What this chapter covers</h3>
-<p>The lab pack includes supporting exercises that are not GenAI-specific but appear constantly in GenAI architectures and exam scenarios. Each gets its exam framing here so no file is left unmapped.</p>
-<h4 id="kms-encryption-for-model-data">KMS: encryption for model data</h4>
-<p>AWS Key Management Service manages the encryption keys that protect data at rest. The lab's CLI script walks the envelope pattern: encrypt a file with a KMS key, store the ciphertext, decrypt it back with the same key. In GenAI architectures KMS keys encrypt fine-tuning datasets in S3, Bedrock model invocation logs, and flow definitions. The exam tests two things: that sensitive training or log data is encrypted with customer-managed keys, and that VPC endpoints keep Bedrock traffic off the public internet. A question about "encrypt the data used to customize a model" points at KMS plus S3 server-side encryption, not at the model service itself.</p>
-<h4 id="x-ray-tracing-the-agents-path">X-Ray: tracing the agent's path</h4>
-<p>AWS X-Ray traces requests as they cross service boundaries, showing each segment's latency. The lab's CloudFormation template wires X-Ray into a sample app. For GenAI, X-Ray answers "where did the 8 seconds go" across a multi-step agent run: the classifier call, the specialist's model call, the Lambda tool, the DynamoDB read. The exam pairs X-Ray with CloudWatch Logs Insights for GenAI observability: X-Ray for the trace across calls, Logs Insights for prompt and response forensics. A distractor offers CloudTrail for latency debugging; CloudTrail is audit logging, not performance tracing.</p>
-<h4 id="sqs-decoupling-the-pipeline">SQS: decoupling the pipeline</h4>
-<p>Amazon SQS is a managed message queue: send, receive, delete. The lab script covers the basics. In GenAI pipelines SQS decouples ingestion from processing: uploads land, a queue buffers them, Lambda workers drain the queue into chunking and embedding. The exam tests SQS for fan-out and buffering, and it tests what SQS is not: it is not a configuration store (that is AppConfig), not a state store (that is DynamoDB), and not a vector store.</p>
-<h4 id="foundations-cli-ec2-metadata-user-data-kinesis-cloudformation-basics">Foundations: CLI, EC2 metadata, user data, Kinesis, CloudFormation basics</h4>
-<ul>
-<li><strong>CLI and EC2 metadata:</strong> the metadata script shows how code on EC2 discovers its own identity and credentials. Exam angle: IAM roles for EC2 instead of baked-in keys, and IMDSv2 (Instance Metadata Service version 2, the session-token-based metadata endpoint) for metadata security.</li>
-<li><strong>EC2 user data:</strong> bootstrap scripts that configure an instance at launch. Exam angle: user data runs once at launch; it is not a configuration management system and not a place for secrets.</li>
-<li><strong>Kinesis data streams:</strong> the lab script creates a stream for ordered, replayable ingestion. Exam angle: Kinesis for streaming data into processing (for example, a live transcript feed into a summarizer), versus SQS for simple buffering.</li>
-<li><strong>CloudFormation basics:</strong> the two templates build from a bare instance to one with a security group and elastic IP. Exam angle: declarative infrastructure, and the reason CloudFormation is wrong for runtime model switching (it is a deployment mechanism).</li>
-</ul>
-<h4 id="the-two-big-files-booktxt-and-the-bylaws-document">The two big files: book.txt and the bylaws document</h4>
-<p>The 260 KB <code>book.txt</code> and the bylaws Word document are sample knowledge sources. Their exam role is the RAG ingestion story: raw text loses structure like headings and tables, so pipelines use extraction (Textract, Comprehend), structure-preserving conversion, and divider markers to improve chunking before embeddings are built. When a scenario says "10,000 mixed files a day into a knowledge base," these files are what that ingestion pipeline eats.</p>
-<pre><code>  Raw sources (book.txt, .docx, uploads)
+<p class="note"><strong>Next:</strong> Lab 9 closes the loop: CI/CD with eval gates so no prompt or model ships unmeasured.</p>
+<h2 id="9-lab-cicd-with-eval-gates">9. Lab: CI/CD with eval gates</h2>
+<p class="note"><strong>Why this chapter comes next.</strong> The stack is code now. The last gap is change safety: this lab puts prompts and models through review, evaluation, and canary rollout before they reach production.</p>
+<figure><img src="assets/img/internet/img-33.webp" alt="Prompt CI/CD: prompts live in a source file or registry, pass code review and evaluation, then roll out through staging and canary traffic to production with version tags." loading="lazy"><figcaption>Prompt CI/CD: prompts live in a source file or registry, pass code review and evaluation, then roll out through staging and canary traffic to production with version tags.</figcaption><figcaption class="credit">Source: Third-party MLOps guide, via image search Sept 2026.</figcaption></figure>
+<p>Ship prompt and model changes like code: pipeline stages, build specs, and an evaluation gate that blocks bad releases.</p>
+<p class="prereq"><strong>Prerequisites:</strong> Chapters 2 and 5 (the flows and agents whose aliases the pipeline shifts) and chapter 7 (RAG and the eval vocabulary).</p>
+<h3 id="what-this-lab-teaches">What this lab teaches</h3>
+<p>CI/CD on AWS is a pipeline of stages: source, build, test, deploy. AWS CodePipeline orchestrates the stages. AWS CodeBuild runs the build, driven by a <code>buildspec.yml</code> file with phases: <code>install</code>, <code>pre_build</code>, <code>build</code>, and <code>post_build</code>. AWS CodeDeploy ships the artifact to its target. The lab pack's <code>buildspec.yml</code> shows the skeleton: install a runtime, echo through the phases, and run a check in the build phase that fails the build when the check fails.</p>
+<p>For GenAI, the build phase gains an evaluation gate. A prompt or model change is a behavior change, and behavior needs tests. The gate runs an eval suite, compares metrics against thresholds, and fails the build on regression. The pipeline stops, the bad prompt never deploys, and the team gets a red build instead of a production incident.</p>
+<h3 id="why-it-exists-when-you-would-use-it-in-production">Why it exists: when you would use it in production</h3>
+<p>Teams that edit prompts in the console and paste them into production get silent regressions: a reworded system prompt that drops refusal behavior, a model swap that changes tone, a new few-shot example that biases outputs. CI/CD makes prompt and config changes reviewable, testable, and reversible. The eval gate is the GenAI equivalent of a unit test suite: it encodes "the behavior we promise" and blocks anything that breaks it.</p>
+<h3 id="how-it-works-under-the-hood">How it works under the hood</h3>
+<ol>
+<li>A developer pushes a change to the prompt templates or model configuration in git. CodePipeline's source stage picks it up.</li>
+<li>CodeBuild runs <code>buildspec.yml</code>. The install phase sets up the runtime; pre_build prepares; the build phase runs two suites: fast unit checks (schema validation of prompt templates, config linting) and the eval gate.</li>
+<li>The eval gate invokes the candidate prompt or model against a golden dataset and scores it: faithfulness (whether each claim in the answer is supported by the retrieved passages) for RAG (retrieval-augmented generation, answering from retrieved documents) answers, toxicity and refusal checks for safety, format compliance for structured outputs. Scores are compared to thresholds stored with the repo. Any threshold breach fails the build.</li>
+<li>On green, the pipeline continues: an optional manual approval stage for high-risk changes, then deployment. Deployment for GenAI usually means shifting a flow alias or agent alias to the new version, or a canary (a rollout that sends a small slice of traffic first while CloudWatch alarms watch token error rates and latency).</li>
+<li>On red, the pipeline halts and the previous version keeps serving. Rollback is shifting the alias back, which is instant because versions are immutable.</li>
+</ol>
+<p>Adapted teaching snippet (a buildspec eval gate, written for this volume):</p>
+<pre><code>version: 0.2
+phases:
+  install:
+    runtime-versions:
+      python: 3.12
+  build:
+    commands:
+      - echo &quot;Validating prompt templates&quot;
+      - python validate_prompts.py prompts/
+      - echo &quot;Running eval gate against golden dataset&quot;
+      - python eval_gate.py --dataset golden/qa.jsonl
+          --min-faithfulness 0.85 --max-toxicity 0.02
+      # any non-zero exit fails the build and stops the pipeline
+</code></pre>
+<p>The eval suite itself can use Bedrock's evaluation features: programmatic metrics for objective checks, LLM-as-a-judge (a second model that scores outputs on quality dimensions like faithfulness and style), and human review for the subjective ones. The pipeline runs the automated tiers on every change and reserves human review for releases that cross risk thresholds.</p>
+<div class="exam-ask"><p>Common misunderstanding.</p>
+<p>An eval gate is not "run the model once and eyeball it." It is a repeatable suite with thresholds, checked into the repo, run on every change. Manual console spot-checks are the thing the gate replaces.</p></div>
+<pre><code>  git push (prompts/ + config)
        |
        v
- +------------------+     +------------------+
- | Ingestion        |----&gt;| SQS buffer       |
- | Lambda / BDA     |     | workers drain    |
- | extract structure|     +------------------+
- +------------------+              |
-       | KMS encrypts at rest      v
-       v                  +------------------+
- +------------------+    | Chunk + embed    |
- | S3 (versioned,    |---&gt;| -&gt; vector store  |
- | KMS-encrypted)   |    +------------------+
- +------------------+
-       X-Ray traces every hop; CloudWatch alarms on failures
+ +------------------+     +-------------------------------+
+ | CodePipeline     |----&gt;| CodeBuild (buildspec.yml)     |
+ | source stage     |     | install -&gt; pre_build -&gt; build |
+ +------------------+     |   unit checks (schemas)       |
+                          |   EVAL GATE: golden dataset   |
+                          |   faithfulness &gt;= 0.85        |
+                          |   toxicity     &lt;= 0.02        |
+                          +---------------+---------------+
+                                          |
+                       fail: stop here    |    pass: continue
+                                          v
+                          +-------------------------------+
+                          | approval (manual, high risk)  |
+                          +---------------+---------------+
+                                          v
+                          +-------------------------------+
+                          | deploy: shift alias / canary    |
+                          | CloudWatch alarms on errors   |
+                          +-------------------------------+
 </code></pre>
-<p>Figure 9.1: Where the supporting labs fit in a GenAI ingestion pipeline. Caption: ASCII diagram drawn for this volume.</p>
+<p>Figure 9.1: A GenAI pipeline with an evaluation gate. The gate is a build phase that fails the pipeline on metric regression. Caption: ASCII diagram drawn for this volume.</p>
 <p>How to read this diagram</p>
 <ol>
-<li>Start at the top: raw documents enter. Ingestion (Lambda preprocessing or Bedrock Data Automation) extracts structure so chunking works.</li>
-<li>SQS buffers the work so a surge of uploads does not overwhelm the embedders. Workers drain at their own pace.</li>
-<li>S3 holds the raw and processed files, versioned and encrypted with KMS. Nothing here is public.</li>
-<li>Chunking and embedding feed the vector store. X-Ray traces the whole path; CloudWatch watches for failures.</li>
+<li>Start at the top: the only trigger is a git push. Console edits that bypass the repo bypass the gate, which is why the repo is the source of truth.</li>
+<li>The build box shows the phases in order. The eval gate sits inside the build phase, after the fast unit checks, because evals cost model calls and should run only on sane inputs.</li>
+<li>Read the two exit arrows: fail stops the pipeline immediately; pass continues to approval and deploy.</li>
+<li>Deploy means alias shift or canary, never overwriting the serving version in place. Alarms watch the rollout.</li>
 </ol>
 <p>What breaks if a component fails</p>
 <ul>
-<li>If structure extraction is skipped, tables and headings shatter across chunks and retrieval quality collapses. This is the "bad RAG answers" root cause the exam hides in ingestion.</li>
-<li>If the queue has no dead-letter handling, poison messages retry forever and block the pipeline.</li>
-<li>If encryption is missing on the bucket, a compliance scenario fails no matter how good the retrieval is.</li>
+<li>If thresholds are set once and never recalibrated, the gate either blocks everything or blocks nothing. Review thresholds when the dataset or product changes.</li>
+<li>If the golden dataset goes stale, the gate tests yesterday's product. Refresh it from production traffic samples.</li>
+<li>If evals run against the production model endpoint instead of the candidate, the gate measures the wrong thing. Pin the candidate version explicitly.</li>
 </ul>
-<div class="exam-ask"><p>These labs answer the "which service for this job" questions: KMS for encryption at rest, X-Ray for cross-service latency tracing, SQS for buffering between pipeline stages, Kinesis for ordered replayable streams. The traps are always the wrong-plane tools: CloudTrail for metrics, S3 for session state, ElastiCache for durable vectors.</p></div>
+<div class="exam-ask"><p>Exam angles and traps.</p>
+<ul>
+<li>Scenario: "validate a new prompt version before rollout" or "a prompt change caused a production incident; prevent recurrence." The most correct answer is a pipeline with automated regression testing and a canary or alias-based deployment. Distractors: manual testing in the console as the complete answer (not repeatable, not a gate), deploying straight to production because "prompts are not code" (they are behavior changes and need gates), or unit tests alone with no behavioral eval (unit tests cannot catch tone or faithfulness regressions).</li>
+<li>Second angle: "which eval method for brand voice at scale" points at LLM-as-a-judge in the gate plus human spot checks.</li>
+<li>Programmatic eval for objective metrics, LLM-as-a-judge for quality at scale, human eval for subjective judgment. Match the method to the metric; the exam tests this mapping.</li>
+<li>Canary plus alias shift is the deployment answer. Blue-green full swaps are fine too, but the exam's GenAI scenarios usually say canary.</li>
+<li>A failing eval gate must stop the pipeline. An option that "alerts but deploys anyway" is never the most correct for a safety regression.</li>
+</ul></div>
 <h4 id="practice-question">Practice question</h4>
-<p>A RAG ingestion pipeline processes thousands of documents daily. Requirements: buffer upload surges, encrypt stored documents with customer-managed keys, and trace end-to-end latency when a document stalls. Which combination is MOST correct? (Select THREE.)</p>
-<p>A. Buffer incoming documents with SQS so embedding workers drain at their own pace.</p>
-<p>B. Encrypt the S3 buckets with KMS customer-managed keys.</p>
-<p>C. Enable X-Ray tracing across the ingestion Lambdas to find slow hops.</p>
-<p>D. Store the documents in ElastiCache for durability and query CloudTrail for latency metrics.</p>
-<p>E. Skip structure extraction because the embedding model will figure out tables on its own.</p>
-<p>A, B, and C are correct. A decouples surge from processing. B meets the customer-managed encryption requirement. C gives cross-service latency traces, which is exactly the stalled-document question.</p>
-<p>D is wrong twice: ElastiCache is ephemeral cache, not durable document storage, and CloudTrail is audit logging, not a metrics or tracing plane. This is the wrong-plane double trap.</p>
-<p>E is wrong because raw unstructured text shatters tables across chunks; structure extraction before chunking is what keeps retrieval quality up.</p>
+<p>A team edits Bedrock prompts weekly. Last month a reworded system prompt silently dropped the product's refusal behavior for disallowed content, and nobody noticed for a week. Which approach MOST reduces the chance of recurrence?</p>
+<p>A. Require two engineers to eyeball each prompt change in the console before pasting it into production.</p>
+<p>B. Check prompts into git and run a CodePipeline where CodeBuild executes an eval gate on a golden dataset with toxicity and refusal thresholds; failures block deployment.</p>
+<p>C. Write unit tests asserting the prompt template files are valid JSON.</p>
+<p>D. Deploy prompt changes on Fridays so the team can monitor them over the weekend.</p>
+<p>B is correct. It makes prompt changes reviewable (git), repeatable (pipeline), and behaviorally tested (eval gate with the exact metrics that regressed: toxicity and refusal). A threshold breach stops the pipeline before production.</p>
+<p>A is wrong because manual eyeballing is not repeatable and does not scale; it is the process the incident already proved insufficient.</p>
+<p>C is wrong because schema validity says nothing about behavior; a valid-JSON prompt can still refuse nothing.</p>
+<p>D is wrong and slightly comic: deployment timing is not a safety control. Friday deploys are famously the opposite of safe.</p>
 <h2 id="build-checklist-and-verification-log">Build checklist and verification log</h2>
 <p>What was checked before this volume shipped.</p>
 <ul>
@@ -2130,13 +2158,14 @@ fnRole.addToPolicy(new iam.PolicyStatement({
 <h3 id="live-verification-log-2026-09-28">Live verification log (2026-09-28)</h3>
 <ul>
 <li><strong>Verified against live sources:</strong> AgentCore five components (Runtime, Gateway, Memory, Identity, Observability) and the container contract (POST /invocations, GET /ping, port 8080, linux/arm64) via the official Bedrock AgentCore dev guide URLs and corroborating samples. <code>BedrockAgentCoreApp</code> with <code>@app.entrypoint</code> via the AgentCore SDK samples; Strands <code>@tool</code> decorator semantics (docstring as description, type hints as schema) via the Strands SDK docs and samples. Agent Squad package <code>agent-squad</code> with <code>AgentSquad</code>, <code>route_request</code> coroutine, <code>BedrockClassifier</code>, <code>add_agent</code>, <code>response.metadata</code>, and <code>ChatStorage</code> via the project's current docs and the AWS Solutions Guidance page. Bedrock Flows definition structure (<code>nodes</code> and <code>connections</code> arrays, <code>Data</code> and <code>Conditional</code> connection types, PrepareFlow DRAFT behavior) via the official Bedrock API reference and CloudFormation docs. Bedrock agent action-group Lambda event and response shapes (parameters list, <code>responseBody.TEXT.body</code>, <code>messageVersion</code>, apiSchema versus functionSchema) via the Bedrock user guide page on Lambda configuration for agents. Nova model IDs <code>amazon.nova-lite-v1:0</code> and <code>amazon.nova-micro-v1:0</code> via multiple current sources.</li>
-<li><strong>Marked UNVERIFIED inline:</strong> the Iterator node sequential-processing detail in chapter 4 (community-reported, not confirmed in live docs during this build).</li>
+<li><strong>Marked UNVERIFIED inline:</strong> the Iterator node sequential-processing detail in chapter 2 (community-reported, not confirmed in live docs during this build).</li>
 <li><strong>Not stated as fact:</strong> volatile numbers (pricing, quotas) are either omitted or labeled illustrative; where a limit is standard and documented (for example Lambda's 15-minute maximum), it is stated as a documented limit.</li>
 </ul>
 <p>Last verified: 2026-09-28. Re-check service details against current AWS documentation before the exam date.</p>
 </div>
 
-</main>
+
+<div class="callout"><span class="lbl">Where to go next</span><p>The labs are done. The next volume, <a href="volume-question-patterns.html"><strong>Question Patterns</strong></a>, drills how AWS asks: the six question patterns, the tactics per format, the 30 traps, and 81 original practice questions across all five domains.</p></div></main>
 <script>
 window.DS_TRACK = "aipc01";
 window.DS_TRACK_TITLE = "AIP-C01 Study Guide";
