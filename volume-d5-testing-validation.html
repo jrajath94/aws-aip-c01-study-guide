@@ -2,6 +2,14 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<style>
+/* Validation-assembly: bridge + equation rendering (additive, 2026-09-29). */
+.chapter-bridge,.topic-bridge,.u-bridge{border-left:3px solid #8a8f98;border-left:3px solid color-mix(in srgb,currentColor 40%,transparent);padding:.55rem .9rem;margin:1.1rem 0;background:rgba(128,128,128,.08);border-radius:0 6px 6px 0}
+.next-chapter,.u-next,.u-goto{font-weight:650;margin:1.15rem 0}
+.display-eq,.eq{text-align:center;margin:1.15rem 0;font-size:1.12em;line-height:1.7}
+.eq-where{margin:.1rem 0 1rem 1.25rem;font-size:.93em;opacity:.92}
+.eq-worked{border:1px solid #8a8f98;border:1px solid color-mix(in srgb,currentColor 30%,transparent);border-radius:8px;padding:.7rem 1rem;margin:1rem 0;background:rgba(128,128,128,.06)}
+</style>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="dark">
 <title>AIP-C01 Domain 5: Testing, Validation, and Troubleshooting</title>
@@ -1313,6 +1321,7 @@ html.xp-js .xp-reveal.xp-in {
 <p>Three terms you will meet in every chapter, defined once here. Ground truth is the known-correct answer attached to a prompt: the label your scoring compares against. Deterministic means the same input always gives the same output: a traditional test is deterministic, a model call is not. Temperature is the generation setting that controls randomness. It shapes wording, never correctness, and it is never a cost control.</p>
 <p>Reading the diagram: on the left, the traditional test. One input enters a function, one output comes out, and the assertion compares it to the single expected value. On the right, the generative test. One prompt enters the model, and several different wordings come out, all valid. The assertion is replaced by a scoring step that judges each output against a rubric or a reference and produces a score instead of a verdict. The exam's core instinct starts here: never apply an exact-match test to an open-ended output.</p>
 <h2 id="what-aws-actually-tests-the-evaluation-matrix">What AWS actually tests (the evaluation matrix)</h2>
+<figure><img src="assets/img/custom/d5-eval-matrix.svg" alt="The evaluation matrix: four methods (automatic, LLM-as-a-judge, human, BYOI), what each measures, and when to use it" loading="lazy"><figcaption>The Task 5.1 evaluation matrix. Exam scenarios are this table in costume: name the method, name what it measures, pick the row.</figcaption><figcaption class="credit">Drawn for this volume.</figcaption></figure>
 <p>Memorize this table. It is the backbone of Task 5.1, and several exam questions are just this table wearing a scenario costume.</p>
 <div class="table-wrap"><table>
 <thead>
@@ -1346,6 +1355,7 @@ html.xp-js .xp-reveal.xp-in {
 </tbody>
 </table></div>
 <h2 id="how-aws-asks-this-domain">How AWS asks this domain</h2>
+<figure><img src="assets/img/custom/d5-trap-traditional-fix.svg" alt="Three traditional fixes that do not fix GenAI problems: raising temperature for bad retrieval, a bigger model for broken chunking, Provisioned Throughput for nondeterministic outputs" loading="lazy"><figcaption>The domain trap: traditional fixes applied to GenAI problems. Every troubleshooting question hides one distractor like these.</figcaption><figcaption class="credit">Drawn for this volume.</figcaption></figure>
 <p>Scenario-based, as always. Expect stems like: "A team must compare two models for summarization quality including brand voice." The correct answer pairs two methods: LLM-as-a-judge for scale plus human eval for brand voice. Each chapter below teaches its method from zero. Two roadmap terms to carry forward: a golden dataset is a fixed set of trusted prompts you re-run on every change, and a canary is a release to a small slice of traffic first. Chapter 7 teaches both fully.</p>
 <div class="exam-ask"><p>The domain-wide trap.</p>
 <p>Debugging GenAI like a traditional app. Temperature does not fix bad retrieval. Bigger models do not fix broken chunking. Provisioned Throughput does not fix output randomness. Every troubleshooting question in this domain has one distractor that applies a traditional fix to a GenAI problem.</p></div>
@@ -1395,7 +1405,7 @@ html.xp-js .xp-reveal.xp-in {
 </ol>
 
 <p class="ch-bridge" style="border-left:3px solid var(--accent);padding:.55rem 1rem;background:var(--surface);border-radius:0 8px 8px 0;margin:1.1rem 0"><strong>Why this comes next.</strong> Automatic metrics need labeled ground truth. Chapter 3 covers bringing your own datasets and choosing the right metric for each task.</p>
-<p class="ch-next" style="color:var(--muted);font-size:.95em;margin:1.4rem 0 .4rem"><strong>Next:</strong> Next: bringing your own datasets and choosing metrics.</p>
+<p class="ch-next" style="color:var(--muted);font-size:.95em;margin:1.4rem 0 .4rem"><strong>Next:</strong> bringing your own datasets and choosing metrics.</p>
 <h2 id="4-bring-your-own-datasets-and-choosing-metrics">3. Bring-your-own datasets and choosing metrics</h2>
 <p>Bedrock's built-in datasets cover generic tasks. Your app is not generic. This chapter covers bringing your own prompt datasets and matching each task type to the metric that actually measures it.</p>
 <h3>Your prompts, the right metric</h3>
@@ -1442,7 +1452,7 @@ html.xp-js .xp-reveal.xp-in {
 </ol>
 
 <p class="ch-bridge" style="border-left:3px solid var(--accent);padding:.55rem 1rem;background:var(--surface);border-radius:0 8px 8px 0;margin:1.1rem 0"><strong>Why this comes next.</strong> Some qualities have no formula. Chapter 4 adds the LLM-as-a-judge layer: a model scoring outputs at a scale humans cannot match.</p>
-<p class="ch-next" style="color:var(--muted);font-size:.95em;margin:1.4rem 0 .4rem"><strong>Next:</strong> Next: LLM-as-a-judge evaluation.</p>
+<p class="ch-next" style="color:var(--muted);font-size:.95em;margin:1.4rem 0 .4rem"><strong>Next:</strong> LLM-as-a-judge evaluation.</p>
 <h2 id="2-llm-as-a-judge-evaluation">4. LLM-as-a-judge evaluation</h2>
 <figure class="fig-light"><img src="assets/img/internet/img-19.png" alt="LLM-as-a-judge feedback loop: the application output goes to an eval LLM, which scores it; low scores loop back for improvement" loading="lazy"><figcaption>LLM-as-a-judge feedback loop: the application output goes to an eval LLM, which scores it; low scores loop back for improvement</figcaption><figcaption class="credit">Source: web image search, saved locally Sept 2026.</figcaption></figure>
 <figure><img src="assets/img/mermaid/06-eval-loop.svg" alt="Evaluation loop: a candidate prompt or model runs against a golden dataset, a judge (LLM or deterministic metric) scores accuracy, faithfulness, toxicity, and latency, and the candidate promotes to production only through a CI/CD eval gate." loading="lazy"><figcaption>Evaluation loop: a candidate prompt or model runs against a golden dataset, a judge (LLM or deterministic metric) scores accuracy, faithfulness, toxicity, and latency, and the candidate promotes to production only through a CI/CD eval gate.</figcaption><figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
@@ -1490,7 +1500,7 @@ html.xp-js .xp-reveal.xp-in {
 </ol>
 
 <p class="ch-bridge" style="border-left:3px solid var(--accent);padding:.55rem 1rem;background:var(--surface);border-radius:0 8px 8px 0;margin:1.1rem 0"><strong>Why this comes next.</strong> Judge models are fast but need calibration. Chapter 5 covers human evaluation: the gold standard for subjective quality, and the source that keeps judges honest.</p>
-<p class="ch-next" style="color:var(--muted);font-size:.95em;margin:1.4rem 0 .4rem"><strong>Next:</strong> Next: human evaluation workflows.</p>
+<p class="ch-next" style="color:var(--muted);font-size:.95em;margin:1.4rem 0 .4rem"><strong>Next:</strong> human evaluation workflows.</p>
 <h2 id="3-human-evaluation-workflows">5. Human evaluation workflows</h2>
 <p>Some things only a person can judge. Bedrock human evaluation organizes reviewers, instructions, and agreement measurement into a managed workflow.</p>
 <h3>People, rubrics, and agreement</h3>
@@ -1543,7 +1553,7 @@ html.xp-js .xp-reveal.xp-in {
 </ol>
 
 <p class="ch-bridge" style="border-left:3px solid var(--accent);padding:.55rem 1rem;background:var(--surface);border-radius:0 8px 8px 0;margin:1.1rem 0"><strong>Why this comes next.</strong> With the evaluation methods in hand, Chapter 6 applies them to RAG: retrieval quality, faithfulness, and relevance, diagnosing retrieval before generation.</p>
-<p class="ch-next" style="color:var(--muted);font-size:.95em;margin:1.4rem 0 .4rem"><strong>Next:</strong> Next: RAG evaluation, retrieval quality, faithfulness, relevance.</p>
+<p class="ch-next" style="color:var(--muted);font-size:.95em;margin:1.4rem 0 .4rem"><strong>Next:</strong> RAG evaluation, retrieval quality, faithfulness, relevance.</p>
 <h2 id="5-rag-evaluation-retrieval-quality-faithfulness-relevance">6. RAG evaluation: retrieval quality, faithfulness, relevance</h2>
 <figure class="fig-light"><img src="assets/img/internet/img-18.webp" alt="The RAG evaluation triad: answer relevance, context relevance, and groundedness, the three RAGAS-style metrics every RAG eval needs" loading="lazy"><figcaption>The RAG evaluation triad: answer relevance, context relevance, and groundedness, the three RAGAS-style metrics every RAG eval needs</figcaption><figcaption class="credit">Source: web image search, saved locally Sept 2026.</figcaption></figure>
 <p>A RAG pipeline has two halves that fail independently. Evaluating only the final answer cannot tell you which half broke. RAG evaluation scores retrieval and generation separately.</p>
@@ -1588,7 +1598,7 @@ html.xp-js .xp-reveal.xp-in {
 </ol>
 
 <p class="ch-bridge" style="border-left:3px solid var(--accent);padding:.55rem 1rem;background:var(--surface);border-radius:0 8px 8px 0;margin:1.1rem 0"><strong>Why this comes next.</strong> One eval run is a snapshot. Chapter 7 builds the loop: regression testing, canary analysis, and golden datasets that keep quality from silently decaying.</p>
-<p class="ch-next" style="color:var(--muted);font-size:.95em;margin:1.4rem 0 .4rem"><strong>Next:</strong> Next: eval loops, regression, canary, and golden datasets.</p>
+<p class="ch-next" style="color:var(--muted);font-size:.95em;margin:1.4rem 0 .4rem"><strong>Next:</strong> eval loops, regression, canary, and golden datasets.</p>
 <h2 id="6-eval-loops-and-iteration-regression-canary-golden-datasets">7. Eval loops and iteration: regression, canary, golden datasets</h2>
 <p>Evaluation is not a one-time event. An eval loop re-runs your quality suite on every change and blocks bad ones before users see them.</p>
 <h3>The loop that keeps bad changes out</h3>
@@ -1632,7 +1642,7 @@ html.xp-js .xp-reveal.xp-in {
 </ol>
 
 <p class="ch-bridge" style="border-left:3px solid var(--accent);padding:.55rem 1rem;background:var(--surface);border-radius:0 8px 8px 0;margin:1.1rem 0"><strong>Why this comes next.</strong> Offline evals measure what you thought to test. Chapter 8 lets production traffic decide: A/B testing prompts and models.</p>
-<p class="ch-next" style="color:var(--muted);font-size:.95em;margin:1.4rem 0 .4rem"><strong>Next:</strong> Next: A/B testing prompts and models.</p>
+<p class="ch-next" style="color:var(--muted);font-size:.95em;margin:1.4rem 0 .4rem"><strong>Next:</strong> A/B testing prompts and models.</p>
 <h2 id="7-ab-testing-prompts-and-models">8. A/B testing prompts and models</h2>
 <p>When two options both look good offline, let production traffic decide. A/B testing routes real users to variants and measures the difference.</p>
 <h3>Let real traffic pick the winner</h3>
@@ -1648,11 +1658,7 @@ html.xp-js .xp-reveal.xp-in {
 <p>A/B testing and eval loops complement each other: the loop keeps bad changes out, the A/B test picks the best among good ones.</p>
 <p>A worked example: a team A/B tests two support prompts 50/50 over 10,000 conversations each. Variant A: 78 percent first-answer resolution, $0.0050 per conversation. Variant B: 76 percent resolution, $0.0028 per conversation. Resolution differs by 2 points (likely noise at this sample size; a stats check confirms it is not significant), but cost differs by 44 percent. The team ships variant B and saves roughly $2.20 per 1,000 conversations with no measurable quality loss. Illustrative: this is the classic GenAI A/B outcome, where the cheaper variant wins on economics at equal quality, and only production traffic could prove the quality was equal.</p>
 <div class="exam-ask"><p>Trap.</p>
-<p>Confusing prompt</p>
-<p>variants</p>
-<p>with prompt</p>
-<p>versions</p>
-<p>. Versions are immutable snapshots for release and rollback; variants are parallel alternatives for comparison. The exam will swap the terms in distractors: "create a new prompt version for each A/B arm" is wrong because versions are sequential releases, not parallel experiments. A second trap: A/B testing without sticky routing, which mixes variants within a single user's session and poisons the comparison.</p></div>
+<p>Confusing prompt variants with prompt versions. Versions are immutable snapshots for release and rollback; variants are parallel alternatives for comparison. The exam will swap the terms in distractors: "create a new prompt version for each A/B arm" is wrong because versions are sequential releases, not parallel experiments. A second trap: A/B testing without sticky routing, which mixes variants within a single user's session and poisons the comparison.</p></div>
 <figure><img src="assets/img/mermaid/44-ab-testing.svg" alt="Diagram: user traffic splits into variant A and variant B branches, converging on a comparison dashboard where variant B wins on win rate" loading="lazy"><figcaption>Diagram: user traffic splits into variant A and variant B branches, converging on a comparison dashboard where variant B wins on win rate</figcaption><figcaption class="credit"><em>Diagram: user traffic splits into variant A and variant B branches, converging on a comparison dashboard where variant B wins on win rate</em></figcaption></figure>
 <p>Reading the diagram: a single traffic arrow on the left splits into equal branches; the split ratio reflects risk appetite, 50/50 for speed, 90/10 for caution. The branches (variants A and B) differ only in the variable under test, the prompt text or the model: everything else, including guardrails and retrieval, stays identical or the comparison is invalid. The right dashboard shows win-rate bars per variant across quality, cost, latency, and safety; the check badge marks the winner only after statistical significance, not after the first hundred requests. What breaks: non-sticky routing (users flip variants mid-session), changing two things at once (prompt and model), or stopping the test at the first favorable reading.</p>
 <div class="exam-ask"><p>Exam framing.</p>
@@ -1687,7 +1693,7 @@ html.xp-js .xp-reveal.xp-in {
 </ol>
 
 <p class="ch-bridge" style="border-left:3px solid var(--accent);padding:.55rem 1rem;background:var(--surface);border-radius:0 8px 8px 0;margin:1.1rem 0"><strong>Why this comes next.</strong> When tests fail in production, Chapter 9 gives you the triage discipline: five failure signatures, five fixes.</p>
-<p class="ch-next" style="color:var(--muted);font-size:.95em;margin:1.4rem 0 .4rem"><strong>Next:</strong> Next: troubleshooting common failures.</p>
+<p class="ch-next" style="color:var(--muted);font-size:.95em;margin:1.4rem 0 .4rem"><strong>Next:</strong> troubleshooting common failures.</p>
 <h2 id="8-troubleshooting-common-failures">9. Troubleshooting common failures</h2>
 <figure><img src="assets/img/mermaid/08-troubleshoot-tree.svg" alt="Bedrock failure triage: throttling gets backoff and quota increases, validation errors mean bad request shape or token limits, guardrail blocks need the firing filter identified in CloudWatch, timeouts need streaming or smaller context." loading="lazy"><figcaption>Bedrock failure triage: throttling gets backoff and quota increases, validation errors mean bad request shape or token limits, guardrail blocks need the firing filter identified in CloudWatch, timeouts need streaming or smaller context.</figcaption><figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
 <p>Five failure patterns cause most GenAI production incidents. Learn to recognize each by its error signature and reach for the right fix first.</p>
@@ -1748,7 +1754,7 @@ The distractor is changing the generation model. "Embedding model changed, inges
 </ol>
 
 <p class="ch-bridge" style="border-left:3px solid var(--accent);padding:.55rem 1rem;background:var(--surface);border-radius:0 8px 8px 0;margin:1.1rem 0"><strong>Why this comes next.</strong> Signature recognition needs evidence. Chapter 10 shows where to find it: CloudWatch metrics, invocation logs, and CloudTrail, each answering a different question.</p>
-<p class="ch-next" style="color:var(--muted);font-size:.95em;margin:1.4rem 0 .4rem"><strong>Next:</strong> Next: debugging with CloudWatch, logs, and CloudTrail.</p>
+<p class="ch-next" style="color:var(--muted);font-size:.95em;margin:1.4rem 0 .4rem"><strong>Next:</strong> debugging with CloudWatch, logs, and CloudTrail.</p>
 <h2 id="9-debugging-with-cloudwatch-logs-and-cloudtrail">10. Debugging with CloudWatch Logs and CloudTrail</h2>
 <p>Two AWS services, two different questions. CloudWatch tells you what the app did. CloudTrail tells you who called what. Mixing them up is an exam favorite.</p>
 <h3>Operations vs audit</h3>
@@ -1793,7 +1799,7 @@ The distractor is changing the generation model. "Embedding model changed, inges
 </ol>
 
 <p class="ch-bridge" style="border-left:3px solid var(--accent);padding:.55rem 1rem;background:var(--surface);border-radius:0 8px 8px 0;margin:1.1rem 0"><strong>Why this comes next.</strong> Debugging finds what broke. Chapter 11 validates the harder property: grounding, and proving the model is not hallucinating.</p>
-<p class="ch-next" style="color:var(--muted);font-size:.95em;margin:1.4rem 0 .4rem"><strong>Next:</strong> Next: validating grounding and hallucination control.</p>
+<p class="ch-next" style="color:var(--muted);font-size:.95em;margin:1.4rem 0 .4rem"><strong>Next:</strong> validating grounding and hallucination control.</p>
 <h2 id="10-validating-grounding-and-hallucination-control">11. Validating grounding and hallucination control</h2>
 <p>Hallucination is the GenAI failure users notice first. Contextual grounding checks turn "the model should stick to the sources" from a prompt wish into a measured, enforced control.</p>
 <h3>From prompt wish to enforced control</h3>
@@ -1839,7 +1845,7 @@ Automated Reasoning checks logic. A second trap: believing a grounding check rep
 </ol>
 
 <p class="ch-bridge" style="border-left:3px solid var(--accent);padding:.55rem 1rem;background:var(--surface);border-radius:0 8px 8px 0;margin:1.1rem 0"><strong>Why this comes next.</strong> Grounding is about truthfulness. Chapter 12 tests the other half of safety: red teaming, probing the ways the system can be made to misbehave.</p>
-<p class="ch-next" style="color:var(--muted);font-size:.95em;margin:1.4rem 0 .4rem"><strong>Next:</strong> Next: testing safety with red teaming.</p>
+<p class="ch-next" style="color:var(--muted);font-size:.95em;margin:1.4rem 0 .4rem"><strong>Next:</strong> testing safety with red teaming.</p>
 <h2 id="11-testing-safety-red-teaming-basics-with-aws-tooling">12. Testing safety: red-teaming basics with AWS tooling</h2>
 <p>Guardrails are only as good as the attacks they have survived. Red-teaming is the practice of attacking your own app before someone else does.</p>
 <h3>Attack your own app first</h3>
@@ -1883,7 +1889,7 @@ Automated Reasoning checks logic. A second trap: believing a grounding check rep
 </ol>
 
 <p class="ch-bridge" style="border-left:3px solid var(--accent);padding:.55rem 1rem;background:var(--surface);border-radius:0 8px 8px 0;margin:1.1rem 0"><strong>Why this comes next.</strong> Every method in place. Chapter 13 wires it into the pipeline: prompt versioning and eval gates, so quality is enforced on every deploy.</p>
-<p class="ch-next" style="color:var(--muted);font-size:.95em;margin:1.4rem 0 .4rem"><strong>Next:</strong> Next: CI/CD for GenAI apps, prompt versioning, and eval gates.</p>
+<p class="ch-next" style="color:var(--muted);font-size:.95em;margin:1.4rem 0 .4rem"><strong>Next:</strong> CI/CD for GenAI apps, prompt versioning, and eval gates.</p>
 <h2 id="12-cicd-for-genai-apps-prompt-versioning-and-eval-gates">13. CI/CD for GenAI apps: prompt versioning and eval gates</h2>
 <p>Traditional CI/CD ships code. GenAI CI/CD ships prompts, model choices, and retrieval config, and it gates every one of them on measured quality.</p>
 <h3>Versioned prompts, gated deploys</h3>
