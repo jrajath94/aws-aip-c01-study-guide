@@ -1159,6 +1159,128 @@ footer p{text-align:left}
   #ds-content .ds-site-footer,
   .ds-side-volumes { display: none !important; }
 }
+</style>
+<style>
+/* Hallmark · pre-emit critique: P5 H4 E5 S4 R5 V5
+ * ==========================================================================
+ * Experience layer for study volumes — ADDITIVE ONLY.
+ * Never edits content markup or DS chrome; references DS tokens only
+ * (--accent, --border). No new colors, no gradients, no decorative filler.
+ *
+ * Motion stance: calm delight. Opacity/translate only (GPU-friendly),
+ * one IntersectionObserver, one rAF-throttled scroll listener, zero layout
+ * shift, prefers-reduced-motion respected, fully usable with JS disabled
+ * (every hidden state is gated on html.xp-js, which only this layer's
+ * companion script adds).
+ *
+ * Wiring (final assembly, per volume — same model as ds.css/ds.js):
+ *   1. In <head>, AFTER the DS style block, add:
+ *        <style>
+ *        /* ==== Experience layer — additive, do not edit per-file ==== */
+ *        …this file verbatim…
+ *        [close the style element]
+ *   2. Immediately before the document's LAST closing body tag (the real
+ *      one at the end of the file — some volumes mention a literal closing
+ *      body tag inside their docs prose; ignore those), AFTER the ds.js
+ *      script block, add:
+ *        <script>
+ *        /* ==== Experience layer behavior — additive ==== */
+ *        …experience.js verbatim…
+ *        [close the script element]
+ * (Closing tags are written out in the assembly snippet, not here, so this
+ * file can be pasted verbatim without early-terminating its own element.)
+ * ========================================================================== */
+
+/* ---------- 1. Smooth anchor scrolling (motion-safe readers only) ---------- */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+/* ---------- 2. Scroll-triggered reveals ----------
+   Hidden state exists ONLY under html.xp-js. No-JS readers, print, and
+   reduced-motion users always see full content. Uses the independent
+   `translate` property (not `transform`) so hover feedback below composes
+   without specificity fights. Opacity + translate only: zero layout shift. */
+html.xp-js .xp-reveal {
+  opacity: 0;
+  translate: 0 14px;
+}
+html.xp-js .xp-reveal.xp-in {
+  opacity: 1;
+  translate: 0 0;
+  transition:
+    opacity 0.55s ease,
+    translate 0.55s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+/* ---------- 3. Hero ---------- */
+/* Layout-neutral wrapper the script may add around a volume's title block.
+   Parallax itself is applied inline by the script (transform only). */
+.xp-hero {
+  position: relative;
+}
+
+/* ---------- 4. Calm hover feedback: cards + knowledge checks only ----------
+   translateY(-1px) + accent border. transform composes with the reveal's
+   independent `translate` property — no conflicts. */
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .pq,
+  .watch-card,
+  .ob-board,
+  .lab {
+    transition: transform 0.18s ease, border-color 0.18s ease;
+  }
+  .pq:hover,
+  .watch-card:hover,
+  .ob-board:hover,
+  .lab:hover {
+    transform: translateY(-1px);
+    border-color: var(--accent);
+  }
+  .pq:focus-within,
+  .watch-card:focus-within,
+  .ob-board:focus-within,
+  .lab:focus-within {
+    border-color: var(--accent);
+  }
+}
+
+/* ---------- 5. Reduced motion: everything static and visible ---------- */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  html.xp-js .xp-reveal {
+    opacity: 1;
+    translate: 0 0;
+    transition: none;
+  }
+  .xp-hero {
+    transform: none !important;
+    opacity: 1 !important;
+  }
+  .pq,
+  .watch-card,
+  .ob-board,
+  .lab {
+    transition: none;
+  }
+}
+
+/* ---------- 6. Print: never hide content ---------- */
+@media print {
+  html.xp-js .xp-reveal {
+    opacity: 1 !important;
+    translate: 0 0 !important;
+    transition: none;
+  }
+  .xp-hero {
+    transform: none !important;
+    opacity: 1 !important;
+  }
+}
 
 </style>
 </head>
@@ -1174,9 +1296,9 @@ details.cc-qa summary::before{content:"+ ";color:var(--accent,#4da3ff)}
 details.cc-qa[open] summary::before{content:"\2212 "}
 details.cc-qa blockquote{margin:.5rem 0 0;border-left:3px solid var(--accent,#4da3ff);padding-left:.8rem;color:inherit}
 </style>
-
-<p>The entire exam in one volume. No stories, no padding. Decision rules, numbers, traps, and 30 rapid-fire questions. If you know everything here cold, you can answer every item on the exam.</p>
+<p>This is the whole exam in one volume. Every domain distilled to what you must recall under time pressure: decision rules, numbers, trap patterns, and rapid-fire practice. Read it straight through once, then use the per-domain question sets to drill what you miss. If you can answer every rapid-fire question here cold, you can answer every item on the exam.</p>
 <h2 id="the-exam-in-30-seconds">The exam in 30 seconds</h2>
+<figure><img src="assets/img/mermaid/102-crash-ladder.svg" alt="Crash decision ladder: external facts mean RAG, behavior change means fine-tune, neither means prompt plus model choice; then add guardrails for attacks or PII, and optimize cost" loading="lazy"><figcaption>Crash decision ladder: external facts mean RAG, behavior change means fine-tune, neither means prompt plus model choice; then add guardrails for attacks or PII, and optimize cost</figcaption><figcaption class="credit"><em>Crash decision ladder: external facts mean RAG, behavior change means fine-tune, neither means prompt plus model choice; then add guardrails for attacks or PII, and optimize cost</em></figcaption></figure>
 <div class="table-wrap"><table>
 <thead>
 <tr>
@@ -1187,15 +1309,15 @@ details.cc-qa blockquote{margin:.5rem 0 0;border-left:3px solid var(--accent,#4d
 <tbody>
 <tr>
 <td>Questions</td>
-<td>75 (65 scored, 10 unscored)</td>
+<td>75 total (65 scored, 10 unscored; you cannot tell which are which, so treat all as scored)</td>
 </tr>
 <tr>
 <td>Time</td>
-<td>180 minutes (about 2.4 min per question)</td>
+<td>180 minutes, about 2.4 minutes per question</td>
 </tr>
 <tr>
 <td>Pass</td>
-<td>750 out of 1000</td>
+<td>750 out of 1000 (scaled score)</td>
 </tr>
 <tr>
 <td>Cost</td>
@@ -1203,139 +1325,887 @@ details.cc-qa blockquote{margin:.5rem 0 0;border-left:3px solid var(--accent,#4d
 </tr>
 <tr>
 <td>Formats</td>
-<td>Multiple choice + multiple response (select 2/3, no partial credit)</td>
+<td>Multiple choice (one answer) and multiple response (select 2 or 3, no partial credit)</td>
 </tr>
 <tr>
 <td>D1 Foundation Models, Data &amp; Compliance</td>
-<td>31% (about 20 scored)</td>
+<td>31% (about 20 scored questions)</td>
 </tr>
 <tr>
 <td>D2 Implementation &amp; Integration</td>
-<td>26% (about 17 scored)</td>
+<td>26% (about 17 scored questions)</td>
 </tr>
 <tr>
 <td>D3 AI Safety, Security &amp; Governance</td>
-<td>20% (about 13 scored)</td>
+<td>20% (about 13 scored questions)</td>
 </tr>
 <tr>
 <td>D4 Operational Efficiency &amp; Optimization</td>
-<td>12% (about 8 scored)</td>
+<td>12% (about 8 scored questions)</td>
 </tr>
 <tr>
 <td>D5 Testing, Validation &amp; Troubleshooting</td>
-<td>11% (about 7 scored)</td>
+<td>11% (about 7 scored questions)</td>
 </tr>
 </tbody>
 </table></div>
-<p>How the exam asks: multi-paragraph company scenario, 2 to 4 hard requirements, 4 long plausible options. Three options are good ideas in the wrong context. One satisfies every constraint at once. Find the killer constraint first, then compare survivors.</p>
+<p>How the exam asks: a multi-paragraph company scenario, two to four hard requirements, four long plausible options. Three options are good ideas in the wrong context. One satisfies every constraint at once. Read the scenario for the killer constraint first, then compare the survivors. The adjectives in the stem decide: "least operational overhead" points at the fewest self-managed components, "least custom development effort" points at managed features over your own code, and "most cost-effective" points at token math. Premium extras with no stated need always lose.</p>
 <h2 id="how-to-use-this-volume">How to use this volume</h2>
 <ul>
-<li><strong>10 minutes:</strong> read "The exam in 30 seconds," the numbers sheet, and the top 30 traps.</li>
-<li><strong>1 hour:</strong> add the per-domain decision rules (the "if X, pick Y" lines).</li>
-<li><strong>1 day:</strong> do all 30 rapid-fire questions, then re-read every rule you missed.</li>
+<li><strong>10 minutes:</strong> read the exam facts above, the numbers sheet, and the top 50 traps.</li>
+<li><strong>1 hour:</strong> add the per-domain decision rules (the "if X, pick Y" lines) to your recall.</li>
+<li><strong>1 day:</strong> drill all 58 rapid-fire questions, then re-read the rules behind every one you missed. Missed five or fewer total? Schedule the exam.</li>
 </ul>
-<h2 id="d1-rapid-fire">D1 rapid-fire: Foundation Models, Data &amp; Compliance (31%)</h2>
-<p>The approach ladder, cheapest first. <strong>Prompt engineering</strong> (new format, tone, few-shot; no new knowledge). <strong>RAG / Knowledge Bases</strong> (private, current, or cited facts the model was not trained on). <strong>Agents</strong> (actions: API calls, databases, multi-step tool use). <strong>Fine-tuning</strong> (new behavior baked into weights; labeled data in S3; needs Provisioned Throughput to serve).</p>
-<p><strong>If the stem says X, pick Y:</strong></p>
+<h2 id="prerequisite-map">Prerequisite map: the three volumes that come before this one</h2>
+<p>AIP-C01 assumes two kinds of background: general AWS fluency and basic AI literacy. If either is shaky, read the matching prerequisite volume first. This crash course does not re-teach them.</p>
 <ul>
-<li>"Facts change over time" or "must cite sources" → RAG (Knowledge Bases), never fine-tuning.</li>
-<li>"New tone, format, style, behavior" → fine-tuning or prompt engineering, never RAG.</li>
-<li>"Take actions," "call APIs," "multi-step with tools" → Bedrock Agents.</li>
-<li>"Unstructured docs (PDF, HTML)" → Knowledge Bases. "Relational data, SQL" → text-to-SQL on RDS. Never embed tables into a vector store.</li>
-<li>"Small dataset" (under ~1M records) → Aurora Serverless with pgvector. "Large" → OpenSearch with HNSW/IVFFlat. "100% recall on small data" → exact flat search.</li>
-<li>"Throttled at peak, needs resilience" → cross-region inference profiles. Dead under data-residency constraints.</li>
-<li>"Repeated long system prompt" → prompt caching. "Unique interactions" → streaming or a smaller model, never caching.</li>
-<li>"Users report slow responses" → streaming (ConverseStream) for perceived latency. Provisioned Throughput fixes capacity, not first-token speed.</li>
-<li>"Cheapest for nightly 200k summaries" → batch inference (S3 in, S3 out, ~50% off, hours of latency). Never for interactive SLAs.</li>
+<li><a href="prereq-aws-cloud-foundations.html"><strong>AWS cloud foundations</strong></a>: the AWS core AIP-C01 leans on. IAM (users, roles, policies, least privilege), S3 (object storage, versioning, event notifications), Lambda (serverless functions), API Gateway (REST and HTTP APIs), VPC (subnets, endpoints, PrivateLink), CloudWatch (metrics, logs, alarms), CloudTrail (API audit), EventBridge, SQS, SNS, Step Functions basics. You need these cold: the exam phrases answers in terms of these services and expects you to know their limits (for example, Lambda's 15-minute ceiling) without being told.</li>
+<li><a href="prereq-aif-c01.html"><strong>AI Practitioner (AIF-C01)</strong></a>: the AI literacy layer. What a foundation model is, tokens and context windows, prompt engineering basics, embeddings as meaning-vectors, fine-tuning versus RAG at a conceptual level, responsible AI vocabulary (bias, fairness, hallucination, toxicity), and the AWS AI service map (Bedrock, SageMaker, Comprehend, Rekognition, Transcribe, Textract). This is the vocabulary the exam speaks; without it the domain volumes read as jargon.</li>
+<li><a href="prereq-ml-specialty.html"><strong>ML Specialty primer (MLA-C01)</strong></a>: the deeper ML layer for questions that reach past GenAI. Data preparation and feature engineering, training and tuning concepts, model evaluation metrics (accuracy, precision, recall, F1, ROC), SageMaker training and deployment pieces, and ML operations (pipelines, monitoring, drift). AIP-C01 touches these where GenAI meets classic ML, mostly in evaluation and data pipeline questions.</li>
+</ul>
+<p>Rule of thumb: if you can explain IAM least privilege, S3 event notifications, and what an embedding is without pausing, skip the prereqs and start at D1 below.</p>
+<h2 id="d1-foundation-models-data-compliance">D1: Foundation Models, Data &amp; Compliance (31%)</h2>
+<p>The biggest domain and the one that sets the vocabulary for everything after it. D1 tests three things: which GenAI approach fits the scenario, how to call and feed Bedrock models correctly, and how to keep data compliant while doing it. Nearly every question reduces to the approach ladder plus one API or service detail.</p>
+<h3 id="d1-approach-ladder">The approach ladder: climb only when the cheaper rung fails</h3>
+<p>A <strong>foundation model</strong> is a large model pre-trained on broad data that you adapt instead of training from scratch. <strong>Amazon Bedrock</strong> is the managed AWS service that serves foundation models from multiple providers (Anthropic Claude, Meta Llama, Mistral, Cohere, Amazon Titan and Nova, AI21, Stability) through one set of APIs, so you never manage GPUs. The ladder is the order you try solutions, cheapest first.</p>
+<p><strong>Prompt engineering</strong> is the bottom rung: you change instructions and examples in the prompt. No new knowledge, no training, no new cost. It solves formatting, tone, extraction structure, and simple classification. <strong>RAG</strong> (Retrieval-Augmented Generation) is the next rung: the model looks up facts from your documents at answer time and cites them. It solves private, changing, or cited knowledge the model was never trained on. <strong>Agents</strong> come next: the model takes actions through tools, calling APIs, querying databases, and running multi-step plans. This rung solves anything that needs doing, not just answering. <strong>Fine-tuning</strong> is the top rung: you retrain parts of the model on labeled examples so a new behavior is baked into the weights. It solves stable behavior, tone, and format requirements that prompts cannot reliably hold.</p>
+<p>The rule: start at the bottom and climb only when the cheaper rung cannot satisfy a stated requirement. "Documents change" kills fine-tuning (weights go stale). "Must cite sources" kills fine-tuning (weights cannot cite pages). "Takes actions" kills RAG (knowledge bases do not call APIs). "New tone" kills RAG (retrieval does not change behavior). Read the requirement, find which rung it names, and pick the cheapest rung that satisfies all of them.</p>
+<h3 id="d1-model-selection">Picking the model: filter, then rank</h3>
+<p>Model selection is a filtering process, not a popularity contest. First filter by <strong>capability floor</strong>: run candidate models on a golden dataset (a small set of prompts with known-good answers) and drop anything below your quality bar. Provider benchmarks never clear this bar for you; they measure the provider's prompts, not yours. Second filter by <strong>regional availability</strong>: Bedrock publishes a supported-model list per region, and a model in us-east-1 may not exist in eu-west-1. Model access itself is a one-time console action per model per region and costs nothing to enable. Third, rank the survivors by <strong>cost and latency</strong>: measure tokens per request and time to first token on realistic inputs. Fourth, check the <strong>context window</strong> (the maximum tokens a model accepts in one call, model-specific; flagships handle hundreds of thousands, small models tens of thousands) against your longest realistic input plus expected output. If the input does not fit, you need chunking, summarization, or a bigger window. The survivor with the lowest cost that clears every bar wins. Revisit quarterly: prices and capabilities move.</p>
+<p>Two availability tools, never swapped. <strong>Cross-region inference profiles</strong> route requests across regions for resilience: if one region is throttled or down, traffic fails over. They are the answer to "model X is only in two regions and we need resilience." They die under data-residency constraints, because routing across regions moves data across regions. <strong>Prompt routers</strong> (also called model routers) route by predicted prompt complexity for cost: simple queries go to a cheap lightweight model, hard ones escalate to the flagship. They are the answer to "80% of our traffic is simple FAQ on an expensive model." Router for cost, profile for availability. The exam tests this pair directly and often.</p>
+<h3 id="d1-calling-the-model">Calling the model: four APIs, one decision</h3>
+<p><strong>Converse</strong> is the unified Bedrock runtime API. One request shape, <code>modelId</code>, <code>messages</code> (user and assistant roles), <code>system</code>, <code>inferenceConfig</code> (<code>maxTokens</code>, <code>temperature</code>, <code>topP</code>, <code>stopSequences</code>), optional <code>toolConfig</code> (function definitions), optional <code>guardrailConfig</code> (guardrail identifier, version, and trace flag), optional <code>cachePoint</code> (prompt caching marker), and <code>additionalModelRequestFields</code> (the escape hatch for provider-specific extras). It works across providers and is the default for text generation, tool use, and inline guardrails. <strong>InvokeModel</strong> is the original API: you send the provider's raw JSON body and get the provider's raw response. For Claude you must include <code>anthropic_version: "bedrock-2023-05-31"</code> and <code>max_tokens</code> or the call fails with a validation error. InvokeModel is the ONLY path for embeddings, because Converse is text-generation only. The exam offers Converse as a distractor for embedding tasks and it is always wrong.</p>
+<figure><img src="assets/img/mermaid/19-converse-reference-arch.svg" alt="Converse reference architecture: application calls the unified Converse API with system, messages, toolConfig, and guardrailConfig; Bedrock routes to the selected provider model" loading="lazy"><figcaption>Converse is the default call shape: one contract across providers, with tool use, caching, and guardrails built in.</figcaption><figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<p>Reading a Converse response: <code>output.message.content</code> is a list of content blocks, and <code>stopReason</code> tells you why generation ended. <code>end_turn</code> means finished. <code>max_tokens</code> means the output was cut mid-generation, not finished; a clean-looking answer with this stop reason is truncated, so raise <code>maxTokens</code> or shorten the input. <code>guardrail_intervened</code> means the guardrail blocked the call.</p>
+<p>Latency and cost have their own call shapes. <strong>Streaming</strong> (<code>ConverseStream</code>, <code>InvokeModelWithResponseStream</code>) returns tokens as generated. It changes perceived latency, not total time: a chat that starts answering in under a second feels fast even if the full answer takes ten seconds. Streaming is the answer to "users report slow responses" on interactive traffic. <strong>Batch inference</strong> is the offline shape: a JSONL file into S3, results out to S3, hours of latency, roughly 50 percent cheaper per token than on-demand. It is the answer to "cheapest for nightly bulk work with no SLA." Never for interactive SLAs. <strong>Async invocation</strong> (<code>start_async_invoke</code>) is the single-slow-request shape: one prompt nobody waits on, result lands in S3. Batch is many prompts from S3, async is one slow prompt, streaming is tokens to a waiting user.</p>
+<figure><img src="assets/img/mermaid/106-invokemodel-caching.svg" alt="InvokeModel and prompt caching: repeated long prefixes are served from cache at a reduced input-token rate; cache TTL and minimum prefix length are per-model" loading="lazy"><figcaption>Prompt caching: repeated long prefixes bill at a reduced rate. Its only precondition is a repeated prefix.</figcaption><figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<p><strong>Prompt caching</strong> needs exactly one precondition: a repeated long prefix, usually a long system prompt or document block shared across many calls. Mark the boundary with <code>cachePoint</code>; cache hits bill at a reduced input-token rate. The prefix minimum is model-dependent, on the order of a thousand tokens. The cache TTL is 5 minutes by default, up to 1 hour on supported models. Unique traffic makes caching dead weight: no repeated prefix, no savings. The metric that proves caching works is cache read hit rate, not total token spend.</p>
+<h3 id="d1-rag">RAG in depth: the most tested pattern in the domain</h3>
+<p>RAG grounds the model in your documents. At ingestion, documents are <strong>chunked</strong> (split into pieces small enough to fit the context window and focused enough to match precisely), each chunk is converted to an <strong>embedding</strong> (a vector of numbers where similar meanings sit close together), and vectors plus text plus metadata land in a <strong>vector store</strong>. At query time the question is embedded with the same model, the store returns the nearest chunks, and the model generates an answer citing them. An <strong>Amazon Bedrock Knowledge Base</strong> is the managed version: point it at data sources (S3, web crawlers, Confluence, SharePoint, Salesforce), it handles chunking, embedding, storage, and sync, and <code>RetrieveAndGenerate</code> does the whole loop in one call.</p>
+<figure><img src="assets/img/mermaid/100-rag-kb-arch.svg" alt="RAG on Bedrock Knowledge Bases: documents in S3 are ingested, chunked, and embedded into a vector store; queries retrieve top-k chunks for grounded generation" loading="lazy"><figcaption>The RAG pipeline: chunk, embed, store once; embed the query, retrieve, generate at answer time.</figcaption><figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<p>Embeddings have two exam-relevant choices. <strong>Amazon Titan Text Embeddings v2</strong> is the cheap default with configurable dimensions: 1024, 512, or 256. Dropping from 1024 to 256 cuts vector storage to a quarter and speeds search, with an accuracy trade-off you measure on a golden dataset. <strong>Cohere Embed</strong> is the multilingual pick (100+ languages) and takes an <code>input_type</code> parameter, <code>search_query</code> versus <code>search_document</code>, because it embeds queries and documents with different prefixes optimized for each role. Embedding calls go through InvokeModel, never Converse. The iron rule of retrieval: the <strong>same embedding model and dimensions at ingestion and query time</strong>, or retrieval silently breaks because the vector spaces do not align. "Answers went confident-but-wrong after a re-sync" means the re-sync changed the embedding model version or the chunking config. Debug the change.</p>
+<p>Vector store choice follows data size. Small datasets (under about a million records) go to <strong>Aurora Serverless with pgvector</strong>: fewest self-managed components, the "least operational overhead" answer. Large datasets go to <strong>OpenSearch Serverless</strong> with approximate search (HNSW or IVFFlat indexes). "100% recall required on small data" means <strong>exact flat search</strong>: approximate indexes trade recall for speed by design, and small data makes the exact scan affordable. Never embed relational tables into a vector store: structured data with SQL-shaped questions gets <strong>text-to-SQL</strong> against RDS or Aurora, not chunks. Unstructured documents (PDF, HTML, Word) belong in the knowledge base.</p>
+<p>Two quality upgrades the exam names. <strong>Hybrid search</strong> combines keyword (BM25) matching with vector similarity so exact terms and meaning both count. A <strong>reranker</strong> (Cohere Rerank on Bedrock) re-scores the top retrieved chunks with a stronger model and keeps the best. Together they are the answer to "retrieval quality is too low and we have done the basics." The failure checklist for silent retrieval problems: embedding model mismatch between ingest and query, chunk boundaries that split key facts across chunks, and a knowledge base sync that is not in-sync.</p>
+<h3 id="d1-custom-models">Custom models: behavior, not knowledge</h3>
+<p>Bedrock offers four ways to adapt a model, and the exam tests which gap each one fills. <strong>Fine-tuning</strong> (supervised) trains on labeled prompt-and-response pairs in S3 and teaches behavior: support tone, classification, response format. Useful runs start at hundreds to a few thousand high-quality labeled examples; quality beats quantity. <strong>Continued pre-training</strong> trains further on unlabeled domain text and teaches vocabulary and domain knowledge. <strong>Distillation</strong> trains a small cheap student model to imitate a large teacher on one narrow task: near-teacher quality at student cost, the answer to "same narrow task millions of times, cost is the problem." <strong>Imported models</strong> bring weights you customized elsewhere into Bedrock to serve through Bedrock APIs. On the SageMaker side the same idea appears as <strong>LoRA</strong> (Low-Rank Adaptation): train only small weight deltas (adapters) instead of all weights, then version them in the <strong>SageMaker Model Registry</strong> with pipelines and rollback.</p>
+<p>A fine-tuning job reads training and validation files from S3, runs for hours, and produces a custom model with its own ARN. Serving it usually requires <strong>Provisioned Throughput</strong> (an exception: some models, like Nova custom models, support on-demand). "The customization job succeeded but calls fail" points at missing throughput, not bad training data. And the master trap of the whole domain: fine-tuning for <strong>knowledge</strong> instead of <strong>behavior</strong>. Quarterly document updates, citations, fresh facts: RAG. Tone, format, stable behavior: fine-tuning. The exam will dress a knowledge problem in behavior clothing; read the requirement, not the costume.</p>
+<h3 id="d1-capacity-levers">Capacity and cost levers: PT, profiles, routers</h3>
+<p><strong>Provisioned Throughput (PT)</strong> is reserved inference capacity. You buy <strong>model units</strong> (a fixed amount of processing capacity for one model) on a commitment term, commonly 1 month or 6 months, and pay an hourly rate per unit whether you use it or not. In exchange, requests to your provisioned model ARN get dedicated capacity: consistent latency and no throttling from shared on-demand quotas. Create it with <code>CreateProvisionedModelThroughput</code>; invocations must target the returned <strong>provisioned model ARN</strong>, not the base model ID. "Bought PT but still throttles" means the code passes the base model ID instead of the provisioned ARN. PT is a latency and capacity guarantee for steady production baselines, not a discount for spiky traffic: idle hours still bill, so bursty workloads stay on on-demand.</p>
+<p>The three-way confusion set, tested repeatedly: <strong>inference profiles</strong> route for availability across regions, <strong>prompt routers</strong> route for cost by prompt complexity, <strong>Provisioned Throughput</strong> reserves capacity by the hour. Regional failover wants a profile. Simple queries on an expensive flagship want a router. Throttled at peak on steady traffic wants PT. The exam also tests the cascade pattern behind routers: a small classifier sends simple requests (classification, extraction, short answers) to a cheap lightweight model and escalates only complex ones to the flagship. Right-sizing, choosing the smallest model that clears the quality bar, is the same instinct stated once.</p>
+<h3 id="d1-data-compliance">Data protection and compliance</h3>
+<p>Bedrock traffic stays private through <strong>VPC interface endpoints</strong> (PrivateLink) for the Bedrock, Bedrock runtime, agent, and agent-runtime APIs. No NAT gateway, no public internet. <strong>IAM</strong> policies scope which identities can invoke which model, knowledge base, and agent ARNs. <strong>KMS</strong> encrypts data at rest (envelope encryption with customer-managed keys), <strong>TLS</strong> encrypts it in transit. Customer data sent to Bedrock is not used to train models under the service terms, and data you choose to log stays in your account.</p>
+<p>The PII pipeline is three services in order. <strong>Amazon Macie</strong> discovers PII at scale sitting in S3: it scans buckets and flags sensitive data before ingestion. <strong>Amazon Comprehend</strong> detects PII entities in live text in real time (30+ entity types: names, SSNs, account numbers). <strong>Bedrock Guardrails</strong> sensitive-information filters block or mask PII at the model boundary, on inputs and outputs. Macie finds it at rest, Comprehend detects it in flight, Guardrails filter it at inference. In compliance-heavy scenarios, question whether <strong>model invocation logging</strong> (the opt-in record of full prompt and response text, routable to S3 or CloudWatch, KMS-encryptable) should exist at all: logs can contain PII, so retention policies and redaction are part of the design.</p>
+<h3 id="d1-decision-rules">D1 decision rules: if the stem says X, pick Y</h3>
+<ul>
+<li>"Facts change over time" or "must cite sources" → RAG with Knowledge Bases. Never fine-tuning.</li>
+<li>"New tone, format, style, behavior" → fine-tuning or prompt engineering. Never RAG.</li>
+<li>"Take actions," "call APIs," "multi-step with tools" → Bedrock Agents. Knowledge bases do not act.</li>
+<li>"Unstructured docs (PDF, HTML)" → Knowledge Bases. "Relational data, SQL questions" → text-to-SQL on RDS. Never embed tables into a vector store.</li>
+<li>"Small vector dataset" (under ~1M records) → Aurora Serverless with pgvector. "Large" → OpenSearch Serverless. "100% recall on small data" → exact flat search.</li>
+<li>"Throttled at peak, steady traffic" → Provisioned Throughput (pass the provisioned ARN as modelId). "Spiky or low traffic" → on-demand.</li>
+<li>"Regional failover, resilience" → cross-region inference profiles. Dead under data-residency constraints.</li>
+<li>"Simple queries on an expensive model" → prompt router or cascade. Never PT for a cost problem.</li>
+<li>"Repeated long system prompt" → prompt caching (cachePoint, cache read hit rate as proof). "Unique interactions" → streaming or a smaller model.</li>
+<li>"Users report slow responses" → streaming (ConverseStream) for perceived latency. PT fixes capacity, not first-token speed.</li>
+<li>"Cheapest for nightly bulk work, no SLA" → batch inference (JSONL into S3, results to S3, ~50% off).</li>
 <li>"Swap models without redeploying" → model ID in AppConfig, read at runtime. CloudFormation changes are deployments.</li>
+<li>"Embeddings" → InvokeModel, never Converse. Same model and dimensions at ingest and query.</li>
+<li>"Answers confident but wrong after a re-sync" → check embedding model version and chunking drift. Debug the change.</li>
+<li>"PII across S3 buckets" → Macie. "PII in live text" → Comprehend. "Redact at call time" → Guardrails.</li>
+<li>"No public internet" → VPC interface endpoints. NAT gateway violates the constraint.</li>
 </ul>
-<p><strong>Must know cold:</strong></p>
+<h3 id="d1-traps">D1 trap patterns</h3>
 <ul>
-<li>Converse is the unified API (system, messages, inferenceConfig, toolConfig, guardrailConfig). InvokeModel is provider-specific raw bodies, and the ONLY path for embeddings.</li>
-<li><code>guardrailConfig</code> on Converse needs guardrail ID + version; <code>trace=enabled</code> shows what fired.</li>
-<li><code>stopReason</code> values: <code>end_turn</code> (done), <code>max_tokens</code> (truncated), <code>guardrail_intervened</code> (blocked).</li>
-<li>Same embedding model at ingestion and query time, or retrieval silently breaks.</li>
-<li>Fine-tuned and custom models REQUIRE Provisioned Throughput. A base model ID will not serve them.</li>
-<li>Temperature 0 = deterministic. Temperature/topP both set = they interact; pick one.</li>
-<li>Token math: cost = (input tokens + output tokens) x price. Estimate before the call for proactive alerts.</li>
+<li>Fine-tuning for knowledge (quarterly docs, citations, fresh facts). Always RAG.</li>
+<li>Converse offered for an embeddings task. Converse is text generation only.</li>
+<li>Guardrails assumed to work only with Converse. The standalone ApplyGuardrail API covers any text, including external models.</li>
+<li>Provider benchmarks deciding the model choice. Only your own golden-dataset eval counts.</li>
+<li>AccessDenied on InvokeModel debugged as IAM. Check model access and regional availability first.</li>
+<li>Missing <code>anthropic_version</code> or <code>max_tokens</code> in a Claude InvokeModel body, then an hour of IAM debugging. The error is the request shape.</li>
+<li>Cross-region inference profile under a data-residency constraint. Profiles move data across regions.</li>
+<li>Provisioned Throughput as a cost fix for bursty traffic. PT bills hourly whether used or not.</li>
+<li>Prompt caching on unique traffic. No repeated prefix, no savings.</li>
+<li>ElastiCache as a vector store. It is ephemeral caching; durable vectors live in a vector store.</li>
+<li>Kendra offered for RAG. Kendra is enterprise search, not the RAG path.</li>
+<li>stopReason <code>max_tokens</code> read as "finished." It means the output was cut.</li>
+<li>Temperature and topP both set. They interact; pick one.</li>
 </ul>
-<h2 id="d2-rapid-fire">D2 rapid-fire: Implementation &amp; Integration (26%)</h2>
-<p><strong>If the stem says X, pick Y:</strong></p>
+<h3 id="d1-rapid-fire">D1 rapid-fire questions</h3>
+<div class="pq" id="cc-q01">
+<p class="pq-question"><em>D1 · EASY · ONE ANSWER</em><br><strong>CC01.</strong> A retailer wants a chatbot that answers questions from its 2,000-page returns policy. The policy changes every quarter and every answer must cite the exact section. Which approach first?</p>
+<ul class="pq-options">
+<li class="pq-option wrong"><strong>A) </strong>Fine-tune a model on the policy PDFs each quarter <span class="pq-note">Weights go stale every quarter and cannot cite sections. This is the master knowledge-vs-behavior trap.</span></li>
+<li class="pq-option correct"><strong>B) </strong>Build RAG with a Bedrock Knowledge Base over the policy documents</li>
+<li class="pq-option wrong"><strong>C) </strong>Put the full policy in the system prompt <span class="pq-note">2,000 pages will not fit reliably, quarterly edits mean prompt surgery, and there is no citation mechanism.</span></li>
+<li class="pq-option wrong"><strong>D) </strong>Train a custom model from scratch <span class="pq-note">Months of work for what managed RAG solves in an afternoon.</span></li>
+</ul>
+<button class="pq-reveal" type="button">Reveal answer</button>
+<div class="pq-answer">
+<p><strong>Why B is correct:</strong> changing private knowledge plus citations is the textbook RAG requirement set, and Knowledge Bases handle ingestion, chunking, and sync with no training.</p>
+<p><strong>The trap:</strong> "fine-tune" whenever documents change. Changing knowledge is RAG, always.</p>
+</div>
+</div>
+<div class="pq" id="cc-q02">
+<p class="pq-question"><em>D1 · EASY · ONE ANSWER</em><br><strong>CC02.</strong> 90% of prompts share a 4,000-token system prompt and costs are rising. Which lever?</p>
+<ul class="pq-options">
+<li class="pq-option correct"><strong>A) </strong>Prompt caching with a cachePoint after the shared prefix</li>
+<li class="pq-option wrong"><strong>B) </strong>Provisioned Throughput <span class="pq-note">PT reserves capacity; it does not cut per-token cost of a repeated prefix.</span></li>
+<li class="pq-option wrong"><strong>C) </strong>Batch inference <span class="pq-note">Batch is for offline bulk work, not interactive prompts.</span></li>
+</ul>
+<button class="pq-reveal" type="button">Reveal answer</button>
+<div class="pq-answer">
+<p><strong>Why A is correct:</strong> a repeated long prefix is caching's only precondition, and this stem hands it to you. Proof it works: cache read hit rate.</p>
+</div>
+</div>
+<div class="pq" id="cc-q03">
+<p class="pq-question"><em>D1 · MEDIUM · ONE ANSWER</em><br><strong>CC03.</strong> A team needs embeddings for a knowledge base. Which API?</p>
+<ul class="pq-options">
+<li class="pq-option wrong"><strong>A) </strong>Converse <span class="pq-note">Converse is text generation only. This is the exam's favorite API distractor.</span></li>
+<li class="pq-option correct"><strong>B) </strong>InvokeModel with the embedding model's provider body</li>
+<li class="pq-option wrong"><strong>C) </strong>ApplyGuardrail <span class="pq-note">ApplyGuardrail applies safety filters; it does not generate embeddings.</span></li>
+</ul>
+<button class="pq-reveal" type="button">Reveal answer</button>
+<div class="pq-answer">
+<p><strong>Why B is correct:</strong> embeddings are a provider-specific feature, so they go through InvokeModel. Titan Text Embeddings v2 (1024/512/256 dims) or Cohere Embed (100+ languages, input_type search_query/search_document).</p>
+</div>
+</div>
+<div class="pq" id="cc-q04">
+<p class="pq-question"><em>D1 · MEDIUM · ONE ANSWER</em><br><strong>CC04.</strong> After a knowledge base re-sync, answers are confident but wrong. Generation or retrieval?</p>
+<ul class="pq-options">
+<li class="pq-option correct"><strong>A) </strong>Retrieval: check the embedding model version and chunking config changed by the re-sync</li>
+<li class="pq-option wrong"><strong>B) </strong>Generation: rewrite the system prompt <span class="pq-note">The re-sync is the only change. Debug the delta, not the prompt.</span></li>
+<li class="pq-option wrong"><strong>C) </strong>Generation: raise temperature <span class="pq-note">Temperature changes randomness, not correctness of retrieved facts.</span></li>
+</ul>
+<button class="pq-reveal" type="button">Reveal answer</button>
+<div class="pq-answer">
+<p><strong>Why A is correct:</strong> change-point debugging. The re-sync touched ingestion, so verify the same embedding model and dimensions at ingest and query, chunk boundaries that did not split key facts, and an in-sync KB status.</p>
+</div>
+</div>
+<div class="pq" id="cc-q05">
+<p class="pq-question"><em>D1 · MEDIUM · ONE ANSWER</em><br><strong>CC05.</strong> A model is available in two regions; the app needs resilience but data must stay in one region. Cross-region inference profile?</p>
+<ul class="pq-options">
+<li class="pq-option wrong"><strong>A) </strong>Yes, profiles are the resilience answer <span class="pq-note">Profiles route across regions, which moves data across regions and violates the residency constraint.</span></li>
+<li class="pq-option correct"><strong>B) </strong>No: reject it, the residency constraint kills cross-region routing</li>
+<li class="pq-option wrong"><strong>C) </strong>Yes, with Provisioned Throughput <span class="pq-note">PT is capacity, not a residency mechanism.</span></li>
+</ul>
+<button class="pq-reveal" type="button">Reveal answer</button>
+<div class="pq-answer">
+<p><strong>Why B is correct:</strong> profiles answer availability, but every answer must also satisfy every constraint. Data residency is a hard constraint: check the region first.</p>
+</div>
+</div>
+<div class="pq" id="cc-q06">
+<p class="pq-question"><em>D1 · EASY · ONE ANSWER</em><br><strong>CC06.</strong> Vector dataset of 200k records, "least operational overhead." Which store?</p>
+<ul class="pq-options">
+<li class="pq-option correct"><strong>A) </strong>Aurora Serverless with pgvector</li>
+<li class="pq-option wrong"><strong>B) </strong>Self-managed OpenSearch cluster <span class="pq-note">More scale than 200k records needs, and self-managed means operational overhead. The adjective decides.</span></li>
+<li class="pq-option wrong"><strong>C) </strong>ElastiCache <span class="pq-note">Ephemeral caching, not a durable vector store.</span></li>
+</ul>
+<button class="pq-reveal" type="button">Reveal answer</button>
+<div class="pq-answer">
+<p><strong>Why A is correct:</strong> small data plus "least operational overhead" points at the fully managed serverless option. Large data would point at OpenSearch; 100% recall on small data at exact flat search.</p>
+</div>
+</div>
+<div class="pq" id="cc-q07">
+<p class="pq-question"><em>D1 · MEDIUM · ONE ANSWER</em><br><strong>CC07.</strong> A company runs the same narrow classification task millions of times daily on a flagship model. Token bill is the problem. Best fix?</p>
+<ul class="pq-options">
+<li class="pq-option wrong"><strong>A) </strong>Fine-tune the flagship on more data <span class="pq-note">Fine-tuning the expensive model keeps the expensive per-call cost.</span></li>
+<li class="pq-option correct"><strong>B) </strong>Distill the task into a small student model served on Provisioned Throughput</li>
+<li class="pq-option wrong"><strong>C) </strong>Prompt caching <span class="pq-note">Caching helps repeated prefixes, not a per-call cost problem on a huge model.</span></li>
+</ul>
+<button class="pq-reveal" type="button">Reveal answer</button>
+<div class="pq-answer">
+<p><strong>Why B is correct:</strong> narrow repeated task at massive scale is the distillation shape: bake the behavior into a small cheap model, serve the predictable baseline on PT (hourly commit, 1 to 6 month terms).</p>
+</div>
+</div>
+<div class="pq" id="cc-q08">
+<p class="pq-question"><em>D1 · MEDIUM · ONE ANSWER</em><br><strong>CC08.</strong> PT is purchased but on-demand calls still throttle. The code passes the base model ID. Fix?</p>
+<ul class="pq-options">
+<li class="pq-option correct"><strong>A) </strong>Pass the provisioned model ARN as modelId so traffic routes to the reserved capacity</li>
+<li class="pq-option wrong"><strong>B) </strong>Buy more model units <span class="pq-note">Idle capacity means the code never routes to what was bought. Routing first, capacity second.</span></li>
+<li class="pq-option wrong"><strong>C) </strong>Switch to batch inference <span class="pq-note">Batch changes latency characteristics; it does not use reserved capacity.</span></li>
+</ul>
+<button class="pq-reveal" type="button">Reveal answer</button>
+<div class="pq-answer">
+<p><strong>Why A is correct:</strong> PT capacity is only used when invocations target the provisioned ARN. Base model ID keeps hitting shared on-demand quotas.</p>
+</div>
+</div>
+<div class="pq" id="cc-q09">
+<p class="pq-question"><em>D1 · EASY · ONE ANSWER</em><br><strong>CC09.</strong> A fine-tuned model's customization job succeeded but every invoke call fails. First check?</p>
+<ul class="pq-options">
+<li class="pq-option correct"><strong>A) </strong>Whether Provisioned Throughput was provisioned for the custom model</li>
+<li class="pq-option wrong"><strong>B) </strong>Retrain with more examples <span class="pq-note">The job succeeded, so training is not the suspect. Custom models usually cannot be invoked without PT.</span></li>
+<li class="pq-option wrong"><strong>C) </strong>Rewrite the prompt <span class="pq-note">Prompt quality does not cause invoke failures.</span></li>
+</ul>
+<button class="pq-reveal" type="button">Reveal answer</button>
+<div class="pq-answer">
+<p><strong>Why A is correct:</strong> the serving gotcha. Most custom models require Provisioned Throughput to be invocable at all; the base model ID will not serve them.</p>
+</div>
+</div>
+<div class="pq" id="cc-q10">
+<p class="pq-question"><em>D1 · MEDIUM · ONE ANSWER</em><br><strong>CC10.</strong> Compliance wants to find PII sitting in hundreds of S3 buckets before KB ingestion. Which service?</p>
+<ul class="pq-options">
+<li class="pq-option wrong"><strong>A) </strong>Comprehend <span class="pq-note">Comprehend detects PII in text you send it; it does not discover PII across buckets at rest.</span></li>
+<li class="pq-option correct"><strong>B) </strong>Macie</li>
+<li class="pq-option wrong"><strong>C) </strong>Guardrails <span class="pq-note">Guardrails filter at the model boundary, not across S3.</span></li>
+</ul>
+<button class="pq-reveal" type="button">Reveal answer</button>
+<div class="pq-answer">
+<p><strong>Why B is correct:</strong> the PII pipeline order. Macie discovers PII in S3 at rest, Comprehend detects it in live text, Guardrails filter it at inference time.</p>
+</div>
+</div>
+<div class="pq" id="cc-q11">
+<p class="pq-question"><em>D1 · MEDIUM · ONE ANSWER</em><br><strong>CC11.</strong> A support team answers questions from a relational orders database ("which orders shipped late last week?"). Embed the tables into a vector store?</p>
+<ul class="pq-options">
+<li class="pq-option wrong"><strong>A) </strong>Yes, chunk the tables into the knowledge base <span class="pq-note">Structured data with SQL-shaped questions does not belong in a vector store. This is the exam's favorite RAG over-application.</span></li>
+<li class="pq-option correct"><strong>B) </strong>No: use text-to-SQL against the database, keep documents in the knowledge base</li>
+</ul>
+<button class="pq-reveal" type="button">Reveal answer</button>
+<div class="pq-answer">
+<p><strong>Why B is correct:</strong> unstructured docs go to the knowledge base; relational data gets text-to-SQL. Match the retrieval mechanism to the data shape.</p>
+</div>
+</div>
+<div class="pq" id="cc-q12">
+<p class="pq-question"><em>D1 · MEDIUM · ONE ANSWER</em><br><strong>CC12.</strong> Retrieval quality is too low after basic RAG is working. Which two upgrades does the exam name?</p>
+<ul class="pq-options">
+<li class="pq-option correct"><strong>A) </strong>Hybrid search (keyword plus vector) and a reranker such as Cohere Rerank</li>
+<li class="pq-option wrong"><strong>B) </strong>Bigger chunks and higher temperature <span class="pq-note">Bigger chunks dilute matching precision and temperature changes generation randomness, not retrieval quality.</span></li>
+<li class="pq-option wrong"><strong>C) </strong>Fine-tune the embedding model on the docs <span class="pq-note">Before exotic fixes, use the managed retrieval upgrades.</span></li>
+</ul>
+<button class="pq-reveal" type="button">Reveal answer</button>
+<div class="pq-answer">
+<p><strong>Why A is correct:</strong> hybrid search catches exact terms that pure vectors miss; the reranker re-scores top chunks with a stronger model. Both are managed Bedrock features, the "least custom effort" answer.</p>
+</div>
+</div>
+<div class="pq" id="cc-q13">
+<p class="pq-question"><em>D1 · EASY · RECALL</em><br><strong>CC13.</strong> A Converse response shows stopReason <code>max_tokens</code> on a clean-looking answer. What happened?</p>
+<button class="pq-reveal" type="button">Reveal answer</button>
+<div class="pq-answer">
+<p><strong>Answer:</strong> the output was cut mid-generation, not finished. Raise <code>maxTokens</code> or shorten the input. The other values: <code>end_turn</code> (done), <code>guardrail_intervened</code> (blocked).</p>
+</div>
+</div>
+<div class="pq" id="cc-q14">
+<p class="pq-question"><em>D1 · EASY · RECALL</em><br><strong>CC14.</strong> Temperature 0.7 and topP 0.9 are both set on a Converse call. Fine?</p>
+<button class="pq-reveal" type="button">Reveal answer</button>
+<div class="pq-answer">
+<p><strong>Answer:</strong> no. They interact, so sampling behavior gets unpredictable. Set temperature or topP, not both. Temperature 0 is the deterministic setting.</p>
+</div>
+</div>
+<h2 id="d2-implementation-integration">D2: Implementation &amp; Integration (26%)</h2>
+<p>D2 is the build domain: agents that act, workflows that orchestrate, APIs that face users, and prompts treated as code. The exam's favorite failure mode here is picking a dynamic tool when the job is a fixed sequence, or a fixed sequence when the job needs reasoning. Learn the agent-vs-flow line and the timeout math, and most of D2 falls into place.</p>
+<h3 id="d2-agents">Bedrock Agents: when the model decides the steps</h3>
+<p>A <strong>Bedrock Agent</strong> is a foundation model paired with instructions and <strong>action groups</strong> (tool definitions backed by Lambda functions or API schemas) that reasons over a goal and decides which tools to call, in which order, until the task is done. Use agents when the scenario says the model "reasons," "decides," "chooses tools," or handles "multi-step tasks with tools." The agent loop: your app calls <code>invoke_agent</code> on the bedrock-agent-runtime API with <code>agentId</code>, <code>agentAliasId</code>, <code>sessionId</code>, and <code>inputText</code>. The agent prepends its instruction plus the conversation history for that session, asks the model for the next step, executes tool calls, and repeats.</p>
+<figure><img src="assets/img/mermaid/17-agents-production.svg" alt="Bedrock Agents production patterns: agent nodes connected to Lambda, S3, DynamoDB, API Gateway, and a Knowledge Base" loading="lazy"><figcaption>Agent production pattern: the agent reasons, Lambda action groups execute, knowledge bases ground, and session state persists per user.</figcaption><figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<p>Four details the exam drills. First, <strong>aliases</strong>: <code>agentAliasId</code> must point at the PROD alias for production. The agent ID alone routes to DRAFT, the classic bug behind "production uses the wrong behavior." Second, <strong>PrepareAgent</strong>: after any config change (new action group, new instruction), you must run prepare-agent to compile DRAFT into a prepared version. Skip it and the agent silently runs the old config; "agent ignores the new action group" always means prepare was skipped. Third, <strong>sessionId</strong> is the conversation memory key. One session ID per user session. Reusing one ID across users leaks conversation history between them. Fourth, <strong>enableTrace</strong> on <code>invoke_agent</code> returns the reasoning trace (which tools the agent chose and why). It is the exam's transparency answer: "show why the agent did that" is always enableTrace.</p>
+<p>The <strong>Lambda action function</strong> has a fixed contract both sides must honor. Parameters arrive as a LIST of <code>{"name": ..., "value": ...}</code> dicts, not a plain dict; treating it as a dict drops every parameter. The response must echo back the exact nested shape with <code>messageVersion</code>, <code>actionGroup</code>, and <code>function</code>, with the result string inside <code>responseBody.TEXT.body</code>. Get the shape wrong and the agent cannot parse the tool result. For multi-tenant agents, the <strong>supervisor pattern</strong> routes to collaborator agents, with per-knowledge-base IAM filtering so tenants only reach their own data.</p>
+<h3 id="d2-flows">Bedrock Flows: when the steps are fixed</h3>
+<p>A <strong>Bedrock Flow</strong> is a deterministic prompt chain: a fixed sequence of model calls, Lambda functions, and knowledge base lookups connected as nodes, running the same steps every time. Use flows when the scenario says "same steps every time," "fixed sequence," "analyst-built," or "no-code chain." Agents are overhead here: paying a reasoning model to decide steps that never change. The exam's decision line is one sentence: dynamic step choice means agents, fixed sequence means flows. Watch for fabricated features in options: Flows have no S3 copy node, no invented action nodes. Verify node lists before picking.</p>
+<h3 id="d2-orchestration">Orchestration and the timeout math</h3>
+<p>GenAI work is rarely one call. A pipeline classifies, extracts, validates, waits for human review, then publishes. A Lambda trying to do that hits its <strong>15-minute (900-second) ceiling</strong> and has no durable memory of where it was if it crashes. <strong>Step Functions</strong> keeps execution state durably, retries with backoff, and can pause. Two flavors, never swapped. <strong>Standard</strong> runs up to 1 year, costs about $0.025 per 1,000 state transitions, and supports <strong>wait-for-callback</strong>: a task token lets the workflow pause indefinitely for a human approval, then resume exactly where it left off. The wait itself is free. <strong>Express</strong> is for short high-volume flows: 5-minute maximum duration, no callbacks. "Approval takes hours" is always Standard with wait-for-callback; Express cannot pause.</p>
+<figure><img src="assets/img/mermaid/20-sfn-approval-workflow.svg" alt="Step Functions GenAI approval workflow: invoke model, parse response, confidence check, human approval wait, publish result, with a retry loop on low confidence" loading="lazy"><figcaption>The approval pattern: model call, confidence check, task-token wait for the human, then publish. Express cannot hold this wait.</figcaption><figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<p>For parallel bulk work, <strong>Distributed Map</strong> fans out to up to 10,000 parallel child executions over S3 objects: the answer to "process 10k objects in a tight window." Sequential dies on the clock; plain Lambda fan-out dies on orchestration overhead. Timeout math you must do in your head: a REST API Gateway in front of a Lambda has a <strong>29-second integration timeout</strong>. A model streaming 100 tokens per second for a 3,000-token answer takes 30 seconds, so a synchronous call through the gateway fails even though Lambda itself could run 15 minutes. The fix is async (return a job ID, poll or push the result) or WebSocket streaming.</p>
+<h3 id="d2-api-front-door">The API front door and async patterns</h3>
+<p><strong>API Gateway</strong> is the stable endpoint in front of Bedrock: one URL, auth, throttling, and usage plans, while the model behind it changes. Direct SDK calls win only when latency is king and no auth is needed. For streaming, use <strong>WebSocket APIs</strong>, an Application Load Balancer, or Lambda function URLs; REST endpoints carry the 29-second ceiling and do not fit long streams. The async single-request pattern is <code>start_async_invoke</code>: the call returns an invocation ARN and the result lands in S3. The exam's three-way split: batch is many prompts from S3, async is one slow prompt nobody waits on, streaming is tokens to a waiting user. Spiky traffic gets <strong>SQS buffering</strong> plus reserved concurrency for the critical function.</p>
+<h3 id="d2-prompts-as-code">Prompts as code: Prompt Management and AppConfig</h3>
+<p>Prompts are code, so they get versions. <strong>Bedrock Prompt Management</strong> stores prompt templates as versioned resources with <strong>variants</strong> (test two versions side by side) and <strong>variables</strong> (placeholders filled at runtime). It is the answer to "15 prompts, marketing changes tone weekly, no redeploys": marketing edits a draft variant, tests against a golden set, publishes a new version, zero engineering deploys, full audit trail. "Versioned prompt templates reused across flows" is always Prompt Management, not DynamoDB, not env vars. For runtime model switching without redeploys, the trio is <strong>AppConfig</strong> (the model ID as runtime config) plus Lambda (routing) plus API Gateway (stable URL). A CloudFormation change is a deployment, so it violates "no redeploy" every time.</p>
+<h3 id="d2-decision-rules">D2 decision rules: if the stem says X, pick Y</h3>
 <ul>
-<li>"Reasoning with tools, decides steps itself" → Bedrock Agents (action groups + Lambda).</li>
-<li>"Fixed sequence, same steps every time" → Bedrock Flows (deterministic prompt chains). Agents are overhead here.</li>
-<li>"Which agent call shape" → <code>invoke_agent</code> with <code>agentId</code> + <code>agentAliasId</code> (alias PROD, never DRAFT) + <code>sessionId</code> (the memory key) + <code>inputText</code>. Returns a stream you iterate.</li>
-<li>"Agent ignores the new action group" → PrepareAgent was skipped. Config changes need prepare before DRAFT picks them up.</li>
-<li>"Lambda action function" → parameters arrive as a LIST of {name, value} dicts. Response needs the exact nested shape with <code>messageVersion</code>, <code>actionGroup</code>, <code>function</code> echoed back and the result string in <code>responseBody.TEXT.body</code>.</li>
-<li>"Task runs longer than 15 minutes" → Lambda is dead. Go async or Step Functions.</li>
-<li>"Wait for human approval, takes hours" → Step Functions Standard with wait-for-callback. Express caps at 5 minutes and cannot pause.</li>
-<li>"Process 10k S3 objects in a tight window" → Step Functions Distributed Map (up to 10k parallel children).</li>
-<li>"Stable URL, auth, throttling in front of Bedrock" → API Gateway + Lambda. Direct SDK calls win only when latency is king and no auth is needed.</li>
-<li>"Versioned prompt templates reused across flows" → Prompt Management. Not AppConfig, not DynamoDB.</li>
+<li>"Reasons, decides steps, chooses tools" → Bedrock Agents (action groups + Lambda).</li>
+<li>"Fixed sequence, same steps every time" → Bedrock Flows. Agents are overhead.</li>
+<li><code>invoke_agent</code> needs <code>agentId</code> + <code>agentAliasId</code> (PROD, never DRAFT) + <code>sessionId</code> (one per user) + <code>inputText</code>. Returns a stream you iterate.</li>
+<li>"Agent ignores the new action group" → PrepareAgent was skipped.</li>
+<li>"Show why the agent did that" → <code>enableTrace=true</code>.</li>
+<li>Lambda action function: parameters arrive as a LIST of name/value dicts; response echoes the nested shape with the result in <code>responseBody.TEXT.body</code>.</li>
+<li>"Task runs longer than 15 minutes" → Step Functions, not Lambda.</li>
+<li>"Human approval takes hours" → Step Functions Standard with wait-for-callback. Express caps at 5 minutes and cannot pause.</li>
+<li>"Process 10k S3 objects in a tight window" → Distributed Map (up to 10k parallel children).</li>
+<li>"Streaming answers time out" → WebSockets or async with polling. Not a bigger Lambda timeout; the 29-second ceiling sits at API Gateway.</li>
+<li>"Stable URL, auth, throttling" → API Gateway + Lambda. Direct SDK only when latency is king and no auth is needed.</li>
+<li>"Versioned prompt templates, no redeploys" → Prompt Management. "Swap models without redeploying" → AppConfig.</li>
 <li>"Quality gate before deploy" → Bedrock evaluation jobs in the pipeline; deploy only above the score threshold.</li>
 </ul>
-<p><strong>Must know cold:</strong></p>
+<h3 id="d2-traps">D2 trap patterns</h3>
 <ul>
-<li>Agent trace: <code>enableTrace=true</code> on <code>invoke_agent</code> returns the reasoning trace. The exam's transparency answer.</li>
-<li>Multi-agent pattern: supervisor routes to collaborators, per-KB IAM filtering for tenant isolation.</li>
-<li>Async single request: <code>start_async_invoke</code>, poll or events, result to S3. Not streaming (streaming is tokens to a waiting user).</li>
-<li>API Gateway REST APIs support Lambda response streaming. HTTP APIs do not.</li>
-<li>Session memory is keyed by <code>sessionId</code>. Reusing one ID across users leaks conversations.</li>
+<li>Lambda waiting, sleeping, or polling past 15 minutes. It dies.</li>
+<li>Agent ID alone in production, routing to DRAFT instead of the PROD alias.</li>
+<li>One sessionId shared across users, leaking conversation memory.</li>
+<li>Express for hours-long human waits. 5-minute cap, no callbacks.</li>
+<li>Raising the Lambda timeout for gateway timeouts. The 29-second ceiling is at API Gateway.</li>
+<li>Fabricated Flow nodes (S3 copy node). Verify node and feature lists.</li>
+<li>CloudFormation for runtime switching. Config changes are deployments; AppConfig is runtime.</li>
+<li>Agents for fixed sequences. Reasoning overhead with no benefit.</li>
+<li>Multi-tenant agents without per-KB IAM filtering. Tenants must not reach each other's data.</li>
 </ul>
-<h2 id="d3-rapid-fire">D3 rapid-fire: AI Safety, Security &amp; Governance (20%)</h2>
-<p>Guardrails can: content filters (hate, violence, sexual, misconduct), denied topics, word filters, PII detection and redaction, grounding check (hallucination), contextual grounding check, automated reasoning checks. Guardrails can NEVER do: IAM, tenant isolation, data extraction, token quotas, billing.</p>
-<p><strong>If the stem says X, pick Y:</strong></p>
+<h3 id="d2-rapid-fire">D2 rapid-fire questions</h3>
+<div class="pq" id="cc-q15">
+<p class="pq-question"><em>D2 · EASY · ONE ANSWER</em><br><strong>CC15.</strong> An order assistant must check inventory via API, check shipping via another API, then decide what to tell the customer. The steps vary per order. Agents or Flows?</p>
+<ul class="pq-options">
+<li class="pq-option correct"><strong>A) </strong>Bedrock Agents: the model decides which tools to call per order</li>
+<li class="pq-option wrong"><strong>B) </strong>Bedrock Flows <span class="pq-note">Flows run a fixed sequence. Steps that vary per order need agent reasoning.</span></li>
+</ul>
+<button class="pq-reveal" type="button">Reveal answer</button>
+<div class="pq-answer">
+<p><strong>Why A is correct:</strong> "steps vary," "decide," multi-tool: the dynamic-step line points at agents. Fixed same-steps-every-time would point at Flows.</p>
+</div>
+</div>
+<div class="pq" id="cc-q16">
+<p class="pq-question"><em>D2 · EASY · ONE ANSWER</em><br><strong>CC16.</strong> <code>invoke_agent</code> must use the PROD deployment, not the draft. Which parameter?</p>
+<ul class="pq-options">
+<li class="pq-option wrong"><strong>A) </strong><code>agentId</code> alone <span class="pq-note">Agent ID alone routes to DRAFT. This is the classic production bug.</span></li>
+<li class="pq-option correct"><strong>B) </strong><code>agentAliasId</code> set to the PROD alias</li>
+<li class="pq-option wrong"><strong>C) </strong><code>sessionId</code> <span class="pq-note">Session ID is the memory key, not the deployment selector.</span></li>
+</ul>
+<button class="pq-reveal" type="button">Reveal answer</button>
+<div class="pq-answer">
+<p><strong>Why B is correct:</strong> the alias selects the deployment. Full call shape: <code>agentId</code> + <code>agentAliasId</code> + <code>sessionId</code> + <code>inputText</code>, and the response is a stream you iterate.</p>
+</div>
+</div>
+<div class="pq" id="cc-q17">
+<p class="pq-question"><em>D2 · MEDIUM · ONE ANSWER</em><br><strong>CC17.</strong> An agent ignores a newly added action group. First check?</p>
+<ul class="pq-options">
+<li class="pq-option correct"><strong>A) </strong>Whether prepare-agent ran after the config change</li>
+<li class="pq-option wrong"><strong>B) </strong>The Lambda timeout <span class="pq-note">The action group is ignored before any Lambda runs. Config changes need prepare to compile DRAFT into effect.</span></li>
+<li class="pq-option wrong"><strong>C) </strong>The embedding model <span class="pq-note">Embeddings are a retrieval concern, unrelated to action groups.</span></li>
+</ul>
+<button class="pq-reveal" type="button">Reveal answer</button>
+<div class="pq-answer">
+<p><strong>Why A is correct:</strong> skip prepare-agent and the agent silently runs the old config. "Config changed but behavior did not" always means prepare was skipped.</p>
+</div>
+</div>
+<div class="pq" id="cc-q18">
+<p class="pq-question"><em>D2 · EASY · ONE ANSWER</em><br><strong>CC18.</strong> A Lambda action function receives <code>event["parameters"]</code>. What shape?</p>
+<ul class="pq-options">
+<li class="pq-option wrong"><strong>A) </strong>A plain dict of name to value <span class="pq-note">Treating it as a dict drops every parameter. The exam tests this exact mistake.</span></li>
+<li class="pq-option correct"><strong>B) </strong>A list of {"name": ..., "value": ...} dicts</li>
+</ul>
+<button class="pq-reveal" type="button">Reveal answer</button>
+<div class="pq-answer">
+<p><strong>Why B is correct:</strong> the fixed contract. The response must echo <code>messageVersion</code>, <code>actionGroup</code>, and <code>function</code> with the result string in <code>responseBody.TEXT.body</code>.</p>
+</div>
+</div>
+<div class="pq" id="cc-q19">
+<p class="pq-question"><em>D2 · EASY · ONE ANSWER</em><br><strong>CC19.</strong> A claim pipeline must pause for manager approval, averaging 6 hours, then resume. Which orchestration?</p>
+<ul class="pq-options">
+<li class="pq-option wrong"><strong>A) </strong>Step Functions Express <span class="pq-note">Express caps at 5 minutes and cannot pause for callbacks.</span></li>
+<li class="pq-option correct"><strong>B) </strong>Step Functions Standard with wait-for-callback (task token)</li>
+<li class="pq-option wrong"><strong>C) </strong>Lambda with a sleep loop <span class="pq-note">Lambda dies at 15 minutes, long before 6 hours.</span></li>
+</ul>
+<button class="pq-reveal" type="button">Reveal answer</button>
+<div class="pq-answer">
+<p><strong>Why B is correct:</strong> hours-long waits need Standard's task-token callback (runs up to 1 year; the wait itself is free). Express is for short high-volume flows.</p>
+</div>
+</div>
+<div class="pq" id="cc-q20">
+<p class="pq-question"><em>D2 · MEDIUM · ONE ANSWER</em><br><strong>CC20.</strong> A chatbot streams answers that can take 90 seconds; users see timeouts behind a REST API. Fix?</p>
+<ul class="pq-options">
+<li class="pq-option wrong"><strong>A) </strong>Raise the Lambda timeout to 5 minutes <span class="pq-note">The 29-second ceiling sits at API Gateway, not Lambda. The timeout is in the wrong place.</span></li>
+<li class="pq-option correct"><strong>B) </strong>API Gateway WebSockets plus Lambda streaming, or async with polling</li>
+<li class="pq-option wrong"><strong>C) </strong>Provisioned Throughput <span class="pq-note">PT fixes capacity, not the gateway timeout.</span></li>
+</ul>
+<button class="pq-reveal" type="button">Reveal answer</button>
+<div class="pq-answer">
+<p><strong>Why B is correct:</strong> timeout math. 90 seconds exceeds the 29-second REST integration timeout, so the stream must move off the request-response path.</p>
+</div>
+</div>
+<div class="pq" id="cc-q21">
+<p class="pq-question"><em>D2 · MEDIUM · ONE ANSWER</em><br><strong>CC21.</strong> 10,000 S3 objects must be processed in a 30-minute window. Which pattern?</p>
+<ul class="pq-options">
+<li class="pq-option correct"><strong>A) </strong>Step Functions Distributed Map (up to 10,000 parallel children)</li>
+<li class="pq-option wrong"><strong>B) </strong>10,000 sequential Lambda invocations <span class="pq-note">Sequential dies on the clock; the window is the killer constraint.</span></li>
+<li class="pq-option wrong"><strong>C) </strong>One Lambda looping over all objects <span class="pq-note">One Lambda dies at 15 minutes, and the loop is sequential anyway.</span></li>
+</ul>
+<button class="pq-reveal" type="button">Reveal answer</button>
+<div class="pq-answer">
+<p><strong>Why A is correct:</strong> tight window over many objects is the Distributed Map shape. Find the killer constraint (the clock), then compare survivors.</p>
+</div>
+</div>
+<div class="pq" id="cc-q22">
+<p class="pq-question"><em>D2 · MEDIUM · ONE ANSWER</em><br><strong>CC22.</strong> Marketing changes prompt tone weekly; engineering redeploys are forbidden. Which service?</p>
+<ul class="pq-options">
+<li class="pq-option wrong"><strong>A) </strong>AppConfig <span class="pq-note">AppConfig holds runtime config like the model ID; versioned prompt templates with variants are Prompt Management.</span></li>
+<li class="pq-option correct"><strong>B) </strong>Bedrock Prompt Management (versions, variants, variables)</li>
+<li class="pq-option wrong"><strong>C) </strong>DynamoDB table of prompt strings <span class="pq-note">No versioning, no variants, no test harness, no audit trail.</span></li>
+</ul>
+<button class="pq-reveal" type="button">Reveal answer</button>
+<div class="pq-answer">
+<p><strong>Why B is correct:</strong> "versioned prompt templates reused without redeploys" is the Prompt Management sentence. AppConfig answers "swap models without redeploying."</p>
+</div>
+</div>
+<div class="pq" id="cc-q23">
+<p class="pq-question"><em>D2 · EASY · RECALL</em><br><strong>CC23.</strong> A support bot reuses one <code>sessionId</code> for all users. What breaks?</p>
+<button class="pq-reveal" type="button">Reveal answer</button>
+<div class="pq-answer">
+<p><strong>Answer:</strong> conversation memory leaks between users. The session ID is the memory key, so one ID per user session.</p>
+</div>
+</div>
+<div class="pq" id="cc-q24">
+<p class="pq-question"><em>D2 · EASY · RECALL</em><br><strong>CC24.</strong> Compliance asks "show why the agent called that tool." Which flag?</p>
+<button class="pq-reveal" type="button">Reveal answer</button>
+<div class="pq-answer">
+<p><strong>Answer:</strong> <code>enableTrace=true</code> on <code>invoke_agent</code>. It returns the reasoning trace: which tools the agent chose and why.</p>
+</div>
+</div>
+<div class="pq" id="cc-q25">
+<p class="pq-question"><em>D2 · MEDIUM · ONE ANSWER</em><br><strong>CC25.</strong> One document-generation request takes 4 minutes; nobody waits on it. Which call shape?</p>
+<ul class="pq-options">
+<li class="pq-option wrong"><strong>A) </strong>ConverseStream <span class="pq-note">Streaming is tokens to a waiting user. Nobody waits here.</span></li>
+<li class="pq-option correct"><strong>B) </strong><code>start_async_invoke</code>, result to S3</li>
+<li class="pq-option wrong"><strong>C) </strong>Batch inference <span class="pq-note">Batch is many prompts from S3. This is one slow prompt.</span></li>
+</ul>
+<button class="pq-reveal" type="button">Reveal answer</button>
+<div class="pq-answer">
+<p><strong>Why B is correct:</strong> the three-way split. Batch is many prompts, async is one slow prompt nobody waits on, streaming is tokens to a waiting user.</p>
+</div>
+</div>
+<div class="pq" id="cc-q26">
+<p class="pq-question"><em>D2 · MEDIUM · ONE ANSWER</em><br><strong>CC26.</strong> Switch between Claude, Titan, and Llama without client redeploys. Which trio?</p>
+<ul class="pq-options">
+<li class="pq-option correct"><strong>A) </strong>AppConfig (model ID at runtime) + Lambda (routing) + API Gateway (stable URL)</li>
+<li class="pq-option wrong"><strong>B) </strong>CloudFormation + Lambda + API Gateway <span class="pq-note">A CloudFormation change is a deployment, which violates "without redeploys."</span></li>
+<li class="pq-option wrong"><strong>C) </strong>EventBridge + Lambda + API Gateway <span class="pq-note">EventBridge routes events; it does not hold runtime config.</span></li>
+</ul>
+<button class="pq-reveal" type="button">Reveal answer</button>
+<div class="pq-answer">
+<p><strong>Why A is correct:</strong> the gateway URL stays fixed while the Lambda reads the model ID from AppConfig at runtime. CloudFormation is always the "redeploy" distractor.</p>
+</div>
+</div>
+<h2 id="d3-ai-safety-security-governance">D3: AI Safety, Security &amp; Governance (20%)</h2>
+<p>D3 tests the bouncer, the locks, and the audit trail. Guardrails filter content at the model boundary. IAM and organization controls decide who can touch what. CloudTrail, CloudWatch, and invocation logging record what happened at three different depths. The exam's favorite move is offering a real service with an invented capability, so learn exactly what each control can and cannot do.</p>
+<h3 id="d3-guardrails">Guardrails: the bouncer at the model door</h3>
+<p>A <strong>Bedrock Guardrail</strong> is a named configuration holding your safety rules. Every request and every response walks past it. Six policies, each switchable independently: <strong>content filters</strong>, <strong>denied topics</strong>, <strong>word filters</strong>, <strong>sensitive information filters</strong> (PII detection and redaction), <strong>contextual grounding checks</strong>, and <strong>Automated Reasoning checks</strong>. Attach it inline to a Converse call with <code>guardrailConfig</code> (guardrail identifier plus version, with a trace flag that shows what fired), or apply it to any text with the standalone <strong>ApplyGuardrail</strong> API, which is the answer when the scenario says "we call an external model but need AWS guardrails."</p>
+<figure><img src="assets/img/mermaid/04-guardrails-flow.svg" alt="guardrails flow diagram" loading="lazy"><figcaption>Guardrails evaluate inputs and outputs against six independent policies before the response reaches the user.</figcaption><figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<p>Content filters are the toxicity screen: six fixed AWS-defined categories (hate, insults, sexual, violence, misconduct, prompt attack), each with four sensitivity strengths, so 24 independent settings per guardrail. <strong>Prompt attack</strong> is the category that catches jailbreaks ("ignore all previous instructions") and injections smuggled through pasted documents or tool outputs; it is evaluated on inputs, where attacks arrive. <strong>Denied topics</strong> block named subjects on both inputs and outputs ("block bullying topics" is a denied topic, and "notify on bullying but never block" is the same filter run in a monitor mode that logs intervene events instead of blocking). <strong>Word filters</strong> block exact strings, including profanity lists and custom terms. Sensitive information filters detect and redact PII.</p>
+<p>The two verifiers catch two different lies. <strong>Contextual grounding checks</strong> ask whether the answer is supported by the source text (the hallucination check for RAG). <strong>Automated Reasoning checks</strong> translate the response and your policy into formal logic and prove whether the response obeys the policy; it is the strongest guarantee in the guardrail set, the answer to "most mathematically certain that outputs obey policy." Note its limit: Automated Reasoning checks run in detect mode only, returning findings (valid, invalid, ambiguous, too complex) rather than blocking inline.</p>
+<h3 id="d3-guardrail-limits">What guardrails can never do</h3>
+<p>Guardrails filter content. They cannot do IAM (who may call the model), tenant isolation (which data a tenant may reach), token quotas or billing, or data extraction. When an option says "use Guardrails to limit each tenant to 1,000 tokens per day," it is a fabricated feature: real service, invented capability. Tenant isolation is per-knowledge-base IAM filtering; quotas are API Gateway usage plans; access control is IAM. Read every guardrail option for scope creep.</p>
+<h3 id="d3-identity-access">Identity and access: who can touch the model</h3>
+<p><strong>IAM</strong> is the first lock: least-privilege policies scoping which identities can invoke which model, knowledge base, and agent ARNs, in which regions. Above IAM sit the organization controls. <strong>Service Control Policies (SCPs)</strong> set org-wide maximum permissions across accounts in AWS Organizations: the answer to "restrict model access across 40 accounts," deployed at scale with StackSets so no account drifts. <strong>Permissions boundaries</strong> cap what a single role can ever be granted, the per-role answer. The exam pairs them as: SCPs bound the org, boundaries bound the role, IAM grants the actual access inside those bounds. "Built-in alignment is enough" is always wrong: the model provider's safety work never transfers evaluation and governance to you. The deployer owns both.</p>
+<h3 id="d3-observability">Observability: three logs, three depths</h3>
+<p><strong>CloudTrail</strong> is the audit plane: who called which Bedrock API, when, from where, and whether it succeeded. It records API metadata only, never prompt or response content. Event history keeps 90 days; longer retention means delivering the trail to S3. "Who invoked which model at 2am" is always CloudTrail. <strong>CloudWatch</strong> is the operations plane: metrics and alarms on what is happening now. Which prompts were blocked and why, guardrail block rates, token counts, throttling: CloudWatch metrics and custom alarms. "Proactively alert" kills every reactive option: count tokens before the call with client-side estimation, because the InputTokenCount metric fires after the call runs. <strong>Model invocation logging</strong> is the content plane: the opt-in record of full prompt and response text to S3 or CloudWatch, KMS-encryptable. It is the only source for "show us the exact blocked prompt," and in regulated scenarios you must justify keeping it at all, with retention policies and redaction, because logs can contain PII.</p>
+<h3 id="d3-network-data">Network and data protection</h3>
+<p>"Bedrock with no public internet" is always <strong>VPC interface endpoints</strong> (PrivateLink) for the Bedrock APIs, with Lambda in private subnets. A NAT gateway gives public internet access and violates the constraint. At rest is <strong>KMS</strong> (customer-managed keys, envelope encryption, every key use logged); in transit is <strong>TLS</strong>. Customer data sent to Bedrock is not used to train models under the service terms, and any data you log stays in your account. For human oversight of risky model outputs, <strong>A2I</strong> (Augmented AI) puts flagged interactions in front of human reviewers: critical flagged cases only, never all traffic.</p>
+<h3 id="d3-decision-rules">D3 decision rules: if the stem says X, pick Y</h3>
 <ul>
-<li>"Notify on bad content but do NOT block" → guardrail in <strong>detect mode</strong>, notifications on intervene metrics. Block mode violates the constraint.</li>
-<li>"Block specific topics in and out" → denied topics policy on both inputs and outputs.</li>
-<li>"Find PII in S3 data" → Macie. "Detect PII in live text" → Comprehend. "Redact at call time" → Guardrails. The pipeline is Comprehend detect, redact, then Bedrock.</li>
-<li>"Who called which model and when" → CloudTrail. "Which prompts were blocked and why" → CloudWatch custom metrics. "Full prompt and response text" → model invocation logging (opt-in) to S3.</li>
-<li>"Restrict models across the whole org" → SCPs (require approved guardrail on InvokeModel). Per-role caps → permissions boundaries. Deploy at scale → StackSets.</li>
-<li>"Bedrock with no public internet" → interface VPC endpoints + Lambda in private subnets. NAT gateway violates the constraint.</li>
-<li>"Customer data must not train models" → the model terms/opt-out. Also: invocation logging data stays in your account.</li>
-<li>"Most mathematically certain that outputs obey policy" → Automated Reasoning checks (2026 feature; formal logic), above plain content filters.</li>
+<li>"Notify on bad content but do NOT block" → guardrail in monitor/detect mode with intervene metrics. Block mode violates the constraint.</li>
+<li>"Block specific topics in and out" → denied topics policy on inputs and outputs.</li>
+<li>"Jailbreaks and prompt injections" → content filter category prompt attack, evaluated on inputs.</li>
+<li>"Most mathematically certain outputs obey policy" → Automated Reasoning checks (detect mode, formal logic).</li>
+<li>"Is the answer supported by the source" → contextual grounding check. "Does it obey the policy" → Automated Reasoning. Two verifiers, two lies.</li>
+<li>"External model but need AWS guardrails" → ApplyGuardrail standalone. guardrailConfig cannot reach outside Bedrock.</li>
+<li>"Who called which model and when" → CloudTrail. "Which prompts were blocked and why" → CloudWatch. "Full prompt and response text" → model invocation logging (opt-in).</li>
+<li>"Proactively alert before limits" → count tokens before the call. Metrics fire after.</li>
+<li>"Restrict models across the whole org" → SCPs (StackSets for deployment). "Cap one role" → permissions boundaries.</li>
+<li>"Bedrock with no public internet" → interface VPC endpoints. NAT gateway violates the constraint.</li>
+<li>"Critical flagged interactions need human review" → A2I. Not all traffic.</li>
+<li>"Customer data must not train models" → the service terms and opt-out; invocation log data stays in your account.</li>
 </ul>
-<p><strong>Must know cold:</strong></p>
+<h3 id="d3-traps">D3 trap patterns</h3>
 <ul>
-<li>Model eval: programmatic needs ground truth (accuracy, stability, toxicity). LLM-as-judge needs no labels (correctness, faithfulness, fluency). Human eval: last resort, samples only.</li>
-<li>Provider benchmarks never decide your model choice. They are marketing until you run your own eval.</li>
-<li>"Built-in alignment is enough" is always wrong. The deployer owns evaluation and governance.</li>
+<li>Guardrails offered for IAM, tenant isolation, token quotas, or billing. Fabricated capability.</li>
+<li>CloudTrail offered for prompt content. Metadata only; content needs invocation logging.</li>
+<li>CloudWatch offered for "who called what." That is CloudTrail's job.</li>
+<li>"Built-in safety means we skip evaluation." The deployer owns evaluation and governance. Always.</li>
+<li>Guardrail attached to a CloudWatch log group to mask PHI. Guardrails attach to Bedrock model flows, not log groups.</li>
+<li>NAT gateway for "no public internet." It provides public internet access.</li>
+<li>Cross-region anything under data residency. Check the region first.</li>
+<li>Full invocation logging in a healthcare scenario with no retention policy. Logs can contain PII; question the logging itself.</li>
+<li>Automated Reasoning expected to block inline. It runs in detect mode only.</li>
 </ul>
-<h2 id="d4-rapid-fire">D4 rapid-fire: Optimization (12%)</h2>
-<p>The exam's three adjectives, three different winners. <strong>"Least operational overhead"</strong> → fewest self-managed components (Aurora Serverless, Converse, managed routers). <strong>"Least custom development effort"</strong> → managed features over your Lambda code. <strong>"Most cost-effective"</strong> → token math (smaller model, caching, batch, cascade).</p>
-<p><strong>If the stem says X, pick Y:</strong></p>
+<h3 id="d3-rapid-fire">D3 rapid-fire questions</h3>
+<div class="pq" id="cc-q27">
+<p class="pq-question"><em>D3 · EASY · ONE ANSWER</em><br><strong>CC27.</strong> "Block bullying topics in prompts and answers" versus "notify on bullying but never block." What changes?</p>
+<ul class="pq-options">
+<li class="pq-option wrong"><strong>A) </strong>A different filter type <span class="pq-note">Same denied-topics filter. The constraint is about the mode, not the feature.</span></li>
+<li class="pq-option correct"><strong>B) </strong>Guardrail mode: block versus monitor/detect with intervene metrics</li>
+</ul>
+<button class="pq-reveal" type="button">Reveal answer</button>
+<div class="pq-answer">
+<p><strong>Why B is correct:</strong> "notify but do not block" is the monitor-mode sentence. Block mode would violate the stated constraint.</p>
+</div>
+</div>
+<div class="pq" id="cc-q28">
+<p class="pq-question"><em>D3 · MEDIUM · ONE ANSWER</em><br><strong>CC28.</strong> Compliance wants the full prompt and response text for blocked calls. Which log?</p>
+<ul class="pq-options">
+<li class="pq-option wrong"><strong>A) </strong>CloudTrail <span class="pq-note">CloudTrail records API metadata only: who, when, which action. Never token content.</span></li>
+<li class="pq-option correct"><strong>B) </strong>Model invocation logging (opt-in) to S3</li>
+<li class="pq-option wrong"><strong>C) </strong>CloudWatch metrics <span class="pq-note">Metrics aggregate counts; they do not store text.</span></li>
+</ul>
+<button class="pq-reveal" type="button">Reveal answer</button>
+<div class="pq-answer">
+<p><strong>Why B is correct:</strong> the three depths. CloudTrail is who/what/when, CloudWatch is what-is-happening-now, invocation logging is the content plane. Only B holds the actual text.</p>
+</div>
+</div>
+<div class="pq" id="cc-q29">
+<p class="pq-question"><em>D3 · MEDIUM · ONE ANSWER</em><br><strong>CC29.</strong> Restrict foundation model access across 40 AWS accounts with no drift. Which control?</p>
+<ul class="pq-options">
+<li class="pq-option correct"><strong>A) </strong>SCPs via Organizations, deployed with StackSets</li>
+<li class="pq-option wrong"><strong>B) </strong>Per-account IAM roles edited by hand <span class="pq-note">40 hand-edited roles are 40 chances to drift. Org-wide maximum permissions need SCPs.</span></li>
+<li class="pq-option wrong"><strong>C) </strong>Guardrails <span class="pq-note">Guardrails filter content; they are not access control.</span></li>
+</ul>
+<button class="pq-reveal" type="button">Reveal answer</button>
+<div class="pq-answer">
+<p><strong>Why A is correct:</strong> SCPs set the org-wide maximum; StackSets deploy them at scale. Permissions boundaries would cap a single role, not the org.</p>
+</div>
+</div>
+<div class="pq" id="cc-q30">
+<p class="pq-question"><em>D3 · EASY · ONE ANSWER</em><br><strong>CC30.</strong> Bedrock must run in a VPC with no public internet. Which networking?</p>
+<ul class="pq-options">
+<li class="pq-option wrong"><strong>A) </strong>NAT gateway <span class="pq-note">A NAT gateway provides public internet access, violating the explicit constraint.</span></li>
+<li class="pq-option correct"><strong>B) </strong>VPC interface endpoints (PrivateLink) for the Bedrock APIs</li>
+</ul>
+<button class="pq-reveal" type="button">Reveal answer</button>
+<div class="pq-answer">
+<p><strong>Why B is correct:</strong> interface endpoints keep traffic on the AWS network with no internet path. "No public internet" is always endpoints, never NAT.</p>
+</div>
+</div>
+<div class="pq" id="cc-q31">
+<p class="pq-question"><em>D3 · MEDIUM · ONE ANSWER</em><br><strong>CC31.</strong> The team calls an external (non-Bedrock) model but compliance requires AWS guardrails on its outputs. How?</p>
+<ul class="pq-options">
+<li class="pq-option wrong"><strong>A) </strong><code>guardrailConfig</code> on Converse <span class="pq-note">Converse only calls Bedrock models; the config cannot reach an external model.</span></li>
+<li class="pq-option correct"><strong>B) </strong>ApplyGuardrail as a standalone API call on the text</li>
+</ul>
+<button class="pq-reveal" type="button">Reveal answer</button>
+<div class="pq-answer">
+<p><strong>Why B is correct:</strong> ApplyGuardrail applies guardrail policies to any text, including non-Bedrock output. This is the exam's favorite guardrail scope trap.</p>
+</div>
+</div>
+<div class="pq" id="cc-q32">
+<p class="pq-question"><em>D3 · MEDIUM · ONE ANSWER</em><br><strong>CC32.</strong> "Most mathematically certain that outputs obey policy" for a financial advice bot. Which check?</p>
+<ul class="pq-options">
+<li class="pq-option wrong"><strong>A) </strong>Content filters <span class="pq-note">Classifier-based filters are probabilistic. "Mathematically certain" names the formal-logic check.</span></li>
+<li class="pq-option correct"><strong>B) </strong>Automated Reasoning checks</li>
+</ul>
+<button class="pq-reveal" type="button">Reveal answer</button>
+<div class="pq-answer">
+<p><strong>Why B is correct:</strong> formal logic verification is the strongest guarantee in the guardrail set. Note its limit: detect mode only, returning findings rather than blocking inline.</p>
+</div>
+</div>
+<div class="pq" id="cc-q33">
+<p class="pq-question"><em>D3 · MEDIUM · ONE ANSWER</em><br><strong>CC33.</strong> "Protect PII in customer-service GenAI conversations with minimal custom work." Select the set.</p>
+<ul class="pq-options">
+<li class="pq-option correct"><strong>A) </strong>Macie + Comprehend + Guardrails</li>
+<li class="pq-option wrong"><strong>B) </strong>Macie + Translate + Rekognition <span class="pq-note">Translate preserves meaning across languages; Rekognition is vision. Neither detects PII in text.</span></li>
+<li class="pq-option wrong"><strong>C) </strong>A hand-rolled regex Lambda <span class="pq-note">Custom work when three managed services cover the pipeline. "Minimal custom work" kills hand-rolled.</span></li>
+</ul>
+<button class="pq-reveal" type="button">Reveal answer</button>
+<div class="pq-answer">
+<p><strong>Why A is correct:</strong> the pipeline order. Macie finds PII in the lake before ingestion, Comprehend detects it in live text, Guardrails filter it at the model boundary.</p>
+</div>
+</div>
+<div class="pq" id="cc-q34">
+<p class="pq-question"><em>D3 · EASY · RECALL</em><br><strong>CC34.</strong> Name the six guardrail policies.</p>
+<button class="pq-reveal" type="button">Reveal answer</button>
+<div class="pq-answer">
+<p><strong>Answer:</strong> content filters, denied topics, word filters, sensitive information filters, contextual grounding checks, Automated Reasoning checks. Content filters alone hold 24 settings: 6 categories times 4 strengths.</p>
+</div>
+</div>
+<div class="pq" id="cc-q35">
+<p class="pq-question"><em>D3 · EASY · RECALL</em><br><strong>CC35.</strong> CloudTrail event history keeps how many days? And what does CloudTrail never record?</p>
+<button class="pq-reveal" type="button">Reveal answer</button>
+<div class="pq-answer">
+<p><strong>Answer:</strong> 90 days (deliver the trail to S3 for longer). It never records prompt or response content, only API metadata.</p>
+</div>
+</div>
+<div class="pq" id="cc-q36">
+<p class="pq-question"><em>D3 · MEDIUM · ONE ANSWER</em><br><strong>CC36.</strong> An option says "use Guardrails to cap each tenant at 1,000 tokens per day." Verdict?</p>
+<ul class="pq-options">
+<li class="pq-option correct"><strong>A) </strong>Reject: fabricated feature. Guardrails cannot do token quotas or billing</li>
+<li class="pq-option wrong"><strong>B) </strong>Accept: guardrails control usage <span class="pq-note">Guardrails filter content. Quotas are API Gateway usage plans; isolation is IAM. Read every guardrail option for scope creep.</span></li>
+</ul>
+<button class="pq-reveal" type="button">Reveal answer</button>
+<div class="pq-answer">
+<p><strong>Why A is correct:</strong> the scope trap. Real service plus invented capability. Guardrails never do IAM, tenant isolation, token quotas, or billing.</p>
+</div>
+</div>
+<div class="pq" id="cc-q37">
+<p class="pq-question"><em>D3 · MEDIUM · ONE ANSWER</em><br><strong>CC37.</strong> "Proactively alert before token limits are hit." Alarm on the InputTokenCount metric or count tokens before the call?</p>
+<ul class="pq-options">
+<li class="pq-option wrong"><strong>A) </strong>Alarm on InputTokenCount <span class="pq-note">The metric fires after the call runs. "Proactively" kills every reactive option.</span></li>
+<li class="pq-option correct"><strong>B) </strong>Count tokens client-side before the call and alert on the estimate</li>
+</ul>
+<button class="pq-reveal" type="button">Reveal answer</button>
+<div class="pq-answer">
+<p><strong>Why B is correct:</strong> proactive means before the call. Token math (input plus output tokens times price) happens client-side, ahead of time.</p>
+</div>
+</div>
+<div class="pq" id="cc-q38">
+<p class="pq-question"><em>D3 · EASY · RECALL</em><br><strong>CC38.</strong> At rest is KMS, in transit is TLS. A healthcare scenario enables full invocation logging with no retention policy. What is wrong?</p>
+<button class="pq-reveal" type="button">Reveal answer</button>
+<div class="pq-answer">
+<p><strong>Answer:</strong> logs can contain PII/PHI, so the design needs retention policies and redaction, or a justification to disable logging. The exam expects you to question the logging itself in regulated scenarios.</p>
+</div>
+</div>
+<h2 id="d4-optimization">D4: Operational Efficiency &amp; Optimization (12%)</h2>
+<p>D4 is the smallest scored domain but the densest in decision rules. Every question is a cost, latency, or capacity scenario, and the stem's adjective names the winner before you read the options. Learn the three adjectives and the three-way routing confusion set, and D4 becomes free points.</p>
+<h3 id="d4-adjectives">The three adjectives, three different winners</h3>
+<p><strong>"Least operational overhead"</strong> means fewest self-managed components: Aurora Serverless over a self-managed OpenSearch cluster, Converse over hand-rolled provider bodies, managed routers over your Lambda code. <strong>"Least custom development effort"</strong> means managed features over your own code: Knowledge Bases over a hand-built ingestion pipeline, prompt routers over your classifier Lambda, Guardrails over hand-rolled filters. <strong>"Most cost-effective"</strong> means token math: the smallest model that clears the quality bar, caching for repeated prefixes, batch for offline bulk, cascading simple queries to cheap models. The exam rotates these adjectives across identical scenarios; the scenario does not change, the winner does.</p>
+<figure><img src="assets/img/mermaid/05-cost-ladder.svg" alt="Cost ladder: prompt caching plus small models for simple tasks is cheapest per token, then batch inference (~50% off), then on-demand, then Provisioned Throughput for steady high volume." loading="lazy"><figcaption>The cost ladder per token: cache and right-size first, batch the offline work, reserve capacity only for steady baselines.</figcaption><figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<h3 id="d4-levers">The levers in cost order</h3>
+<p><strong>Right-sizing and cascading</strong> come first because they cut every token. Pick the smallest model that clears the quality bar on your golden dataset, then automate it: a router or cascade sends simple requests (classification, extraction, short answers) to a cheap lightweight model and escalates only complex ones to the flagship. <strong>Prompt caching</strong> comes next for repeated long prefixes: mark the shared block with <code>cachePoint</code>, pay the reduced input-token rate on hits, and prove it with cache read hit rate. <strong>Batch inference</strong> handles offline bulk: JSONL into S3, results to S3, hours of latency, roughly 50 percent off on-demand. <strong>Provisioned Throughput</strong> is last in cost order and first in capacity order: model units on 1 or 6 month terms, hourly billing whether used or not, invocations routed to the provisioned ARN. It guarantees latency and kills throttling on steady baselines; on spiky traffic it bills you for sleeping hours, so spiky stays on-demand.</p>
+<pre><code>TOKEN MATH (do this before the call, not after)
+cost = (input_tokens + output_tokens) x price_per_token
+cache hit: input_tokens x cached_rate   (reduced rate on the repeated prefix)
+batch:     cost x ~0.5                  (offline only, hours of latency)
+PT:        model_units x hourly_rate x hours in term   (used or not)
+Estimate per request, multiply by volume, compare options.
+"Proactive" cost control means this math happens client-side.</code></pre>
+<p><strong>Streaming</strong> is the latency lever that is not a cost lever: <code>ConverseStream</code> cuts perceived latency to the first token (often under a second) while total generation time is unchanged. "Users report slow responses" on interactive traffic is always streaming. PT does not speed first token; caching needs repeated prefixes. For throttling, the fix ladder is: retry with backoff for transient throttles, PT for sustained throttles on steady traffic, routers to shed load to cheaper models, and profiles to spread across regions. "Bought PT but still throttles" means the code passes the base model ID instead of the provisioned ARN.</p>
+<p>The confusion set one more time, because the exam tests it directly: <strong>inference profiles</strong> route by region for availability, <strong>prompt routers</strong> route by complexity for cost, <strong>Provisioned Throughput</strong> reserves capacity by the hour. Regional failover wants a profile. Simple queries on an expensive flagship want a router. Throttled at peak on steady traffic wants PT. If you mix them up, the distractor wins.</p>
+<h3 id="d4-decision-rules">D4 decision rules: if the stem says X, pick Y</h3>
 <ul>
-<li>"Throttled at peak" → Provisioned Throughput (reserved capacity; pass the provisioned ARN as modelId). Fine-tuned models need PT, base models can use on-demand.</li>
-<li>"Costs scale with mixed simple/hard queries" → intelligent prompt routing (cascade simple to cheap, escalate hard).</li>
-<li>"Repeated long prefix, cost pressure" → prompt caching (same context block, cache point set right).</li>
-<li>"Nightly bulk, no SLA" → batch inference (~50% off).</li>
-<li>"Route by complexity for cost" → prompt routers. "Route by region for availability" → inference profiles. Never swap them.</li>
-<li>"Users see slow first token" → streaming. Not PT, not caching.</li>
-<li>"Which metric proves the cache works" → cache read hit rate, not total token spend.</li>
+<li>"Least operational overhead" → fewest self-managed components. "Least custom development effort" → managed features. "Most cost-effective" → token math.</li>
+<li>"Throttled at peak, steady traffic" → Provisioned Throughput (provisioned ARN as modelId). "Spiky or low traffic" → on-demand.</li>
+<li>"80% simple queries on the flagship" → prompt router or cascade. Never PT for a cost problem.</li>
+<li>"Repeated long prefix" → prompt caching; proof is cache read hit rate. "Unique traffic" → caching is dead weight.</li>
+<li>"Nightly bulk, no SLA" → batch inference (~50% off). Never for interactive SLAs.</li>
+<li>"Slow first token, users complain" → streaming. Not PT, not caching.</li>
+<li>"Regional failover" → inference profiles. "Cost by complexity" → prompt routers. Never swap them.</li>
+<li>"Cheapest option that meets every requirement wins." Premium extras with no stated need lose.</li>
 </ul>
-<p><strong>Must know cold:</strong></p>
+<h3 id="d4-traps">D4 trap patterns</h3>
 <ul>
-<li>PT bought but on-demand still throttles → code passes the base model ID instead of the provisioned ARN.</li>
-<li>Prompt routers have a default fallback model. If the fallback fires too often, the tier boundaries are wrong.</li>
-<li><code>converse()</code> <code>inferenceConfig</code>: <code>maxTokens</code>, <code>temperature</code>, <code>topP</code>, <code>stopSequences</code>. Same shape on InvokeModel? No. InvokeModel takes raw provider JSON.</li>
+<li>PT as a cost fix for bursty traffic. It bills hourly whether used or not.</li>
+<li>PT as a latency fix for slow first token. Capacity is not perceived latency.</li>
+<li>Prompt routers for availability, inference profiles for cost. Swapped pair.</li>
+<li>Caching on unique traffic. No repeated prefix, no savings.</li>
+<li>Batch for interactive SLAs. Hours of latency violates the SLA.</li>
+<li>Total token spend as proof caching works. The metric is cache read hit rate.</li>
+<li>Bigger model as the quality answer without a golden-dataset check. Right-size first.</li>
+<li>Reactive metrics for "proactive" requirements. Count before the call.</li>
 </ul>
-<h2 id="d5-rapid-fire">D5 rapid-fire: Testing &amp; Validation (11%)</h2>
-<p><strong>If the stem says X, pick Y:</strong></p>
+<h3 id="d4-rapid-fire">D4 rapid-fire questions</h3>
+<div class="pq" id="cc-q39">
+<p class="pq-question"><em>D4 · MEDIUM · ONE ANSWER</em><br><strong>CC39.</strong> Token costs are growing; 80% of requests are simple FAQ lookups on the flagship model; quality must not drop. Best fix?</p>
+<ul class="pq-options">
+<li class="pq-option wrong"><strong>A) </strong>Fine-tune the flagship <span class="pq-note">Wrong lever and huge effort. The cost problem is model size per request, not behavior.</span></li>
+<li class="pq-option correct"><strong>B) </strong>Prompt router or cascade: simple queries to a lightweight model, complex ones to the flagship</li>
+<li class="pq-option wrong"><strong>C) </strong>Provisioned Throughput <span class="pq-note">PT is capacity, not cost. It does not make simple queries cheaper.</span></li>
+</ul>
+<button class="pq-reveal" type="button">Reveal answer</button>
+<div class="pq-answer">
+<p><strong>Why B is correct:</strong> the tell is "simple queries on an expensive model." Routers route by complexity for cost; a lightweight model that scores identically on simple extraction is correctly sized, not lower quality.</p>
+</div>
+</div>
+<div class="pq" id="cc-q40">
+<p class="pq-question"><em>D4 · MEDIUM · ONE ANSWER</em><br><strong>CC40.</strong> Steady production traffic throttles at peak on on-demand. Which fix, and what is the routing gotcha?</p>
+<ul class="pq-options">
+<li class="pq-option correct"><strong>A) </strong>Provisioned Throughput, and pass the provisioned ARN as modelId</li>
+<li class="pq-option wrong"><strong>B) </strong>Provisioned Throughput, keep passing the base model ID <span class="pq-note">Base model ID keeps hitting shared on-demand quotas. Idle PT capacity means the code never routes to it.</span></li>
+<li class="pq-option wrong"><strong>C) </strong>Batch inference <span class="pq-note">Batch is offline bulk, not steady interactive traffic.</span></li>
+</ul>
+<button class="pq-reveal" type="button">Reveal answer</button>
+<div class="pq-answer">
+<p><strong>Why A is correct:</strong> steady plus throttled is the PT shape (model units, 1 to 6 month terms, hourly billing). The ARN is the whole game: reserved capacity only serves traffic addressed to it.</p>
+</div>
+</div>
+<div class="pq" id="cc-q41">
+<p class="pq-question"><em>D4 · EASY · ONE ANSWER</em><br><strong>CC41.</strong> "Cheapest for nightly 500k-row classification, no SLA." Which inference?</p>
+<ul class="pq-options">
+<li class="pq-option wrong"><strong>A) </strong>Realtime Converse <span class="pq-note">Realtime pricing for offline bulk is the expensive default.</span></li>
+<li class="pq-option correct"><strong>B) </strong>Batch inference (JSONL to S3, results from S3, ~50% off)</li>
+</ul>
+<button class="pq-reveal" type="button">Reveal answer</button>
+<div class="pq-answer">
+<p><strong>Why B is correct:</strong> no SLA plus bulk equals batch. Hours of latency is fine; the ~50% discount is the point.</p>
+</div>
+</div>
+<div class="pq" id="cc-q42">
+<p class="pq-question"><em>D4 · MEDIUM · ONE ANSWER</em><br><strong>CC42.</strong> "Users report slow responses" on unique interactive queries. Streaming, PT, or caching?</p>
+<ul class="pq-options">
+<li class="pq-option correct"><strong>A) </strong>Streaming (ConverseStream)</li>
+<li class="pq-option wrong"><strong>B) </strong>Provisioned Throughput <span class="pq-note">PT fixes capacity, not first-token speed.</span></li>
+<li class="pq-option wrong"><strong>C) </strong>Prompt caching <span class="pq-note">Unique queries have no repeated prefix, so caching is dead weight.</span></li>
+</ul>
+<button class="pq-reveal" type="button">Reveal answer</button>
+<div class="pq-answer">
+<p><strong>Why A is correct:</strong> "slow responses" on interactive traffic is perceived latency, and streaming is the only lever that moves first-token time.</p>
+</div>
+</div>
+<div class="pq" id="cc-q43">
+<p class="pq-question"><em>D4 · MEDIUM · ONE ANSWER</em><br><strong>CC43.</strong> A scenario needs regional failover AND cost-based routing. Which combination?</p>
+<ul class="pq-options">
+<li class="pq-option correct"><strong>A) </strong>Prompt router selecting the model by complexity, each model invoked via its inference profile for failover</li>
+<li class="pq-option wrong"><strong>B) </strong>Prompt router alone <span class="pq-note">Routers route by complexity, not region. Failover needs the profile layer.</span></li>
+<li class="pq-option wrong"><strong>C) </strong>Inference profile alone <span class="pq-note">Profiles route by region, not complexity. Cost routing needs the router layer.</span></li>
+</ul>
+<button class="pq-reveal" type="button">Reveal answer</button>
+<div class="pq-answer">
+<p><strong>Why A is correct:</strong> the confusion set composed. Router for cost, profile for availability, stacked together. PT would answer a capacity question nobody asked.</p>
+</div>
+</div>
+<div class="pq" id="cc-q44">
+<p class="pq-question"><em>D4 · EASY · RECALL</em><br><strong>CC44.</strong> Which metric proves prompt caching is working?</p>
+<button class="pq-reveal" type="button">Reveal answer</button>
+<div class="pq-answer">
+<p><strong>Answer:</strong> cache read hit rate. Total token spend moves for many reasons; the hit rate isolates the cache.</p>
+</div>
+</div>
+<div class="pq" id="cc-q45">
+<p class="pq-question"><em>D4 · MEDIUM · ONE ANSWER</em><br><strong>CC45.</strong> Traffic is spiky with long idle nights. The team proposes Provisioned Throughput "to save money." Verdict?</p>
+<ul class="pq-options">
+<li class="pq-option correct"><strong>A) </strong>Reject: PT bills hourly whether used or not, so idle nights still cost</li>
+<li class="pq-option wrong"><strong>B) </strong>Accept: reserved capacity is always cheaper <span class="pq-note">PT is a latency and capacity guarantee for steady baselines, not a discount for unpredictability. On-demand wins for spiky.</span></li>
+</ul>
+<button class="pq-reveal" type="button">Reveal answer</button>
+<div class="pq-answer">
+<p><strong>Why A is correct:</strong> match the pricing model to the traffic shape. Spiky or low traffic stays on-demand; PT serves the predictable baseline.</p>
+</div>
+</div>
+<div class="pq" id="cc-q46">
+<p class="pq-question"><em>D4 · EASY · RECALL</em><br><strong>CC46.</strong> Recite the three adjectives and their winners.</p>
+<button class="pq-reveal" type="button">Reveal answer</button>
+<div class="pq-answer">
+<p><strong>Answer:</strong> "least operational overhead" wins with fewest self-managed components; "least custom development effort" wins with managed features over your code; "most cost-effective" wins with token math (smaller model, caching, batch, cascade).</p>
+</div>
+</div>
+<div class="pq" id="cc-q47">
+<p class="pq-question"><em>D4 · EASY · RECALL</em><br><strong>CC47.</strong> Prompt caching preconditions: minimum prefix and TTL.</p>
+<button class="pq-reveal" type="button">Reveal answer</button>
+<div class="pq-answer">
+<p><strong>Answer:</strong> repeated long prefix, minimum on the order of a thousand tokens (model-dependent). TTL 5 minutes by default, up to 1 hour on supported models. Mark the boundary with cachePoint.</p>
+</div>
+</div>
+<div class="pq" id="cc-q48">
+<p class="pq-question"><em>D4 · MEDIUM · ONE ANSWER</em><br><strong>CC48.</strong> The prompt router's default fallback model fires on most traffic. What is wrong?</p>
+<ul class="pq-options">
+<li class="pq-option correct"><strong>A) </strong>The tier boundaries are wrong: the router cannot classify, so everything falls through</li>
+<li class="pq-option wrong"><strong>B) </strong>The flagship model is too expensive <span class="pq-note">Cost is not the symptom here. A fallback firing constantly means misclassification, which you fix with evaluation and boundary tuning.</span></li>
+</ul>
+<button class="pq-reveal" type="button">Reveal answer</button>
+<div class="pq-answer">
+<p><strong>Why A is correct:</strong> the fallback is the router admitting it cannot decide. The fix is evaluation-driven boundary tuning, not a bigger model.</p>
+</div>
+</div>
+<h2 id="d5-testing-validation">D5: Testing, Validation &amp; Troubleshooting (11%)</h2>
+<p>D5 asks one question in many forms: how do you prove a GenAI app works, and how do you fix it when it does not? The proof half is evaluation, climbed cheapest first. The fix half is change-point debugging: the broken thing is whatever changed most recently.</p>
+<h3 id="d5-eval-ladder">The evaluation ladder: automatic, then judge, then human</h3>
+<p><strong>Automatic evaluation</strong> (programmatic) compares model outputs against known-correct answers with deterministic code. It needs a labeled dataset: every prompt carries a <strong>ground truth</strong> label. Built-in metrics are <strong>accuracy</strong> (did it match), <strong>stability</strong> (does the answer survive small prompt perturbations like typos; the console calls this robustness), and <strong>toxicity</strong> (harmful content check). A 1,000-prompt automatic eval on a small model costs a few dollars and finishes in minutes, which is why it belongs in every CI pipeline. <strong>LLM-as-a-judge</strong> uses a separate model to score outputs for <strong>correctness, completeness, faithfulness, harmfulness, refusal, and style/tone</strong>, with custom metrics definable. It needs no labels, so it scales to unlabeled data, but a judge call costs a judge call. <strong>Human evaluation</strong> is the last resort: subjective judgment on samples only, never everything, never under a budget.</p>
+<figure><img src="assets/img/mermaid/06-eval-loop.svg" alt="Evaluation loop: a candidate prompt or model runs against a golden dataset, a judge (LLM or deterministic metric) scores accuracy, faithfulness, toxicity, and latency, and the candidate promotes to production only through a CI/CD eval gate." loading="lazy"><figcaption>The eval loop: candidate versus golden dataset, scored by metric or judge, promoted only through the gate.</figcaption><figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<p>The ladder in practice: compare models cheaply at scale with automatic metrics first, run LLM-as-a-judge on the survivor, put humans on flagged samples only. "Two days to compare two models" is this ladder in cost order. RAG gets its own eval split: <strong>retrieval relevance</strong> (did we fetch the right chunks) plus <strong>generation faithfulness</strong> (is the answer supported by the chunks), LLM-as-judge powered. "Prove the RAG system does not hallucinate" is retrieval plus faithfulness, not a bigger model. Provider benchmarks never decide your model choice: they measure the provider's prompts, not yours. Your own eval job on your golden dataset is the only score that counts. New prompt versions, new model versions, and new guardrail versions all pass through the same <strong>CI/CD eval gate</strong>: score above the threshold or do not deploy. A/B testing with two aliases and shadow traffic through inference profiles catch regressions the gate misses.</p>
+<h3 id="d5-troubleshooting">Troubleshooting: debug the delta</h3>
+<p>Change-point debugging is the whole method: list what changed most recently, debug that first. "Answers confident but wrong after a re-sync" means the re-sync changed the embedding model version or chunking config. "Model ignores the new prompt template" means the Prompt Management version was never published, or AppConfig is serving a cached value. "Agent ignores the new action group" means prepare-agent was skipped. "Bought PT but still throttles" means the code passes the base model ID, not the provisioned ARN.</p>
+<p>The failure dictionary: <strong>AccessDenied on InvokeModel</strong> means check model access and regional availability before touching IAM. <strong>Throttling</strong> means retry with backoff for transient spikes, PT for sustained load. <strong>stopReason <code>guardrail_intervened</code></strong> means the guardrail blocked the call; check which policy fired with trace enabled. <strong>stopReason <code>max_tokens</code></strong> on a good-looking answer means the output was cut. <strong>ValidationException</strong> on InvokeModel means the provider body is malformed (Claude needs <code>anthropic_version</code> and <code>max_tokens</code>), not an IAM problem. <strong>RAG retrieval failing silently</strong> means embedding mismatch, split chunks, or an out-of-sync knowledge base. <strong>Quality drift in production</strong> means scheduled eval jobs against the golden dataset plus CloudWatch anomaly detection on token metrics, not a hand-built pipeline.</p>
+<h3 id="d5-decision-rules">D5 decision rules: if the stem says X, pick Y</h3>
 <ul>
-<li>"Compare models cheaply at scale" → automatic metrics first (ROUGE, faithfulness), then LLM-as-judge on the survivor, humans on flagged samples only. Never humans-on-everything under a budget.</li>
-<li>"Critical flagged interactions" → A2I (human review loop). Not all traffic.</li>
-<li>"Answers confident but wrong after a re-sync" → check the embedding model version and chunking config. The re-sync is the only change; debug the change.</li>
-<li>"RAG retrieval fails silently" → same embedding model at ingest and query; chunk boundaries did not split key facts; KB sync status is in-sync.</li>
-<li>"AccessDenied on InvokeModel" → check model availability in the region BEFORE debugging IAM.</li>
-<li>"Model ignores new prompt template" → Prompt Management version not published, or AppConfig serving a cached value.</li>
-<li>"Test without production traffic" → model evaluation jobs with a golden dataset; A/B with two aliases; shadow traffic through inference profiles.</li>
+<li>"Compare models cheaply at scale" → automatic metrics, then LLM-as-judge on the survivor, humans on flagged samples. Never humans-on-everything under a budget.</li>
+<li>"Needs ground truth" → automatic eval. "No labels available" → LLM-as-judge.</li>
+<li>"Prove RAG does not hallucinate" → retrieval relevance plus generation faithfulness.</li>
+<li>"Critical flagged interactions" → A2I human review loop. Not all traffic.</li>
+<li>"Something broke" → debug the most recent change first. Change-point debugging.</li>
+<li>"AccessDenied on InvokeModel" → model availability in the region before IAM.</li>
+<li>"Test without production traffic" → eval jobs with a golden dataset; A/B with two aliases; shadow traffic through inference profiles.</li>
+<li>"Deploy only if quality holds" → CI/CD eval gate with a score threshold.</li>
 </ul>
-<p><strong>Must know cold:</strong></p>
+<h3 id="d5-traps">D5 trap patterns</h3>
 <ul>
-<li>Change-point debugging: the broken thing is whatever changed most recently. Debug the delta.</li>
-<li>Eval datasets need labels for programmatic metrics. LLM-as-judge works unlabeled.</li>
-<li><code>max_tokens</code> stopReason on good-looking answers = output was CUT, not finished.</li>
+<li>Humans reading everything under a budget. The ladder climbs in cost order.</li>
+<li>Provider benchmarks as the model decision. Marketing until your own eval runs.</li>
+<li>Debugging IAM for a malformed provider body. ValidationException is the request shape.</li>
+<li>Debugging generation when retrieval changed. Debug the delta.</li>
+<li><code>max_tokens</code> stopReason read as finished. It means cut.</li>
+<li>Deploying a new prompt or model version with no eval gate. Score threshold or no deploy.</li>
+<li>A2I on all traffic. Flagged samples only.</li>
 </ul>
+<h3 id="d5-rapid-fire">D5 rapid-fire questions</h3>
+<div class="pq" id="cc-q49">
+<p class="pq-question"><em>D5 · MEDIUM · ONE ANSWER</em><br><strong>CC49.</strong> Two days to compare two models on your prompts, tight budget. Which eval order?</p>
+<ul class="pq-options">
+<li class="pq-option wrong"><strong>A) </strong>Humans read all outputs from both models <span class="pq-note">Humans on everything is the most expensive option and blows the budget and the timeline.</span></li>
+<li class="pq-option correct"><strong>B) </strong>Automatic metrics first, LLM-as-judge on the survivor, humans on flagged samples</li>
+<li class="pq-option wrong"><strong>C) </strong>Provider benchmark scores <span class="pq-note">Benchmarks never measure your data, your prompts, or your quality bar.</span></li>
+</ul>
+<button class="pq-reveal" type="button">Reveal answer</button>
+<div class="pq-answer">
+<p><strong>Why B is correct:</strong> the ladder climbs in cost order. Automatic is cheapest and needs labels; the judge needs none; humans are the last resort on samples.</p>
+</div>
+</div>
+<div class="pq" id="cc-q50">
+<p class="pq-question"><em>D5 · MEDIUM · ONE ANSWER</em><br><strong>CC50.</strong> "Prove the RAG system does not hallucinate." Which eval?</p>
+<ul class="pq-options">
+<li class="pq-option correct"><strong>A) </strong>Retrieval relevance plus generation faithfulness, LLM-as-judge powered</li>
+<li class="pq-option wrong"><strong>B) </strong>A bigger generation model <span class="pq-note">A bigger model does not prove anything. Proof is measurement: right chunks retrieved, answer supported by them.</span></li>
+<li class="pq-option wrong"><strong>C) </strong>Automatic accuracy on a labeled set <span class="pq-note">Accuracy needs ground-truth labels for every prompt; faithfulness directly measures support by the retrieved chunks.</span></li>
+</ul>
+<button class="pq-reveal" type="button">Reveal answer</button>
+<div class="pq-answer">
+<p><strong>Why A is correct:</strong> the RAG eval split. Retrieval relevance asks "right chunks?", faithfulness asks "answer supported by them?" Together they are the hallucination proof.</p>
+</div>
+</div>
+<div class="pq" id="cc-q51">
+<p class="pq-question"><em>D5 · EASY · ONE ANSWER</em><br><strong>CC51.</strong> An InvokeModel call returns ValidationException. IAM or request shape?</p>
+<ul class="pq-options">
+<li class="pq-option wrong"><strong>A) </strong>IAM: check the role policy <span class="pq-note">Validation errors are about the request body, not permissions. Permission problems return access errors.</span></li>
+<li class="pq-option correct"><strong>B) </strong>Request shape: the provider body is malformed (for Claude, missing anthropic_version or max_tokens)</li>
+</ul>
+<button class="pq-reveal" type="button">Reveal answer</button>
+<div class="pq-answer">
+<p><strong>Why B is correct:</strong> read the exception name. ValidationException means the body failed validation; the classic cause is a Claude body missing its required fields.</p>
+</div>
+</div>
+<div class="pq" id="cc-q52">
+<p class="pq-question"><em>D5 · EASY · ONE ANSWER</em><br><strong>CC52.</strong> Evaluator asks which model is better for YOUR prompts. Provider benchmark or your own eval job?</p>
+<ul class="pq-options">
+<li class="pq-option wrong"><strong>A) </strong>Provider benchmark <span class="pq-note">Benchmarks ignore your data, your prompts, cost, latency, and regional availability. Never a complete answer.</span></li>
+<li class="pq-option correct"><strong>B) </strong>Your own eval job on your golden dataset</li>
+</ul>
+<button class="pq-reveal" type="button">Reveal answer</button>
+<div class="pq-answer">
+<p><strong>Why B is correct:</strong> the capability-floor filter. Only your prompts against your quality bar decide your model.</p>
+</div>
+</div>
+<div class="pq" id="cc-q53">
+<p class="pq-question"><em>D5 · MEDIUM · ONE ANSWER</em><br><strong>CC53.</strong> The model ignores a newly published prompt template at runtime. What are the two suspects?</p>
+<ul class="pq-options">
+<li class="pq-option correct"><strong>A) </strong>The Prompt Management version was never published, or AppConfig is serving a cached value</li>
+<li class="pq-option wrong"><strong>B) </strong>The embedding model drifted <span class="pq-note">Embeddings are a retrieval concern. A prompt template problem is a versioning or config problem.</span></li>
+</ul>
+<button class="pq-reveal" type="button">Reveal answer</button>
+<div class="pq-answer">
+<p><strong>Why A is correct:</strong> change-point debugging applied to config. Draft versus published version, and cached runtime config, are the two places a new template goes missing.</p>
+</div>
+</div>
+<div class="pq" id="cc-q54">
+<p class="pq-question"><em>D5 · MEDIUM · ONE ANSWER</em><br><strong>CC54.</strong> "Detect quality drift in production with minimal custom work." Which design?</p>
+<ul class="pq-options">
+<li class="pq-option wrong"><strong>A) </strong>A hand-built Glue and Athena pipeline over raw logs <span class="pq-note">Custom work when managed pieces exist. "Minimal custom work" kills hand-rolled.</span></li>
+<li class="pq-option correct"><strong>B) </strong>Scheduled Bedrock evaluation jobs against the golden dataset plus CloudWatch anomaly detection on token metrics</li>
+</ul>
+<button class="pq-reveal" type="button">Reveal answer</button>
+<div class="pq-answer">
+<p><strong>Why B is correct:</strong> periodic eval jobs watch quality against the golden set; CloudWatch watches the quantitative signals. Managed, scheduled, minimal code.</p>
+</div>
+</div>
+<div class="pq" id="cc-q55">
+<p class="pq-question"><em>D5 · EASY · RECALL</em><br><strong>CC55.</strong> Which eval needs ground-truth labels, and which works unlabeled?</p>
+<button class="pq-reveal" type="button">Reveal answer</button>
+<div class="pq-answer">
+<p><strong>Answer:</strong> automatic (programmatic) evaluation needs labels for accuracy, stability, and toxicity. LLM-as-a-judge works unlabeled, scoring correctness, faithfulness, fluency, and more.</p>
+</div>
+</div>
+<div class="pq" id="cc-q56">
+<p class="pq-question"><em>D5 · EASY · RECALL</em><br><strong>CC56.</strong> A new model version is ready. What stands between it and production?</p>
+<button class="pq-reveal" type="button">Reveal answer</button>
+<div class="pq-answer">
+<p><strong>Answer:</strong> the CI/CD eval gate. The candidate runs against the golden dataset and deploys only above the score threshold. A/B with two aliases or shadow traffic catches what the gate misses.</p>
+</div>
+</div>
+<div class="pq" id="cc-q57">
+<p class="pq-question"><em>D5 · MEDIUM · ONE ANSWER</em><br><strong>CC57.</strong> Throttling errors spike on sustained traffic at peak. Retry with backoff or Provisioned Throughput?</p>
+<ul class="pq-options">
+<li class="pq-option wrong"><strong>A) </strong>Retry with backoff only <span class="pq-note">Backoff handles transient spikes. Sustained throttling at peak is a capacity problem.</span></li>
+<li class="pq-option correct"><strong>B) </strong>Provisioned Throughput for the steady baseline (backoff stays for transient spikes)</li>
+</ul>
+<button class="pq-reveal" type="button">Reveal answer</button>
+<div class="pq-answer">
+<p><strong>Why B is correct:</strong> sustained throttling on steady traffic is the PT shape: dedicated capacity, no throttling from shared quotas. Transient spikes still get backoff.</p>
+</div>
+</div>
+<div class="pq" id="cc-q58">
+<p class="pq-question"><em>D5 · EASY · RECALL</em><br><strong>CC58.</strong> State the change-point debugging rule in one sentence.</p>
+<button class="pq-reveal" type="button">Reveal answer</button>
+<div class="pq-answer">
+<p><strong>Answer:</strong> the broken thing is whatever changed most recently, so debug the delta first.</p>
+</div>
+</div>
 <h2 id="must-memorize-numbers">Must-memorize numbers</h2>
 <div class="table-wrap"><table>
 <thead>
@@ -1346,140 +2216,151 @@ details.cc-qa blockquote{margin:.5rem 0 0;border-left:3px solid var(--accent,#4d
 </thead>
 <tbody>
 <tr>
-<td>Questions / scored / time</td>
-<td>75 / 65 / 180 min</td>
+<td>Questions / scored / time / pass</td>
+<td>75 / 65 / 180 min / 750 of 1000</td>
 </tr>
 <tr>
-<td>Pass score</td>
-<td>750 / 1000</td>
+<td>Domain weights (scored questions approx)</td>
+<td>D1 31% (~20), D2 26% (~17), D3 20% (~13), D4 12% (~8), D5 11% (~7)</td>
 </tr>
 <tr>
 <td>Lambda max duration</td>
-<td>15 minutes</td>
+<td>15 minutes (900 seconds)</td>
+</tr>
+<tr>
+<td>API Gateway REST integration timeout</td>
+<td>29 seconds</td>
 </tr>
 <tr>
 <td>Step Functions Express max duration</td>
-<td>5 minutes</td>
+<td>5 minutes, no callbacks</td>
+</tr>
+<tr>
+<td>Step Functions Standard max duration</td>
+<td>Up to 1 year; about $0.025 per 1,000 state transitions; waits are free</td>
 </tr>
 <tr>
 <td>Step Functions Distributed Map parallel children</td>
-<td>up to 10,000</td>
+<td>Up to 10,000 over S3 objects</td>
 </tr>
 <tr>
 <td>Batch inference discount</td>
-<td>~50% off on-demand</td>
+<td>~50% off on-demand; JSONL into S3, results to S3, hours of latency</td>
 </tr>
 <tr>
-<td>Domain weights</td>
-<td>D1 31%, D2 26%, D3 20%, D4 12%, D5 11%</td>
+<td>Provisioned Throughput terms</td>
+<td>Model units, commonly 1 or 6 month terms, hourly billing whether used or not; invoke the provisioned ARN</td>
 </tr>
 <tr>
-<td>Approximate scored questions per domain</td>
-<td>D1 20, D2 17, D3 13, D4 8, D5 7</td>
+<td>Prompt caching</td>
+<td>Repeated prefix ~1,000+ tokens (model-dependent); TTL 5 min default, up to 1 hour; proof is cache read hit rate</td>
+</tr>
+<tr>
+<td>Titan Text Embeddings v2 dimensions</td>
+<td>1024, 512, or 256 (256 cuts storage to a quarter of 1024)</td>
+</tr>
+<tr>
+<td>Cohere Embed languages; input_type</td>
+<td>100+ languages; search_query versus search_document</td>
+</tr>
+<tr>
+<td>Guardrail content filters</td>
+<td>6 categories (hate, insults, sexual, violence, misconduct, prompt attack) x 4 strengths = 24 settings</td>
+</tr>
+<tr>
+<td>Guardrail policies</td>
+<td>6: content filters, denied topics, word filters, sensitive info filters, contextual grounding, Automated Reasoning</td>
+</tr>
+<tr>
+<td>stopReason values</td>
+<td>end_turn (done), max_tokens (cut, not finished), guardrail_intervened (blocked)</td>
+</tr>
+<tr>
+<td>CloudTrail event history</td>
+<td>90 days; metadata only, never prompt or response content</td>
+</tr>
+<tr>
+<td>Comprehend PII entity types</td>
+<td>30+ (names, SSNs, account numbers)</td>
+</tr>
+<tr>
+<td>Claude InvokeModel required fields</td>
+<td>anthropic_version "bedrock-2023-05-31" and max_tokens</td>
+</tr>
+<tr>
+<td>Small vector dataset threshold</td>
+<td>Under ~1M records: Aurora Serverless with pgvector; large: OpenSearch Serverless</td>
+</tr>
+<tr>
+<td>Fine-tuning data scale</td>
+<td>Hundreds to a few thousand labeled examples in S3; jobs run for hours</td>
 </tr>
 </tbody>
 </table></div>
-<h2 id="top-30-traps">Top 30 traps in one line each</h2>
+<h2 id="top-50-traps">Top 50 traps in one line each</h2>
 <ol>
+<li>Fine-tuning for knowledge: quarterly docs, citations, fresh facts. Always RAG.</li>
+<li>Converse offered for embeddings. Converse is text generation only; embeddings need InvokeModel.</li>
+<li>Guardrails assumed Converse-only. ApplyGuardrail covers any text, including external models.</li>
+<li>Provider benchmarks deciding the model. Only your golden-dataset eval counts.</li>
+<li>AccessDenied on InvokeModel debugged as IAM. Check model access and regional availability first.</li>
+<li>Missing anthropic_version or max_tokens in a Claude body, then an hour of IAM debugging. The error is the request shape.</li>
+<li>Cross-region inference profile under data residency. Profiles move data across regions.</li>
+<li>Provisioned Throughput as a cost fix for bursty traffic. It bills hourly whether used or not.</li>
+<li>Prompt caching on unique traffic. No repeated prefix, no savings.</li>
+<li>ElastiCache as a vector store. Ephemeral caching; durable vectors live in a vector store.</li>
+<li>Kendra offered for RAG. Kendra is enterprise search, not the RAG path.</li>
+<li>stopReason max_tokens read as finished. It means the output was cut.</li>
+<li>Temperature and topP both set. They interact; pick one.</li>
 <li>Lambda waiting, sleeping, or polling past 15 minutes. It dies.</li>
-<li>"No ML team / least effort" means custom builds lose to Bedrock managed features.</li>
-<li>Knowledge bases serve documents. No API calls, no access control, no actions.</li>
-<li>Changing documents or citations = RAG, never fine-tuning.</li>
-<li>Profiles = availability, routers = cost, Provisioned Throughput = reserved capacity.</li>
-<li>Guardrails filter content. Not IAM, not tenant isolation, not token quotas.</li>
-<li>Cheapest option that meets every requirement wins. Premium extras without a stated need lose.</li>
-<li>CloudFormation = deployment. Runtime switching without redeploys = AppConfig.</li>
-<li>ElastiCache is ephemeral caching. Durable vectors live in a vector store.</li>
-<li>Cross-region failover violates data-residency constraints. Check the region first.</li>
-<li>Converse + Prompt Management + guardrailConfig is rejected. ApplyGuardrail standalone works around it.</li>
-<li>Agent config changed but behavior did not = PrepareAgent was skipped.</li>
-<li>AccessDenied on InvokeModel = check regional model availability before IAM.</li>
-<li>Converse is text generation. Embeddings go through InvokeModel.</li>
-<li>Built-in safety never transfers evaluation and governance to AWS. You own it.</li>
-<li>"Proactively" kills every reactive option. Count tokens before the call, not after.</li>
-<li>Fabricated features: real service + invented capability (S3 nodes in Flows, Guardrail token quotas).</li>
-<li>CloudTrail = who called what. CloudWatch = what was blocked and why. Invocation logging = prompt and response text.</li>
-<li>Express = 5-min cap, no callbacks. Hours-long human waits need Standard.</li>
-<li>Tight window over many objects = Distributed Map. Sequential dies on the clock.</li>
-<li>Small vectors = Aurora pgvector. Large = OpenSearch. 100% recall small = exact flat search.</li>
-<li>Slow first token = streaming. PT fixes capacity, caching needs repeated prefixes.</li>
-<li>Prompt caching needs repeated long prefixes. Unique traffic makes it dead weight.</li>
-<li>Bought PT but throttled = code passes the base model ID, not the provisioned ARN.</li>
-<li>"Notify but do not block" = guardrail detect mode.</li>
-<li>SCPs = org-wide max permissions. Permissions boundaries = per-role caps.</li>
-<li>Macie finds PII in S3. Comprehend detects in text. Guardrails redact at call time.</li>
-<li>No public internet = interface VPC endpoints. NAT gateway violates the constraint.</li>
-<li>Eval ladder: automatic metrics, then LLM-as-judge, humans on top candidates only.</li>
-<li>Adjectives decide: least custom dev = managed features. Least overhead = fewest components. Most cost-effective = token math.</li>
+<li>Agent ID alone in production, routing to DRAFT instead of the PROD alias.</li>
+<li>One sessionId across users, leaking conversation memory.</li>
+<li>Express for hours-long human waits. 5-minute cap, no callbacks.</li>
+<li>Raising the Lambda timeout for gateway timeouts. The 29-second ceiling is at API Gateway.</li>
+<li>Fabricated Flow nodes (S3 copy node). Verify node and feature lists.</li>
+<li>CloudFormation for runtime switching. Deployments are not runtime; AppConfig is.</li>
+<li>Agents for fixed sequences. Reasoning overhead with no benefit.</li>
+<li>Multi-tenant agents without per-KB IAM filtering. Tenants must not reach each other's data.</li>
+<li>Guardrails offered for IAM, tenant isolation, token quotas, or billing. Fabricated capability.</li>
+<li>CloudTrail offered for prompt content. Metadata only; content needs invocation logging.</li>
+<li>CloudWatch offered for who-called-what. That is CloudTrail's job.</li>
+<li>"Built-in safety means we skip evaluation." The deployer owns evaluation and governance. Always.</li>
+<li>Guardrail attached to a CloudWatch log group to mask PHI. Guardrails attach to Bedrock model flows, not log groups.</li>
+<li>NAT gateway for no public internet. It provides public internet access.</li>
+<li>Full invocation logging in healthcare with no retention policy. Logs can contain PII; question the logging.</li>
+<li>Automated Reasoning expected to block inline. It runs in detect mode only.</li>
+<li>PT as a latency fix for slow first token. Capacity is not perceived latency.</li>
+<li>Routers for availability, profiles for cost. Swapped pair.</li>
+<li>Batch for interactive SLAs. Hours of latency violates the SLA.</li>
+<li>Total token spend as proof caching works. The metric is cache read hit rate.</li>
+<li>Bigger model as the quality answer without a golden-dataset check. Right-size first.</li>
+<li>Reactive metrics for "proactive" requirements. Count before the call.</li>
+<li>Humans reading everything under a budget. The ladder climbs in cost order.</li>
+<li>Debugging IAM for a malformed provider body. ValidationException is the request shape.</li>
+<li>Debugging generation when retrieval changed. Debug the delta.</li>
+<li>Deploying a new prompt or model version with no eval gate. Score threshold or no deploy.</li>
+<li>A2I on all traffic. Flagged samples only.</li>
+<li>Embedding tables into a vector store. Relational data gets text-to-SQL.</li>
+<li>Different embedding model at query time than ingestion. Retrieval silently breaks.</li>
+<li>Custom model served with the base model ID. Fine-tuned models need Provisioned Throughput.</li>
+<li>Direct SDK calls when the scenario needs auth and throttling. That is the API Gateway answer.</li>
+<li>"Least operational overhead" answered with self-managed components. The adjective picks managed.</li>
+<li>Cheapest option that meets every requirement loses to a premium extra with no stated need. It never does; cheapest-that-fits wins.</li>
+<li>Skipping the PoC and buying PT before validation. On-demand first, prove it, then commit.</li>
+<li>Treating action-group parameters as a dict. They arrive as a list of name/value dicts.</li>
+<li>Forgetting enableTrace when asked to explain agent behavior. It is the transparency answer.</li>
 </ol>
-<h2 id="30-rapid-fire-questions">30 rapid-fire questions</h2>
-<p>One question, one-line why. Cover every answer wrong and you are not ready.</p>
-<details class="cc-qa"><summary>CC01. Stem says &quot;answer over contracts that update monthly, with citations.&quot; Why is fine-tuning wrong?</summary><p>Fine-tuning bakes static weights. Monthly changes need re-training, and it cannot cite sources. RAG reads current docs.</p></details>
+<p>You finished the crash course. Missed more than five rapid-fire questions? Re-read the decision rules for the domains you missed, then drill the full question bank. Missed five or fewer? You are ready to schedule.</p>
 
-<details class="cc-qa"><summary>CC02. Stem says &quot;same model, 90% of prompts share a 4k system prompt.&quot; Which cost lever?</summary><p>Prompt caching. Repeated long prefixes are its only precondition, and this stem hands it to you.</p></details>
-
-<details class="cc-qa"><summary>CC03. `invoke_agent` must use the PROD deployment, not the draft. Which parameter?</summary><p><code>agentAliasId</code> set to the PROD alias. Agent ID alone routes to DRAFT, the classic bug.</p></details>
-
-<details class="cc-qa"><summary>CC04. Lambda action function receives `event[&quot;parameters&quot;]`. What shape?</summary><p>A list of {"name":..., "value":...} dicts. Treating it as a plain dict drops every parameter.</p></details>
-
-<details class="cc-qa"><summary>CC05. Approval step takes 4 hours. Express or Standard?</summary><p>Standard with wait-for-callback. Express caps at 5 minutes and cannot pause for hours.</p></details>
-
-<details class="cc-qa"><summary>CC06. &quot;Block bullying topics&quot; vs &quot;notify on bullying but never block.&quot; What changes?</summary><p>Guardrail mode: block vs detect. Same filter, different mode. The constraint is about the mode, not the feature.</p></details>
-
-<details class="cc-qa"><summary>CC07. Compliance wants full prompt and response text for blocked calls. CloudTrail or invocation logging?</summary><p>Invocation logging (opt-in) to S3. CloudTrail records API metadata only, never token content.</p></details>
-
-<details class="cc-qa"><summary>CC08. PT purchased, on-demand still throttles, code uses base model ID. Fix?</summary><p>Pass the provisioned model ARN as <code>modelId</code>. Idle capacity means the code never routes to it.</p></details>
-
-<details class="cc-qa"><summary>CC09. `stopReason` is `max_tokens` on a clean-looking answer. What happened?</summary><p>Output was cut mid-generation, not finished. Raise maxTokens or shorten the input.</p></details>
-
-<details class="cc-qa"><summary>CC10. &quot;Proactively alert before token limits.&quot; Alarm on InputTokenCount or pre-call counting?</summary><p>Pre-call counting. The metric fires after the call runs, which is reactive, and the stem demands proactive.</p></details>
-
-<details class="cc-qa"><summary>CC11. Small vector dataset, 100% recall required. HNSW or exact flat search?</summary><p>Exact flat search. HNSW is approximate by design; small data makes the exact scan affordable.</p></details>
-
-<details class="cc-qa"><summary>CC12. Embeddings for the knowledge base. Converse or InvokeModel?</summary><p>InvokeModel. Converse is text generation only and has no embedding path.</p></details>
-
-<details class="cc-qa"><summary>CC13. Agent ignores the new action group. First check?</summary><p>PrepareAgent was skipped. Config changes need prepare before the draft behavior changes.</p></details>
-
-<details class="cc-qa"><summary>CC14. &quot;Cheapest nightly 500k-row classification.&quot; Realtime Converse or batch?</summary><p>Batch inference (S3 in, S3 out, ~50% off). Realtime pricing for offline bulk is the expensive default.</p></details>
-
-<details class="cc-qa"><summary>CC15. Two days to compare two models. Humans read everything or automatic ladder?</summary><p>Automatic metrics first, LLM-as-judge on the survivor, humans on flagged samples. The ladder climbs in cost order.</p></details>
-
-<details class="cc-qa"><summary>CC16. Cross-region inference profile proposed, stem requires data residency in one region. Verdict?</summary><p>Reject it. Profiles route across regions, which violates the residency constraint. Check the region first.</p></details>
-
-<details class="cc-qa"><summary>CC17. &quot;Least operational overhead&quot; for vectors on 200k records. Self-managed OpenSearch or Aurora pgvector?</summary><p>Aurora Serverless with pgvector. The adjective picks fewest self-managed components, not best raw scale.</p></details>
-
-<details class="cc-qa"><summary>CC18. Answers &quot;confident but wrong&quot; after a knowledge base re-sync. Debug generation or retrieval?</summary><p>Retrieval. The re-sync is the only change: check embedding model version and chunking config drift.</p></details>
-
-<details class="cc-qa"><summary>CC19. PII must be found across all S3 buckets. Comprehend or Macie?</summary><p>Macie. Comprehend scans text you send it; Macie discovers PII across S3 at rest.</p></details>
-
-<details class="cc-qa"><summary>CC20. Bedrock in a VPC with no public internet. NAT gateway or interface endpoints?</summary><p>Interface VPC endpoints. A NAT gateway gives public internet access, violating the explicit constraint.</p></details>
-
-<details class="cc-qa"><summary>CC21. Stem offers &quot;Flows with an S3 copy node&quot; as an option. Trust it?</summary><p>No. Fabricated feature. Flows have no S3 copy action node. Verify node and feature lists before picking.</p></details>
-
-<details class="cc-qa"><summary>CC22. Streaming vs Provisioned Throughput for &quot;users report slow responses&quot; on unique queries. Pick?</summary><p>Streaming (ConverseStream). PT fixes capacity, caching needs repeated prefixes, neither speeds first token.</p></details>
-
-<details class="cc-qa"><summary>CC23. `sessionId` reused across all users of a support bot. Risk?</summary><p>Conversation memory leaks between users. Session ID is the memory key; one ID per user session.</p></details>
-
-<details class="cc-qa"><summary>CC24. Restrict model access across 40 AWS accounts. SCP or per-account IAM roles?</summary><p>SCPs via Organizations (deployed with StackSets). Per-account roles are 40 chances to drift.</p></details>
-
-<details class="cc-qa"><summary>CC25. Fine-tuned model served with on-demand pricing. Works?</summary><p>No. Fine-tuned and custom models require Provisioned Throughput. The base model ID will not serve them.</p></details>
-
-<details class="cc-qa"><summary>CC26. &quot;Most mathematically certain outputs obey policy.&quot; Content filter or Automated Reasoning checks?</summary><p>Automated Reasoning checks. Formal logic verification, a stronger guarantee than classifier filters (2026 feature).</p></details>
-
-<details class="cc-qa"><summary>CC27. Prompt Management + guardrailConfig on Converse is rejected. Workaround?</summary><p>ApplyGuardrail as a standalone call. The combination is rejected, so split the calls.</p></details>
-
-<details class="cc-qa"><summary>CC28. Temperature 0.7 AND topP 0.9 both set. Fine?</summary><p>They interact. Set one, not both, or sampling behavior gets unpredictable.</p></details>
-
-<details class="cc-qa"><summary>CC29. Distributed Map vs 10k sequential Lambda invocations for a 30-minute window. Pick?</summary><p>Distributed Map, up to 10k parallel children. Sequential dies on the clock; plain Lambda fan-out dies on orchestration overhead.</p></details>
-
-<details class="cc-qa"><summary>CC30. Evaluator asks which model is better for YOUR prompts. Provider benchmark or your own eval job?</summary><p>Your own eval job. Provider benchmarks never measure your data, your prompts, or your quality bar.</p></details>
-<p>You finished the crash course. Missed more than five? Re-read the decision rules for the domains you missed, then do the full 200-question bank. Missed five or fewer? You are ready to schedule.</p>
 </div></main>
 <script>
 window.DS_TRACK = "aipc01";
 window.DS_TRACK_TITLE = "AIP-C01 Study Guide";
 window.DS_MANIFEST = [
   { file: "index.html", label: "Start · Exam Overview & Study Map" },
+  { file: "prereq-aif-c01.html", label: "Prereq · AIF-C01 AI Practitioner Crash Course" },
+  { file: "prereq-aws-cloud-foundations.html", label: "Prereq · AWS Cloud Foundations" },
+  { file: "prereq-ml-specialty.html", label: "Prereq · ML Specialty Essentials" },
   { file: "volume-d1-foundation-models.html", label: "D1 · Foundation Models, Data & Compliance (31%)" },
   { file: "volume-d2-implementation-integration.html", label: "D2 · Implementation & Integration (26%)" },
   { file: "volume-d3-safety-security-governance.html", label: "D3 · Safety, Security & Governance (20%)" },
@@ -1490,7 +2371,7 @@ window.DS_MANIFEST = [
   { file: "volume-question-patterns.html", label: "Question Patterns · How AWS Asks" },
   { file: "volume-system-design.html", label: "System Design Guide" },
   { file: "volume-crash-course.html", label: "Crash Course · One-Volume Sprint" },
-  { file: "volume-appendix-gaps.html", label: "Appendix · Coverage Gaps" }
+  { file: "volume-appendix-gaps.html", label: "Appendix · Coverage Gaps" },
 ];
 </script>
 <script>
@@ -2055,6 +2936,151 @@ window.DS_MANIFEST = [
         tel.scrollIntoView({ behavior: "smooth", block: "start" });
         if (tel.focus) tel.focus({ preventScroll: true });
       }
+    }
+  });
+})();
+
+</script>
+<script>
+/* ==== Experience layer behavior — additive ====
+ * Calm, GPU-friendly page motion for study volumes. No-JS safe: every hidden
+ * state in experience.css is gated on `html.xp-js`, which only this script
+ * adds — without it the page is fully readable. Respects
+ * prefers-reduced-motion (exits early; CSS keeps everything static).
+ *
+ * Three jobs:
+ *  1. Hero parallax — detects the volume hero (.banner/.hero, else wraps the
+ *     h1 + lede block in .xp-hero) and drifts it gently as the reader
+ *     scrolls on. Transform/opacity only, rAF-throttled, passive listener.
+ *  2. Scroll reveals — one IntersectionObserver fades+rises figures, key
+ *     callouts and knowledge checks exactly once. Elements already in view
+ *     on load appear immediately (no load flash).
+ *  3. Nothing else: progress bar, scroll-spy, sidebar, quiz toggles are
+ *     owned by ds.js and are left untouched.
+ *
+ * (In the assembly snippet the closing element tags are written literally;
+ * inside this file they are escaped as <\/style> / <\/script> so the file
+ * pastes verbatim without early-terminating its own element.)
+ */
+(function () {
+  'use strict';
+
+  var root = document.documentElement;
+
+  var reduceMotion = false;
+  try {
+    reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  } catch (e) { /* matchMedia unavailable: assume motion is fine */ }
+  if (reduceMotion) { return; } /* leave no footprint: no xp-js, CSS stays static */
+
+  /* From here on the reader is fine with calm motion: mark the document so
+     the CSS reveal/parallax states may apply. Without this class (no-JS or
+     reduced-motion) every hidden state stays off and the page is fully
+     readable. */
+  root.classList.add('xp-js');
+
+  /* ---------------- 1. Hero detection + gentle parallax ---------------- */
+  var hero = document.querySelector('.banner, .hero');
+  if (!hero) {
+    /* No banner hero: wrap the volume title (h1) plus its lede paragraphs
+       in a layout-neutral div. Never touches headings ds.js needs. */
+    var main = document.querySelector('main');
+    var h1 = main ? main.querySelector('h1') : null;
+    if (h1 && h1.parentNode) {
+      var wrap = document.createElement('div');
+      wrap.className = 'xp-hero';
+      h1.parentNode.insertBefore(wrap, h1);
+      var node = h1, moved = 0, paras = 0;
+      while (node && moved < 8) {
+        var next = node.nextSibling;
+        if (node.nodeType === 3) { node = next; continue; } /* skip whitespace text nodes */
+        var isPara = node.nodeType === 1 && node.tagName === 'P';
+        if (node !== h1 && !isPara) { break; }
+        wrap.appendChild(node);
+        moved += 1;
+        if (isPara) {
+          paras += 1;
+          if (paras >= 3) { break; }
+        }
+        node = next;
+      }
+      hero = wrap;
+    }
+  }
+
+  var heroH = 0, ticking = false, pxOn = false;
+  function measure() { heroH = hero ? hero.offsetHeight : 0; }
+  function render() {
+    ticking = false;
+    if (!hero || !heroH) { return; }
+    var y = window.pageYOffset || root.scrollTop || 0;
+    if (y <= 0) {
+      if (pxOn) { hero.style.transform = ''; hero.style.opacity = ''; pxOn = false; }
+      return;
+    }
+    var range = heroH * 1.4;
+    if (y < range) {
+      /* Drift up slightly slower than the scroll and fade a whisper —
+         the title recedes calmly instead of snapping away. */
+      var k = Math.min(y / range, 1);
+      hero.style.transform = 'translate3d(0,' + (-y * 0.06).toFixed(1) + 'px,0)';
+      hero.style.opacity = (1 - k * 0.22).toFixed(3);
+      pxOn = true;
+    } else if (pxOn) {
+      hero.style.transform = '';
+      hero.style.opacity = '';
+      pxOn = false;
+    }
+  }
+  function requestRender() {
+    if (!ticking) { ticking = true; window.requestAnimationFrame(render); }
+  }
+  if (hero) {
+    measure();
+    render();
+    window.addEventListener('scroll', requestRender, { passive: true });
+    window.addEventListener('resize', function () { measure(); requestRender(); });
+  }
+
+  /* ---------------- 2. Scroll-triggered reveals ---------------- */
+  var SELECTOR = [
+    'figure',
+    '.takeaway', '.exam-ask', '.trapbox', '.trap', '.board',
+    '.diagram-walkthrough', '.walkthrough', '.warn', '.callout',
+    '.ob-board', '.nums', '.watch-card', '.lab', '.pq', '.go-deeper-note'
+  ].join(', ');
+
+  var targets = [];
+  Array.prototype.forEach.call(document.querySelectorAll(SELECTOR), function (el) {
+    if (hero && hero.contains(el)) { return; } /* hero has its own motion */
+    targets.push(el);
+  });
+
+  function showAll(list) {
+    list.forEach(function (el) { el.classList.add('xp-reveal', 'xp-in'); });
+  }
+
+  if (!targets.length) { return; }
+
+  if (!('IntersectionObserver' in window)) { showAll(targets); return; }
+
+  var io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (en) {
+      if (en.isIntersecting) {
+        en.target.classList.add('xp-in');
+        io.unobserve(en.target);
+      }
+    });
+  }, { rootMargin: '0px 0px -6% 0px', threshold: 0.06 });
+
+  var vh = window.innerHeight || 800;
+  targets.forEach(function (el) {
+    el.classList.add('xp-reveal');
+    var r = el.getBoundingClientRect();
+    if (r.top < vh && r.bottom > 0) {
+      el.classList.add('xp-in'); /* in view on load: appear, no animation */
+    } else {
+      io.observe(el);
     }
   });
 })();
