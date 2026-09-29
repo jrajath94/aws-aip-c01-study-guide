@@ -2,6 +2,14 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<style>
+/* Validation-assembly: bridge + equation rendering (additive, 2026-09-29). */
+.chapter-bridge,.topic-bridge,.u-bridge{border-left:3px solid #8a8f98;border-left:3px solid color-mix(in srgb,currentColor 40%,transparent);padding:.55rem .9rem;margin:1.1rem 0;background:rgba(128,128,128,.08);border-radius:0 6px 6px 0}
+.next-chapter,.u-next,.u-goto{font-weight:650;margin:1.15rem 0}
+.display-eq,.eq{text-align:center;margin:1.15rem 0;font-size:1.12em;line-height:1.7}
+.eq-where{margin:.1rem 0 1rem 1.25rem;font-size:.93em;opacity:.92}
+.eq-worked{border:1px solid #8a8f98;border:1px solid color-mix(in srgb,currentColor 30%,transparent);border-radius:8px;padding:.7rem 1rem;margin:1rem 0;background:rgba(128,128,128,.06)}
+</style>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="dark">
 <title>AIP-C01 Domain 2: Implementation and Integration</title>
@@ -1159,6 +1167,8 @@ footer p{text-align:left}
   #ds-content .ds-site-footer,
   .ds-side-volumes { display: none !important; }
 }
+.walkthrough{margin:.4rem 0 1.4rem;padding:.6rem .9rem;border-left:3px solid var(--accent,#4da3ff);background:var(--card,#141414);border-radius:0 8px 8px 0;font-size:.92rem;color:var(--muted,#a8a8a8)}
+.walkthrough strong{color:inherit}
 </style>
 <style>
 /* Phase-2 additions: bridge paragraphs and display math.
@@ -1325,17 +1335,11 @@ html.xp-js .xp-reveal.xp-in {
 <p>Turn 2: the app sends both <code>toolResult</code> blocks; the model returns a weather <code>toolUse</code>. Turn 3: final itinerary text. Total: 3 Converse calls, 3 tool executions, one user-visible answer. Token cost roughly triples versus a no-tool call because every turn resends the conversation history plus tool schemas.</p>
 <div class="exam-ask"><p>Trap</p>
 <p>Converse cannot do embeddings.</p>
-<p>The exam asks "generate embeddings for a vector store" and offers Converse as a distractor. Embeddings need</p>
-<p>InvokeModel</p>
-<p>with an embedding model (Titan Text Embeddings, Cohere Embed). Converse is text generation only. Memorize this as a one-line rule.</p></div>
+<p>The exam asks "generate embeddings for a vector store" and offers Converse as a distractor. Embeddings need <code>InvokeModel</code> with an embedding model (Titan Text Embeddings, Cohere Embed). Converse is text generation only. Memorize this as a one-line rule.</p></div>
 
 <div class="exam-ask"><p>Common misunderstanding</p>
 <p>The model never executes tools.</p>
-<p>Beginners picture the model "calling" the Lambda. It does not. The model outputs a structured request (</p>
-<p>toolUse</p>
-<p>); your application runs the code and returns the result (</p>
-<p>toolResult</p>
-<p>). If a scenario says "the model directly updated the database," that architecture is wrong or missing the application layer.</p></div>
+<p>Beginners picture the model "calling" the Lambda. It does not. The model outputs a structured request (<code>toolUse</code>); your application runs the code and returns the result (<code>toolResult</code>). If a scenario says "the model directly updated the database," that architecture is wrong or missing the application layer.</p></div>
 
 <figure><img src="assets/img/mermaid/22-converse-tool-use-seq.svg" alt="Converse API tool-use loop sequence: app sends messages plus toolConfig, API returns toolUse block, app runs Lambda tool, app sends toolResult back, API returns final text" loading="lazy"><figcaption>Converse API tool-use loop sequence: app sends messages plus toolConfig, API returns toolUse block, app runs Lambda tool, app sends toolResult back, API returns final text</figcaption><figcaption class="credit"><em>Converse API tool-use loop sequence: app sends messages plus toolConfig, API returns toolUse block, app runs Lambda tool, app sends toolResult back, API returns final text</em></figcaption></figure>
 <p>How to read this diagram</p>
@@ -1397,7 +1401,7 @@ html.xp-js .xp-reveal.xp-in {
     toolConfig = {tools: [{toolSpec: {name, description,
                                      inputSchema: {json: ...}}}]}
     guardrailConfig = {guardrailIdentifier, guardrailVersion, trace}
-    cachePoint = {...}        # prompt caching marker (Ch.9)
+    cachePoint = {...}        # prompt caching marker (Ch.2)
   )
 
   DECISION RULE: same code for Claude/Llama/Titan + tool use
@@ -1854,11 +1858,7 @@ print(&quot;&quot;.join(answer))
 <p><strong>Worked example.</strong> At $3 per million input tokens and $15 per million output tokens: 4,500 &times; $0.000003 + 900 &times; $0.000015 = $0.0135 + $0.0135 = about $0.027 per turn. At 100,000 turns per month, about $2,700, before any Lambda or KB charges. Agent loops multiply token use, which is why cost questions pair with agents.</p>
 <div class="exam-ask"><p>Trap</p>
 <p>The "agent ignores my new action group" bug.</p>
-<p>The exam's favorite agent bug is forgetting</p>
-<p>prepare-agent</p>
-<p>after a change. The config looks right in the console but the agent runs the stale</p>
-<p>DRAFT</p>
-<p>. The fix is always: prepare the agent, then test. The exam frames this as "the agent behaves as if the new tool does not exist."</p></div>
+<p>The exam's favorite agent bug is forgetting <code>prepare-agent</code> after a change. The config looks right in the console but the agent runs the stale <code>DRAFT</code>. The fix is always: prepare the agent, then test. The exam frames this as "the agent behaves as if the new tool does not exist."</p></div>
 
 <div class="exam-ask"><p>Common misunderstanding</p>
 <p>An agent is not a chatbot.</p>
@@ -1968,9 +1968,7 @@ print(&quot;&quot;.join(answer))
 </tr>
 </tbody>
 </table></div>
-<div class="exam-ask"><p>Scenario: "The company updated the agent's instruction but the agent behaves as before." Correct answer: run</p>
-<p>prepare-agent</p>
-<p>and republish the alias. Distractor: increase the Lambda memory. Another scenario: "An agent must call internal APIs and answer from policy documents." Correct: Bedrock Agent with action groups (API schema) plus an attached KB. Distractor: a single Converse call with a long prompt.</p></div>
+<div class="exam-ask"><p>Scenario: "The company updated the agent's instruction but the agent behaves as before." Correct answer: run <code>prepare-agent</code> and republish the alias. Distractor: increase the Lambda memory. Another scenario: "An agent must call internal APIs and answer from policy documents." Correct: Bedrock Agent with action groups (API schema) plus an attached KB. Distractor: a single Converse call with a long prompt.</p></div>
 
 <span id="2-multi-agent-collaboration-supervisor-collaborators-and-open-frameworks"></span>
 <p class="ch-next" style="border-top:1px solid var(--border);padding-top:1rem;margin-top:1.75rem"><strong>Next:</strong> Chapter 7, Multi-agent collaboration. One agent is understood; now specialist agents under a supervisor.</p>
@@ -2210,6 +2208,7 @@ print(&quot;&quot;.join(answer))
 <p class="ch-next" style="border-top:1px solid var(--border);padding-top:1rem;margin-top:1.75rem"><strong>Next:</strong> Chapter 9, Lambda integration patterns. The GenAI blocks are complete; now the compute your code runs on.</p>
 
 <h2 id="9-lambda-integration-patterns-sync-async-streaming-timeouts-concurrency">9. Lambda integration patterns: sync, async, streaming, timeouts, concurrency</h2>
+<figure><img src="assets/img/density/d2-lambda-timeout.svg" alt="Lambda timeouts: budget the whole chain under 15 minutes; sync, async, and streaming each fit a different wait pattern" loading="lazy"><figcaption>Lambda timeouts: budget the whole chain under 15 minutes; sync, async, and streaming each fit a different wait pattern</figcaption><figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure><div class="walkthrough"><strong>How to read this.</strong> Three boxes for the three invocation modes. The footer carries the ceiling: 15 minutes per Lambda. Takeaway: a pipeline that waits on humans or long chains belongs in Step Functions Standard, not in one Lambda.</div>
 <p class="ch-bridge" style="border-left:3px solid var(--accent);padding:.55rem 1rem;background:var(--surface);border-radius:0 8px 8px 0;margin:1.1rem 0"><strong>Why this comes next.</strong> The GenAI building blocks are in place: calls, grounding, agents. Now the question shifts to your code: where does the glue run? This chapter covers Lambda integration patterns: the invocations, timeouts, and concurrency rules that decide whether your system survives.</p>
 
 <figure><img src="assets/img/mermaid/63-lambda-patterns.svg" alt="Lambda integration patterns: synchronous invoke for request-response, asynchronous for fire-and-forget, response streaming for token streams" loading="lazy"><figcaption>Lambda integration patterns: synchronous invoke for request-response, asynchronous for fire-and-forget, response streaming for token streams</figcaption><figcaption class="credit"><em>Lambda integration patterns: synchronous invoke for request-response, asynchronous for fire-and-forget, response streaming for token streams</em></figcaption></figure><p>Lambda is the glue of GenAI on AWS. How you invoke it decides whether your app survives real traffic.</p>
@@ -2489,9 +2488,7 @@ The timeout is at API Gateway). Scenario: "10x Friday spikes, strict latency." C
 <li>The second Choice reads the human's decision: approved publishes, rejected routes to a fallback.</li>
 <li>The three notes at the bottom are the engineering rules: circuit breaker on failures, max attempts as a stopping condition, and Standard (not Express) whenever a human wait exists.</li>
 </ol>
-<div class="exam-ask"><p>Scenario: "An agent workflow must pause for manager approval, which can take 48 hours, then resume." Correct: Step Functions Standard with</p>
-<p>waitForTaskToken</p>
-<p>. Distractors: Lambda with a long sleep (15-minute ceiling), SQS delay queues (max 15 minutes), or an agent loop (no durable pause). Scenario: "Multi-step GenAI pipeline keeps retrying a failing model call." Correct: add a circuit breaker Choice state with a max-attempts stopping condition.</p></div>
+<div class="exam-ask"><p>Scenario: "An agent workflow must pause for manager approval, which can take 48 hours, then resume." Correct: Step Functions Standard with <code>waitForTaskToken</code>. Distractors: Lambda with a long sleep (15-minute ceiling), SQS delay queues (max 15 minutes), or an agent loop (no durable pause). Scenario: "Multi-step GenAI pipeline keeps retrying a failing model call." Correct: add a circuit breaker Choice state with a max-attempts stopping condition.</p></div>
 
 <span id="7-s3-plus-eventbridge-event-driven-genai-pipelines"></span>
 <p class="ch-next" style="border-top:1px solid var(--border);padding-top:1rem;margin-top:1.75rem"><strong>Next:</strong> Chapter 12, S3 plus EventBridge. Orchestrated workflows are covered; now pipelines that wake when data lands.</p>
@@ -2604,6 +2601,7 @@ The timeout is at API Gateway). Scenario: "10x Friday spikes, strict latency." C
 <p class="ch-next" style="border-top:1px solid var(--border);padding-top:1rem;margin-top:1.75rem"><strong>Next:</strong> Chapter 13, Model deployment strategies. Data-driven pipelines run; now where the model runs and how you pay for capacity.</p>
 
 <h2 id="13-model-deployment-strategies-on-demand-provisioned-throughput-sagemaker-cascading">13. Model deployment strategies: on-demand, Provisioned Throughput, SageMaker, cascading</h2>
+<figure><img src="assets/img/density/d2-deploy-cascade.svg" alt="The cascade behind prompt routers: a router sends simple requests to the cheap model and escalates only complex ones to the flagship" loading="lazy"><figcaption>The cascade behind prompt routers: a router sends simple requests to the cheap model and escalates only complex ones to the flagship</figcaption><figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure><div class="walkthrough"><strong>How to read this.</strong> Left to right: cheap model, router, flagship. The footer explains why it works: most traffic is simple, so most tokens bill cheap. Takeaway: measure the traffic split on a golden dataset before trusting the savings.</div>
 <p class="ch-bridge" style="border-left:3px solid var(--accent);padding:.55rem 1rem;background:var(--surface);border-radius:0 8px 8px 0;margin:1.1rem 0"><strong>Why this comes next.</strong> Your workloads run, but where does the model itself run, and how do you survive a traffic spike without burning money? This chapter covers deployment: on-demand, Provisioned Throughput, SageMaker, and cascading.</p>
 
 <figure><img src="assets/img/mermaid/66-deployment-strategies.svg" alt="Model deployment strategies: canary for low risk, blue-green for zero downtime, A/B testing to compare quality" loading="lazy"><figcaption>Model deployment strategies: canary for low risk, blue-green for zero downtime, A/B testing to compare quality</figcaption><figcaption class="credit"><em>Model deployment strategies: canary for low risk, blue-green for zero downtime, A/B testing to compare quality</em></figcaption></figure><p>Where and how the model runs decides your latency, your bill, and whether you survive peak. The exam's favorite answer is usually a hybrid.</p>
@@ -2874,6 +2872,7 @@ They do not version files), "Guardrails for extraction" (filters, not extractors
 <p class="ch-next" style="border-top:1px solid var(--border);padding-top:1rem;margin-top:1.75rem"><strong>Next:</strong> Chapter 16, Embedding Bedrock in existing apps. Patterns are known; now the last mile: SDKs, retries, and reliability.</p>
 
 <h2 id="16-embedding-bedrock-in-existing-apps-sdks-retries-and-reliability">16. Embedding Bedrock in existing apps: SDKs, retries, and reliability</h2>
+<figure><img src="assets/img/density/d2-retry-backoff.svg" alt="Retries: exponential backoff with jitter; 1s, then 2s, then 4s, never a tight loop" loading="lazy"><figcaption>Retries: exponential backoff with jitter; 1s, then 2s, then 4s, never a tight loop</figcaption><figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure><div class="walkthrough"><strong>How to read this.</strong> Top box names the signal: throttle, then wait. Below: waits doubling with jitter. Takeaway: jitter stops a fleet from retrying in lockstep; sustained throttles are solved with Provisioned Throughput, not more retries.</div>
 <p class="ch-bridge" style="border-left:3px solid var(--accent);padding:.55rem 1rem;background:var(--surface);border-radius:0 8px 8px 0;margin:1.1rem 0"><strong>Why this comes next.</strong> One mile remains: the code that already exists. SDKs, retries, throttles, structured output, the reliability layer between your app and Bedrock. This chapter closes the volume at the last mile.</p>
 
 <figure><img src="assets/img/mermaid/107-sdk-embedding.svg" alt="Embedding Bedrock in an existing app: call through the AWS SDK with a scoped IAM role, add retry with backoff for throttles, parse and validate structured output" loading="lazy"><figcaption>Embedding Bedrock in an existing app: call through the AWS SDK with a scoped IAM role, add retry with backoff for throttles, parse and validate structured output</figcaption><figcaption class="credit"><em>Embedding Bedrock in an existing app: call through the AWS SDK with a scoped IAM role, add retry with backoff for throttles, parse and validate structured output</em></figcaption></figure><p>The last mile: your application calls Bedrock through an SDK, and production traffic needs retries, backoff, fallbacks, and traces.</p>
@@ -2887,9 +2886,7 @@ They do not version files), "Guardrails for extraction" (filters, not extractors
 <p>A checkout-time recommendation call has a 2-second budget. The app configures: SDK timeout 1.5s, 2 retries with backoff (100ms, 200ms plus jitter), then fallback to a cached "popular items" response. P99 path: primary model answers in 800ms. Throttle path: 100ms wait, retry, 800ms answer, total about 1.7s, still inside budget. Double-throttle path: fallback served from ElastiCache in 20ms. The user never sees an error, and CloudWatch counts the fallback rate so the team can buy Provisioned Throughput if fallbacks exceed 1%.</p>
 <div class="exam-ask"><p>Trap</p>
 <p>AccessDenied does not always mean IAM.</p>
-<p>The exam's favorite misleading error:</p>
-<p>AccessDeniedException</p>
-<p>when the model simply is not available in that region. The debug order is region availability first, IAM policy second. Options that jump straight to "fix the IAM policy" miss the region check.</p></div>
+<p>The exam's favorite misleading error: <code>AccessDeniedException</code> when the model simply is not available in that region. The debug order is region availability first, IAM policy second. Options that jump straight to "fix the IAM policy" miss the region check.</p></div>
 
 <div class="exam-ask"><p>Common misunderstanding</p>
 <p>Retries need jitter and a ceiling.</p>
@@ -3967,7 +3964,6 @@ Throttles are expected at scale and handled with backoff. C is wrong: AccessDeni
 </ul>
 <p><strong>A, B, and C are correct.</strong> Timeouts bound the worst case, jittered bounded retries handle transient throttles, and the fallback ladder preserves UX. D is wrong: unencrypted full-prompt logging risks PII exposure and violates compliance handling. E is wrong: indefinite retries destroy latency budgets.</p>
 
-<p>/questions</p>
 </div></main>
 <script>
 window.DS_TRACK = "aipc01";
