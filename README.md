@@ -36,5 +36,3 @@ Long scenario stems, not definition recall. You get a company, a constraint, and
 ## Note
 
 Service names, limits, and pricing change. Verify against https://docs.aws.amazon.com before exam day; illustrative figures are marked in the volumes.
-
-Generic learning material. No personal data.
