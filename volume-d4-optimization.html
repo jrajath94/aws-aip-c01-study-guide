@@ -1159,6 +1159,128 @@ footer p{text-align:left}
   #ds-content .ds-site-footer,
   .ds-side-volumes { display: none !important; }
 }
+</style>
+<style>
+/* Hallmark · pre-emit critique: P5 H4 E5 S4 R5 V5
+ * ==========================================================================
+ * Experience layer for study volumes — ADDITIVE ONLY.
+ * Never edits content markup or DS chrome; references DS tokens only
+ * (--accent, --border). No new colors, no gradients, no decorative filler.
+ *
+ * Motion stance: calm delight. Opacity/translate only (GPU-friendly),
+ * one IntersectionObserver, one rAF-throttled scroll listener, zero layout
+ * shift, prefers-reduced-motion respected, fully usable with JS disabled
+ * (every hidden state is gated on html.xp-js, which only this layer's
+ * companion script adds).
+ *
+ * Wiring (final assembly, per volume — same model as ds.css/ds.js):
+ *   1. In <head>, AFTER the DS style block, add:
+ *        <style>
+ *        /* ==== Experience layer — additive, do not edit per-file ==== */
+ *        …this file verbatim…
+ *        [close the style element]
+ *   2. Immediately before the document's LAST closing body tag (the real
+ *      one at the end of the file — some volumes mention a literal closing
+ *      body tag inside their docs prose; ignore those), AFTER the ds.js
+ *      script block, add:
+ *        <script>
+ *        /* ==== Experience layer behavior — additive ==== */
+ *        …experience.js verbatim…
+ *        [close the script element]
+ * (Closing tags are written out in the assembly snippet, not here, so this
+ * file can be pasted verbatim without early-terminating its own element.)
+ * ========================================================================== */
+
+/* ---------- 1. Smooth anchor scrolling (motion-safe readers only) ---------- */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+/* ---------- 2. Scroll-triggered reveals ----------
+   Hidden state exists ONLY under html.xp-js. No-JS readers, print, and
+   reduced-motion users always see full content. Uses the independent
+   `translate` property (not `transform`) so hover feedback below composes
+   without specificity fights. Opacity + translate only: zero layout shift. */
+html.xp-js .xp-reveal {
+  opacity: 0;
+  translate: 0 14px;
+}
+html.xp-js .xp-reveal.xp-in {
+  opacity: 1;
+  translate: 0 0;
+  transition:
+    opacity 0.55s ease,
+    translate 0.55s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+/* ---------- 3. Hero ---------- */
+/* Layout-neutral wrapper the script may add around a volume's title block.
+   Parallax itself is applied inline by the script (transform only). */
+.xp-hero {
+  position: relative;
+}
+
+/* ---------- 4. Calm hover feedback: cards + knowledge checks only ----------
+   translateY(-1px) + accent border. transform composes with the reveal's
+   independent `translate` property — no conflicts. */
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .pq,
+  .watch-card,
+  .ob-board,
+  .lab {
+    transition: transform 0.18s ease, border-color 0.18s ease;
+  }
+  .pq:hover,
+  .watch-card:hover,
+  .ob-board:hover,
+  .lab:hover {
+    transform: translateY(-1px);
+    border-color: var(--accent);
+  }
+  .pq:focus-within,
+  .watch-card:focus-within,
+  .ob-board:focus-within,
+  .lab:focus-within {
+    border-color: var(--accent);
+  }
+}
+
+/* ---------- 5. Reduced motion: everything static and visible ---------- */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  html.xp-js .xp-reveal {
+    opacity: 1;
+    translate: 0 0;
+    transition: none;
+  }
+  .xp-hero {
+    transform: none !important;
+    opacity: 1 !important;
+  }
+  .pq,
+  .watch-card,
+  .ob-board,
+  .lab {
+    transition: none;
+  }
+}
+
+/* ---------- 6. Print: never hide content ---------- */
+@media print {
+  html.xp-js .xp-reveal {
+    opacity: 1 !important;
+    translate: 0 0 !important;
+    transition: none;
+  }
+  .xp-hero {
+    transform: none !important;
+    opacity: 1 !important;
+  }
+}
 
 </style>
 </head>
@@ -1222,31 +1344,19 @@ Always confirm current rates on the Bedrock pricing page before relying on them.
 </table></div>
 <div class="takeaway"><p><strong>Stephane Maarek style, this domain in a nutshell</strong></p>
 <p>Here are the five pricing levers: on-demand, prompt caching, batch, provisioned throughput, and smaller models. Here is how AWS will ask: a scenario with one dominant constraint (cost growing, latency SLA, throttling at peak, offline workload). Here is the trap: every distractor is a real lever applied to the wrong constraint. Provisioned throughput for a spiky workload. Prompt caching for personalized queries with no repeated prefix. A bigger model for a cost problem. Read the constraint first, then reach for exactly one row of the table.</p></div>
-<p>============ TOPIC 1 ============</p>
 <h2 id="01-on-demand-inference-pricing-and-token-economics">01. On-demand inference pricing and token economics</h2>
-<figure><img src="assets/img/mermaid/05-cost-ladder.svg" alt="Cost ladder: prompt caching plus small models for simple tasks is cheapest per token, then batch inference (~50% off), then on-demand, then Provisioned Throughput for steady high volume." loading="lazy"><figcaption>Cost ladder: prompt caching plus small models for simple tasks is cheapest per token, then batch inference (~50% off), then on-demand, then Provisioned Throughput for steady high volume.</figcaption><figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
 <p>The default way you pay for Bedrock: per token, split into input tokens and output tokens, at a per-model rate.</p>
-<h2 id="what-it-is">What it is</h2>
-<p>On-demand inference is Bedrock's pay-as-you-go pricing. You call <code>InvokeModel</code> or <code>Converse</code> with a model ID, and AWS bills you for <strong>input tokens</strong> (everything you send: system prompt, conversation history, tools, the user's message) plus <strong>output tokens</strong> (everything the model generates), each at that model's per-thousand-token price. A <strong>token</strong> is a chunk of text the model processes, roughly three quarters of an English word. Output tokens cost more than input tokens because generating text is the expensive part: it requires a full forward pass of the model for every single token.</p>
-<h2 id="why-it-exists">Why it exists</h2>
-<p>GenAI traffic is unpredictable. An app in beta, a demo, an internal tool with fifty users: committing to hourly capacity would be absurd. On-demand lets you spend zero when idle and pay only for what you use. Without it, every experiment would need a capacity plan. The failure mode it removes is idle waste: you never pay for GPU time you did not use.</p>
-<h2 id="how-it-works-under-the-hood">How it works under the hood</h2>
-<p>Step by step, what happens when your bill grows:</p>
-<ol>
-<li>Your app sends a request. The request includes the system prompt, the conversation history so far, any retrieved documents, and the new user message. Every token of this is billed as input.</li>
-<li>The model generates the response one token at a time. Every generated token is billed as output.</li>
-<li>On the next turn, the whole conversation history goes in again as input. This is the silent cost killer: a 20-turn chat re-pays the full history as input tokens on every single turn. Nothing caches by default. Nothing remembers for free.</li>
-<li>Bedrock meters <code>InputTokenCount</code> and <code>OutputTokenCount</code> per invocation and reports them to CloudWatch, so your bill is exactly auditable.</li>
-</ol>
-<p>The cost equation you must be able to do by hand:</p>
+<figure><img src="assets/img/mermaid/05-cost-ladder.svg" alt="Cost ladder: prompt caching plus small models for simple tasks is cheapest per token, then batch inference (~50% off), then on-demand, then Provisioned Throughput for steady high volume." loading="lazy"><figcaption>Cost ladder: prompt caching plus small models for simple tasks is cheapest per token, then batch inference (~50% off), then on-demand, then Provisioned Throughput for steady high volume.</figcaption><figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<h3>The bill, in one paragraph</h3>
+<p>On-demand inference is Bedrock's pay-as-you-go pricing. You call InvokeModel or Converse with a model ID, and AWS bills input tokens (everything you send: system prompt, conversation history, tools, the user's message) plus output tokens (everything the model generates), each at that model's per-thousand-token price. A token is a chunk of text the model processes, roughly three quarters of an English word. Output tokens cost more than input tokens because generating text is the expensive part: it takes a full forward pass of the model for every single token.</p>
+<p>It exists because GenAI traffic is unpredictable. An app in beta, a demo, an internal tool with fifty users: committing to hourly capacity would be absurd. On-demand means zero spend when idle and payment only for what you use. The failure mode it removes is idle waste: you never pay for GPU time you did not use.</p>
+<p>The silent cost killer: on the next turn of a chat, the whole conversation history goes in again as input tokens. A 20-turn chat re-pays the full history on every single turn. Nothing caches by default; nothing remembers for free. Bedrock meters InputTokenCount and OutputTokenCount per invocation and reports them to CloudWatch, so your bill is exactly auditable.</p>
 <pre><code>cost per call = (input_tokens / 1000) * input_price
               + (output_tokens / 1000) * output_price
 monthly cost  = cost per call * calls per month
 </code></pre>
-<h2 id="concrete-numbers-worked-example">Concrete numbers, worked example</h2>
-<p>Prices are illustrative and vary by model and region.
-The math pattern is what matters. Suppose a flagship model charges $3.00 per million input tokens and $15.00 per million output tokens, and a lightweight model charges $0.25 and $1.25 respectively.</p>
-<p>A customer-support app sends a 2,000-token system prompt plus 500 tokens of history on every call, and gets back 300 tokens:</p>
+<h3>A worked example</h3>
+<p>Prices are illustrative and vary by model and region; the math pattern is what matters. Take a flagship model at $3.00 per million input tokens and $15.00 per million output tokens, and a lightweight model at $0.25 and $1.25.</p>
 <pre><code>Flagship, per call:
   input  = 2,500 tokens * $3.00/1M   = $0.0075
   output =   300 tokens * $15.00/1M  = $0.0045
@@ -1262,38 +1372,17 @@ Lightweight model, same call:
 At 1 million calls/month:  $1,000/month. 12x cheaper.
 </code></pre>
 <p>Notice the 2,000-token system prompt is re-billed on every call. That single line of arithmetic is why prompt caching exists (Topic 02).</p>
-<p><img alt="Flat diagram of token cost calculation: input token meter, output token meter, and a calculator multiplying counts by per-token prices into a dollar total." src="DATA_URI" /></p>
-<p>Diagram generated for this study guide (flat minimal style). Key material is in the text, not the image.</p>
-<p>How to read this diagram</p>
-<ol>
-<li><strong>Left panel (input meter):</strong> the prompt enters a counter. Every token in the system prompt, history, and user message is measured. This is the input side of the bill.</li>
-<li><strong>Middle panel (output meter):</strong> the generated response enters its own counter. Output tokens are priced higher because generation costs more compute.</li>
-<li><strong>Right panel (calculator):</strong> both counts multiply by their per-thousand-token rates and sum to a dollar total. This is the exact arithmetic AWS bills you on.</li>
-</ol>
-<p>What breaks if a component fails</p>
-<p>If you do not watch the input meter, history accumulation silently multiplies your bill on multi-turn chats. If you do not watch the output meter, unbounded max tokens lets the model spend your budget on rambling answers.</p>
-<h2 id="common-misunderstanding">Common misunderstanding</h2>
+<p><img alt="Flat diagram of token cost calculation: input token meter, output token meter, and a calculator multiplying counts by per-token prices into a dollar total." src="assets/img/mermaid/26-token-cost-calc.svg" /></p>
+<p>Reading the diagram: the prompt enters an input meter that counts every token in the system prompt, history, and user message; the response enters an output meter, priced higher because generation costs more compute; both counts multiply by their rates and sum to the dollar total. If you do not watch the input meter, history accumulation silently multiplies your bill on multi-turn chats. If you do not watch the output meter, unbounded max tokens lets the model spend your budget on rambling answers.</p>
 <div class="exam-ask"><p><strong>Trap</strong></p>
 <p>"On-demand is the expensive option, so I should always use provisioned throughput or batch to save money." Wrong. On-demand is the cheapest option when traffic is spiky or low, because the other options charge for idle capacity or require commitments. Provisioned throughput has an hourly fee whether you use it or not; if your app idles at night, you pay for sleeping hours. The exam loves offering provisioned throughput as a cost fix for bursty traffic. It is a latency and capacity guarantee, not a discount for unpredictability.</p></div>
-<h2 id="how-aws-asks-this">How AWS asks this</h2>
-<p>Scenario: "a startup is prototyping a chat feature, usage is unpredictable, CFO wants the lowest bill during the experiment." The correct answer is on-demand inference. Distractors: provisioned throughput ("predictable pricing" but charges for idle hours), batch inference (hours of latency, useless for chat), buying reserved capacity. The question style is "which pricing model minimizes cost for unpredictable low-volume traffic."</p>
-<p>============ TOPIC 2 ============</p>
+<p>How the exam asks it: "a startup is prototyping a chat feature, usage is unpredictable, the CFO wants the lowest bill during the experiment." The answer is on-demand inference. Distractors: provisioned throughput (predictable pricing, but charges for idle hours), batch inference (hours of latency, useless for chat), buying reserved capacity.</p>
 <h2 id="02-prompt-caching">02. Prompt caching</h2>
 <p>Stop paying full price for the part of the prompt that never changes.</p>
-<h2 id="what-it-is">What it is</h2>
-<p><strong>Prompt caching</strong> is a Bedrock pricing feature that discounts input tokens for the repeated, static part of your prompt. You mark a <strong>cache point</strong> in your request: everything before the point (system prompt, few-shot examples, a long reference document) gets its computed state stored by Bedrock. On the next call with the same prefix, Bedrock reuses that state instead of reprocessing it, and bills those cached input tokens at a reduced rate. With the Converse API you add a <code>cachePoint</code> to the message or system content; with <code>InvokeModel</code> you use provider-specific <code>cache_control</code> markers.</p>
-<h2 id="why-it-exists">Why it exists</h2>
-<p>Look back at the Topic 01 example: the 2,000-token system prompt was re-billed on every call. Real apps do this constantly: a support bot with a 5,000-token policy manual in the system prompt, an agent loop re-sending tool definitions every turn. Reprocessing identical tokens is pure waste. Prompt caching converts that waste into a discount. What fails without it is margin: a healthy app at scale can see 30 to 70 percent of its input tokens being the same static prefix.</p>
-<h2 id="how-it-works-under-the-hood">How it works under the hood</h2>
-<ol>
-<li>You place one or more cache points in the request. Bedrock requires a minimum token count before the point (a minimum prefix length, model dependent.
-   Think in the hundreds to a couple thousand tokens). Below the minimum, nothing caches.</li>
-<li>On the first call, Bedrock processes the prefix fully (billed at the standard rate plus a small cache-write surcharge) and stores the intermediate computed state, keyed by the exact prefix content.</li>
-<li>On later calls with an identical prefix, Bedrock detects the cache hit and skips recomputation of the prefix. Cached input tokens are billed at a discounted rate, and latency drops because the model starts generating from partway through.</li>
-<li>The cache entry lives for a <strong>time to live (TTL)</strong>: a short default (about 5 minutes) with longer options (about 1 hour) on supported models. If the prefix content changes by even one token before the cache point, or the TTL expires, the cache misses and the prefix is recomputed.</li>
-<li>Supported models only: primarily the Claude family (3.5 and later) and Amazon Nova. You cannot cache on models that do not implement it.</li>
-</ol>
-<h2 id="concrete-numbers-worked-example">Concrete numbers, worked example</h2>
+<h3>The discount for static prefixes</h3>
+<p>Prompt caching is a Bedrock pricing feature that discounts input tokens for the repeated, static part of your prompt. You mark a cache point in your request: everything before the point (system prompt, few-shot examples, a long reference document) gets its computed state stored by Bedrock. On the next call with the same prefix, Bedrock reuses that state instead of reprocessing it, and bills those cached input tokens at a reduced rate. With the Converse API you add a cachePoint to the message or system content; with InvokeModel you use provider-specific cache_control markers.</p>
+<p>Look back at the Topic 01 example: the 2,000-token system prompt was re-billed on every call. Real apps do this constantly: a support bot with a 5,000-token policy manual in the system prompt, an agent loop re-sending tool definitions every turn. A healthy app at scale can see 30 to 70 percent of its input tokens being the same static prefix. Caching converts that waste into a discount.</p>
+<p>The mechanics. You place one or more cache points in the request. Bedrock requires a minimum token count before the point (a minimum prefix length, model dependent; think hundreds to a couple thousand tokens). Below the minimum, nothing caches. On the first call, Bedrock processes the prefix fully, billed at the standard rate plus a small cache-write surcharge, and stores the intermediate computed state keyed by the exact prefix content. On later calls with an identical prefix, Bedrock detects the cache hit, skips recomputation, bills cached input tokens at the discounted rate, and latency drops because the model starts generating from partway through. The cache entry lives for a time to live (TTL): a short default of about 5 minutes, with longer options of about 1 hour on supported models. If the prefix content changes by even one token before the cache point, or the TTL expires, the cache misses and the prefix is recomputed. Supported models only: primarily the Claude family (3.5 and later) and Amazon Nova. You cannot cache on models that do not implement it.</p>
 <p>Illustrative pricing: cached input tokens cost roughly 10% of standard input tokens (a 90% discount), with a cache-write cost of about 25% above standard on the first call. Numbers vary; treat as illustrative.</p>
 <pre><code>App: 8,000-token system prompt + few-shot examples (static),
      500 tokens of new user input per call, 1M calls/month.
@@ -1308,37 +1397,17 @@ With caching (first call writes cache, rest hit):
   total input ~ $3,900/mo instead of $25,500/mo.
 </code></pre>
 <p>The 500-token dynamic part still costs full price. Caching discounts only what you marked as static.</p>
-<p><img alt="Flat diagram of prompt caching: a long static system prompt marked as the cached layer above a cache point, with only the small new user message processed fresh." src="DATA_URI" /></p>
-<p>Diagram generated for this study guide (flat minimal style). Key material is in the text, not the image.</p>
-<p>How to read this diagram</p>
-<ol>
-<li><strong>Left (cached layer):</strong> the long system prompt sits above a cache point marker. Once computed, this block is stored and never recomputed within the TTL.</li>
-<li><strong>Right (new input):</strong> only the small user message below the cache point is processed fresh each call. The arrow from the cache flows straight into the model, skipping recomputation.</li>
-<li><strong>Center (model):</strong> the clock and dollar icons show the two wins: lower latency (prefix already computed) and lower cost (discounted cached tokens).</li>
-</ol>
-<p>What breaks if a component fails</p>
-<p>If the prefix changes between calls (timestamps, user IDs injected into the system prompt), every call cache-misses and you pay full price plus write surcharges. If the TTL expires between infrequent calls, the first call after the gap pays the full recompute. Caching only pays when the prefix is byte-identical and calls arrive within the TTL.</p>
-<h2 id="common-misunderstanding">Common misunderstanding</h2>
+<p><img alt="Flat diagram of prompt caching: a long static system prompt marked as the cached layer above a cache point, with only the small new user message processed fresh." src="assets/img/mermaid/27-prompt-caching.svg" /></p>
+<p>Reading the diagram: the long system prompt sits above a cache point marker as the cached layer, computed once and never recomputed within the TTL; only the small user message below the point is processed fresh each call. The two wins are lower latency (prefix already computed) and lower cost (discounted cached tokens). What breaks: if the prefix changes between calls (timestamps or user IDs injected into the system prompt), every call cache-misses and you pay full price plus write surcharges. If the TTL expires between infrequent calls, the first call after the gap pays the full recompute. Caching only pays when the prefix is byte-identical and calls arrive within the TTL.</p>
 <div class="exam-ask"><p><strong>Trap</strong></p>
 <p>"Prompt caching fixes my throttling problem." No. Prompt caching is a cost lever: it discounts repeated input tokens. It does not reserve capacity. If you are being throttled at peak, the answer is provisioned throughput (Topic 04) or rate-limit handling (Topic 07). The exam deliberately offers prompt caching as a distractor in throttling scenarios and as a distractor provisioned throughput in "same long system prompt every call" scenarios. Match the lever to the constraint: repeated prefix cost -&gt; caching; capacity and latency guarantee -&gt; provisioned throughput.</p></div>
-<h2 id="how-aws-asks-this">How AWS asks this</h2>
-<p>Scenario: "an agent re-sends a 10,000-token tool specification on every turn; token costs are growing; the workload is otherwise fine." Correct answer: add cache points before the static tool definitions, supported model required. Distractors: provisioned throughput (solves nothing here), switching to batch inference (breaks real-time), reducing temperature (irrelevant to cost). The tell is the phrase "same long prefix on every call" or "repeated static system prompt."</p>
-<p>============ TOPIC 3 ============</p>
+<p>How the exam asks it: "an agent re-sends a 10,000-token tool specification on every turn; token costs are growing; the workload is otherwise fine." The answer: add cache points before the static tool definitions, on a supported model. Distractors: provisioned throughput (solves nothing here), batch inference (breaks real-time), reducing temperature (irrelevant to cost). The tell is "same long prefix on every call" or "repeated static system prompt."</p>
 <h2 id="03-batch-inference">03. Batch inference</h2>
 <p>Half-price inference for work that can wait.</p>
-<h2 id="what-it-is">What it is</h2>
-<p><strong>Batch inference</strong> is Bedrock's asynchronous, discounted inference mode. Instead of calling the model and waiting for a response, you upload a file of many requests (JSON Lines, one request per line) to an <strong>S3 bucket</strong>, start a batch job, and Bedrock processes all requests in the background. Results land in another S3 location hours later. The price is roughly <strong>50% below on-demand</strong> for the same model, because AWS can schedule your work into idle capacity windows.</p>
-<h2 id="why-it-exists">Why it exists</h2>
-<p>Not every model call needs an answer in seconds. Nightly document classification, weekly report summarization, backfilling embeddings for a knowledge base: these are offline workloads. Paying on-demand rates and holding open connections for work nobody is waiting on is wasteful. Batch inference exists to trade latency for price. Without it, teams either overpay on-demand for overnight jobs or build their own queue-and-retry machinery around real-time calls.</p>
-<h2 id="how-it-works-under-the-hood">How it works under the hood</h2>
-<ol>
-<li>You write your requests as a <code>.jsonl</code> file: each line is one complete model invocation (model ID, prompt body). You upload it to S3.</li>
-<li>You call <code>CreateModelInvocationJob</code> with the input S3 URI and an output S3 URI. Bedrock validates the file and queues the job.</li>
-<li>Bedrock drains the queue in the background, processing requests with spare capacity. Typical completion is measured in hours, not seconds. There is no latency SLA.</li>
-<li>Results are written as another JSONL file to your output S3 prefix, one result per line, including per-request errors for malformed lines. You read them whenever you want.</li>
-<li>An IAM role grants Bedrock read access to the input bucket and write access to the output bucket.</li>
-</ol>
-<h2 id="concrete-numbers-worked-example">Concrete numbers, worked example</h2>
+<h3>Overnight work at roughly half price</h3>
+<p>Batch inference is Bedrock's asynchronous, discounted inference mode. Instead of calling the model and waiting, you upload a file of many requests (JSON Lines, one request per line) to S3, start a batch job, and Bedrock processes everything in the background. Results land in another S3 location hours later. The price is roughly 50% below on-demand for the same model, because AWS schedules your work into idle capacity windows.</p>
+<p>Not every model call needs an answer in seconds. Nightly document classification, weekly report summarization, backfilling embeddings for a knowledge base: these are offline workloads. Paying on-demand rates and holding open connections for work nobody is waiting on is wasteful. Batch trades latency for price. Without it, teams either overpay on-demand for overnight jobs or build their own queue-and-retry machinery around real-time calls.</p>
+<p>The mechanics: you write requests as a .jsonl file, each line one complete model invocation (model ID, prompt body), and upload it to S3. You call CreateModelInvocationJob with the input S3 URI and an output S3 URI. Bedrock validates the file and queues the job, then drains the queue in the background with spare capacity. Typical completion is measured in hours, not seconds, and there is no latency SLA. Results are written as another JSONL file to your output S3 prefix, one result per line, including per-request errors for malformed lines. An IAM role grants Bedrock read access to the input bucket and write access to the output bucket.</p>
 <pre><code>Nightly job: summarize 200,000 product reviews.
 Each call: 1,500 input tokens, 200 output tokens.
 Illustrative flagship pricing: $3.00/$15.00 per 1M in/out tokens.
@@ -1352,39 +1421,18 @@ Batch (50% discount):
   total = $750 per night  -&gt;  $273,750/year saved if run nightly.
 </code></pre>
 <p>The only thing you gave up: answers arrive hours later instead of seconds.</p>
-<p><img alt="Flat diagram of batch inference: S3 input bucket with JSONL requests flowing into a batch job marked with a clock and 50 percent discount, results written to an S3 output bucket." src="DATA_URI" /></p>
-<p>Diagram generated for this study guide (flat minimal style). Key material is in the text, not the image.</p>
-<p>How to read this diagram</p>
-<ol>
-<li><strong>Left (S3 input):</strong> the JSONL file of requests sits in S3. No application holds an open connection; the work is fully described up front.</li>
-<li><strong>Center (batch job):</strong> the job box shows a clock (hours of latency) and a 50% discount tag. Bedrock schedules this work into spare capacity, which is exactly why it is cheaper.</li>
-<li><strong>Right (S3 output):</strong> results accumulate in S3 as JSONL. Your app polls or gets notified when done. There is no waiting user, so the latency does not matter.</li>
-</ol>
-<p>What breaks if a component fails</p>
-<p>If the input JSONL has malformed lines, those requests fail individually and you discover it hours later from the output file, so validate the file first. If your IAM role lacks S3 write permission on the output prefix, the whole job fails. If the workload is actually interactive, batch is the wrong tool no matter how cheap: the exam tests whether you notice the latency requirement.</p>
-<h2 id="common-misunderstanding">Common misunderstanding</h2>
+<p><img alt="Flat diagram of batch inference: S3 input bucket with JSONL requests flowing into a batch job marked with a clock and 50 percent discount, results written to an S3 output bucket." src="assets/img/mermaid/28-batch-inference.svg" /></p>
+<p>Reading the diagram: the JSONL file of requests sits in S3 with no application holding an open connection; the batch job box shows a clock (hours of latency) and a 50% discount tag, because Bedrock schedules this work into spare capacity; results accumulate in S3 as JSONL for your app to poll. What breaks: malformed JSONL lines fail individually and you discover it hours later from the output file, so validate first. If the IAM role lacks S3 write permission on the output prefix, the whole job fails. And if the workload is actually interactive, batch is the wrong tool no matter how cheap: the exam tests whether you notice the latency requirement.</p>
 <div class="exam-ask"><p><strong>Trap</strong></p>
 <p>"Batch inference is just a slower on-demand, so I can use it for my chat app to save money." No. Batch has hours-scale latency and no SLA; using it for anything interactive breaks the product. The exam frames this as "a company wants to cut inference costs for its real-time chatbot" and offers batch as a tempting 50%-off distractor. The latency requirement in the scenario disqualifies it instantly. Batch is only correct when the scenario says words like "nightly", "offline", "no strict latency requirement", or "results needed by morning".</p></div>
-<h2 id="how-aws-asks-this">How AWS asks this</h2>
-<p>Scenario: "a media company must generate summaries for 500,000 archived videos; results needed within 24 hours; minimize cost." Correct answer: batch inference with S3 input and output. Distractors: provisioned throughput (paying for idle hours on a one-shot job), on-demand with a big Lambda fleet (full price plus operational overhead), fine-tuning (irrelevant). The tell is "offline" plus "cost is the priority".</p>
-<p>============ TOPIC 4 ============</p>
+<p>How the exam asks it: "a media company must generate summaries for 500,000 archived videos; results needed within 24 hours; minimize cost." The answer: batch inference with S3 input and output. Distractors: provisioned throughput (paying for idle hours on a one-shot job), on-demand with a big Lambda fleet (full price plus operational overhead), fine-tuning (irrelevant). The tell is "offline" plus "cost is the priority."</p>
 <h2 id="04-provisioned-throughput">04. Provisioned Throughput</h2>
 <p>Reserve capacity when steady traffic and latency guarantees matter more than per-token price.</p>
-<h2 id="what-it-is">What it is</h2>
-<p><strong>Provisioned Throughput (PT)</strong> is reserved inference capacity on Bedrock. You purchase <strong>model units</strong>, each unit being a fixed amount of processing capacity for a specific model, on a commitment term (commonly 1 month or 6 months). You pay an hourly rate per unit for the whole term, used or not. In exchange, requests routed to your provisioned model get dedicated capacity: consistent latency, no throttling from shared on-demand quotas, and a guaranteed throughput floor. You create it with <code>CreateProvisionedModelThroughput</code> and you get back a <strong>provisioned model ARN</strong> (Amazon Resource Name). Invocations must target that ARN to use the reserved capacity.</p>
-<h2 id="why-it-exists">Why it exists</h2>
-<p>On-demand shares capacity with everyone. At peak, your requests compete with other customers and you can be throttled; latency varies. For a production app with a latency SLA (sub-3-second responses) or steady high volume, that variance is unacceptable. Provisioned throughput exists to buy certainty: your baseline traffic always has a lane. What fails without it is predictability: the 3 a.m. quiet period and the Friday rush get the same best-effort treatment.</p>
-<h2 id="how-it-works-under-the-hood">How it works under the hood</h2>
-<ol>
-<li><strong>Sizing:</strong> you estimate steady-state load in tokens per minute and buy enough model units to cover it. One model unit is a fixed throughput allotment for that model; the console and documentation give per-model guidance.</li>
-<li><strong>Commit:</strong> you choose a term (1 or 6 months). Longer commits cost less per hour. The hourly meter runs 24/7 for the whole term, idle or busy.</li>
-<li><strong>Routing:</strong> this is the step everyone gets wrong. Buying PT does nothing by itself. Your code must invoke the <strong>provisioned model identifier (ARN)</strong>, not the base model ID. Code that calls <code>invoke_model(modelId="anthropic.claude...")</code> after buying PT still goes to the on-demand pool, still gets throttled, and you pay for idle reserved capacity. The classic exam bug.</li>
-<li><strong>Autoscaling:</strong> provisioned throughput supports autoscaling policies that add model units when utilization crosses a threshold and remove them when traffic drops, within minimum and maximum bounds you set. This handles growth inside the term, but scaling up can take time to take effect, so it does not replace burst planning.</li>
-<li><strong>Hybrid pattern:</strong> the exam's "most correct" production answer: PT covers the predictable baseline (the 2M requests/day that always arrive), and on-demand overflow handles the spikes (the 10x Friday rush). You never provision for the peak.
-   You provision for the floor.</li>
-</ol>
-<h2 id="concrete-numbers-worked-example">Concrete numbers, worked example</h2>
-<p>Illustrative numbers. A model unit costs $20/hour on a 6-month term. Your app has a steady baseline of traffic that would cost $15/hour on-demand if you ran it 24/7, plus Friday spikes that triple the load.</p>
+<h3>Buying certainty by the hour</h3>
+<p>Provisioned Throughput (PT) is reserved inference capacity on Bedrock. You purchase model units, each a fixed amount of processing capacity for a specific model, on a commitment term (commonly 1 month or 6 months). You pay an hourly rate per unit for the whole term, used or not. In exchange, requests routed to your provisioned model get dedicated capacity: consistent latency, no throttling from shared on-demand quotas, and a guaranteed throughput floor. You create it with CreateProvisionedModelThroughput and get back a provisioned model ARN (Amazon Resource Name). Invocations must target that ARN to use the reserved capacity.</p>
+<p>On-demand shares capacity with everyone. At peak, your requests compete with other customers and you can be throttled; latency varies. For a production app with a latency SLA (sub-3-second responses) or steady high volume, that variance is unacceptable. PT buys certainty: your baseline traffic always has a lane.</p>
+<p>The mechanics that matter. Sizing: estimate steady-state load in tokens per minute and buy enough model units to cover it; the console and documentation give per-model guidance. Commit: 1 or 6 months, with longer commits cheaper per hour. The hourly meter runs 24/7 for the whole term, idle or busy. Routing, the step everyone gets wrong: buying PT does nothing by itself. Your code must invoke the provisioned model identifier (ARN), not the base model ID. Code that calls the base model ID after buying PT still goes to the on-demand pool, still gets throttled, and you pay for idle reserved capacity. That is the classic exam bug. Autoscaling: PT supports autoscaling policies that add model units when utilization crosses a threshold and remove them when traffic drops, within minimum and maximum bounds you set. It handles growth inside the term, but scaling up takes time to take effect, so it does not replace burst planning. The hybrid pattern, the exam's "most correct" production answer: PT covers the predictable baseline (the 2M requests/day that always arrive), and on-demand overflow handles the spikes (the 10x Friday rush). You never provision for the peak. You provision for the floor.</p>
+<p>Illustrative numbers. A model unit costs $20/hour on a 6-month term. Your app has a steady baseline that would cost $15/hour on-demand running 24/7, plus Friday spikes that triple the load.</p>
 <pre><code>Option A: all on-demand.
   baseline $15/hr * 720 hrs/mo  = $10,800/mo
   spikes add ~$4,000/mo        = $14,800/mo total
@@ -1401,40 +1449,19 @@ Option C: PT only when the baseline is big enough.
   on-demand: $30*720 + $8,000 = $29,600. PT saves $11,200/mo.
 </code></pre>
 <p>The lesson: provisioned throughput is NOT a discount for everyone. It wins when your steady baseline is large enough that the hourly rate beats the per-token rate. For small or spiky baselines, on-demand is cheaper. Always do the arithmetic before recommending it.</p>
-<p><img alt="Flat diagram of provisioned throughput: steady baseline traffic routed to a reserved block of model units with an hourly fee, overflow spikes routed to the on-demand lane." src="DATA_URI" /></p>
-<p>Diagram generated for this study guide (flat minimal style). Key material is in the text, not the image.</p>
-<p>How to read this diagram</p>
-<ol>
-<li><strong>Left (steady baseline):</strong> the timeline shows flat, predictable hourly traffic. This is the only traffic shape that justifies provisioned throughput. If your timeline is spiky, stop here and use on-demand.</li>
-<li><strong>Center (reserved units):</strong> the solid block is the capacity you bought: model units, hourly fee, committed term. It is always on, always billed, even at 3 a.m.</li>
-<li><strong>Right (router):</strong> the decision diamond sends steady baseline traffic to the reserved block and overflow spikes to the on-demand lane. This hybrid split is the production pattern the exam rewards.</li>
-</ol>
-<p>What breaks if a component fails</p>
-<p>If the code invokes the base model ID instead of the provisioned ARN, the reserved capacity sits idle while requests throttle on the on-demand pool: the single most-tested bug in this topic. If autoscaling is not configured, a growth spike outruns the reserved units and throttles anyway. If the baseline shrinks, you keep paying the hourly fee for the whole term.</p>
-<h2 id="common-misunderstanding">Common misunderstanding</h2>
+<p><img alt="Flat diagram of provisioned throughput: steady baseline traffic routed to a reserved block of model units with an hourly fee, overflow spikes routed to the on-demand lane." src="assets/img/mermaid/29-provisioned-throughput.svg" /></p>
+<p>Reading the diagram: the timeline shows flat, predictable hourly traffic, the only shape that justifies PT (if your timeline is spiky, stop here and use on-demand). The solid block is the capacity you bought: model units, hourly fee, committed term, always on, always billed, even at 3 a.m. The decision diamond routes steady baseline traffic to the reserved block and overflow spikes to the on-demand lane. That hybrid split is the production pattern the exam rewards. What breaks: if code invokes the base model ID instead of the provisioned ARN, reserved capacity sits idle while requests throttle on the on-demand pool. If autoscaling is not configured, a growth spike outruns the reserved units and throttles anyway. If the baseline shrinks, you keep paying the hourly fee for the whole term.</p>
 <div class="exam-ask"><p><strong>Trap</strong></p>
 <p>Two traps in one topic. Trap 1: "provisioned throughput lowers my token bill on spiky traffic." It does not. You pay the hourly fee during idle hours, which makes spiky workloads more expensive. Trap 2: "we bought provisioned throughput but we are still throttled." Capacity is not the bug; routing is. The code must target the provisioned model ARN. The exam presents this as a debugging question: "after purchasing PT, throttling continued; what is wrong?" Answer: the application still invokes the base model ID.</p></div>
-<h2 id="how-aws-asks-this">How AWS asks this</h2>
-<p>Two question shapes. Shape 1, design: "2M requests/day baseline, 10x Friday spikes, sub-3s latency, minimize cost." Correct: PT for baseline plus on-demand overflow. Distractors: all-PT (overprovisioned, idle cost), all-on-demand (throttling risk), EC2 fleet (operational overhead). Shape 2, debugging: "PT purchased, throttling persists." Correct: route invocations to the provisioned model ARN. Distractor: "buy more model units."</p>
-<p>============ TOPIC 5 ============</p>
+<p>How the exam asks it, two shapes. Design: "2M requests/day baseline, 10x Friday spikes, sub-3s latency, minimize cost." Answer: PT for baseline plus on-demand overflow. Distractors: all-PT (overprovisioned idle cost), all-on-demand (throttling risk), EC2 fleet (operational overhead). Debugging: "PT purchased, throttling persists." Answer: route invocations to the provisioned model ARN. Distractor: "buy more model units."</p>
 <h2 id="05-inference-profiles-and-cross-region-routing">05. Inference profiles and cross-region routing</h2>
 <p>Route around regional limits: more capacity, automatic failover, one identifier.</p>
-<h2 id="what-it-is">What it is</h2>
-<p>FACT-CHECK 2026-09-28: prefix list and profile ID format corrected against live sources. Cross-region inference profile prefixes are us., eu., apac., and global. (plus us-gov. for GovCloud).
-There are no au. or jp. prefixes (APAC regions use apac.). Sources: stdapi.ai operations_compliance.md (2026-09-09), aws-samples sample-traffic-shaping-for-amazon-bedrock docs/bedrock-inference-endpoints.md, context7 AWS Bedrock integration docs. Inference profile ID format verified as e.g. us.anthropic.claude-haiku-4-5-20251001-v1:0.</p>
-<p>An <strong>inference profile</strong> is a Bedrock routing identifier that sends your request to a model in one of several regions, instead of pinning you to a single region. Profiles carry geographic prefixes: <code>us.</code>, <code>eu.</code>, <code>apac.</code>, and <code>global.</code> (plus <code>us-gov.</code> for GovCloud regions). When you call <code>us.anthropic.claude-haiku-4-5-20251001-v1:0</code> (illustrative naming), Bedrock routes the request across the US regions where the model is available, picking one with capacity. If one region throttles, the profile can fail over to another. You call the profile ID instead of the bare model ID. Converse accepts the profile as a model identifier or ARN; <code>InvokeModel</code> takes the profile ID.</p>
-<h2 id="why-it-exists">Why it exists</h2>
-<p>Two problems. First, models are not available in every region, and quotas differ per region. An app deployed in one region can hit that region's quota wall even while another region sits idle. Second, regional outages happen. Inference profiles solve both: they pool capacity across regions and provide automatic failover without your code managing region lists. Without them, every team hand-builds retry-across-regions logic, which is exactly the operational overhead the exam wants you to avoid.</p>
-<h2 id="how-it-works-under-the-hood">How it works under the hood</h2>
-<ol>
-<li>You choose a profile scope: <code>us.</code> keeps data in US regions, <code>eu.</code> in Europe, <code>global.</code> can route anywhere. This matters for data residency: a compliance scenario that says "data must stay in the EU" makes <code>global.</code> wrong and <code>eu.</code> right.</li>
-<li>Your code passes the profile ID as the model identifier. Bedrock's routing layer selects a destination region with available capacity.</li>
-<li>Quotas are managed at the source region of the profile: your throttling limits follow the profile, not each destination region separately.</li>
-<li>Traffic stays on the AWS backbone, encrypted in transit. Cross-region here does not mean the public internet.</li>
-<li>Failover is automatic on capacity errors: a throttled request in one region is retried in another region in the profile, transparently to your code.</li>
-</ol>
-<h2 id="concrete-numbers-worked-example">Concrete numbers, worked example</h2>
-<p>Illustrative quota numbers. Your application needs 500 requests per minute to a model whose per-region on-demand quota is 200 RPM (requests per minute) in each of three US regions.</p>
+<p>FACT-CHECK 2026-09-28: prefix list and profile ID format corrected against live sources. Cross-region inference profile prefixes are us., eu., apac., and global. (plus us-gov. for GovCloud). There are no au. or jp. prefixes (APAC regions use apac.). Inference profile ID format verified as e.g. us.anthropic.claude-haiku-4-5-20251001-v1:0.</p>
+<h3>One identifier, many regions</h3>
+<p>An inference profile is a Bedrock routing identifier that sends your request to a model in one of several regions instead of pinning you to a single region. Profiles carry geographic prefixes: us., eu., apac., and global. (plus us-gov. for GovCloud regions). When you call a profile ID like us.anthropic.claude-haiku-4-5-20251001-v1:0 (illustrative naming), Bedrock routes the request across the regions where the model is available, picking one with capacity. If one region throttles, the profile can fail over to another. You call the profile ID instead of the bare model ID: Converse accepts the profile as a model identifier or ARN, and InvokeModel takes the profile ID.</p>
+<p>Two problems motivate this. First, models are not available in every region, and quotas differ per region. An app deployed in one region can hit that region's quota wall while another region sits idle. Second, regional outages happen. Inference profiles pool capacity across regions and provide automatic failover without your code managing region lists. Without them, every team hand-builds retry-across-regions logic, which is exactly the operational overhead the exam wants you to avoid.</p>
+<p>The mechanics: you choose a profile scope, and the scope is a data-residency decision. us. keeps data in US regions, eu. in Europe, global. can route anywhere. A compliance scenario saying "data must stay in the EU" makes global. wrong and eu. right. Your code passes the profile ID as the model identifier; Bedrock's routing layer selects a destination region with available capacity. Quotas are managed at the source region of the profile: your throttling limits follow the profile, not each destination region separately. Traffic stays on the AWS backbone, encrypted in transit; cross-region here does not mean the public internet. Failover is automatic on capacity errors: a throttled request in one region is retried in another profile region, transparently to your code.</p>
+<p>Illustrative quota numbers. Your application needs 500 requests per minute to a model whose per-region on-demand quota is 200 RPM in each of three US regions.</p>
 <pre><code>Single region:  200 RPM quota  -&gt;  throttled at 40% of needed load.
 us. profile:    3 regions pooled -&gt; effective capacity up to ~600 RPM,
                 and failover if one region degrades.
@@ -1442,38 +1469,17 @@ Cost: identical per-token rates. The profile is a routing feature,
       not a pricing feature. No extra charge for the routing itself.
 </code></pre>
 <p>The win is capacity and resilience, not price. Do not present inference profiles as a cost lever.</p>
-<p><img alt="Flat diagram of cross-region inference routing: an application request routed via an inference profile to a primary region, with a dashed failover arrow to a secondary region." src="DATA_URI" /></p>
-<p>Diagram generated for this study guide (flat minimal style). Key material is in the text, not the image.</p>
-<p>How to read this diagram</p>
-<ol>
-<li><strong>Left (application):</strong> one request leaves the app with a profile ID like <code>us....</code>, not a regional model ID. The app never names a region.</li>
-<li><strong>Center top (primary region):</strong> the request lands where capacity is available. This is the happy path.</li>
-<li><strong>Center bottom (secondary region):</strong> the dashed failover arrow shows what happens on throttling or outage: Bedrock retries in another profile region automatically.</li>
-<li><strong>Right (response):</strong> one response returns to the app. Retry logic lives in the platform, not in your code.</li>
-</ol>
-<p>What breaks if a component fails</p>
-<p>If the scenario requires data residency in one geography, the wrong profile prefix (<code>global.</code> for an EU-only workload) violates compliance. If the model is not enabled in the profile's regions, calls fail with access errors: profiles do not grant model access, they only route. If your code passes the bare model ID, you get none of this routing and you are pinned to one region.</p>
-<h2 id="common-misunderstanding">Common misunderstanding</h2>
+<p><img alt="Flat diagram of cross-region inference routing: an application request routed via an inference profile to a primary region, with a dashed failover arrow to a secondary region." src="assets/img/mermaid/30-cross-region-routing.svg" /></p>
+<p>Reading the diagram: one request leaves the app carrying a profile ID like us...., never naming a region. It lands in a primary region with available capacity. On throttling or outage, the dashed failover arrow shows Bedrock retrying in another profile region automatically. One response returns. Retry logic lives in the platform, not your code. What breaks: the wrong profile prefix for the residency constraint (global. for an EU-only workload) violates compliance. Profiles do not grant model access, they only route, so if the model is not enabled in the profile's regions, calls fail with access errors. And if your code passes the bare model ID, you get none of this routing and stay pinned to one region.</p>
 <div class="exam-ask"><p><strong>Trap</strong></p>
 <p>The exam's three-way confusion set, tested repeatedly: <strong>inference profiles</strong> route for availability and resilience (geographic prefixes), <strong>prompt routers / model routers</strong> route for cost and quality (send easy prompts to cheap models), and <strong>provisioned throughput</strong> reserves capacity (hourly commit). A scenario about regional failover wants an inference profile; a scenario about cutting cost on simple queries wants a router or cascade; a scenario about latency SLAs on steady traffic wants provisioned throughput. Each mechanism answers a different question. If you mix them up, the distractor wins.</p></div>
-<h2 id="how-aws-asks-this">How AWS asks this</h2>
-<p>Scenario: "a model is available in only two regions; the app needs resilience against regional outages and throttling; minimal code changes." Correct answer: call the inference profile ID (e.g. <code>us....</code>). Distractors: deploying EC2 with an ALB in a second region (does not solve Bedrock-side throttling), building custom retry logic across regions (operational overhead), provisioned throughput (reserves capacity in one region, no failover). The tell is "regional" plus "failover" plus "minimal operational overhead".</p>
-<p>============ TOPIC 6 ============</p>
+<p>How the exam asks it: "a model is available in only two regions; the app needs resilience against regional outages and throttling; minimal code changes." Answer: call the inference profile ID. Distractors: deploying EC2 with an ALB in a second region (does not solve Bedrock-side throttling), custom retry logic across regions (operational overhead), provisioned throughput (reserves capacity in one region, no failover). The tell is "regional" plus "failover" plus "minimal operational overhead."</p>
 <h2 id="06-latency-vs-throughput-streaming-and-perceived-speed">06. Latency vs throughput: streaming and perceived speed</h2>
 <p>Users judge speed by the first token, not the last one.</p>
-<h2 id="what-it-is">What it is</h2>
-<p><strong>Streaming</strong> delivers the model's response token by token as it is generated, instead of waiting for the full response and sending it at once. With <code>ConverseStream</code> or <code>InvokeModelWithResponseStream</code>, your app receives a stream of events and can render each token the moment it arrives. <strong>Time to first token (TTFT)</strong> is the delay before the first token appears; <strong>total latency</strong> is the delay until the last token. Streaming does not change total latency: it changes <strong>perceived latency</strong>, which is what users feel.</p>
-<h2 id="why-it-exists">Why it exists</h2>
-<p>A 500-token answer might take 15 seconds to generate fully. Showing a blank screen for 15 seconds feels broken; showing the first words in 1 second and the rest flowing feels instant, even though the total time is identical. Chat products live or die on this perception. Streaming also lets you start downstream work early: begin rendering, begin text-to-speech, or detect a refusal before the full response completes. Without streaming, every interactive app pays the full generation time as dead silence.</p>
-<h2 id="how-it-works-under-the-hood">How it works under the hood</h2>
-<ol>
-<li>Your app calls the streaming API variant. The connection stays open (server-sent events style) while the model generates.</li>
-<li>Each generated token is flushed to your app as an event as soon as it is produced. Your client appends it to the visible text immediately.</li>
-<li>TTFT depends on input size and model size: a huge prompt or a giant model delays the first token. Total time depends on output length and generation speed.</li>
-<li>On the way to the browser, streaming passes through your stack: API Gateway supports streaming responses but has payload and timeout limits, so for long streams teams use WebSocket APIs or stream directly from the client to Bedrock. The exam tests this: API Gateway's limits make it the wrong carrier for very long streams.</li>
-<li>Streaming pairs with the other latency levers: smaller models have lower TTFT, prompt caching skips prefix recomputation, provisioned throughput removes queueing delay.</li>
-</ol>
-<h2 id="concrete-numbers-worked-example">Concrete numbers, worked example</h2>
+<h3>Perceived latency is the metric that matters</h3>
+<p>Streaming delivers the model's response token by token as it is generated, instead of waiting for the full response and sending it at once. With ConverseStream or InvokeModelWithResponseStream, your app receives a stream of events and renders each token the moment it arrives. Time to first token (TTFT) is the delay before the first token appears; total latency is the delay until the last token. Streaming does not change total latency. It changes perceived latency, which is what users feel.</p>
+<p>A 500-token answer might take 15 seconds to generate fully. A blank screen for 15 seconds feels broken; the first words in 1 second with the rest flowing feels instant, even though the total time is identical. Chat products live or die on this perception. Streaming also lets you start downstream work early: begin rendering, begin text-to-speech, or detect a refusal before the full response completes.</p>
+<p>The mechanics: your app calls the streaming API variant, the connection stays open (server-sent events style) while the model generates, and each token is flushed as an event the moment it is produced. Your client appends it to the visible text immediately. TTFT depends on input size and model size: a huge prompt or a giant model delays the first token. Total time depends on output length and generation speed. On the way to the browser, streaming passes through your stack, and that chain must stream end to end: API Gateway supports streaming responses but has payload and timeout limits, so for long streams teams use WebSocket APIs or stream directly from the client to Bedrock. Streaming pairs with the other latency levers: smaller models lower TTFT, prompt caching skips prefix recomputation, provisioned throughput removes queueing delay.</p>
 <p>Illustrative. A support chat generates 400-token answers at 30 tokens/second on a flagship model.</p>
 <pre><code>Non-streaming:
   user waits the full generation: 400 / 30 = 13.3 seconds of blank screen.
@@ -1487,37 +1493,17 @@ Switching to a lightweight model at 60 tokens/sec:
   TTFT ~0.6s, total ~7.3s. Faster AND cheaper per token.
 </code></pre>
 <p>The two axes are independent: streaming fixes perceived latency, smaller models fix actual latency. A "feels slow" complaint is usually solved by streaming first.</p>
-<p><img alt="Flat diagram comparing streaming versus non-streaming latency: one timeline shows the full answer appearing at once, the other shows tokens arriving progressively with a fast time to first token." src="DATA_URI" /></p>
-<p>Diagram generated for this study guide (flat minimal style). Key material is in the text, not the image.</p>
-<p>How to read this diagram</p>
-<ol>
-<li><strong>Top timeline (non-streaming):</strong> one long bar of silence, then the entire answer appears at once. The vertical dashed line (time to first token) sits far to the right. This is what users hate.</li>
-<li><strong>Bottom timeline (streaming):</strong> tokens arrive in chunks from almost the start. The dashed TTFT line sits near the left. The text builds progressively while generation continues.</li>
-<li><strong>The comparison:</strong> total durations are similar; the difference is entirely in when the user sees something. Perceived latency is a user-experience metric, not a model-speed metric.</li>
-</ol>
-<p>What breaks if a component fails</p>
-<p>If your delivery path buffers the stream (a proxy that waits for the full body, API Gateway limits on long connections), users get non-streaming behavior despite your streaming API call: the whole chain must stream. If you stream but the model is huge and slow, TTFT stays bad; streaming cannot fix a model that is simply too slow, only a smaller model or caching can.</p>
-<h2 id="common-misunderstanding">Common misunderstanding</h2>
+<p><img alt="Flat diagram comparing streaming versus non-streaming latency: one timeline shows the full answer appearing at once, the other shows tokens arriving progressively with a fast time to first token." src="assets/img/mermaid/31-streaming-latency.svg" /></p>
+<p>Reading the diagram: the non-streaming timeline is one long bar of silence, then the entire answer appears at once, with the time-to-first-token line far to the right. The streaming timeline shows tokens arriving in chunks from almost the start, the TTFT line near the left, text building while generation continues. Total durations are similar; the difference is entirely in when the user sees something. What breaks: if your delivery path buffers the stream (a proxy that waits for the full body, API Gateway limits on long connections), users get non-streaming behavior despite your streaming API call. And if the model is huge and slow, TTFT stays bad: streaming cannot fix a model that is simply too slow; only a smaller model or caching can.</p>
 <div class="exam-ask"><p><strong>Trap</strong></p>
 <p>"Streaming makes the model faster." It does not change generation speed at all; it changes when the user sees output. The exam pairs this with a second trap: using streaming to fix a hard latency SLA. If the scenario demands a guaranteed sub-3-second complete response, streaming helps perception but the guarantee comes from provisioned throughput and model choice. Also watch for "streaming reduces cost": it does not; token counts are identical.</p></div>
-<h2 id="how-aws-asks-this">How AWS asks this</h2>
-<p>Scenario: "users complain the chatbot feels slow; responses take 10+ seconds to appear; answers are correct." Correct answer: enable streaming (ConverseStream) so tokens render incrementally. Distractors: provisioned throughput (fixes capacity, not perception, and costs more), a larger model (slower and pricier), batch inference (wrong direction entirely). The tell is "feels slow" or "time to first token" language with correct-but-slow answers.</p>
-<p>============ TOPIC 7 ============</p>
+<p>How the exam asks it: "users complain the chatbot feels slow; responses take 10+ seconds to appear; answers are correct." Answer: enable streaming (ConverseStream) so tokens render incrementally. Distractors: provisioned throughput (fixes capacity, not perception, and costs more), a larger model (slower and pricier), batch inference (wrong direction entirely). The tell is "feels slow" or "time to first token" language with correct-but-slow answers.</p>
 <h2 id="07-rate-limits-quotas-and-throttling-with-retries">07. Rate limits, quotas, and throttling with retries</h2>
 <p>Every API has a speed limit. Production code respects it instead of crashing into it.</p>
-<h2 id="what-it-is">What it is</h2>
-<p><strong>Rate limits and quotas</strong> are the maximum request rates AWS allows per account, per region, per model. Exceed them and Bedrock returns a throttling error (<code>ThrottlingException</code>). <strong>Throttling</strong> is AWS deliberately rejecting excess requests to protect shared capacity. The correct client behavior is <strong>retries with exponential backoff and jitter</strong>: wait, then retry, waiting longer each time, with a small random offset so that many clients do not retry in lockstep and cause a second wave.</p>
-<h2 id="why-it-exists">Why it exists</h2>
-<p>Shared infrastructure needs protection from bursts. Without throttling, one customer's runaway loop could starve everyone else's on-demand traffic. Without client-side retries, every transient throttle becomes a user-facing error. The retry pattern converts a momentary "slow down" signal into invisible resilience: most throttled requests succeed on the second or third attempt with no user impact.</p>
-<h2 id="how-it-works-under-the-hood">How it works under the hood</h2>
-<ol>
-<li>Your app sends requests faster than the quota. Bedrock returns <code>ThrottlingException</code> for the excess. This is not a bug; it is the signal.</li>
-<li>The AWS SDKs retry throttling errors automatically with exponential backoff by default: wait ~1s, then ~2s, then ~4s, and so on, up to a max attempts limit. <strong>Jitter</strong> randomizes each wait so thousands of clients do not hammer the API at the same instant.</li>
-<li>If you write custom retry logic, retry only retryable errors (throttling, transient 5xx). Do not retry validation errors: a malformed request body will fail identically forever, and retrying it wastes quota.</li>
-<li>At the architecture level, API Gateway adds its own throttling (per-method rate limits, usage plans, API keys), which protects your backend from client bursts before they reach Bedrock.</li>
-<li>When retries alone cannot keep up, the structural answers are: provisioned throughput (dedicated capacity, Topic 04), inference profiles (spread load across regions, Topic 05), or request a quota increase from AWS support.</li>
-</ol>
-<h2 id="concrete-numbers-worked-example">Concrete numbers, worked example</h2>
+<h3>Throttling is a signal, not a bug</h3>
+<p>Rate limits and quotas are the maximum request rates AWS allows per account, per region, per model. Exceed them and Bedrock returns a throttling error (ThrottlingException). Throttling is AWS deliberately rejecting excess requests to protect shared capacity. The correct client behavior is retries with exponential backoff and jitter: wait, then retry, waiting longer each time, with a small random offset so that many clients do not retry in lockstep and cause a second wave.</p>
+<p>Shared infrastructure needs protection from bursts: without throttling, one customer's runaway loop could starve everyone else's on-demand traffic. And without client-side retries, every transient throttle becomes a user-facing error. The retry pattern converts a momentary "slow down" signal into invisible resilience: most throttled requests succeed on the second or third attempt with no user impact.</p>
+<p>The mechanics: your app sends requests faster than the quota, and Bedrock returns ThrottlingException for the excess. The AWS SDKs retry throttling errors automatically with exponential backoff by default: wait about 1s, then about 2s, then about 4s, and so on, up to a max attempts limit. Jitter randomizes each wait so thousands of clients do not hammer the API at the same instant. If you write custom retry logic, retry only retryable errors (throttling, transient 5xx). Do not retry validation errors: a malformed request body fails identically forever, and retrying it wastes quota. At the architecture level, API Gateway adds its own throttling (per-method rate limits, usage plans, API keys), which protects your backend from client bursts before they reach Bedrock. When retries alone cannot keep up, the structural answers are provisioned throughput (dedicated capacity, Topic 04), inference profiles (spread load across regions, Topic 05), or a quota increase from AWS support.</p>
 <p>Illustrative. Quota: 100 requests/minute for a model. Your app's Friday spike sends 300 requests in one minute.</p>
 <pre><code>Without retries:
   ~200 requests get ThrottlingException -&gt; user-facing errors.
@@ -1532,37 +1518,17 @@ With provisioned throughput sized for 150 RPM + on-demand overflow:
   This is the layered answer the exam rewards.
 </code></pre>
 <p>Retries are the first layer, not the whole answer. Retries handle transient spikes; structural capacity handles sustained overload.</p>
-<p><img alt="Flat diagram of throttling and retries: a burst of requests hitting a quota gate, with blocked requests entering an exponential backoff loop with jitter before retrying." src="DATA_URI" /></p>
-<p>Diagram generated for this study guide (flat minimal style). Key material is in the text, not the image.</p>
-<p>How to read this diagram</p>
-<ol>
-<li><strong>Left (burst):</strong> many parallel request arrows hit the quota gate at once. The gate is the rate limit; it is doing its job, not malfunctioning.</li>
-<li><strong>Center (gate):</strong> requests under the quota pass; excess requests get the red blocked sign. Throttling is a signal, and the correct response starts here.</li>
-<li><strong>Below (retry loop):</strong> blocked requests enter the backoff loop: waits doubling 1s, 2s, 4s, with a jitter icon adding randomness. The arrows feed back into the gate, where they now arrive spread over time and mostly pass.</li>
-</ol>
-<p>What breaks if a component fails</p>
-<p>If you retry immediately with no backoff, you re-hit the gate and can make the throttle worse (retry storms). If you retry non-retryable errors like validation failures, you burn quota on requests that can never succeed. If the overload is sustained rather than bursty, no retry pattern saves you: you need more capacity (PT, profiles, or a quota increase).</p>
-<h2 id="common-misunderstanding">Common misunderstanding</h2>
+<p><img alt="Flat diagram of throttling and retries: a burst of requests hitting a quota gate, with blocked requests entering an exponential backoff loop with jitter before retrying." src="assets/img/mermaid/32-throttling-retries.svg" /></p>
+<p>Reading the diagram: burst arrows hit the quota gate at once; the gate is doing its job, not malfunctioning. Requests under the quota pass; excess requests are blocked. Blocked requests enter the backoff loop with waits doubling 1s, 2s, 4s plus jitter, then feed back into the gate spread over time and mostly pass. What breaks: retrying immediately with no backoff re-hits the gate and can make the throttle worse (retry storms). Retrying non-retryable errors like validation failures burns quota on requests that can never succeed. And if the overload is sustained rather than bursty, no retry pattern saves you: you need more capacity (PT, profiles, or a quota increase).</p>
 <div class="exam-ask"><p><strong>Trap</strong></p>
 <p>"Throttling means something is broken; I should request a quota increase immediately." Throttling during a brief spike is normal and is handled by retries. Quota increases are for sustained, legitimate growth. The exam's trap is offering "request a quota increase" as the fix for a transient burst scenario, or offering "buy provisioned throughput" when the throttling is a 30-second spike that retries would absorb. Match the fix to the duration: seconds of overload -&gt; retries; hours of overload -&gt; capacity.</p></div>
-<h2 id="how-aws-asks-this">How AWS asks this</h2>
-<p>Scenario: "during traffic spikes the application throws ThrottlingException; most spikes last under a minute; minimize changes." Correct answer: rely on SDK retries with exponential backoff and jitter, possibly plus API Gateway throttling to smooth client bursts. Distractors: provisioned throughput (overkill for sub-minute spikes), quota increase (for sustained load), catching the exception and dropping the request (user-facing failure). The tell is "brief spikes" plus "minimal changes".</p>
-<p>============ TOPIC 8 ============</p>
+<p>How the exam asks it: "during traffic spikes the application throws ThrottlingException; most spikes last under a minute; minimize changes." Answer: rely on SDK retries with exponential backoff and jitter, possibly plus API Gateway throttling to smooth client bursts. Distractors: provisioned throughput (overkill for sub-minute spikes), quota increase (for sustained load), catching the exception and dropping the request (user-facing failure). The tell is "brief spikes" plus "minimal changes."</p>
 <h2 id="08-right-sizing-models-and-cascading-with-routers">08. Right-sizing models and cascading with routers</h2>
 <p>The cheapest correct answer is usually a smaller model.</p>
-<h2 id="what-it-is">What it is</h2>
-<p><strong>Right-sizing</strong> means matching the model to the task's difficulty instead of using the flagship model for everything. <strong>Model cascading</strong> automates this: a small <strong>classifier or router</strong> examines each incoming request and sends simple ones (classification, extraction, short answers) to a cheap lightweight model, escalating only complex ones (multi-step reasoning, long generation) to the expensive flagship. Bedrock's <strong>prompt routers</strong> (also called model routers) are the managed version: you configure routing criteria and Bedrock splits traffic by predicted complexity.</p>
-<h2 id="why-it-exists">Why it exists</h2>
-<p>Most production workloads are bimodal: 70 to 90 percent of requests are easy (FAQ lookup, tone rewrite, entity extraction) and a minority are hard. Running the flagship model on easy work is like hiring a senior architect to sort mail. The cost gap between model tiers is roughly 10x, so every easy request routed down saves an order of magnitude. Without routing, teams either overpay on the flagship or under-serve hard queries on the small model. Cascading gets both right per request.</p>
-<h2 id="how-it-works-under-the-hood">How it works under the hood</h2>
-<ol>
-<li><strong>Classify:</strong> each request passes through a router. The router can be a tiny model, a rules engine (keyword or intent patterns), or Bedrock's managed prompt router. Its job is one binary decision: simple or complex.</li>
-<li><strong>Route simple:</strong> easy requests go to the lightweight model (Haiku-class, Nova Lite-class, Llama 8B-class). These are 5 to 15x cheaper per token and have lower latency.</li>
-<li><strong>Escalate complex:</strong> hard requests go to the flagship. Optionally, the small model attempts first and escalates on low confidence: a two-stage cascade that catches router mistakes.</li>
-<li><strong>Measure:</strong> you track quality per route (evaluation scores, user feedback, escalation rate). If the router misclassifies too often, you tune its criteria. Routing is an optimization loop, not a one-time config.</li>
-<li><strong>Price-to-performance:</strong> the metric that matters is quality per dollar, not raw quality. A router that sends 80% of traffic to a model 10x cheaper, with no measurable quality drop on those requests, cuts the bill by roughly 70%.</li>
-</ol>
-<h2 id="concrete-numbers-worked-example">Concrete numbers, worked example</h2>
+<h3>Match the model to the difficulty</h3>
+<p>Right-sizing means matching the model to the task's difficulty instead of using the flagship for everything. Model cascading automates this: a small classifier or router examines each incoming request and sends simple ones (classification, extraction, short answers) to a cheap lightweight model, escalating only complex ones (multi-step reasoning, long generation) to the expensive flagship. Bedrock's prompt routers (also called model routers) are the managed version: you configure routing criteria and Bedrock splits traffic by predicted complexity.</p>
+<p>Most production workloads are bimodal: 70 to 90 percent of requests are easy (FAQ lookup, tone rewrite, entity extraction) and a minority are hard. Running the flagship on easy work is like hiring a senior architect to sort mail. The cost gap between model tiers is roughly 10x, so every easy request routed down saves an order of magnitude. Without routing, teams either overpay on the flagship or under-serve hard queries on the small model. Cascading gets both right per request.</p>
+<p>The mechanics. Classify: each request passes through a router, which can be a tiny model, a rules engine (keyword or intent patterns), or Bedrock's managed prompt router. Its job is one binary decision: simple or complex. Route simple: easy requests go to the lightweight model (Haiku-class, Nova Lite-class, Llama 8B-class), 5 to 15x cheaper per token with lower latency. Escalate complex: hard requests go to the flagship. Optionally the small model attempts first and escalates on low confidence: a two-stage cascade that catches router mistakes. Measure: track quality per route (evaluation scores, user feedback, escalation rate). If the router misclassifies too often, tune its criteria. Routing is an optimization loop, not a one-time config. The metric that matters is quality per dollar, not raw quality: a router sending 80% of traffic to a model 10x cheaper, with no measurable quality drop on those requests, cuts the bill by roughly 70%. The router itself must be nearly free (rules or a tiny model); a router that costs as much as the savings is a net loss.</p>
 <pre><code>1M requests/month. 80% simple, 20% complex.
 Each request: 1,000 input + 200 output tokens.
 Illustrative pricing: flagship $3.00/$15.00 per 1M, lite $0.25/$1.25 per 1M.
@@ -1576,47 +1542,17 @@ Cascaded (router cost negligible):
   complex (200k): $0.006                          -&gt; $1,200
   total = $1,600/mo.  Savings: $4,400/mo (73%).
 </code></pre>
-<p>The router itself must be nearly free (rules or a tiny model); a router that costs as much as the savings is a net loss.</p>
-<p><img alt="Flat diagram of model cascading: incoming questions pass through a classifier that routes simple ones to a cheap small model and complex ones to a flagship model." src="DATA_URI" /></p>
-<p>Diagram generated for this study guide (flat minimal style). Key material is in the text, not the image.</p>
-<p>How to read this diagram</p>
-<ol>
-<li><strong>Left (funnel):</strong> all incoming questions enter one stream. Nothing is pre-sorted; the router does the sorting.</li>
-<li><strong>Center (classifier diamond):</strong> the routing decision: simple or complex. This is the only new component you added, and it must be cheap and fast.</li>
-<li><strong>Top branch (small model):</strong> easy questions land on the lightweight model with the low-cost tag. This branch carries the majority of traffic.</li>
-<li><strong>Bottom branch (flagship):</strong> hard questions land on the flagship. Fewer calls, higher unit cost, justified by difficulty.</li>
-<li><strong>Right (merged):</strong> responses merge back to users. The "total spend down" label is the whole point: same answers, fraction of the bill.</li>
-</ol>
-<p>What breaks if a component fails</p>
-<p>If the router misclassifies hard questions as simple, quality drops on the questions that matter most: monitor per-route quality, not just cost. If the router is slow or expensive, it erases the savings. If traffic is uniformly complex (every request genuinely needs the flagship), cascading adds complexity for zero savings: profile your workload first.</p>
-<h2 id="common-misunderstanding">Common misunderstanding</h2>
+<p><img alt="Flat diagram of model cascading: incoming questions pass through a classifier that routes simple ones to a cheap small model and complex ones to a flagship model." src="assets/img/mermaid/33-model-cascade.svg" /></p>
+<p>Reading the diagram: all incoming questions enter one funnel; the classifier diamond makes the routing decision, simple or complex. Easy questions take the top branch to the lightweight model with the low-cost tag, carrying the majority of traffic. Hard questions take the bottom branch to the flagship: fewer calls, higher unit cost, justified by difficulty. Responses merge back with total spend down. What breaks: if the router misclassifies hard questions as simple, quality drops on the questions that matter most, so monitor per-route quality, not just cost. If the router is slow or expensive, it erases the savings. If traffic is uniformly complex, cascading adds complexity for zero savings: profile your workload first.</p>
 <div class="exam-ask"><p><strong>Trap</strong></p>
 <p>"Bigger models are always better, so routing easy work to a small model risks quality." The exam tests this backwards assumption. Quality is measured per task: a lightweight model that scores identically on simple extraction is not lower quality, it is correctly sized. The real risk is misclassification, which you control with evaluation. Also watch the router confusion trap from Topic 05: prompt routers route by complexity for cost, inference profiles route by region for availability. Different tools, different scenarios.</p></div>
-<h2 id="how-aws-asks-this">How AWS asks this</h2>
-<p>Scenario: "token costs are growing; analysis shows 80% of requests are simple FAQ lookups currently served by the flagship model; quality must not drop." Correct answer: add a prompt router or cascade that sends simple queries to a lightweight model and complex ones to the flagship. Distractors: fine-tuning the flagship (wrong lever, huge effort), prompt caching (helps only if there is a repeated prefix), provisioned throughput (capacity, not cost). The tell is "simple queries on an expensive model".</p>
-<p>============ TOPIC 9 ============</p>
+<p>How the exam asks it: "token costs are growing; analysis shows 80% of requests are simple FAQ lookups currently served by the flagship model; quality must not drop." Answer: add a prompt router or cascade sending simple queries to a lightweight model and complex ones to the flagship. Distractors: fine-tuning the flagship (wrong lever, huge effort), prompt caching (helps only with a repeated prefix), provisioned throughput (capacity, not cost). The tell is "simple queries on an expensive model."</p>
 <h2 id="09-cloudwatch-metrics-for-bedrock">09. CloudWatch metrics for Bedrock</h2>
 <p>You cannot optimize what you cannot see. These four metrics are the dashboard.</p>
-<h2 id="what-it-is">What it is</h2>
-<p><strong>Amazon CloudWatch</strong> collects operational metrics from Bedrock automatically. The four you must know by name:</p>
-<ul>
-<li><code>Invocations</code>: number of model calls. Your volume baseline.</li>
-<li><code>InputTokenCount</code> and <code>OutputTokenCount</code>: tokens in and out. Your cost baseline; multiply by rates to get spend.</li>
-<li><code>InvocationThrottles</code>: count of throttled requests. Your capacity signal.</li>
-<li>Latency metrics: time per invocation. Your performance signal.</li>
-</ul>
-<p>On top of raw metrics, CloudWatch gives you <strong>alarms</strong> (notify or act when a threshold crosses), <strong>anomaly detection</strong> (machine-learning baselines that flag unusual spikes without you setting thresholds), and <strong>dashboards</strong> that combine these into one view.</p>
-<h2 id="why-it-exists">Why it exists</h2>
-<p>GenAI bills are opaque by default: tokens flow, money flows, and nobody sees the link until the invoice. Metrics make the link visible in near real time. A sudden 3x jump in <code>OutputTokenCount</code> with flat <code>Invocations</code> means responses got longer (a prompt change, or the model rambling). A spike in <code>InvocationThrottles</code> means you are hitting quota walls. Without metrics you debug by guessing; with them you debug by reading.</p>
-<h2 id="how-it-works-under-the-hood">How it works under the hood</h2>
-<ol>
-<li>Every Bedrock invocation emits metric data points to CloudWatch automatically: counts, token totals, throttle events, latency. No setup required for the basics.</li>
-<li>You build a dashboard with the four key metrics, sliced by model ID and time, so you can see which model drives cost and when spikes happen.</li>
-<li>You set alarms: e.g. alert when <code>InvocationThrottles</code> exceeds a threshold, or when projected token spend crosses budget. <strong>AWS Budgets</strong> and <strong>Cost Anomaly Detection</strong> cover the dollar side: they alert on unusual spend patterns.</li>
-<li>CloudWatch anomaly detection learns the normal weekly pattern of your token metrics and flags deviations (a runaway loop, a prompt regression) without manual thresholds.</li>
-<li>For forensics you drill from metric to log: the spike in the dashboard leads you to CloudWatch Logs Insights queries over invocation logs (Topic 10) to find the offending prompts.</li>
-</ol>
-<h2 id="concrete-numbers-worked-example">Concrete numbers, worked example</h2>
+<h3>Four metrics, then alarms</h3>
+<p>Amazon CloudWatch collects operational metrics from Bedrock automatically. The four you must know by name: Invocations (number of model calls, your volume baseline), InputTokenCount and OutputTokenCount (tokens in and out, your cost baseline; multiply by rates to get spend), InvocationThrottles (count of throttled requests, your capacity signal), and latency metrics (time per invocation, your performance signal). On top of raw metrics, CloudWatch gives you alarms (notify or act when a threshold crosses), anomaly detection (machine-learning baselines that flag unusual spikes without you setting thresholds), and dashboards combining these into one view.</p>
+<p>GenAI bills are opaque by default: tokens flow, money flows, and nobody sees the link until the invoice. Metrics make the link visible in near real time. A sudden 3x jump in OutputTokenCount with flat Invocations means responses got longer (a prompt change, or the model rambling). A spike in InvocationThrottles means you are hitting quota walls. Without metrics you debug by guessing; with them you debug by reading.</p>
+<p>The mechanics: every Bedrock invocation emits metric data points to CloudWatch automatically, no setup required for the basics. You build a dashboard with the four key metrics sliced by model ID and time, so you can see which model drives cost and when spikes happen. You set alarms: alert when InvocationThrottles exceeds a threshold, or when projected token spend crosses budget. AWS Budgets and Cost Anomaly Detection cover the dollar side with alerts on unusual spend patterns. CloudWatch anomaly detection learns the normal weekly pattern of your token metrics and flags deviations (a runaway loop, a prompt regression) without manual thresholds. For forensics you drill from metric to log: the spike in the dashboard leads you to CloudWatch Logs Insights queries over invocation logs (Topic 10) to find the offending prompts.</p>
 <p>Your dashboard shows this week vs last week for one model:</p>
 <pre><code>Invocations:        1.0M  -&gt;  1.05M   (+5%)
 InputTokenCount:    2.0B  -&gt;  2.1B    (+5%)
@@ -1631,41 +1567,19 @@ Fix: check prompt versions (Prompt Management history), re-add
 response size limits. NOT a capacity problem: throttles are flat.
 </code></pre>
 <p>This is the exam skill: read the metric pattern, name the cause, pick the fix. Flat throttles plus spiking tokens is never a provisioned-throughput question.</p>
-<p><img alt="Flat diagram of a CloudWatch dashboard: four charts showing invocation counts, input and output token counts, throttled requests, and latency with an alarm." src="DATA_URI" /></p>
-<p>Diagram generated for this study guide (flat minimal style). Key material is in the text, not the image.</p>
-<p>How to read this diagram</p>
-<ol>
-<li><strong>Top left (invocations):</strong> rising bars show call volume. Flat bars with rising cost elsewhere means each call got more expensive, not that you have more calls.</li>
-<li><strong>Top right (tokens):</strong> two lines, input and output. When the output line separates upward from input, responses are getting longer: a prompt or maxTokens issue.</li>
-<li><strong>Bottom left (throttles):</strong> red spike marks. Spikes here mean quota walls: the capacity question. Flat here means capacity is fine.</li>
-<li><strong>Bottom right (latency):</strong> a line with an alarm bell on a spike. Latency spikes with flat throttles point at model or prompt issues, not capacity.</li>
-</ol>
-<p>What breaks if a component fails</p>
-<p>If you never build the dashboard, cost spikes are discovered at invoice time, weeks late. If you alarm on the wrong metric (invocations instead of token counts), a prompt regression that triples output tokens never pages anyone. If metrics are not sliced by model ID, you cannot tell which model is burning the budget.</p>
-<h2 id="common-misunderstanding">Common misunderstanding</h2>
+<p><img alt="Flat diagram of a CloudWatch dashboard: four charts showing invocation counts, input and output token counts, throttled requests, and latency with an alarm." src="assets/img/mermaid/34-cloudwatch-dashboard.svg" /></p>
+<p>Reading the diagram: rising invocation bars show call volume (flat bars with rising cost elsewhere means each call got more expensive, not that you have more calls). The two token lines separate when responses get longer: a prompt or maxTokens issue. Red spikes on throttles mean quota walls: the capacity question. A latency spike with flat throttles points at model or prompt issues, not capacity. What breaks: with no dashboard, cost spikes are discovered at invoice time, weeks late. Alarming on invocations instead of token counts means a prompt regression that triples output tokens never pages anyone. And metrics not sliced by model ID cannot tell you which model is burning the budget.</p>
 <div class="exam-ask"><p><strong>Trap</strong></p>
 <p>Two plane-confusion traps. Trap 1: using <strong>CloudTrail</strong> for performance or cost monitoring. CloudTrail records who called which API (audit plane).
 It does not carry token counts or latency as metrics. Metrics are CloudWatch's job. Trap 2: using <strong>SageMaker Model Monitor</strong> for GenAI text quality drift. Model Monitor is built for tabular ML.
 The GenAI answer is Bedrock evaluations and golden datasets (Domain 5). The exam offers both as plausible-sounding distractors.</p></div>
-<h2 id="how-aws-asks-this">How AWS asks this</h2>
-<p>Scenario: "the team needs near-real-time detection of abnormal token spend and throttling spikes, with minimal custom work." Correct answer: CloudWatch metrics (InputTokenCount, OutputTokenCount, InvocationThrottles) with anomaly detection and alarms, plus Cost Anomaly Detection. Distractors: building a Glue plus Athena pipeline over logs (heavy custom work for a near-real-time need), CloudTrail (wrong plane), SageMaker Model Monitor (wrong workload type). The tell is "near real time" plus "minimal custom work": that is always the managed metrics service.</p>
-<p>============ TOPIC 10 ============</p>
+<p>How the exam asks it: "the team needs near-real-time detection of abnormal token spend and throttling spikes, with minimal custom work." Answer: CloudWatch metrics (InputTokenCount, OutputTokenCount, InvocationThrottles) with anomaly detection and alarms, plus Cost Anomaly Detection. Distractors: a Glue plus Athena pipeline over logs (heavy custom work for a near-real-time need), CloudTrail (wrong plane), SageMaker Model Monitor (wrong workload type). The tell is "near real time" plus "minimal custom work": that is always the managed metrics service.</p>
 <h2 id="10-model-invocation-logging-and-x-ray-tracing">10. Model invocation logging and X-Ray tracing</h2>
 <p>Metrics tell you something is wrong. Logs and traces tell you what.</p>
-<h2 id="what-it-is">What it is</h2>
-<p><strong>Model invocation logging</strong> records the full request and response of Bedrock calls to <strong>S3</strong> or <strong>CloudWatch Logs</strong>: the prompt that went in, the completion that came out, token counts, timestamps. <strong>AWS X-Ray</strong> adds <strong>distributed tracing</strong>: it follows one user request across every service it touches (API Gateway to Lambda to Bedrock to DynamoDB), recording how long each step took, so you can see exactly which step is slow or failing in a multi-step agent chain.</p>
-<h2 id="why-it-exists">Why it exists</h2>
+<h3>What was said, and where the time went</h3>
+<p>Model invocation logging records the full request and response of Bedrock calls to S3 or CloudWatch Logs: the prompt that went in, the completion that came out, token counts, timestamps. AWS X-Ray adds distributed tracing: it follows one user request across every service it touches (API Gateway to Lambda to Bedrock to DynamoDB), recording how long each step took, so you can see exactly which step is slow or failing in a multi-step agent chain.</p>
 <p>Metrics aggregate; debugging needs specifics. When the dashboard shows output tokens tripled, only the logs show you the prompt version that caused it. When an agent takes 40 seconds, only a trace shows whether the time went to the model, a tool call, or a slow database. Without logging, hallucinations and cost spikes are unreproducible mysteries. Without tracing, multi-step latency is a guessing game.</p>
-<h2 id="how-it-works-under-the-hood">How it works under the hood</h2>
-<ol>
-<li><strong>Enable invocation logging</strong> in Bedrock settings, choosing S3, CloudWatch Logs, or both. Each log record includes the request body, response body, model ID, and token counts.</li>
-<li><strong>Encrypt or disable in sensitive environments.</strong> Logs contain raw prompts and responses, which may include PII (personally identifiable information). In healthcare or finance scenarios, the exam expects KMS encryption on the log destination, or logging disabled where compliance forbids it. Logging invocations to an unencrypted bucket in a healthcare scenario is a distractor.</li>
-<li><strong>Query with CloudWatch Logs Insights</strong> for prompt and response forensics: find the longest responses, the most expensive calls, or every call that used a particular prompt version.</li>
-<li><strong>Enable X-Ray tracing</strong> on your Lambda functions, API Gateway, and agent steps. Each request gets a trace ID; each service call becomes a segment with timing.</li>
-<li><strong>Read the trace:</strong> for an agent, the trace shows the sequence: agent reasoning to tool call 1 to model call to tool call 2 to final answer. The longest segment is your bottleneck. Agent observability features (Bedrock's agent tracing, <code>enableTrace</code> on <code>invoke_agent</code>) show the reasoning steps inside the agent itself.</li>
-<li><strong>Tool and multi-agent observability:</strong> track call patterns (which tools fire most), multi-agent coordination (supervisor to collaborator handoffs), and usage baselines so anomalies stand out.</li>
-</ol>
-<h2 id="concrete-numbers-worked-example">Concrete numbers, worked example</h2>
+<p>The mechanics: enable invocation logging in Bedrock settings, choosing S3, CloudWatch Logs, or both. Each log record includes the request body, response body, model ID, and token counts. Encrypt or disable in sensitive environments: logs contain raw prompts and responses, which may include PII. In healthcare or finance scenarios the exam expects KMS encryption on the log destination, or logging disabled where compliance forbids it; logging invocations to an unencrypted bucket in a healthcare scenario is a distractor. Query with CloudWatch Logs Insights for prompt and response forensics: find the longest responses, the most expensive calls, or every call that used a particular prompt version. Enable X-Ray tracing on your Lambda functions, API Gateway, and agent steps. Each request gets a trace ID; each service call becomes a segment with timing. For an agent, the trace shows the sequence (agent reasoning to tool call 1 to model call to tool call 2 to final answer), and the longest segment is your bottleneck. Bedrock's agent tracing and the enableTrace option on agent invocation show the reasoning steps inside the agent itself. Tool and multi-agent observability means tracking call patterns (which tools fire most), multi-agent coordination (supervisor to collaborator handoffs), and usage baselines so anomalies stand out.</p>
 <p>An agent answers product questions in 38 seconds on average. The X-Ray trace for one request:</p>
 <pre><code>Trace total: 38.2s
   API Gateway + Lambda overhead:        0.4s
@@ -1679,40 +1593,18 @@ the time. Fix the query or cache its results; do not buy a faster
 model or provisioned throughput. The trace just saved you from
 optimizing the wrong component.
 </code></pre>
-<p>Logs answer "what did we ask and what did it say"; traces answer "where did the time go". You need both.</p>
-<p><img alt="Flat diagram of agent observability: a chain of tool and model calls with a distributed trace timeline above and invocation logs flowing to S3 and CloudWatch below." src="DATA_URI" /></p>
-<p>Diagram generated for this study guide (flat minimal style). Key material is in the text, not the image.</p>
-<p>How to read this diagram</p>
-<ol>
-<li><strong>Bottom chain (agent steps):</strong> left to right, the actual work: tool call 1, model call, tool call 2, final answer. This is the sequence the user request triggered.</li>
-<li><strong>Top (trace timeline):</strong> each step has a span showing when it started and how long it ran. The longest span is the bottleneck; read it first.</li>
-<li><strong>Below (log bucket):</strong> full request and response payloads land in S3 and CloudWatch Logs. When the trace says "tool 2 was slow," the logs say "here is the exact query and response."</li>
-<li><strong>The arrows:</strong> every step connects up to its trace span and down to its log record. Metrics, logs, and traces are three views of the same request.</li>
-</ol>
-<p>What breaks if a component fails</p>
-<p>If invocation logging is disabled, you cannot reconstruct what the model was asked: cost and hallucination forensics become impossible. If logs are unencrypted in a regulated workload, you have a compliance violation, not just a debugging gap. If X-Ray is not enabled on the Lambda functions, the trace has gaps and the slow step hides between instrumented services.</p>
-<h2 id="common-misunderstanding">Common misunderstanding</h2>
+<p>Logs answer "what did we ask and what did it say"; traces answer "where did the time go." You need both.</p>
+<p><img alt="Flat diagram of agent observability: a chain of tool and model calls with a distributed trace timeline above and invocation logs flowing to S3 and CloudWatch below." src="assets/img/mermaid/35-agent-observability.svg" /></p>
+<p>Reading the diagram: the bottom chain runs the actual work left to right (tool call 1, model call, tool call 2, final answer). Each step has a trace span on the timeline above it; the longest span is the bottleneck, read it first. Full request and response payloads land in S3 and CloudWatch Logs below: when the trace says "tool 2 was slow," the logs say "here is the exact query and response." Metrics, logs, and traces are three views of the same request. What breaks: with logging disabled you cannot reconstruct what the model was asked, so cost and hallucination forensics become impossible. Unencrypted logs in a regulated workload are a compliance violation, not just a debugging gap. And if X-Ray is not enabled on the Lambda functions, the trace has gaps and the slow step hides between instrumented services.</p>
 <div class="exam-ask"><p><strong>Trap</strong></p>
 <p>"CloudTrail shows me the prompts and responses." No. CloudTrail logs API-level events: who called <code>InvokeModel</code>, when, from where (the audit plane). It does not record prompt or response bodies. Prompt and response forensics need model invocation logging to S3 or CloudWatch Logs (the data plane). The exam tests this distinction directly: a scenario asking "which service records the full prompt text for debugging" wants invocation logging, and CloudTrail is the distractor.</p></div>
-<h2 id="how-aws-asks-this">How AWS asks this</h2>
-<p>Scenario: "a multi-step agent is intermittently slow; the team must find which step (tool calls vs model calls) causes the delay, and must be able to audit exact prompts later; healthcare data is involved." Correct answer, select-three style: X-Ray tracing across the agent chain, model invocation logging to S3 with KMS encryption, CloudWatch Logs Insights for analysis. Distractors: CloudTrail for prompt forensics (wrong plane), unencrypted logging (compliance violation), "add provisioned throughput" (optimizes the wrong component without evidence).</p>
-<p>============ TOPIC 11 ============</p>
+<p>How the exam asks it: "a multi-step agent is intermittently slow; the team must find which step (tool calls vs model calls) causes the delay, and must be able to audit exact prompts later; healthcare data is involved." Answer, select-three style: X-Ray tracing across the agent chain, model invocation logging to S3 with KMS encryption, CloudWatch Logs Insights for analysis. Distractors: CloudTrail for prompt forensics (wrong plane), unencrypted logging (compliance violation), "add provisioned throughput" (optimizes the wrong component without evidence).</p>
 <h2 id="11-token-efficiency-and-prompt-optimization">11. Token efficiency and prompt optimization</h2>
 <p>Every token you do not send is a token you do not pay for.</p>
-<h2 id="what-it-is">What it is</h2>
-<p><strong>Token efficiency</strong> is the discipline of spending the fewest tokens that still get the job done. The techniques: <strong>context pruning</strong> (drop conversation history or document chunks that are no longer relevant instead of resending everything), <strong>prompt compression</strong> (rewrite verbose instructions into dense ones without changing meaning), <strong>response size limits</strong> (cap output with <code>maxTokens</code> and explicit length instructions), and <strong>token estimation and tracking</strong> (count tokens before sending, alert when calls exceed budgets).</p>
-<h2 id="why-it-exists">Why it exists</h2>
-<p>Prompts bloat naturally. Developers paste a 3,000-word instruction doc into the system prompt, keep the full 50-turn history "just in case," and set no output cap. The model answers fine, and the bill quietly doubles. Token efficiency exists because the default behavior of every chat app is to resend everything every time, and that default is expensive. What fails without it is cost control at the source: all the pricing levers in Topics 01 to 05 work better on a lean prompt.</p>
-<h2 id="how-it-works-under-the-hood">How it works under the hood</h2>
-<ol>
-<li><strong>Estimate before you send:</strong> tokenizers count tokens per model family. A rough rule: about 4 characters per token in English, about 0.75 words per token. Log the estimate per call so you can see which features are token-heavy.</li>
-<li><strong>Prune context:</strong> for conversation history, keep a sliding window (last N turns) or summarize older turns into a compact recap. For RAG, retrieve fewer, better chunks instead of dumping ten chunks "to be safe." Every chunk you drop is tokens unbilled.</li>
-<li><strong>Compress instructions:</strong> "Please provide a comprehensive, detailed, in-depth analysis covering all aspects" becomes "Analyze concisely." Few-shot examples: keep two strong examples instead of eight mediocre ones. Test that quality holds after compression.
-   Compression is an optimization loop, not a one-time edit.</li>
-<li><strong>Cap the output:</strong> set <code>maxTokens</code> in the inference config and add explicit length guidance ("answer in under 100 words"). Unbounded outputs are the output-token equivalent of an uncapped budget.</li>
-<li><strong>Track per feature:</strong> tag invocations by feature or prompt version so token metrics reveal which prompt is the expensive one. Optimization without measurement is guessing.</li>
-</ol>
-<h2 id="concrete-numbers-worked-example">Concrete numbers, worked example</h2>
+<h3>The free lever, pulled first</h3>
+<p>Token efficiency is the discipline of spending the fewest tokens that still get the job done. The techniques: context pruning (drop conversation history or document chunks that are no longer relevant instead of resending everything), prompt compression (rewrite verbose instructions into dense ones without changing meaning), response size limits (cap output with maxTokens and explicit length instructions), and token estimation and tracking (count tokens before sending, alert when calls exceed budgets).</p>
+<p>Prompts bloat naturally. Developers paste a 3,000-word instruction doc into the system prompt, keep the full 50-turn history "just in case," and set no output cap. The model answers fine, and the bill quietly doubles. The default behavior of every chat app is to resend everything every time, and that default is expensive. All the pricing levers in Topics 01 to 05 work better on a lean prompt.</p>
+<p>The mechanics. Estimate before you send: tokenizers count tokens per model family. Rough rules: about 4 characters per token in English, about 0.75 words per token. Log the estimate per call so you can see which features are token-heavy. Prune context: for conversation history keep a sliding window (last N turns) or summarize older turns into a compact recap; for RAG retrieve fewer, better chunks instead of dumping ten chunks "to be safe." Every chunk you drop is tokens unbilled. Compress instructions: "Please provide a comprehensive, detailed, in-depth analysis covering all aspects" becomes "Analyze concisely." Keep two strong few-shot examples instead of eight mediocre ones, and test that quality holds after compression. Compression is an optimization loop, not a one-time edit. Cap the output: set maxTokens in the inference config and add explicit length guidance ("answer in under 100 words"); unbounded outputs are the output-token equivalent of an uncapped budget. Track per feature: tag invocations by feature or prompt version so token metrics reveal which prompt is the expensive one. Optimization without measurement is guessing.</p>
 <pre><code>Support chatbot, 500k calls/month. Illustrative $3.00/$15.00 per 1M.
 
 Before: 4,000-token system prompt + full 30-turn history (avg 3,000)
@@ -1732,38 +1624,17 @@ After pruning + compression:
   no caching, no new service. Just a leaner prompt.
 </code></pre>
 <p>This is usually the first lever to pull because it costs nothing to implement and it multiplies every other lever.</p>
-<p><img alt="Flat diagram of prompt compression: an oversized prompt with duplicate content pruned down to a compact prompt one third the size with only relevant context retained." src="DATA_URI" /></p>
-<p>Diagram generated for this study guide (flat minimal style). Key material is in the text, not the image.</p>
-<p>How to read this diagram</p>
-<ol>
-<li><strong>Left (bloated prompt):</strong> the oversized document with duplicate paragraphs marked and a long chat history. This is the natural state of an unoptimized prompt: everything included, nothing questioned.</li>
-<li><strong>Center (pruning):</strong> the scissors box is the optimization work: deduplicate, window the history, compress the instructions, cap the output.</li>
-<li><strong>Right (compact prompt):</strong> the prompt at one third the size, with a magnifier showing only relevant context retained. Same task, same quality bar, far fewer tokens.</li>
-</ol>
-<p>What breaks if a component fails</p>
-<p>If you prune too aggressively (dropping history the task actually needs), quality drops and you have traded cost for wrong answers: always re-evaluate after compression. If you skip measurement, you optimize the wrong prompt: the expensive one is rarely the one developers guess. If output caps are set without length guidance, the model may cut off mid-sentence: pair <code>maxTokens</code> with an instruction to be concise.</p>
-<h2 id="common-misunderstanding">Common misunderstanding</h2>
+<p><img alt="Flat diagram of prompt compression: an oversized prompt with duplicate content pruned down to a compact prompt one third the size with only relevant context retained." src="assets/img/mermaid/36-prompt-compression.svg" /></p>
+<p>Reading the diagram: the bloated prompt on the left is the natural state of an unoptimized prompt, everything included, nothing questioned: oversized document, duplicate paragraphs, long chat history. The scissors box in the center is the optimization work: deduplicate, window the history, compress the instructions, cap the output. The compact prompt on the right does the same task at one third the size with only relevant context retained. What breaks: prune too aggressively (dropping history the task actually needs) and quality drops; you traded cost for wrong answers, so always re-evaluate after compression. Skip measurement and you optimize the wrong prompt; the expensive one is rarely the one developers guess. Set output caps without length guidance and the model may cut off mid-sentence: pair maxTokens with an instruction to be concise.</p>
 <div class="exam-ask"><p><strong>Trap</strong></p>
 <p>"Prompt compression means making the model dumber." Compression trims verbosity, not capability: removing "please" padding and duplicate examples does not reduce what the model knows. The trap version: the exam offers "switch to a smaller model" for a scenario where the real problem is a bloated prompt on the right model. Always fix the prompt first; it is free. A second trap: using <code>temperature</code> or <code>top-p</code> as cost controls. Those control randomness and quality, not token counts or cost.</p></div>
-<h2 id="how-aws-asks-this">How AWS asks this</h2>
-<p>Scenario: "token costs are growing 30% month over month; the CFO wants cuts without UX degradation; prompts include long histories and verbose instructions." Correct answer is a multi-lever response: prune context, compress prompts, cap output length, estimate and track tokens per feature. Distractors are single-lever answers: only prompt caching, only a smaller model. The exam rewards the candidate who stacks the free levers first. The tell is "without UX degradation": quality must be re-verified, which points to prompt work plus evaluation, not just a cheaper model.</p>
-<p>============ TOPIC 12 ============</p>
+<p>How the exam asks it: "token costs are growing 30% month over month; the CFO wants cuts without UX degradation; prompts include long histories and verbose instructions." The correct answer is multi-lever: prune context, compress prompts, cap output length, estimate and track tokens per feature. Distractors are single-lever answers: only prompt caching, only a smaller model. The exam rewards the candidate who stacks the free levers first. The tell is "without UX degradation": quality must be re-verified, which points to prompt work plus evaluation, not just a cheaper model.</p>
 <h2 id="12-semantic-caching">12. Semantic caching</h2>
 <p>Do not call the model at all when you already know the answer.</p>
-<h2 id="what-it-is">What it is</h2>
-<p><strong>Semantic caching</strong> stores model responses and reuses them for new questions that <em>mean</em> the same thing, even if the wording differs. A cache layer (built on <strong>ElastiCache</strong> for speed or <strong>DynamoDB</strong> for serverless simplicity) holds past question-and-answer pairs with their <strong>embeddings</strong> (vector representations of meaning). A new question is embedded, compared by vector similarity to cached questions, and if it is close enough, the stored answer returns immediately: zero model call, zero tokens, near-zero latency. <strong>Deterministic request hashing</strong> is the simpler cousin: exact-match caching for byte-identical requests.</p>
-<h2 id="why-it-exists">Why it exists</h2>
-<p>Real traffic repeats itself. "What are your hours?", "how do I reset my password?", "where is my order?" arrive thousands of times a day in slightly different words. Answering each one with a fresh model call is pure waste: the answer does not change. Semantic caching converts repetition into savings at the source, before any token is billed. What fails without it is the most avoidable spend in GenAI: paying full price to regenerate identical answers.</p>
-<h2 id="how-it-works-under-the-hood">How it works under the hood</h2>
-<ol>
-<li><strong>Store:</strong> after the model answers a question, the cache stores the question's embedding, the question text, and the answer, with a TTL (time to live).</li>
-<li><strong>Lookup:</strong> a new question is embedded with the same embedding model and compared against cached embeddings by cosine similarity. Above the similarity threshold (e.g. 0.95, illustrative), it is a hit.</li>
-<li><strong>Hit:</strong> return the stored answer. No model invocation, no input or output tokens, latency in milliseconds.</li>
-<li><strong>Miss:</strong> call the model normally, then store the new pair for future hits.</li>
-<li><strong>Placement:</strong> ElastiCache (Redis) for sub-millisecond lookups at high throughput; DynamoDB for a serverless cache with no cluster to manage. The vector similarity search can run in the cache layer or via a vector index.</li>
-<li><strong>Invalidation:</strong> cached answers go stale when the underlying facts change (prices, policies). TTLs and explicit invalidation on data updates keep the cache honest.</li>
-</ol>
-<h2 id="concrete-numbers-worked-example">Concrete numbers, worked example</h2>
+<h3>Answering from memory instead of the model</h3>
+<p>Semantic caching stores model responses and reuses them for new questions that mean the same thing, even if the wording differs. A cache layer (built on ElastiCache for speed or DynamoDB for serverless simplicity) holds past question-and-answer pairs with their embeddings, vector representations of meaning. A new question is embedded, compared by vector similarity to cached questions, and if it is close enough, the stored answer returns immediately: zero model call, zero tokens, near-zero latency. Deterministic request hashing is the simpler cousin: exact-match caching for byte-identical requests.</p>
+<p>Real traffic repeats itself. "What are your hours?", "how do I reset my password?", "where is my order?" arrive thousands of times a day in slightly different words. Answering each one with a fresh model call is pure waste: the answer does not change. Semantic caching converts repetition into savings at the source, before any token is billed.</p>
+<p>The mechanics. Store: after the model answers a question, the cache stores the question's embedding, the question text, and the answer, with a TTL (time to live). Lookup: a new question is embedded with the same embedding model and compared against cached embeddings by cosine similarity; above the similarity threshold (e.g. 0.95, illustrative), it is a hit. Hit: return the stored answer. No model invocation, no input or output tokens, latency in milliseconds. Miss: call the model normally, then store the new pair for future hits. Placement: ElastiCache (Redis) for sub-millisecond lookups at high throughput; DynamoDB for a serverless cache with no cluster to manage. The vector similarity search can run in the cache layer or via a vector index. Invalidation: cached answers go stale when the underlying facts change (prices, policies). TTLs and explicit invalidation on data updates keep the cache honest.</p>
 <pre><code>FAQ assistant: 2M questions/month. Analysis shows 60% are
 semantically similar to previously answered questions.
 Per call: 800 input + 150 output tokens, lite model at
@@ -1778,53 +1649,29 @@ With semantic cache at 60% hit rate:
   seconds to milliseconds on hits.
 </code></pre>
 <p>The hit rate is everything. Measure it on real traffic before committing to the architecture.</p>
-<p><img alt="Flat diagram of semantic caching: a question checked against a similarity index, with cache hits returning stored answers and misses going to the model and then stored." src="DATA_URI" /></p>
-<p>Diagram generated for this study guide (flat minimal style). Key material is in the text, not the image.</p>
-<p>How to read this diagram</p>
-<ol>
-<li><strong>Left (incoming question):</strong> the user's question enters the cache box first, not the model. The cache checks the vector similarity index.</li>
-<li><strong>Branch A (hit):</strong> a similar past question is found; the stored answer returns immediately. The model is never called. This is the money branch.</li>
-<li><strong>Branch B (miss):</strong> no match; the question flows to the model, which generates an answer. The answer then loops back into the cache for storage, so the next similar question hits.</li>
-<li><strong>The label:</strong> "similar questions reuse answers" is the whole mechanism: meaning-based matching, not exact text matching.</li>
-</ol>
-<p>What breaks if a component fails</p>
-<p>If the similarity threshold is too loose, users get wrong-but-similar answers: tune the threshold with evaluation. If the underlying facts change and the cache is not invalidated, users get confidently stale answers. If queries are highly personalized (each user's question is unique), the hit rate collapses and the cache is dead weight: the exam explicitly rejects semantic caching for personalized recommendations.</p>
-<h2 id="common-misunderstanding">Common misunderstanding</h2>
+<p><img alt="Flat diagram of semantic caching: a question checked against a similarity index, with cache hits returning stored answers and misses going to the model and then stored." src="assets/img/mermaid/37-semantic-cache.svg" /></p>
+<p>Reading the diagram: the incoming question enters the cache box first, not the model. On a hit, a similar past question is found and the stored answer returns immediately; the model is never called. This is the money branch. On a miss, the question flows to the model, which generates an answer that loops back into the cache for storage, so the next similar question hits. The mechanism is meaning-based matching, not exact text matching. What breaks: a similarity threshold set too loose returns wrong-but-similar answers, so tune the threshold with evaluation. Facts that change without cache invalidation produce confidently stale answers. And if queries are highly personalized (each user's question unique), the hit rate collapses and the cache is dead weight: the exam explicitly rejects semantic caching for personalized recommendations.</p>
 <div class="exam-ask"><p><strong>Trap</strong></p>
 <p>"Semantic caching and prompt caching are the same thing." They attack different costs. <strong>Prompt caching</strong> discounts repeated input tokens on calls you still make (Bedrock feature, static prefix). <strong>Semantic caching</strong> eliminates the call entirely for repeated meanings (your architecture, ElastiCache or DynamoDB). A second trap: semantic caching for highly personalized queries. Personalized means every question is unique, so the hit rate is near zero and the cache adds latency and complexity for nothing. The exam names this exact rejection.</p></div>
-<h2 id="how-aws-asks-this">How AWS asks this</h2>
-<p>Scenario: "a FAQ bot receives millions of questions; analysis shows heavy repetition with varied wording.
-Minimize cost and latency." Correct answer: semantic cache (ElastiCache or DynamoDB) in front of the model with similarity matching and TTL invalidation. Distractors: prompt caching (still makes the call.
-Also the questions vary so the prefix is not static), provisioned throughput (capacity, not repetition), fine-tuning (irrelevant). The tell is "repeated similar questions" plus cost and latency goals. The anti-tell: "personalized recommendations" disqualifies semantic caching.</p>
-<p>============ TOPIC 13 ============</p>
-<h2 id="13-operational-best-practices-for-production-genai-apps">13. Operational best practices for production GenAI apps</h2>
-<p>The whole domain as one checklist: which lever, in which order, for which constraint.</p>
-<h2 id="what-it-is">What it is</h2>
-<p>This topic is the synthesis: the ordered playbook for running GenAI in production. The exam does not test these practices as trivia.
-It tests whether your architecture applies them in the right order. The ladder, cheapest and simplest first:.</p>
+<p>How the exam asks it: "a FAQ bot receives millions of questions; analysis shows heavy repetition with varied wording. Minimize cost and latency." Answer: a semantic cache (ElastiCache or DynamoDB) in front of the model with similarity matching and TTL invalidation. Distractors: prompt caching (still makes the call, and the questions vary so the prefix is not static), provisioned throughput (capacity, not repetition), fine-tuning (irrelevant). The tell is "repeated similar questions" plus cost and latency goals. The anti-tell: "personalized recommendations" disqualifies semantic caching.</p>
+<h2 id="13-best-practices-the-cost-ladder">13. Best practices: the cost ladder</h2>
+<p>The whole domain in one ordered list: cheapest lever first, most expensive last.</p>
+<h3>The ladder, cheapest first</h3>
 <ol>
-<li><strong>Measure first.</strong> CloudWatch token metrics by model, invocation logs for forensics, X-Ray for latency. No lever without a measurement.</li>
-<li><strong>Shrink the prompt.</strong> Prune context, compress instructions, cap outputs. Free, and it multiplies everything below.</li>
-<li><strong>Skip the call.</strong> Semantic cache for repeated meanings, deterministic hashing for identical requests.</li>
-<li><strong>Discount the repeated prefix.</strong> Prompt caching for static system prompts and tool definitions on supported models.</li>
-<li><strong>Right-size the model.</strong> Cascade: cheap model for simple work, flagship for hard work, via a router.</li>
-<li><strong>Defer the offline work.</strong> Batch inference for anything with hours-scale latency tolerance, at roughly half price.</li>
-<li><strong>Guarantee the baseline.</strong> Provisioned throughput for steady traffic with latency SLAs; on-demand overflow for spikes; inference profiles for regional resilience.</li>
-<li><strong>Stream to the user.</strong> ConverseStream for perceived latency on every interactive surface.</li>
-<li><strong>Retry correctly.</strong> SDK exponential backoff with jitter for transient throttles; structural capacity for sustained overload.</li>
-<li><strong>Govern the spend.</strong> AWS Budgets, Cost Anomaly Detection, per-feature token tagging, prompt versions in Prompt Management so regressions are traceable.</li>
+<li>Measure first: CloudWatch metrics, dashboards, anomaly detection. Never optimize blind.</li>
+<li>Shrink the prompt: context pruning, prompt compression, output caps. The free lever.</li>
+<li>Skip the call entirely: semantic caching for repeated questions, deterministic hashing for identical ones.</li>
+<li>Discount the static prefix: prompt caching for repeated long system prompts and few-shot blocks.</li>
+<li>Right-size the model: prompt routers and cascading, small model for simple requests, flagship for complex.</li>
+<li>Defer what can wait: batch inference for offline work at roughly half price.</li>
+<li>Guarantee the baseline: provisioned throughput for steady traffic, with on-demand overflow for spikes.</li>
+<li>Route across regions: inference profiles for capacity, failover, and data residency.</li>
+<li>Stream responses: perceived latency without changing the model.</li>
+<li>Retry correctly: exponential backoff with jitter for throttling, structural capacity for sustained overload.</li>
+<li>Govern spend: AWS Budgets, Cost Anomaly Detection, token tagging, prompt versioning in Prompt Management.</li>
 </ol>
-<h2 id="why-it-exists">Why it exists</h2>
-<p>Production GenAI fails in predictable ways: the bill surprises, the latency spikes, the throttling starts, the answers drift. Each failure has a known lever, and the exam's scenarios are built from these failures. Teams that apply the ladder in order spend the least and change the least. Teams that reach for provisioned throughput before pruning the prompt pay for capacity to process waste.</p>
-<h2 id="how-it-works-under-the-hood-the-exams-favorite-scenario-shapes">How it works under the hood (the exam's favorite scenario shapes)</h2>
-<ul>
-<li><strong>"Token costs growing 30%/mo, CFO wants cuts without UX degradation":</strong> multi-lever answer. Prune and compress prompts, add prompt caching for the static prefix, cascade simple traffic to a smaller model, semantic-cache the FAQ head. Single-lever answers are distractors.</li>
-<li><strong>"Sub-3s latency, 10x Friday spikes":</strong> PT for baseline plus on-demand overflow plus streaming. "Entirely PT" fails on idle cost; "entirely on-demand" fails on throttle risk.</li>
-<li><strong>"Bought PT but still throttled":</strong> routing bug, code ignores the provisioned ARN. Fix the invocation target, not the capacity.</li>
-<li><strong>"Inconsistent outputs, need 99.5% consistency":</strong> temperature 0, deterministic caching, prompt versioning. PT stabilizes latency, not randomness: do not conflate them.</li>
-<li><strong>"Near-real-time hallucination detection plus abnormal spend, minimal custom work":</strong> Bedrock evaluation jobs with LLM-based judgments plus CloudWatch anomaly detection on token metrics. Glue and Athena pipelines are the high-overhead distractor.</li>
-</ul>
-<h2 id="concrete-numbers-the-full-stack-worked-example">Concrete numbers: the full-stack worked example</h2>
+<p>This ladder is the domain's backbone. The exam's best-practice questions are almost always ladder questions: the correct answer is the cheapest lever that fits the scenario's constraints. "Overnight" points to batch. "Repeated questions" points to semantic caching. "Same long prefix" points to prompt caching. "Simple queries on a flagship" points to routing. "Steady baseline with SLA" points to provisioned throughput. Work down the ladder, not up.</p>
+<p>The full-stack answer, the shape the exam loves most. A production chat app on a flagship model:</p>
 <pre><code>Starting point: 1M calls/mo on a flagship model, 3,000 input +
 400 output tokens/call, illustrative $3.00/$15.00 per 1M.
   input:  3.0B tokens * $3.00/1M  = $9,000
@@ -1841,35 +1688,22 @@ Apply the ladder:
   New total ~ $1,800/mo.  88% reduction, same UX,
   verified by re-running evaluations after each step.
 </code></pre>
-<p>Each step was measured before the next was applied. That ordering, measure then optimize then verify, is the operational discipline the exam rewards.</p>
-<p><img alt="Flat diagram of the production optimization ladder: steps from on-demand at the bottom through prompt caching, batch inference, provisioned throughput, to model cascading at the top." src="DATA_URI" /></p>
-<p>Diagram generated for this study guide (flat minimal style). Key material is in the text, not the image.</p>
-<p>How to read this diagram</p>
-<ol>
-<li><strong>Bottom step (on-demand):</strong> the starting point. Spiky, experimental, unpredictable traffic lives here. Every optimization climbs from this base.</li>
-<li><strong>Second step (prompt caching):</strong> the first discount: repeated static prefixes get cheaper. A prerequisite is a supported model and a byte-identical prefix.</li>
-<li><strong>Third step (batch):</strong> offline work moves off the real-time path at roughly half price. The 50% tag marks the trade: latency for money.</li>
-<li><strong>Fourth step (provisioned throughput):</strong> steady baselines get guaranteed capacity. The hourly commit is the price of certainty.</li>
-<li><strong>Top step (smaller model / cascade):</strong> the highest-impact move: pay flagship rates only where flagship quality is needed.</li>
-<li><strong>The shield (checklist):</strong> "most correct pattern" is not one step, it is the right combination for the scenario's constraints. The exam always asks for the combination.</li>
-</ol>
-<p>What breaks if a component fails</p>
-<p>If you climb out of order (PT before pruning), you reserve capacity for waste. If you skip measurement, you cannot prove any step worked, and regressions go unnoticed. If you treat the ladder as a single answer ("just use batch"), you break the latency constraints the scenario gave you.</p>
-<h2 id="common-misunderstanding">Common misunderstanding</h2>
+<p>Every lever stacked, each on the scenario it fits, none redundant. Notice streaming (latency) and retries (reliability) ride along because the ladder is not only about cost.</p>
+<p><img alt="Flat diagram of the production optimization ladder: steps from on-demand at the bottom through prompt caching, batch inference, provisioned throughput, to model cascading at the top." src="assets/img/mermaid/05-cost-ladder.svg" /></p>
+<p>Reading the diagram: the ladder climbs from the cheapest free lever (measure first, then shrink the prompt) up through skip-the-call (semantic cache), discount-the-prefix (prompt caching), right-size (router), defer (batch), guarantee (PT), route (profiles), stream, retry, and govern spend at the top. The order is the point: each rung is more expensive or more operational than the one below. What breaks: pulling an expensive rung first (buying provisioned throughput before compressing prompts) wastes money the free levers would have saved. Skipping "measure first" means you optimize the wrong bottleneck.</p>
+<p><img alt="AWS architecture diagram for SaaS cost control of foundation models on Amazon Bedrock" src="assets/img/mermaid/38-saas-cost-control.svg" /></p>
+<p>Reading the diagram: the SaaS cost-control diagram maps the same ladder onto a production SaaS architecture: lean prompts and semantic caching at the request edge, routers sending traffic to the right model tier, batch jobs draining offline work, PT covering the steady baseline with on-demand overflow, and a CloudWatch dashboard with budgets and anomaly detection watching the whole stack. The pattern is identical; only the deployment shape changes.</p>
+<h3>The scenario shapes</h3>
+<ul>
+<li>Optimization under constraint ("token costs growing 30%/month, no UX degradation"): stack the free levers (prompt compression, caching, caps), re-verify quality with evaluation.</li>
+<li>Performance plus volatility ("sub-3-second responses, 10x traffic spikes"): streaming for perceived latency, smaller models, provisioned throughput for baseline plus on-demand overflow, retries with backoff for spikes.</li>
+<li>Debugging a broken setup ("bought provisioned throughput, still throttled"): check the invocation target. It must be the provisioned model ARN, not the base model ID.</li>
+<li>Consistency ("99.5% of identical queries must return identical results"): temperature 0, deterministic caching, prompt versioning. Temperature and top-p control randomness, a different topic, but cost and consistency meet here: caching and versioning make behavior predictable.</li>
+<li>Quality plus spend ("hallucinations rising, spend rising"): evaluation jobs catch quality regressions, Cost Anomaly Detection catches spend regressions.</li>
+</ul>
+<p>The exam's portfolio question gives you a whole system (chat plus agents plus batch jobs) and asks for the cost and latency design. The answer is a ladder walk: each component gets its cheapest fitting lever, and the portfolio is the stack.</p>
 <div class="exam-ask"><p><strong>Trap</strong></p>
 <p>"There is one best pricing model." There is not. The exam's "most correct answer" is almost always a hybrid matched to the traffic shape: PT for the floor, on-demand for the spikes, batch for the offline tail, caching for the repeated head. Any option that applies a single lever to a multi-constraint scenario is the distractor. Read every constraint in the stem, map each to one ladder step, and pick the answer that covers all of them.</p></div>
-<h2 id="how-aws-asks-this">How AWS asks this</h2>
-<p>Scenario: "a company runs a customer chatbot (interactive), a nightly report generator (offline), and a steady API with a latency SLA; minimize total cost." Correct answer combines: streaming plus right-sized models for the chatbot, batch inference for the nightly job, provisioned throughput for the steady API, prompt caching where prefixes repeat, CloudWatch anomaly detection across all of it. Distractors each cover only one workload or apply one lever everywhere. The tell is multiple workloads in one scenario: the answer must be a portfolio, not a single service.</p>
-<p><img alt="AWS architecture diagram for SaaS cost control of foundation models on Amazon Bedrock" src="DATA_URI" /></p>
-<p>Source: AWS Blog (aws.amazon.com/blogs), "Build a SaaS service with cost control and usage tracking for foundation models on Amazon Bedrock". Internet-sourced per the writer brief.
-Shows the production pattern of metering per-tenant model usage for cost control.</p>
-<p>How to read this diagram</p>
-<ol>
-<li><strong>The metering path:</strong> every tenant's model invocation flows through a control layer that records usage. This is the production version of the Topic 01 cost equation, enforced per customer.</li>
-<li><strong>The cost-control loop:</strong> usage data feeds budgets and throttles per tenant, so one tenant's spike cannot blow up the shared bill. This is Topic 07 (rate limits) applied as a business control.</li>
-<li><strong>Why it matters for the exam:</strong> "per-tenant cost control" scenarios want metering plus throttling plus budgets, not a single pricing lever. The diagram shows the managed-service shape of that answer.</li>
-</ol>
-<p>============ QUESTIONS ============</p>
 <h2 id="questions-topic-01-on-demand-pricing-and-token-economics">Questions: Topic 01, On-demand pricing and token economics</h2>
 <p>MCEasy A startup is prototyping a chat feature. Daily usage is unpredictable, ranging from 50 to 5,000 requests. The CFO wants the lowest possible cost during the experiment. Which pricing model should the team use?</p>
 <p>A. Provisioned Throughput with a 6-month commit  </p>
@@ -2069,6 +1903,7 @@ The issue is economics, not capability. D is wrong: the Friday spike is interact
 <p><strong>Correct: A, C.</strong> A: model units are capacity for a specific model; a slower model version reduces effective throughput per unit. C: losing the cached prefix forces full prefix recomputation, raising time to first token.</p>
 <p>B is wrong: pointing at the base model ID would show throttling on the on-demand pool, but the scenario says no throttling. D is wrong: term length affects price, not latency. E is wrong: batch pricing is unrelated to PT latency.</p>
 <h2 id="questions-topic-05-inference-profiles-and-routing">Questions: Topic 05, Inference profiles and routing</h2>
+<figure><img src="assets/img/mermaid/84-latency-budget.svg" alt="Latency budget: pick a small fast model, stream the response, use prompt caching, and choose a region close to the user" loading="lazy"><figcaption>Latency budget: pick a small fast model, stream the response, use prompt caching, and choose a region close to the user</figcaption><figcaption class="credit"><em>Latency budget: pick a small fast model, stream the response, use prompt caching, and choose a region close to the user</em></figcaption></figure>
 <p>MCEasy A model is available in only two regions. The application needs automatic failover if one region throttles or has an outage, with minimal code changes. What should the application call?</p>
 <p>A. The bare model ID in a single region  </p>
 <p>B. The inference profile ID (e.g. with a us. prefix)  </p>
@@ -2165,6 +2000,7 @@ And PT reduces queueing variance, not compute time.</p>
 <p><strong>Correct: A, B.</strong> A corrects the streaming misconception; B corrects the PT misconception (consistency of outputs is a temperature and prompt matter, not a capacity matter).</p>
 <p>C is wrong: streaming does not reduce total latency at all. D is wrong: PT has no effect on sampling randomness. E is wrong: both claims conflate the mechanism with a different benefit.</p>
 <h2 id="questions-topic-07-rate-limits-quotas-retries">Questions: Topic 07, Rate limits, quotas, retries</h2>
+<figure><img src="assets/img/mermaid/80-quota-monitor.svg" alt="Quota monitoring: watch Bedrock quotas per model and region in CloudWatch, request increases before you hit limits, and retry with backoff and jitter" loading="lazy"><figcaption>Quota monitoring: watch Bedrock quotas per model and region in CloudWatch, request increases before you hit limits, and retry with backoff and jitter</figcaption><figcaption class="credit"><em>Quota monitoring: watch Bedrock quotas per model and region in CloudWatch, request increases before you hit limits, and retry with backoff and jitter</em></figcaption></figure>
 <p>MCEasy During brief traffic spikes, an application receives ThrottlingException errors. Spikes last under a minute. What is the minimal correct fix?</p>
 <p>A. Purchase provisioned throughput  </p>
 <p>B. Rely on SDK retries with exponential backoff and jitter  </p>
@@ -2258,6 +2094,7 @@ PT exists to avoid it. E is wrong: unavailability is an access or regional error
 <p><strong>Correct: A, B.</strong> A: no easy traffic means no savings, only added complexity. B: a router that cannot classify adds cost and misroutes without benefit.</p>
 <p>C is wrong: this is the ideal cascade scenario. D is wrong: cheap and fast small models favor cascading. E is wrong: traffic shape affects the PT decision, not the cascade decision.</p>
 <h2 id="questions-topic-09-cloudwatch-metrics">Questions: Topic 09, CloudWatch metrics</h2>
+<figure><img src="assets/img/mermaid/81-cloudwatch-alarms.svg" alt="CloudWatch alarms for GenAI: metrics on latency, tokens, throttles, and errors feed alarms that page on-call or trigger auto-remediation" loading="lazy"><figcaption>CloudWatch alarms for GenAI: metrics on latency, tokens, throttles, and errors feed alarms that page on-call or trigger auto-remediation</figcaption><figcaption class="credit"><em>CloudWatch alarms for GenAI: metrics on latency, tokens, throttles, and errors feed alarms that page on-call or trigger auto-remediation</em></figcaption></figure>
 <p>MCEasy A team wants near-real-time visibility into token spend and throttling for Bedrock, with minimal custom work. Which service should they use?</p>
 <p>A. CloudTrail  </p>
 <p>B. CloudWatch metrics and alarms  </p>
@@ -2304,6 +2141,7 @@ PT exists to avoid it. E is wrong: unavailability is an access or regional error
 <p><strong>Correct: A, B.</strong> Both are wrong-plane tools: CloudTrail is audit not metrics, Model Monitor is tabular ML not GenAI text. The exam offers both as distractors.</p>
 <p>C is wrong: slicing by model ID is correct practice. D is wrong: alarming on throttles is correct. E is wrong: anomaly detection on token bursts is exactly the recommended approach.</p>
 <h2 id="questions-topic-10-invocation-logging-and-tracing">Questions: Topic 10, Invocation logging and tracing</h2>
+<figure><img src="assets/img/mermaid/83-invocation-logging.svg" alt="Invocation logging: log full prompts and responses for debugging and audit, or metadata only for privacy; guard logged PII" loading="lazy"><figcaption>Invocation logging: log full prompts and responses for debugging and audit, or metadata only for privacy; guard logged PII</figcaption><figcaption class="credit"><em>Invocation logging: log full prompts and responses for debugging and audit, or metadata only for privacy; guard logged PII</em></figcaption></figure>
 <p>MCEasy A team must audit the exact prompts sent to a model and the responses received, for debugging a cost spike. Which should they enable?</p>
 <p>A. CloudTrail data events  </p>
 <p>B. Bedrock model invocation logging to S3 or CloudWatch Logs  </p>
@@ -2350,6 +2188,7 @@ PT exists to avoid it. E is wrong: unavailability is an access or regional error
 <p><strong>Correct: A, B.</strong> The exam's core distinction: Trail is who-did-what, invocation logs are what-was-said.</p>
 <p>C is wrong: metrics carry counts and timings, not contents. D is wrong: authorization is IAM/CloudTrail territory, not tracing. E is wrong: they answer different questions and are not interchangeable.</p>
 <h2 id="questions-topic-11-token-efficiency">Questions: Topic 11, Token efficiency</h2>
+<figure><img src="assets/img/mermaid/82-token-budget.svg" alt="Token budget per request: the system prompt is fixed cost, retrieved context is the biggest lever, summarize old history, cap max output tokens" loading="lazy"><figcaption>Token budget per request: the system prompt is fixed cost, retrieved context is the biggest lever, summarize old history, cap max output tokens</figcaption><figcaption class="credit"><em>Token budget per request: the system prompt is fixed cost, retrieved context is the biggest lever, summarize old history, cap max output tokens</em></figcaption></figure>
 <p>MCEasy A chatbot resends the full 30-turn conversation history on every call. History averages 3,000 tokens. What is the simplest change that cuts input-token cost?</p>
 <p>A. Window the history to the last 6 turns or summarize older turns  </p>
 <p>B. Increase the temperature  </p>
@@ -2494,6 +2333,9 @@ window.DS_TRACK = "aipc01";
 window.DS_TRACK_TITLE = "AIP-C01 Study Guide";
 window.DS_MANIFEST = [
   { file: "index.html", label: "Start · Exam Overview & Study Map" },
+  { file: "prereq-aif-c01.html", label: "Prereq · AIF-C01 AI Practitioner Crash Course" },
+  { file: "prereq-aws-cloud-foundations.html", label: "Prereq · AWS Cloud Foundations" },
+  { file: "prereq-ml-specialty.html", label: "Prereq · ML Specialty Essentials" },
   { file: "volume-d1-foundation-models.html", label: "D1 · Foundation Models, Data & Compliance (31%)" },
   { file: "volume-d2-implementation-integration.html", label: "D2 · Implementation & Integration (26%)" },
   { file: "volume-d3-safety-security-governance.html", label: "D3 · Safety, Security & Governance (20%)" },
@@ -2504,7 +2346,7 @@ window.DS_MANIFEST = [
   { file: "volume-question-patterns.html", label: "Question Patterns · How AWS Asks" },
   { file: "volume-system-design.html", label: "System Design Guide" },
   { file: "volume-crash-course.html", label: "Crash Course · One-Volume Sprint" },
-  { file: "volume-appendix-gaps.html", label: "Appendix · Coverage Gaps" }
+  { file: "volume-appendix-gaps.html", label: "Appendix · Coverage Gaps" },
 ];
 </script>
 <script>
@@ -3069,6 +2911,151 @@ window.DS_MANIFEST = [
         tel.scrollIntoView({ behavior: "smooth", block: "start" });
         if (tel.focus) tel.focus({ preventScroll: true });
       }
+    }
+  });
+})();
+
+</script>
+<script>
+/* ==== Experience layer behavior — additive ====
+ * Calm, GPU-friendly page motion for study volumes. No-JS safe: every hidden
+ * state in experience.css is gated on `html.xp-js`, which only this script
+ * adds — without it the page is fully readable. Respects
+ * prefers-reduced-motion (exits early; CSS keeps everything static).
+ *
+ * Three jobs:
+ *  1. Hero parallax — detects the volume hero (.banner/.hero, else wraps the
+ *     h1 + lede block in .xp-hero) and drifts it gently as the reader
+ *     scrolls on. Transform/opacity only, rAF-throttled, passive listener.
+ *  2. Scroll reveals — one IntersectionObserver fades+rises figures, key
+ *     callouts and knowledge checks exactly once. Elements already in view
+ *     on load appear immediately (no load flash).
+ *  3. Nothing else: progress bar, scroll-spy, sidebar, quiz toggles are
+ *     owned by ds.js and are left untouched.
+ *
+ * (In the assembly snippet the closing element tags are written literally;
+ * inside this file they are escaped as <\/style> / <\/script> so the file
+ * pastes verbatim without early-terminating its own element.)
+ */
+(function () {
+  'use strict';
+
+  var root = document.documentElement;
+
+  var reduceMotion = false;
+  try {
+    reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  } catch (e) { /* matchMedia unavailable: assume motion is fine */ }
+  if (reduceMotion) { return; } /* leave no footprint: no xp-js, CSS stays static */
+
+  /* From here on the reader is fine with calm motion: mark the document so
+     the CSS reveal/parallax states may apply. Without this class (no-JS or
+     reduced-motion) every hidden state stays off and the page is fully
+     readable. */
+  root.classList.add('xp-js');
+
+  /* ---------------- 1. Hero detection + gentle parallax ---------------- */
+  var hero = document.querySelector('.banner, .hero');
+  if (!hero) {
+    /* No banner hero: wrap the volume title (h1) plus its lede paragraphs
+       in a layout-neutral div. Never touches headings ds.js needs. */
+    var main = document.querySelector('main');
+    var h1 = main ? main.querySelector('h1') : null;
+    if (h1 && h1.parentNode) {
+      var wrap = document.createElement('div');
+      wrap.className = 'xp-hero';
+      h1.parentNode.insertBefore(wrap, h1);
+      var node = h1, moved = 0, paras = 0;
+      while (node && moved < 8) {
+        var next = node.nextSibling;
+        if (node.nodeType === 3) { node = next; continue; } /* skip whitespace text nodes */
+        var isPara = node.nodeType === 1 && node.tagName === 'P';
+        if (node !== h1 && !isPara) { break; }
+        wrap.appendChild(node);
+        moved += 1;
+        if (isPara) {
+          paras += 1;
+          if (paras >= 3) { break; }
+        }
+        node = next;
+      }
+      hero = wrap;
+    }
+  }
+
+  var heroH = 0, ticking = false, pxOn = false;
+  function measure() { heroH = hero ? hero.offsetHeight : 0; }
+  function render() {
+    ticking = false;
+    if (!hero || !heroH) { return; }
+    var y = window.pageYOffset || root.scrollTop || 0;
+    if (y <= 0) {
+      if (pxOn) { hero.style.transform = ''; hero.style.opacity = ''; pxOn = false; }
+      return;
+    }
+    var range = heroH * 1.4;
+    if (y < range) {
+      /* Drift up slightly slower than the scroll and fade a whisper —
+         the title recedes calmly instead of snapping away. */
+      var k = Math.min(y / range, 1);
+      hero.style.transform = 'translate3d(0,' + (-y * 0.06).toFixed(1) + 'px,0)';
+      hero.style.opacity = (1 - k * 0.22).toFixed(3);
+      pxOn = true;
+    } else if (pxOn) {
+      hero.style.transform = '';
+      hero.style.opacity = '';
+      pxOn = false;
+    }
+  }
+  function requestRender() {
+    if (!ticking) { ticking = true; window.requestAnimationFrame(render); }
+  }
+  if (hero) {
+    measure();
+    render();
+    window.addEventListener('scroll', requestRender, { passive: true });
+    window.addEventListener('resize', function () { measure(); requestRender(); });
+  }
+
+  /* ---------------- 2. Scroll-triggered reveals ---------------- */
+  var SELECTOR = [
+    'figure',
+    '.takeaway', '.exam-ask', '.trapbox', '.trap', '.board',
+    '.diagram-walkthrough', '.walkthrough', '.warn', '.callout',
+    '.ob-board', '.nums', '.watch-card', '.lab', '.pq', '.go-deeper-note'
+  ].join(', ');
+
+  var targets = [];
+  Array.prototype.forEach.call(document.querySelectorAll(SELECTOR), function (el) {
+    if (hero && hero.contains(el)) { return; } /* hero has its own motion */
+    targets.push(el);
+  });
+
+  function showAll(list) {
+    list.forEach(function (el) { el.classList.add('xp-reveal', 'xp-in'); });
+  }
+
+  if (!targets.length) { return; }
+
+  if (!('IntersectionObserver' in window)) { showAll(targets); return; }
+
+  var io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (en) {
+      if (en.isIntersecting) {
+        en.target.classList.add('xp-in');
+        io.unobserve(en.target);
+      }
+    });
+  }, { rootMargin: '0px 0px -6% 0px', threshold: 0.06 });
+
+  var vh = window.innerHeight || 800;
+  targets.forEach(function (el) {
+    el.classList.add('xp-reveal');
+    var r = el.getBoundingClientRect();
+    if (r.top < vh && r.bottom > 0) {
+      el.classList.add('xp-in'); /* in view on load: appear, no animation */
+    } else {
+      io.observe(el);
     }
   });
 })();
