@@ -1159,13 +1159,134 @@ footer p{text-align:left}
   #ds-content .ds-site-footer,
   .ds-side-volumes { display: none !important; }
 }
+</style>
+<style>
+/* Hallmark · pre-emit critique: P5 H4 E5 S4 R5 V5
+ * ==========================================================================
+ * Experience layer for study volumes — ADDITIVE ONLY.
+ * Never edits content markup or DS chrome; references DS tokens only
+ * (--accent, --border). No new colors, no gradients, no decorative filler.
+ *
+ * Motion stance: calm delight. Opacity/translate only (GPU-friendly),
+ * one IntersectionObserver, one rAF-throttled scroll listener, zero layout
+ * shift, prefers-reduced-motion respected, fully usable with JS disabled
+ * (every hidden state is gated on html.xp-js, which only this layer's
+ * companion script adds).
+ *
+ * Wiring (final assembly, per volume — same model as ds.css/ds.js):
+ *   1. In <head>, AFTER the DS style block, add:
+ *        <style>
+ *        /* ==== Experience layer — additive, do not edit per-file ==== */
+ *        …this file verbatim…
+ *        [close the style element]
+ *   2. Immediately before the document's LAST closing body tag (the real
+ *      one at the end of the file — some volumes mention a literal closing
+ *      body tag inside their docs prose; ignore those), AFTER the ds.js
+ *      script block, add:
+ *        <script>
+ *        /* ==== Experience layer behavior — additive ==== */
+ *        …experience.js verbatim…
+ *        [close the script element]
+ * (Closing tags are written out in the assembly snippet, not here, so this
+ * file can be pasted verbatim without early-terminating its own element.)
+ * ========================================================================== */
+
+/* ---------- 1. Smooth anchor scrolling (motion-safe readers only) ---------- */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+/* ---------- 2. Scroll-triggered reveals ----------
+   Hidden state exists ONLY under html.xp-js. No-JS readers, print, and
+   reduced-motion users always see full content. Uses the independent
+   `translate` property (not `transform`) so hover feedback below composes
+   without specificity fights. Opacity + translate only: zero layout shift. */
+html.xp-js .xp-reveal {
+  opacity: 0;
+  translate: 0 14px;
+}
+html.xp-js .xp-reveal.xp-in {
+  opacity: 1;
+  translate: 0 0;
+  transition:
+    opacity 0.55s ease,
+    translate 0.55s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+/* ---------- 3. Hero ---------- */
+/* Layout-neutral wrapper the script may add around a volume's title block.
+   Parallax itself is applied inline by the script (transform only). */
+.xp-hero {
+  position: relative;
+}
+
+/* ---------- 4. Calm hover feedback: cards + knowledge checks only ----------
+   translateY(-1px) + accent border. transform composes with the reveal's
+   independent `translate` property — no conflicts. */
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .pq,
+  .watch-card,
+  .ob-board,
+  .lab {
+    transition: transform 0.18s ease, border-color 0.18s ease;
+  }
+  .pq:hover,
+  .watch-card:hover,
+  .ob-board:hover,
+  .lab:hover {
+    transform: translateY(-1px);
+    border-color: var(--accent);
+  }
+  .pq:focus-within,
+  .watch-card:focus-within,
+  .ob-board:focus-within,
+  .lab:focus-within {
+    border-color: var(--accent);
+  }
+}
+
+/* ---------- 5. Reduced motion: everything static and visible ---------- */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  html.xp-js .xp-reveal {
+    opacity: 1;
+    translate: 0 0;
+    transition: none;
+  }
+  .xp-hero {
+    transform: none !important;
+    opacity: 1 !important;
+  }
+  .pq,
+  .watch-card,
+  .ob-board,
+  .lab {
+    transition: none;
+  }
+}
+
+/* ---------- 6. Print: never hide content ---------- */
+@media print {
+  html.xp-js .xp-reveal {
+    opacity: 1 !important;
+    translate: 0 0 !important;
+    transition: none;
+  }
+  .xp-hero {
+    transform: none !important;
+    opacity: 1 !important;
+  }
+}
 
 </style>
 </head>
 <body>
 <div id="ds-sidebar-root"></div>
-<main id="ds-content"><div class="ds-content-inner">
-<h1 id="how-to-use-this-volume">How to use this volume</h1>
+<main id="ds-content"><div class="ds-content-inner"><h1 id="how-to-use-this-volume">How to use this volume</h1>
 <p>Eight complete system designs, each taught from zero, with the diagrams, the numbers, and the exam traps.</p>
 <p>FACT-CHECK 2026-09-28: all factual claims in this volume were checked against live AWS documentation on 2026-09-28. Dollar figures are illustrative examples, not live quotes.
 Always confirm current rates on the Bedrock pricing page before relying on them.</p>
@@ -1173,7 +1294,7 @@ Always confirm current rates on the Bedrock pricing page before relying on them.
 <h2 id="what-you-get">What you get</h2>
 <ul>
 <li><strong>8 end-to-end designs</strong> covering every architecture the exam tests: RAG on Knowledge Bases, Bedrock Agents, sync vs async invocation, chatbot reference architecture, cost/latency/quality tradeoffs, eval loops, security hardening, and the three decision ladders.</li>
-<li>Every design follows the same shape: what it is, why it exists, how it works under the hood, concrete numbers, the common misunderstanding, a diagram with a walkthrough, and how AWS asks it on the exam.</li>
+<li>Each design runs as one flowing explanation: concept first, then the reason it exists, then the mechanics, with concrete numbers, the common misunderstanding, a diagram walkthrough, and the exam traps woven in.</li>
 <li>Designs connect to each other. RAG feeds the chatbot. The chatbot feeds the eval loop. The eval loop feeds the cost ladder. Read in order once, then use the rail to jump.</li>
 <li>A <strong>question bank</strong> at the end: 24 scenario questions (8 easy, 8 medium, 8 hard multiple-response) in the "most correct answer" style, each with full explanations of why every distractor is wrong.</li>
 </ul>
@@ -1182,12 +1303,12 @@ Numbers marked <em>illustrative</em> are worked examples to teach the math, not 
 <h2 id="1-rag-on-bedrock-knowledge-bases-end-to-end">1. RAG on Bedrock: Knowledge Bases end to end</h2>
 <p>The exam's center of gravity. If the scenario says "private documents," "must cite sources," or "answers grounded in company data," you are building this.</p>
 <h2 id="ch1-1">1.1 What a Knowledge Base is</h2>
-<p><strong>What it is.</strong> Amazon Bedrock Knowledge Bases (KB) is the managed RAG service. RAG means retrieval-augmented generation: instead of retraining a model on your documents, you fetch the relevant passages at query time and hand them to the model along with the question. The model answers from the passages. A Knowledge Base is the AWS-managed bundle that does the ingestion, chunking, embedding, indexing, and retrieval for you.</p>
-<p><strong>Why it exists.</strong> Foundation models are frozen in time and know nothing about your company. Three failures happen without RAG: hallucinated facts (the model invents a confident-sounding wrong answer), stale answers (training data is months old), and no citations (you cannot show which document an answer came from). RAG fixes all three by grounding the answer in retrieved text. Without it, the only alternative is fine-tuning, which is slower, more expensive, cannot cite sources, and goes stale the moment a document changes.</p>
-<p><strong>How it works under the hood.</strong> Two separate pipelines, and the exam tests that you know both.</p>
+<p>Amazon Bedrock Knowledge Bases (KB) is the managed RAG service. RAG means retrieval-augmented generation: instead of retraining a model on your documents, you fetch the relevant passages at query time and hand them to the model along with the question, so it answers from those passages. The KB is the AWS-managed bundle that does the ingestion, chunking, embedding, indexing, and retrieval for you.</p>
+<p>It exists because foundation models are frozen in time and know nothing about your company. Without RAG you get three failures: hallucinated facts (confident-sounding wrong answers), stale answers (training data months old), and no citations (no way to show which document an answer came from). The only alternative is fine-tuning, which is slower, more expensive, cannot cite sources, and goes stale the moment a document changes.</p>
+<p>Two pipelines run inside it, and the exam tests that you know both.</p>
 <ol>
-<li><strong>Ingestion pipeline (offline, runs on a sync schedule).</strong> Documents land in a data source, usually an S3 bucket. The KB parses them (PDF, DOCX, TXT, CSV, HTML, and more), splits them into chunks (see 1.3), converts each chunk into an embedding vector with the configured embeddings model (see 1.4), and writes the vectors plus chunk text and metadata into the vector store (see 1.5). You start this with a sync job, on a schedule or on demand.</li>
-<li><strong>Retrieval pipeline (online, per user question).</strong> The user's question is embedded with the same embeddings model. The vector store returns the nearest chunks (top-k). Optionally a reranker re-scores them. The chunks are injected into the model's prompt as context. The model answers. With the <code>RetrieveAndGenerate</code> API, Bedrock does all of this plus generation in one call and returns source citations. With the <code>Retrieve</code> API, you get raw chunks back and do the generation yourself through Converse (see 1.7).</li>
+<li><strong>Ingestion (offline, on a sync schedule).</strong> Documents land in a data source, usually an S3 bucket. The KB parses them (PDF, DOCX, TXT, CSV, HTML, and more), splits them into chunks (see 1.3), converts each chunk into an embedding vector with the configured embeddings model (see 1.4), and writes the vectors plus chunk text and metadata into the vector store (see 1.5). You start this with a sync job, on a schedule or on demand.</li>
+<li><strong>Retrieval (online, per user question).</strong> The question is embedded with the same embeddings model. The vector store returns the nearest chunks (top-k). Optionally a reranker re-scores them. The chunks are injected into the model's prompt as context and the model answers. With the <code>RetrieveAndGenerate</code> API, Bedrock does all of this plus generation in one call and returns source citations. With the <code>Retrieve</code> API, you get raw chunks back and do the generation yourself through Converse (see 1.7).</li>
 </ol>
 <div class="takeaway"><p>Key exam split:</p>
 <p>RetrieveAndGenerate</p>
@@ -1195,13 +1316,13 @@ Numbers marked <em>illustrative</em> are worked examples to teach the math, not 
 <p>Retrieve</p>
 <p>= chunks only, you own the prompt and the model call. If the scenario needs custom prompt control, guardrails inline, or streaming, you pick Retrieve plus Converse.</p></div>
 
-<figure><img src="DATA_URI" alt="AWS official architecture diagram: data ingestion into S3 with branches to Amazon Bedrock Knowledge Bases with OpenSearch, and to Amazon Neptune via Lambda" loading="lazy"><figcaption>AWS official architecture diagram: data ingestion into S3 with branches to Amazon Bedrock Knowledge Bases with OpenSearch, and to Amazon Neptune via Lambda</figcaption><figcaption class="credit"><em>AWS official architecture diagram: data ingestion into S3 with branches to Amazon Bedrock Knowledge Bases with OpenSearch, and to Amazon Neptune via Lambda</em></figcaption></figure>
+<figure><img src="assets/img/mermaid/49-kb-neptune-arch.svg" alt="AWS official architecture diagram: data ingestion into S3 with branches to Amazon Bedrock Knowledge Bases with OpenSearch, and to Amazon Neptune via Lambda" loading="lazy"><figcaption>AWS official architecture diagram: data ingestion into S3 with branches to Amazon Bedrock Knowledge Bases with OpenSearch, and to Amazon Neptune via Lambda</figcaption><figcaption class="credit"><em>AWS official architecture diagram: data ingestion into S3 with branches to Amazon Bedrock Knowledge Bases with OpenSearch, and to Amazon Neptune via Lambda</em></figcaption></figure>
 <p>How to read this diagram</p>
 <ol>
 <li><strong>Left edge, outside the AWS boundary:</strong> four data source types: structured data (databases, CSV), streaming data (events), unstructured data (PDFs, docs), multimedia (video, audio). This is the "raw material" stage. In the exam, the data-source list maps directly to the ingestion tool: multimedia points at Bedrock Data Automation or Transcribe before the KB.</li>
 <li><strong>Center: Amazon S3.</strong> Everything lands here first. S3 is the staging area and the KB's native data source. Versioning on this bucket gives you rollback of source documents.</li>
-<li><strong>Bottom branch (numbered 2 then 3):</strong> the RAG path. S3 flows into Amazon Bedrock Knowledge Bases, which chunks, embeds, and indexes, then writes vectors into Amazon OpenSearch. This is the exact ingestion pipeline from the "how it works" list above, drawn as a real AWS diagram.</li>
-<li><strong>Top branch (numbers 4, 5, 6, 7):</strong> an agentic path: SQS to Lambda to Bedrock Prompt Flow, results back to S3. This is how you would add transformation or orchestration around the data. Note it is separate from the KB branch: Prompt Flows orchestrate prompts, they do not replace the KB's chunking and indexing.</li>
+<li><strong>Bottom branch (numbered 2 then 3):</strong> the RAG path. S3 flows into Amazon Bedrock Knowledge Bases, which chunks, embeds, and indexes, then writes vectors into Amazon OpenSearch. This is the ingestion pipeline from the list above, drawn as a real AWS diagram.</li>
+<li><strong>Top branch (numbers 4, 5, 6, 7):</strong> an agentic path: SQS to Lambda to Bedrock Prompt Flow, results back to S3. This is how you add transformation or orchestration around the data. Note it is separate from the KB branch: Prompt Flows orchestrate prompts, they do not replace the KB's chunking and indexing.</li>
 <li><strong>Right branch (numbers 8, 9):</strong> S3 to Lambda to Amazon Neptune. Neptune is the graph store: this is the GraphRAG pattern, for questions about relationships ("which supplier feeds which product line"). The exam mentions Neptune for GraphRAG.
    It is never the default vector store.</li>
 </ol>
@@ -1239,14 +1360,15 @@ Numbers marked <em>illustrative</em> are worked examples to teach the math, not 
 </table></div>
 <div class="exam-ask"><p>Scenario: "A company has 50,000 policy PDFs updated quarterly. Support agents need answers with citations. The model must not hallucinate." The correct answer chains: S3 data source, scheduled sync, Knowledge Base, RetrieveAndGenerate for citations. Distractors: fine-tuning (cannot cite, goes stale), Kendra alone (enterprise search, no generation), one shared prompt telling the model the policies (no grounding).</p></div>
 <h2 id="ch1-2">1.2 Data sources and sync</h2>
-<p><strong>What they are.</strong> A data source is where the KB reads documents from. Supported sources: Amazon S3 (the native one), a web crawler (public or sitemap URLs), Confluence, SharePoint, and Salesforce. Each data source has its own chunking settings and its own sync schedule.</p>
-<p><strong>Why separate data sources matter.</strong> Chunking is set per data source at creation time, and changing it later requires recreating the data source. So you put documents that need different chunking in different data sources: manuals in one (hierarchical chunking), FAQs in another (fixed-size). Sync schedules also differ: a product catalog that changes daily gets a daily sync; archived contracts get a one-time sync.</p>
-<p><strong>Concrete numbers.</strong> Sync can run on a schedule (hourly, daily, weekly, custom) or on demand. When the exam says "documents updated quarterly," the correct answer always includes an automated sync schedule, never a one-time manual load. Incremental sync picks up new and changed files; deleted files are handled by the sync's deletion policy.</p>
+<p>A data source is where the KB reads documents from. Supported sources: Amazon S3 (the native one), a web crawler (public or sitemap URLs), Confluence, SharePoint, and Salesforce. Each data source carries its own chunking settings and its own sync schedule.</p>
+<p>Separate data sources matter because chunking is locked per data source at creation time; changing it later means recreating the data source. So documents that need different chunking live in different data sources: manuals in one (hierarchical chunking), FAQs in another (fixed-size). Sync schedules differ too: a product catalog that changes daily gets a daily sync, archived contracts get a one-time sync.</p>
+<p>Sync runs on a schedule (hourly, daily, weekly, custom) or on demand. When the exam says "documents updated quarterly," the correct answer always includes an automated sync schedule, never a one-time manual load. Incremental sync picks up new and changed files; deleted files follow the sync's deletion policy.</p>
 <div class="exam-ask"><p>Common misunderstanding.</p>
 <p>"The KB reads my S3 bucket live at query time." It does not. Retrieval searches the vector index, which only knows what the last sync ingested. Stale answers after a document update mean the sync did not run, not that the model is broken. This is the first thing to check when "the KB does not know about the new policy."</p></div>
 <h2 id="ch1-3">1.3 Chunking strategy comparison</h2>
-<p><strong>What chunking is.</strong> A chunk is a slice of a document small enough to embed and retrieve as one unit. Chunking is the single highest-impact decision in a RAG system: it decides what the retriever can "see." Too large and the chunk drags in irrelevant text that dilutes the match. Too small and the chunk loses the context needed to answer.</p>
-<p><strong>How it works under the hood.</strong> The KB parses each document into raw text, then applies the strategy: fixed-size splits on token count with a configurable overlap percentage (overlap keeps sentences from being cut in half at boundaries). Hierarchical creates a tree: small child chunks for precise matching, each linked to a larger parent chunk that gets injected as context. Semantic splits at meaning boundaries (topic shifts), which costs more compute at ingestion. The strategy is locked per data source at creation.</p>
+<figure><img src="assets/img/mermaid/99-chunking-compare.svg" alt="Chunking strategy comparison: fixed-size is simple but splits ideas, semantic respects boundaries, hierarchical keeps parent and child chunks" loading="lazy"><figcaption>Chunking strategy comparison: fixed-size is simple but splits ideas, semantic respects boundaries, hierarchical keeps parent and child chunks</figcaption><figcaption class="credit"><em>Chunking strategy comparison: fixed-size is simple but splits ideas, semantic respects boundaries, hierarchical keeps parent and child chunks</em></figcaption></figure>
+<p>A chunk is a slice of a document small enough to embed and retrieve as one unit. Chunking is the single highest-impact decision in a RAG system: it decides what the retriever can "see." Too large and the chunk drags in irrelevant text that dilutes the match. Too small and it loses the context needed to answer.</p>
+<p>The KB parses each document into raw text, then applies the strategy: fixed-size splits on token count with a configurable overlap percentage (overlap keeps sentences from being cut in half at boundaries). Hierarchical builds a tree: small child chunks for precise matching, each linked to a larger parent chunk that gets injected as context. Semantic splits at meaning boundaries (topic shifts), which costs more compute at ingestion. The strategy is locked per data source at creation.</p>
 <div class="table-wrap"><table>
 <thead>
 <tr>
@@ -1305,18 +1427,18 @@ Numbers marked <em>illustrative</em> are worked examples to teach the math, not 
 <div class="exam-ask"><p>Exam trap, stated plainly.</p>
 <p>"Tables broken across chunks, answers miss the row context" points to hierarchical chunking or advanced parsing, not to a bigger generation model. "RAG returns confident but wrong answers and the chunks look relevant" is a retrieval-quality problem: debug chunking and embeddings first, the generation model last. Switching the model when retrieval is broken is the classic wrong answer.</p></div>
 <h2 id="ch1-4">1.4 Embeddings model choice</h2>
-<p><strong>What embeddings are.</strong> An embedding is a list of numbers (a vector) that represents the meaning of a text chunk. Similar meanings produce nearby vectors. The embeddings model converts text to vectors at ingestion and converts the user question to a vector at query time. Both must use the same model and the same dimensions, or the math breaks.</p>
-<p><strong>The two exam-relevant choices.</strong></p>
+<p>An embedding is a list of numbers (a vector) representing the meaning of a text chunk. Similar meanings produce nearby vectors. The embeddings model converts text to vectors at ingestion and converts the user question to a vector at query time. Both must use the same model and the same dimensions, or the math breaks.</p>
+<p>The two exam-relevant choices:</p>
 <ul>
 <li><strong>Amazon Titan Text Embeddings v2.</strong> The cheap default. Configurable dimensions: 1024, 512, or 256. Smaller dimensions mean less vector storage and faster search, at a small accuracy cost. Pick 1024 when quality matters most, 256 for massive corpora where storage and latency dominate.</li>
 <li><strong>Cohere Embed.</strong> The multilingual pick, and it has an <code>input_type</code> parameter that distinguishes search queries from documents, which improves match quality. Pick it when the corpus or the users span many languages.</li>
 </ul>
-<p><strong>Concrete numbers (illustrative pricing logic).</strong> Embedding cost scales with tokens embedded. A 10-million-token corpus embedded once at ingestion is a one-time cost.
+<p>Embedding cost scales with tokens embedded. A 10-million-token corpus embedded once at ingestion is a one-time cost.
 The query side embeds only the question, which is tiny. This is why RAG is cheap to operate: the expensive part happens once, not per question. Dimension choice multiplies storage: 1024-dim vectors take roughly 4 times the space of 256-dim vectors.</p>
 <div class="exam-ask"><p>Common misunderstanding.</p>
 <p>"Bigger embeddings are always better." They are better up to a point, then you pay storage and latency for no measurable gain. And "I can swap the embeddings model later" is false without re-ingestion: changing the model means re-embedding every chunk, because vectors from different models live in different spaces and cannot be compared.</p></div>
 <h2 id="ch1-5">1.5 Vector store decision table</h2>
-<p><strong>What the vector store is.</strong> The database that holds the vectors and runs nearest-neighbor search. The KB writes to it during ingestion and queries it during retrieval. You choose it when you create the KB.</p>
+<p>The vector store is the database that holds the vectors and runs nearest-neighbor search. The KB writes to it during ingestion and queries it during retrieval. You choose it when you create the KB.</p>
 <div class="table-wrap"><table>
 <thead>
 <tr>
@@ -1369,7 +1491,7 @@ The query side embeds only the question, which is tiny. This is why RAG is cheap
 <p>DynamoDB as the vector store: wrong, DynamoDB holds metadata and session state, not vectors. ElastiCache as the vector store: wrong, it is ephemeral.
 Use it for caching, not durable vectors. One shared KB with prompt-level "only answer for your hotel" instructions for multi-tenant data: wrong, the exam wants separate KBs with IAM-enforced isolation per tenant.</p></div>
 <h2 id="ch1-6">1.6 Retrieval configuration</h2>
-<p><strong>What it is.</strong> Retrieval configuration decides which chunks reach the model. Three knobs: how many (top-k), which subset (metadata filters), and how good (hybrid search plus reranking).</p>
+<p>Retrieval configuration decides which chunks reach the model. Three knobs: how many (top-k), which subset (metadata filters), and how good (hybrid search plus reranking).</p>
 <ul>
 <li><strong>Top-k.</strong> The number of chunks returned per query. Small k (3 to 5) is cheap and focused. Large k (20+) feeds more context but costs tokens and can drown the model in noise. Tune it: start around 5, raise it only if answers miss information that exists in the corpus.</li>
 <li><strong>Metadata filters.</strong> Each chunk can carry metadata (source file, department, date, tenant id). Filters restrict retrieval to a subset before similarity ranking, for example "only the 2026 policy documents." This is also how multi-tenant isolation works at the data layer, combined with separate KBs or IAM scoping.</li>
@@ -1379,7 +1501,8 @@ Use it for caching, not durable vectors. One shared KB with prompt-level "only a
 </ul>
 <p><strong>The debug order for bad RAG answers (memorize this).</strong> First, check retrieval: are the right chunks coming back? If not, fix chunking, embeddings, or filters. Second, check relevance: chunks look close but are not truly relevant, so add reranking or hybrid search. Third, check generation: the model ignores the provided context, so strengthen grounding in the prompt or add a contextual grounding check. Never start by swapping the generation model.</p>
 <h2 id="ch1-7">1.7 Converse integration and Guardrails placement</h2>
-<p><strong>What it is.</strong> When you use the <code>Retrieve</code> API instead of <code>RetrieveAndGenerate</code>, you get chunks back and you build the final prompt yourself. You then call the model through the Converse API, which is Bedrock's unified request format across providers. This is the manual RAG loop, and it is where Guardrails slot in.</p>
+<figure><img src="assets/img/mermaid/22-converse-tool-use-seq.svg" alt="Converse API tool-use sequence: the model requests a tool, the app runs it, results return to the model, then the final answer streams back" loading="lazy"><figcaption>Converse API tool-use sequence: the model requests a tool, the app runs it, results return to the model, then the final answer streams back</figcaption><figcaption class="credit"><em>Converse API tool-use sequence: the model requests a tool, the app runs it, results return to the model, then the final answer streams back</em></figcaption></figure>
+<p>When you use the <code>Retrieve</code> API instead of <code>RetrieveAndGenerate</code>, you get chunks back and build the final prompt yourself, then call the model through the Converse API (Bedrock's unified request format across providers). This is the manual RAG loop, and it is where Guardrails slot in.</p>
 <pre><code>User question
     |
     v
@@ -1424,8 +1547,8 @@ Answer + source citations returned to the user
 <h2 id="2-bedrock-agents-with-action-groups">2. Bedrock Agents with action groups</h2>
 <p>RAG answers questions. Agents do things: call APIs, query databases, run multi-step tasks, and remember the session. The exam tests the anatomy cold.</p>
 <h2 id="ch2-1">2.1 Agent anatomy and the orchestration loop</h2>
-<p><strong>What an agent is.</strong> A Bedrock Agent is a managed reasoning loop around a foundation model. You give it an instruction ("you are a travel assistant that can book and refund flights"), a foundation model to reason with, and an IAM role that scopes what it may touch. The agent then runs a ReAct loop: it reasons about the user request, decides which tool to call, calls it, reads the result, and repeats until it can answer. Tools come from <strong>action groups</strong>, knowledge comes from attached <strong>knowledge bases</strong>, and safety comes from attached <strong>guardrails</strong>.</p>
-<p><strong>Why it exists.</strong> A bare model call cannot look up a live order status or cancel a booking. Agents close that gap without you writing the orchestration loop yourself: Bedrock runs the think, act, observe cycle, keeps session state, and returns a final answer.</p>
+<p>A Bedrock Agent is a managed reasoning loop around a foundation model. You give it an instruction ("you are a travel assistant that can book and refund flights"), a foundation model to reason with, and an IAM role that scopes what it may touch. The agent then runs a ReAct loop (reason, act, observe): it reasons about the user request, decides which tool to call, calls it, reads the result, and repeats until it can answer. Tools come from <strong>action groups</strong>, knowledge comes from attached <strong>knowledge bases</strong>, and safety comes from attached <strong>guardrails</strong>.</p>
+<p>This closes the gap a bare model call leaves open: a model alone cannot look up a live order status or cancel a booking. Bedrock runs the think-act-observe cycle, keeps session state, and returns a final answer, without you writing the orchestration loop yourself.</p>
 <p><strong>The orchestration loop, step by step.</strong></p>
 <ol>
 <li><strong>Invoke.</strong> Your app calls <code>invoke_agent</code> on the bedrock-agent-runtime endpoint with an <code>agentId</code>, an <code>agentAliasId</code> (the prepared, versioned deployment, never DRAFT in production), a <code>sessionId</code> (ties turns together.
@@ -1440,7 +1563,7 @@ Answer + source citations returned to the user
 <p>"The agent remembers everything forever." Agent session memory is short-term (the idle session TTL is on the order of minutes, documented around 600 seconds in community notes.
 Verify at build time). For memory across days or weeks, you store conversation state in DynamoDB yourself (see chapter 4) or use a long-term memory service.</p></div>
 
-<figure><img src="DATA_URI" alt="AWS official solution diagram: Slack users to API Gateway to Lambda verification to SQS to Bedrock Agents integration Lambda to Amazon Bedrock Agents with an action group backed by a Lambda function" loading="lazy"><figcaption>AWS official solution diagram: Slack users to API Gateway to Lambda verification to SQS to Bedrock Agents integration Lambda to Amazon Bedrock Agents with an action group backed by a Lambda function</figcaption><figcaption class="credit"><em>AWS official solution diagram: Slack users to API Gateway to Lambda verification to SQS to Bedrock Agents integration Lambda to Amazon Bedrock Agents with an action group backed by a Lambda function</em></figcaption></figure>
+<figure><img src="assets/img/mermaid/50-slack-agent-arch.svg" alt="AWS official solution diagram: Slack users to API Gateway to Lambda verification to SQS to Bedrock Agents integration Lambda to Amazon Bedrock Agents with an action group backed by a Lambda function" loading="lazy"><figcaption>AWS official solution diagram: Slack users to API Gateway to Lambda verification to SQS to Bedrock Agents integration Lambda to Amazon Bedrock Agents with an action group backed by a Lambda function</figcaption><figcaption class="credit"><em>AWS official solution diagram: Slack users to API Gateway to Lambda verification to SQS to Bedrock Agents integration Lambda to Amazon Bedrock Agents with an action group backed by a Lambda function</em></figcaption></figure>
 <p>How to read this diagram</p>
 <ol>
 <li><strong>Steps 1 and 2, left edge:</strong> users talk in Slack.
@@ -1483,7 +1606,8 @@ Verify at build time). For memory across days or weeks, you store conversation s
 </tbody>
 </table></div>
 <h2 id="ch2-2">2.2 Action group and Lambda contract design</h2>
-<p><strong>What an action group is.</strong> An action group is a named set of tools the agent may call, backed by one executor. Two ways to define the tools:</p>
+<figure><img src="assets/img/mermaid/70-kb-guardrails-agent.svg" alt="Agent with Knowledge Base and Guardrails: the orchestrator retrieves grounded context and calls action-group Lambda tools, with guardrail filters on input and output" loading="lazy"><figcaption>Agent with Knowledge Base and Guardrails: the orchestrator retrieves grounded context and calls action-group Lambda tools, with guardrail filters on input and output</figcaption><figcaption class="credit"><em>Agent with Knowledge Base and Guardrails: the orchestrator retrieves grounded context and calls action-group Lambda tools, with guardrail filters on input and output</em></figcaption></figure>
+<p>An action group is a named set of tools the agent may call, backed by one executor. Two ways to define the tools:</p>
 <ul>
 <li><strong>OpenAPI schema.</strong> You describe a REST API (paths, methods, parameters, request and response shapes). Use it when the tool already exists as an HTTP service.</li>
 <li><strong>Function schema.</strong> You define simple named functions with parameters directly. Use it for lightweight tools where writing an OpenAPI file is overkill.</li>
@@ -1543,7 +1667,7 @@ Agent answers: &quot;Refund R-991 of $189.00 is processing. Your return label
 <li><strong>Session continuity:</strong> turn 2 works because the sessionId carried the order context forward. A new sessionId would start over.</li>
 </ol>
 <h2 id="ch2-4">2.4 Agent plus Knowledge Base plus Guardrails: the combined architecture</h2>
-<p><strong>What it is.</strong> The exam's "holy trinity": the agent reasons and acts, the KB grounds it in documents, and Guardrails keep it safe. All three attach to the same agent.</p>
+<p>The exam's "holy trinity": the agent reasons and acts, the KB grounds it in documents, and Guardrails keep it safe. All three attach to the same agent.</p>
 <pre><code>                        +-------------------------+
                         |   Amazon Bedrock Agent  |
                         |  instruction + FM +     |
@@ -1573,8 +1697,8 @@ Agent answers: &quot;Refund R-991 of $189.00 is processing. Your return label
 <li><strong>Bottom row:</strong> operations. Tracing shows the reasoning path for debugging. Prepare-agent plus alias is the deployment discipline. Production never points at DRAFT.</li>
 </ol>
 <h2 id="ch2-5">2.5 Approval flows for sensitive actions</h2>
-<p><strong>What they are.</strong> A human-in-the-loop gate before the agent does anything irreversible: refunds over a threshold, production config changes, external emails. The pattern is AWS Step Functions with a task token: the workflow pauses, notifies a human (email, Slack, ticketing), and resumes only on approval. The agent's tool call triggers the workflow instead of doing the action directly.</p>
-<p><strong>Why Step Functions and not Lambda.</strong> Lambda caps at 15 minutes. A human approval can take hours. Step Functions can wait days on a task token, and it gives you timeouts, retries, and an auditable execution history. This is the same reason the exam rejects Lambda for long-running orchestration everywhere.</p>
+<p>A human-in-the-loop gate stands before the agent does anything irreversible: refunds over a threshold, production config changes, external emails. The pattern is AWS Step Functions with a task token (a callback handle the workflow waits on): the workflow pauses, notifies a human (email, Slack, ticketing), and resumes only on approval. The agent's tool call triggers the workflow instead of doing the action directly.</p>
+<p>Step Functions and not Lambda, because Lambda caps at 15 minutes while a human approval can take hours. Step Functions can wait days on a task token, and it gives you timeouts, retries, and an auditable execution history. This is the same reason the exam rejects Lambda for long-running orchestration everywhere.</p>
 <pre><code>Agent calls action: requestRefund(orderId, amount)
     |
     v
@@ -1589,7 +1713,7 @@ Agent tells user:                           |
 </code></pre>
 <div class="exam-ask"><p>"Specialist agents must collaborate, use tools, keep memory for weeks, and get human approval for actions over $100k." The correct set: a multi-agent framework for orchestration, MCP or action groups for tools, DynamoDB for weeks-long memory, Step Functions for the approval workflow. Distractors: a single prompt (does not scale), Lex (conversational UI, not autonomous orchestration), Lambda alone for the approval wait (15-minute cap).</p></div>
 <h2 id="ch2-6">2.6 Tracing and debugging</h2>
-<p><strong>What tracing gives you.</strong> With <code>enableTrace</code> on <code>invoke_agent</code>, Bedrock returns the reasoning trace: the model's intermediate thoughts, which KB queries it ran, which tools it called with which parameters, and what each returned. This is the agent equivalent of a stack trace.</p>
+<p>With <code>enableTrace</code> on <code>invoke_agent</code>, Bedrock returns the reasoning trace: the model's intermediate thoughts, which KB queries it ran, which tools it called with which parameters, and what each returned. This is the agent equivalent of a stack trace.</p>
 <p><strong>The debug order for agents.</strong></p>
 <ol>
 <li><strong>Agent ignores a new or changed action group:</strong> was prepare-agent re-run? Is production traffic on the alias pointing at the prepared version? This is the number one agent bug on the exam.</li>
@@ -1600,7 +1724,7 @@ Agent tells user:                           |
 </ol>
 <p>For production observability, X-Ray traces the multi-step call chain across Lambda, Bedrock, and downstream services, and CloudWatch Logs Insights lets you query prompt and response content for confusion patterns.</p>
 <h2 id="ch2-7">2.7 Multi-agent and framework options</h2>
-<p><strong>What multi-agent means.</strong> Several specialist agents collaborating under a supervisor. Bedrock Agents has a built-in supervisor/collaborator pattern: the supervisor agent decomposes the task and delegates to collaborator agents, which must themselves be prepared and aliased. Conversation history can relay between them. This is the managed path.</p>
+<p>Multi-agent means several specialist agents collaborating under a supervisor. Bedrock Agents has a built-in supervisor/collaborator pattern: the supervisor agent decomposes the task and delegates to collaborator agents, which must themselves be prepared and aliased. Conversation history can relay between them. This is the managed path.</p>
 <p><strong>The code-first path the exam names.</strong> <strong>Strands Agents</strong> and <strong>AWS Agent Squad</strong> are the open-source frameworks for building multi-agent systems in code. <strong>MCP (Model Context Protocol)</strong> is the standard for agent-to-tool interaction: run MCP servers on Lambda for lightweight tools, on ECS for complex ones. <strong>AgentCore</strong> is the migration target for framework freedom: Runtime hosts agents built in any framework, Gateway exposes tools with credential management, Memory provides short and long-term agent context, plus Identity and Observability.</p>
 <div class="exam-ask"><p>Common misunderstanding.</p>
 <p>Describing inter-agent communication as action groups in the supervisor's instructions is wrong: the exam and the service use the built-in supervisor/collaborator mechanism. Action groups connect an agent to tools, not agents to agents.</p></div>
@@ -1609,7 +1733,7 @@ Agent tells user:                           |
 <h2 id="3-sync-vs-async-invocation-patterns">3. Sync vs async invocation patterns</h2>
 <p>Four ways to call a model, each with a different latency, payload, and cost profile. The exam tests the decision, not the syntax.</p>
 <h2 id="ch3-1">3.1 The API matrix</h2>
-<p><strong>What the options are.</strong></p>
+<figure><img src="assets/img/mermaid/56-invokemodel-vs-converse.svg" alt="InvokeModel versus the Converse API: raw provider JSON against the unified messages format with built-in tool use; new code uses Converse" loading="lazy"><figcaption>InvokeModel versus the Converse API: raw provider JSON against the unified messages format with built-in tool use; new code uses Converse</figcaption><figcaption class="credit"><em>InvokeModel versus the Converse API: raw provider JSON against the unified messages format with built-in tool use; new code uses Converse</em></figcaption></figure>
 <ul>
 <li><strong>Converse and ConverseStream.</strong> The unified API: one request shape works across Claude, Llama, Titan, Nova, and others. Supports tool use, inline guardrails (<code>guardrailConfig</code>), prompt caching (<code>cachePoint</code>), structured output (<code>outputConfig</code>), and inference parameters (maxTokens, temperature, topP). ConverseStream returns tokens as they generate. Use this whenever you want provider portability. It is text-generation only: no embeddings.</li>
 <li><strong>InvokeModel and InvokeModelWithResponseStream.</strong> Provider-specific request bodies. You need this for embeddings (Titan Embeddings, Cohere Embed) and for provider-specific features that Converse does not expose (with <code>additionalModelRequestFields</code> as the escape hatch inside Converse). The cost of getting the body wrong is a <code>ValidationException</code>: for example Claude requires <code>anthropic_version</code> and <code>max_tokens</code> in the InvokeModel body.</li>
@@ -1748,7 +1872,7 @@ The tiebreaker is always the constraint stated most strongly. "Must stream token
 <li>Hardcoded model id in the Lambda: every model switch becomes a deployment. Move it to AppConfig.</li>
 </ul>
 <h2 id="ch4-2">4.2 Session memory options</h2>
-<p><strong>What session memory is.</strong> The conversation history the model needs to stay coherent across turns. Someone must store it, load it per turn, and trim it when it grows past the context window.</p>
+<p>Session memory is the conversation history the model needs to stay coherent across turns. Someone must store it, load it per turn, and trim it when it grows past the context window.</p>
 <div class="table-wrap"><table>
 <thead>
 <tr>
@@ -1782,8 +1906,8 @@ The tiebreaker is always the constraint stated most strongly. "Must stream token
 </table></div>
 <p><strong>Trimming strategy.</strong> Keep the last N turns verbatim and summarize older turns into a running summary stored alongside. This bounds the token cost per turn while preserving long-context coherence. The summary itself is generated by a cheap model call.</p>
 <h2 id="ch4-3">4.3 Streaming to the client</h2>
-<p><strong>Why streaming.</strong> Users perceive latency as time-to-first-token, not time-to-last-token. Streaming cuts perceived latency dramatically with zero quality change.</p>
-<p><strong>How it works.</strong> The Lambda calls <code>ConverseStream</code>; Bedrock returns tokens as server-sent events. The Lambda forwards them to the client. Two client patterns: API Gateway with chunked transfer encoding (simplest, but bounded by the 29-second integration timeout), or WebSockets / direct SSE for long streams that outlive that timeout. For very long generations, the async queue pattern from chapter 3 applies: stream progress updates over the socket while the job runs.</p>
+<p>Users perceive latency as time-to-first-token, not time-to-last-token. Streaming cuts perceived latency dramatically with zero quality change.</p>
+<p>The Lambda calls <code>ConverseStream</code>; Bedrock returns tokens as server-sent events. The Lambda forwards them to the client. Two client patterns: API Gateway with chunked transfer encoding (simplest, but bounded by the 29-second integration timeout), or WebSockets / direct SSE for long streams that outlive that timeout. For very long generations, the async queue pattern from chapter 3 applies: stream progress updates over the socket while the job runs.</p>
 <div class="exam-ask"><p>Common misunderstanding.</p>
 <p>"Streaming makes generation faster." It does not change total generation time at all. It changes when the user sees the first word. The exam tests this distinction when a scenario demands lower perceived latency without a quality change.</p></div>
 <h2 id="ch4-4">4.4 Caching layers</h2>
@@ -1804,7 +1928,7 @@ The Lambda reads it on the next invocation. CloudFormation is the distractor her
 <h2 id="5-cost-latency-and-quality-tradeoffs">5. Cost, latency, and quality tradeoffs</h2>
 <p>Every scenario question is secretly this chapter: three constraints, one budget. Learn the levers and the math, and the "most correct answer" becomes mechanical.</p>
 <h2 id="ch5-1">5.1 The five cost levers</h2>
-<p><strong>What they are.</strong> Five independent ways to move the bill, each attacking a different part of the cost equation (tokens in, tokens out, requests, capacity).</p>
+<p>Five independent ways to move the bill, each attacking a different part of the cost equation (tokens in, tokens out, requests, capacity).</p>
 <div class="table-wrap"><table>
 <thead>
 <tr>
@@ -1856,6 +1980,7 @@ The Lambda reads it on the next invocation. CloudFormation is the distractor her
 <div class="exam-ask"><p>The exam's favorite confusion pairs.</p>
 <p>Prompt caching vs Provisioned Throughput: caching attacks repeated-input cost, PT attacks latency and throttling guarantees. "Same long system prompt on every call" is caching. "Throttling at peak with a steady baseline" is PT. Inference profiles vs prompt routers vs PT: availability routing vs cost-quality routing vs reserved capacity. The scenario verb picks the answer: "unavailable in region" is profiles, "route by complexity" is routers, "guaranteed throughput" is PT.</p></div>
 <h2 id="ch5-2">5.2 Worked monthly cost math (illustrative)</h2>
+<figure><img src="assets/img/mermaid/26-token-cost-calc.svg" alt="Token cost calculation: input tokens plus output tokens times the model price, the core math behind every monthly estimate" loading="lazy"><figcaption>Token cost calculation: input tokens plus output tokens times the model price, the core math behind every monthly estimate</figcaption><figcaption class="credit"><em>Token cost calculation: input tokens plus output tokens times the model price, the core math behind every monthly estimate</em></figcaption></figure>
 <p><strong>Scenario.</strong> A support copilot: 2,000,000 requests per day, each request averages 1,500 input tokens (1,200 of them a static system prompt plus KB context) and 300 output tokens. 30 days. All numbers below are illustrative, using round token prices to teach the math: assume $3 per million input tokens and $15 per million output tokens on the flagship model, and $0.30 / $1.50 on the small model.</p>
 <pre><code>Baseline (all flagship, on-demand, no caching):
   Input:  2M req/day x 1,500 tokens x 30 days = 90B tokens
@@ -1919,7 +2044,7 @@ reduction, with no UX change for interactive users.
 <h2 id="6-eval-loop-design">6. Eval loop design</h2>
 <p>You cannot improve what you do not measure, and the exam knows it: eval questions punish anyone who debugs GenAI like traditional software.</p>
 <h2 id="ch6-1">6.1 The evaluation methods</h2>
-<p><strong>What they are.</strong> Four ways to score model outputs, each with a different cost and trust profile.</p>
+<p>Four ways to score model outputs, each with a different cost and trust profile.</p>
 <div class="table-wrap"><table>
 <thead>
 <tr>
@@ -1997,7 +2122,7 @@ The exam wants automated gates with human spot checks. "Bigger model" as the fai
 </tbody>
 </table></div>
 <h2 id="ch6-3">6.3 LLM-as-a-judge setup on Bedrock</h2>
-<p><strong>What it is.</strong> Bedrock model evaluations run judge models over your outputs and score them. You bring a dataset (prompts plus optional reference answers, the "golden dataset"), pick built-in metrics or define custom ones in plain language, and Bedrock runs the evaluation as a managed job.</p>
+<p>Bedrock model evaluations run judge models over your outputs and score them. You bring a dataset (prompts plus optional reference answers, the "golden dataset"), pick built-in metrics or define custom ones in plain language, and Bedrock runs the evaluation as a managed job.</p>
 <p><strong>How to set it up well.</strong></p>
 <ol>
 <li><strong>Build the golden dataset first.</strong> A few hundred representative prompts with known-good answers, versioned in S3. This dataset is the foundation of every gate below; without it you have no regression signal.</li>
@@ -2009,9 +2134,10 @@ The exam wants automated gates with human spot checks. "Bigger model" as the fai
 <div class="exam-ask"><p>Common misunderstanding.</p>
 <p>"LLM judges are objective." They have biases: toward longer answers, toward their own model family, toward confident tone. Calibration and a written rubric are what make them trustworthy, not the fact that they are automated.</p></div>
 
-<figure><img src="DATA_URI" alt="Flat minimal diagram of a generative AI evaluation pipeline: golden test dataset, automatic judge, human review, metrics dashboard, deploy gate" loading="lazy"><figcaption>Flat minimal diagram of a generative AI evaluation pipeline: golden test dataset, automatic judge, human review, metrics dashboard, deploy gate</figcaption><figcaption class="credit"><em>Flat minimal diagram of a generative AI evaluation pipeline: golden test dataset, automatic judge, human review, metrics dashboard, deploy gate</em></figcaption></figure>
+<figure><img src="assets/img/mermaid/51-genai-eval-pipeline.svg" alt="Flat minimal diagram of a generative AI evaluation pipeline: golden test dataset, automatic judge, human review, metrics dashboard, deploy gate" loading="lazy"><figcaption>Flat minimal diagram of a generative AI evaluation pipeline: golden test dataset, automatic judge, human review, metrics dashboard, deploy gate</figcaption><figcaption class="credit"><em>Flat minimal diagram of a generative AI evaluation pipeline: golden test dataset, automatic judge, human review, metrics dashboard, deploy gate</em></figcaption></figure>
 <h2 id="ch6-4">6.4 Eval gates in CI/CD</h2>
-<p><strong>What a gate is.</strong> A quality checkpoint that blocks deployment when scores regress. The pipeline: every prompt change, model change, or KB re-sync triggers the eval job against the golden dataset.
+<figure><img src="assets/img/mermaid/48-cicd-eval-gate.svg" alt="Eval gates in CI/CD: every model or prompt change must pass automated evaluation before it ships" loading="lazy"><figcaption>Eval gates in CI/CD: every model or prompt change must pass automated evaluation before it ships</figcaption><figcaption class="credit"><em>Eval gates in CI/CD: every model or prompt change must pass automated evaluation before it ships</em></figcaption></figure>
+<p>A quality checkpoint that blocks deployment when scores regress. The pipeline: every prompt change, model change, or KB re-sync triggers the eval job against the golden dataset.
 Scores must clear thresholds before the new version ships.</p>
 <pre><code>Developer changes prompt / model / KB content
         |
@@ -2035,7 +2161,7 @@ golden probes, semantic drift checks, bias drift alerts (chapter 7).
 <ol>
 <li><strong>Gate 1 is cheap and fast:</strong> programmatic checks run in minutes on every change. They catch crashes, format breaks, and toxicity spikes. Nothing subjective passes through here because nothing subjective can be measured here.</li>
 <li><strong>Gate 2 is the quality comparison:</strong> the judge scores the new version against the old on the same dataset. You are looking for regressions, not absolute scores. A new prompt that scores 2 points lower on faithfulness does not ship, even if it is still "good."</li>
-<li><strong>Gate 3 is the real world:</strong> canary traffic exposes what the golden set missed: novel phrasing, edge users, load effects. Automatic rollback on regression is the point.
+<li><strong>Gate 3 is the real world:</strong> canary traffic (a small live slice used to test a release) exposes what the golden set missed: novel phrasing, edge users, load effects. Automatic rollback on regression is the point.
    A canary you have to watch manually is theater.</li>
 <li><strong>Gate 4 is the human backstop:</strong> small sample, high judgment. Brand voice and subtle tone issues live here.</li>
 <li><strong>After deploy:</strong> continuous probes. Hallucination detection via golden datasets run on a schedule, output diffing for consistency, reasoning-path tracing for agents. Quality is a time series, not a one-time check.</li>
@@ -2046,7 +2172,7 @@ golden probes, semantic drift checks, bias drift alerts (chapter 7).
 <div class="exam-ask"><p>"Compare two models for summarization quality including brand voice" is LLM-as-judge for scale plus human eval for brand voice. "Validate a new prompt version before rollout" is regression testing plus canary. The exam always pairs the subjective metric with the human-involved method.</p></div>
 <h2 id="7-security-hardening-for-a-production-genai-app">7. Security hardening for a production GenAI app</h2>
 <p>One in five exam questions lives in this domain. Under-prepared candidates fail here. The shape to memorize is defense in depth: no single layer is the answer.</p>
-<figure><img src="DATA_URI" alt="Flat minimal diagram of defense-in-depth security layers: user, WAF, authentication, prompt filter, model guardrails, output filter, VPC private network, with a request flow arrow" loading="lazy"><figcaption>Flat minimal diagram of defense-in-depth security layers: user, WAF, authentication, prompt filter, model guardrails, output filter, VPC private network, with a request flow arrow</figcaption><figcaption class="credit"><em>Flat minimal diagram of defense-in-depth security layers: user, WAF, authentication, prompt filter, model guardrails, output filter, VPC private network, with a request flow arrow</em></figcaption></figure>
+<figure><img src="assets/img/mermaid/52-defense-in-depth-layers.svg" alt="Flat minimal diagram of defense-in-depth security layers: user, WAF, authentication, prompt filter, model guardrails, output filter, VPC private network, with a request flow arrow" loading="lazy"><figcaption>Flat minimal diagram of defense-in-depth security layers: user, WAF, authentication, prompt filter, model guardrails, output filter, VPC private network, with a request flow arrow</figcaption><figcaption class="credit"><em>Flat minimal diagram of defense-in-depth security layers: user, WAF, authentication, prompt filter, model guardrails, output filter, VPC private network, with a request flow arrow</em></figcaption></figure>
 <p>How to read this diagram</p>
 <ol>
 <li><strong>Read top to bottom as a request's journey.</strong> Every request passes every layer in order. A layer that is missing is a gap an attacker walks through, not an optimization.</li>
@@ -2057,7 +2183,7 @@ golden probes, semantic drift checks, bias drift alerts (chapter 7).
 <li><strong>What the diagram implies but does not draw:</strong> audit logging runs alongside every layer (CloudTrail for API calls, invocation logs for model traffic), and encryption (KMS at rest, TLS in transit) wraps all of it.</li>
 </ol>
 <h2 id="ch7-1">7.1 IAM least privilege</h2>
-<p><strong>What it means here.</strong> Every component gets exactly the permissions it needs and nothing more, scoped to specific resources: the router Lambda may invoke specific model ARNs, not <code>bedrock:*</code>.
+<p>Every component gets exactly the permissions it needs and nothing more, scoped to specific resources: the router Lambda may invoke specific model ARNs, not <code>bedrock:*</code>.
 The agent's role may read specific knowledge bases and invoke specific action-group Lambdas; the action-group Lambda's resource-based policy allows invocation only from the agent.</p>
 <p><strong>Concrete shape.</strong> One IAM role per component (router Lambda, agent, action-group Lambda, eval job), each with resource-level ARNs. For multi-tenant systems, separate KBs per tenant with IAM boundaries, never one shared KB plus prompt instructions. For enterprise-wide model access, a centralized GenAI gateway gives every team one audited path instead of direct Bedrock calls from everywhere.</p>
 <div class="exam-ask"><p>Common misunderstanding.</p>
@@ -2120,7 +2246,7 @@ Size trail storage and retention to your compliance window, and remember that Tr
 PII needs entity detection with block or mask). "Is this answer supported by the retrieved doc" is contextual grounding.
 "does this comply with the written policy" is Automated Reasoning. Match the control to the scenario verb.</p></div>
 <h2 id="ch7-5">7.5 PII redaction flow</h2>
-<p><strong>What it is.</strong> An end-to-end pipeline that finds personal data at rest, catches it in flight, and blocks it at inference.</p>
+<p>An end-to-end pipeline that finds personal data at rest, catches it in flight, and blocks it at inference:</p>
 <pre><code>At rest (S3 document lake):
   Amazon Macie scans buckets, finds PII at scale, labels findings
         |
@@ -2147,7 +2273,7 @@ After (retention):
 Comprehend is the text answer). Count the planes: at rest, in flight, at inference. One service per plane.</p></div>
 <h2 id="8-decision-ladders">8. Decision ladders</h2>
 <p>Three ladders the exam climbs again and again. The rule for all three: start at the cheapest rung that satisfies the constraints, and be able to say why you stopped there.</p>
-<p><strong>What the ladders are.</strong> Each ladder is an ordered list of approaches from cheapest to most expensive for one decision: how to ground the model (grounding ladder), how to pay for inference (pricing ladder), and how to keep the system safe (safety ladder). <strong>Why they exist.</strong> Exam scenarios hand you constraints, not answers; the ladders turn "which approach" into a mechanical climb: start at the top, descend until every constraint is satisfied, stop. <strong>How to use them.</strong> Read the scenario, extract each hard constraint, map each constraint to one rung, and never climb past the cheapest rung that works. Section 8.4 walks all three at once.</p>
+<p>Each ladder is an ordered list of approaches from cheapest to most expensive for one decision: how to ground the model (grounding ladder), how to pay for inference (pricing ladder), and how to keep the system safe (safety ladder). Exam scenarios hand you constraints, not answers; the ladders turn "which approach" into a mechanical climb: start at the top, descend until every constraint is satisfied, stop. Section 8.4 walks all three at once.</p>
 <h2 id="ch8-1">8.1 Grounding ladder: prompt engineering to RAG to agents to fine-tuning</h2>
 <pre><code>Cheapest, fastest
   |
@@ -2237,6 +2363,7 @@ Most expensive, slowest
 <li><strong>Rung 5 is the costliest and the exam spends it carefully.</strong> Human review appears in answers only when the risk justifies it: money movement, irreversible actions, vulnerable users. For routine Q and A, rungs 1 through 4 suffice.</li>
 </ol>
 <h2 id="ch8-4">8.4 One scenario, all three ladders</h2>
+<figure><img src="assets/img/mermaid/98-ladder-comparison.svg" alt="One scenario, three ladders: prompt-only is cheapest with the weakest grounding, RAG is grounded at moderate cost, fine-tuning plus RAG gives the best quality at the highest cost" loading="lazy"><figcaption>One scenario, three ladders: prompt-only is cheapest with the weakest grounding, RAG is grounded at moderate cost, fine-tuning plus RAG gives the best quality at the highest cost</figcaption><figcaption class="credit"><em>One scenario, three ladders: prompt-only is cheapest with the weakest grounding, RAG is grounded at moderate cost, fine-tuning plus RAG gives the best quality at the highest cost</em></figcaption></figure>
 <p><strong>Scenario.</strong> A bank wants a customer-service copilot. It must answer from 40,000 policy documents updated monthly, handle balance inquiries and card replacements (live core-banking APIs), block financial advice, redact account numbers, cost less than the current call-center spend, and get human approval before issuing any fee reversal over $500.</p>
 <p><strong>Walk the ladders.</strong></p>
 <ol>
@@ -2256,6 +2383,7 @@ PT buys latency and throughput guarantees. "One guardrail replaces the safety st
 <h2 id="9-question-bank">9. Question bank</h2>
 <p>24 scenario questions in the exam's "most correct answer" style: 8 easy, 8 medium, 8 hard multiple-response. Every answer explains the correct choice and kills each distractor.</p>
 <h2 id="chapter-1-rag-on-bedrock-knowledge-bases">Chapter 1: RAG on Bedrock Knowledge Bases</h2>
+<figure><img src="assets/img/mermaid/100-rag-kb-arch.svg" alt="RAG on Bedrock Knowledge Bases: documents in S3 are ingested, chunked, and embedded into a vector store; queries retrieve top-k chunks for grounded generation" loading="lazy"><figcaption>RAG on Bedrock Knowledge Bases: documents in S3 are ingested, chunked, and embedded into a vector store; queries retrieve top-k chunks for grounded generation</figcaption><figcaption class="credit"><em>RAG on Bedrock Knowledge Bases: documents in S3 are ingested, chunked, and embedded into a vector store; queries retrieve top-k chunks for grounded generation</em></figcaption></figure>
 <p>A. Fine-tune a foundation model on the manuals each quarter.</p>
 <p>B. Create a Bedrock Knowledge Base with an S3 data source on a quarterly sync schedule, and use RetrieveAndGenerate.</p>
 <p>C. Paste the manuals into the system prompt of every chat call.</p>
@@ -2377,6 +2505,7 @@ It does not privatize network paths. D is wrong: KMS encrypts data at rest; it d
 <p>E. Amazon Rekognition to scan chat text for PII.</p>
 <p><strong>Correct: A, B, and C.</strong> One service per plane: Macie at rest, Comprehend in flight, Guardrails at the model boundary. This is the exam's canonical PII triple. D is wrong: translation preserves meaning and protects nothing. E is wrong: Rekognition is a vision service; Comprehend is the text answer.</p>
 <h2 id="chapter-8-decision-ladders">Chapter 8: Decision ladders</h2>
+<figure><img src="assets/img/mermaid/53-approach-ladder.svg" alt="The approach ladder again: prompt engineering, then RAG, then fine-tuning, then continued pre-training, in order of rising cost and effort" loading="lazy"><figcaption>The approach ladder again: prompt engineering, then RAG, then fine-tuning, then continued pre-training, in order of rising cost and effort</figcaption><figcaption class="credit"><em>The approach ladder again: prompt engineering, then RAG, then fine-tuning, then continued pre-training, in order of rising cost and effort</em></figcaption></figure>
 <p>A. Prompt engineering with a longer system prompt.</p>
 <p>B. RAG with Bedrock Knowledge Bases and a monthly sync schedule.</p>
 <p>C. Fine-tuning a custom model every month.</p>
@@ -2395,12 +2524,16 @@ It does not privatize network paths. D is wrong: KMS encrypts data at rest; it d
 <div class="takeaway"><p>How to review with this bank.</p>
 <p>For each question you missed, name the ladder or matrix it tested and the rung you should have stopped at. Most misses come from climbing one rung too far (fine-tuning instead of RAG, PT instead of caching) or from swapping two similarly named controls (denied topics vs content filters, inference profiles vs prompt routers). Drill the confusion sets, not the definitions.</p></div>
 
-</div></main>
+</div>
+</main>
 <script>
 window.DS_TRACK = "aipc01";
 window.DS_TRACK_TITLE = "AIP-C01 Study Guide";
 window.DS_MANIFEST = [
   { file: "index.html", label: "Start · Exam Overview & Study Map" },
+  { file: "prereq-aif-c01.html", label: "Prereq · AIF-C01 AI Practitioner Crash Course" },
+  { file: "prereq-aws-cloud-foundations.html", label: "Prereq · AWS Cloud Foundations" },
+  { file: "prereq-ml-specialty.html", label: "Prereq · ML Specialty Essentials" },
   { file: "volume-d1-foundation-models.html", label: "D1 · Foundation Models, Data & Compliance (31%)" },
   { file: "volume-d2-implementation-integration.html", label: "D2 · Implementation & Integration (26%)" },
   { file: "volume-d3-safety-security-governance.html", label: "D3 · Safety, Security & Governance (20%)" },
@@ -2411,7 +2544,7 @@ window.DS_MANIFEST = [
   { file: "volume-question-patterns.html", label: "Question Patterns · How AWS Asks" },
   { file: "volume-system-design.html", label: "System Design Guide" },
   { file: "volume-crash-course.html", label: "Crash Course · One-Volume Sprint" },
-  { file: "volume-appendix-gaps.html", label: "Appendix · Coverage Gaps" }
+  { file: "volume-appendix-gaps.html", label: "Appendix · Coverage Gaps" },
 ];
 </script>
 <script>
@@ -2976,6 +3109,151 @@ window.DS_MANIFEST = [
         tel.scrollIntoView({ behavior: "smooth", block: "start" });
         if (tel.focus) tel.focus({ preventScroll: true });
       }
+    }
+  });
+})();
+
+</script>
+<script>
+/* ==== Experience layer behavior — additive ====
+ * Calm, GPU-friendly page motion for study volumes. No-JS safe: every hidden
+ * state in experience.css is gated on `html.xp-js`, which only this script
+ * adds — without it the page is fully readable. Respects
+ * prefers-reduced-motion (exits early; CSS keeps everything static).
+ *
+ * Three jobs:
+ *  1. Hero parallax — detects the volume hero (.banner/.hero, else wraps the
+ *     h1 + lede block in .xp-hero) and drifts it gently as the reader
+ *     scrolls on. Transform/opacity only, rAF-throttled, passive listener.
+ *  2. Scroll reveals — one IntersectionObserver fades+rises figures, key
+ *     callouts and knowledge checks exactly once. Elements already in view
+ *     on load appear immediately (no load flash).
+ *  3. Nothing else: progress bar, scroll-spy, sidebar, quiz toggles are
+ *     owned by ds.js and are left untouched.
+ *
+ * (In the assembly snippet the closing element tags are written literally;
+ * inside this file they are escaped as <\/style> / <\/script> so the file
+ * pastes verbatim without early-terminating its own element.)
+ */
+(function () {
+  'use strict';
+
+  var root = document.documentElement;
+
+  var reduceMotion = false;
+  try {
+    reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  } catch (e) { /* matchMedia unavailable: assume motion is fine */ }
+  if (reduceMotion) { return; } /* leave no footprint: no xp-js, CSS stays static */
+
+  /* From here on the reader is fine with calm motion: mark the document so
+     the CSS reveal/parallax states may apply. Without this class (no-JS or
+     reduced-motion) every hidden state stays off and the page is fully
+     readable. */
+  root.classList.add('xp-js');
+
+  /* ---------------- 1. Hero detection + gentle parallax ---------------- */
+  var hero = document.querySelector('.banner, .hero');
+  if (!hero) {
+    /* No banner hero: wrap the volume title (h1) plus its lede paragraphs
+       in a layout-neutral div. Never touches headings ds.js needs. */
+    var main = document.querySelector('main');
+    var h1 = main ? main.querySelector('h1') : null;
+    if (h1 && h1.parentNode) {
+      var wrap = document.createElement('div');
+      wrap.className = 'xp-hero';
+      h1.parentNode.insertBefore(wrap, h1);
+      var node = h1, moved = 0, paras = 0;
+      while (node && moved < 8) {
+        var next = node.nextSibling;
+        if (node.nodeType === 3) { node = next; continue; } /* skip whitespace text nodes */
+        var isPara = node.nodeType === 1 && node.tagName === 'P';
+        if (node !== h1 && !isPara) { break; }
+        wrap.appendChild(node);
+        moved += 1;
+        if (isPara) {
+          paras += 1;
+          if (paras >= 3) { break; }
+        }
+        node = next;
+      }
+      hero = wrap;
+    }
+  }
+
+  var heroH = 0, ticking = false, pxOn = false;
+  function measure() { heroH = hero ? hero.offsetHeight : 0; }
+  function render() {
+    ticking = false;
+    if (!hero || !heroH) { return; }
+    var y = window.pageYOffset || root.scrollTop || 0;
+    if (y <= 0) {
+      if (pxOn) { hero.style.transform = ''; hero.style.opacity = ''; pxOn = false; }
+      return;
+    }
+    var range = heroH * 1.4;
+    if (y < range) {
+      /* Drift up slightly slower than the scroll and fade a whisper —
+         the title recedes calmly instead of snapping away. */
+      var k = Math.min(y / range, 1);
+      hero.style.transform = 'translate3d(0,' + (-y * 0.06).toFixed(1) + 'px,0)';
+      hero.style.opacity = (1 - k * 0.22).toFixed(3);
+      pxOn = true;
+    } else if (pxOn) {
+      hero.style.transform = '';
+      hero.style.opacity = '';
+      pxOn = false;
+    }
+  }
+  function requestRender() {
+    if (!ticking) { ticking = true; window.requestAnimationFrame(render); }
+  }
+  if (hero) {
+    measure();
+    render();
+    window.addEventListener('scroll', requestRender, { passive: true });
+    window.addEventListener('resize', function () { measure(); requestRender(); });
+  }
+
+  /* ---------------- 2. Scroll-triggered reveals ---------------- */
+  var SELECTOR = [
+    'figure',
+    '.takeaway', '.exam-ask', '.trapbox', '.trap', '.board',
+    '.diagram-walkthrough', '.walkthrough', '.warn', '.callout',
+    '.ob-board', '.nums', '.watch-card', '.lab', '.pq', '.go-deeper-note'
+  ].join(', ');
+
+  var targets = [];
+  Array.prototype.forEach.call(document.querySelectorAll(SELECTOR), function (el) {
+    if (hero && hero.contains(el)) { return; } /* hero has its own motion */
+    targets.push(el);
+  });
+
+  function showAll(list) {
+    list.forEach(function (el) { el.classList.add('xp-reveal', 'xp-in'); });
+  }
+
+  if (!targets.length) { return; }
+
+  if (!('IntersectionObserver' in window)) { showAll(targets); return; }
+
+  var io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (en) {
+      if (en.isIntersecting) {
+        en.target.classList.add('xp-in');
+        io.unobserve(en.target);
+      }
+    });
+  }, { rootMargin: '0px 0px -6% 0px', threshold: 0.06 });
+
+  var vh = window.innerHeight || 800;
+  targets.forEach(function (el) {
+    el.classList.add('xp-reveal');
+    var r = el.getBoundingClientRect();
+    if (r.top < vh && r.bottom > 0) {
+      el.classList.add('xp-in'); /* in view on load: appear, no animation */
+    } else {
+      io.observe(el);
     }
   });
 })();
