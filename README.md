@@ -13,6 +13,9 @@ Complete study materials for the AWS Certified Generative AI Developer - Profess
 | File | What it is |
 |---|---|
 | `index.html` | Start here. Guide home page with study order and a 14-day plan |
+| `prereq-aif-c01.html` | Prerequisite: AWS Certified AI Practitioner (AIF-C01) crash course |
+| `prereq-aws-cloud-foundations.html` | Prerequisite: AWS cloud foundations (IAM, S3, EC2, VPC, Lambda, and more) |
+| `prereq-ml-specialty.html` | Prerequisite: ML Specialty essentials (SageMaker, training/tuning, MLOps) |
 | `volume-d1-foundation-models.html` | D1: Foundation Models and Prompt Engineering (31%) |
 | `volume-d2-implementation-integration.html` | D2: Implementation and Integration (26%) |
 | `volume-d3-safety-security-governance.html` | D3: Safety, Security, and Governance (20%) |
