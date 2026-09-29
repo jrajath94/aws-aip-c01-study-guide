@@ -2,6 +2,14 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<style>
+/* Validation-assembly: bridge + equation rendering (additive, 2026-09-29). */
+.chapter-bridge,.topic-bridge,.u-bridge{border-left:3px solid #8a8f98;border-left:3px solid color-mix(in srgb,currentColor 40%,transparent);padding:.55rem .9rem;margin:1.1rem 0;background:rgba(128,128,128,.08);border-radius:0 6px 6px 0}
+.next-chapter,.u-next,.u-goto{font-weight:650;margin:1.15rem 0}
+.display-eq,.eq{text-align:center;margin:1.15rem 0;font-size:1.12em;line-height:1.7}
+.eq-where{margin:.1rem 0 1rem 1.25rem;font-size:.93em;opacity:.92}
+.eq-worked{border:1px solid #8a8f98;border:1px solid color-mix(in srgb,currentColor 30%,transparent);border-radius:8px;padding:.7rem 1rem;margin:1rem 0;background:rgba(128,128,128,.06)}
+</style>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="dark">
 <title>AIP-C01 Labs Volume: Maarek Labs and Hands-On Patterns</title>
@@ -1295,6 +1303,7 @@ html.xp-js .xp-reveal.xp-in {
 <p>Code shown here is adapted for teaching, written fresh for this volume. It is not copied from the course files. The lab sources are course material; this volume explains the concepts in its own words.</p>
 <p>Fact check: AWS service names, features, model IDs, and API shapes in this volume were verified against live AWS documentation on <strong>2026-09-28</strong>. Anything that could not be verified is marked UNVERIFIED inline. Limits and defaults change. Check the docs at build time.</p>
 <h2 id="1-lab-strands-agent-with-custom-tools">1. Lab: Strands agent with custom tools</h2>
+<figure><img src="assets/img/custom/lab1-loop-cost.svg" alt="Five sequential model calls with growing token bars: each tool call is another model invocation and the history grows each turn" loading="lazy"><figcaption>The loop has a cost: five tool calls on a 2,000-token context is roughly five invocations, not one. History grows each turn.</figcaption><figcaption class="credit">Drawn for this volume.</figcaption></figure>
 <p>Build a working agent in a few lines of Python: one model, a tool list, a system prompt, and a custom function the model can call.</p>
 <p class="prereq"><strong>Prerequisites:</strong> None. This is the starting point: one model, a few tools, and the agent loop, all defined here.</p>
 <h3 id="what-this-lab-teaches">What this lab teaches</h3>
@@ -1399,6 +1408,7 @@ print(agent(&quot;How many words are in 'cloud nine'?&quot;))
 <p>D is wrong because models cannot reliably "call URLs from the system prompt." Tool use needs a real tool interface with schemas, not prompt text. This distractor tests whether you confuse prompt content with tool definitions.</p>
 <p class="note"><strong>Next:</strong> Lab 2 trades the agent's freedom for determinism, chaining prompts into a Bedrock Flows pipeline.</p>
 <h2 id="2-lab-bedrock-flows-from-json">2. Lab: Bedrock Flows from JSON</h2>
+<figure><img src="assets/img/custom/lab2-flow-lifecycle.svg" alt="Flow lifecycle: DRAFT to PrepareFlow to an immutable Version N to the prod alias" loading="lazy"><figcaption>DRAFT, version, alias: prompt edits never move production traffic by accident. If the agent ignores a change, the DRAFT was never prepared.</figcaption><figcaption class="credit">Drawn for this volume.</figcaption></figure>
 <p class="note"><strong>Why this chapter comes next.</strong> Lab 1 built an agent that reasons freely. Some workflows should not be left to the model's judgment: they must run the same steps every time. This lab trades the agent's freedom for a deterministic prompt pipeline.</p>
 <p>Chain prompts into a deterministic pipeline. The lab's prompt list becomes a real flow definition: nodes, connections, and conditions.</p>
 <p class="prereq"><strong>Prerequisites:</strong> None. You define the flow as JSON; no agent code is needed.</p>
@@ -1496,6 +1506,7 @@ print(agent(&quot;How many words are in 'cloud nine'?&quot;))
 <p>D is wrong because its premise is false: chaining prompts is the core Flows use case. Step Functions would be the answer if the scenario needed human approvals or cross-service waits, which it does not.</p>
 <p class="note"><strong>Next:</strong> Lab 3 goes from one worker to many, with a classifier routing each request to the right specialist.</p>
 <h2 id="3-lab-multi-agent-squad-routing">3. Lab: Multi-agent squad routing</h2>
+<figure><img src="assets/img/custom/lab3-classifier-rules.svg" alt="Good versus overlapping agent descriptions: mutually exclusive routing rules route cleanly, overlapping ones are a coin flip" loading="lazy"><figcaption>The classifier reads descriptions, not code. Overlapping descriptions make routing a coin flip; a tiny model at temperature 0 keeps it cheap and reproducible.</figcaption><figcaption class="credit">Drawn for this volume.</figcaption></figure>
 <p class="note"><strong>Why this chapter comes next.</strong> Labs 1 and 2 each built one worker. Real systems need several specialists behind one entry point. This lab adds the classifier that routes each request to the right specialist agent.</p>
 <p>One entry point, many specialist agents. A classifier reads each request and routes it to the right specialist.</p>
 <p class="prereq"><strong>Prerequisites:</strong> Chapter 1 (the Strands agent with a custom tool, which this lab registers as a specialist).</p>
@@ -1603,6 +1614,7 @@ print(response.metadata.agent_name)   # which specialist was picked
 <p>D is wrong because merging specialists destroys tool isolation and makes the prompt a bottleneck; the scenario's whole point is specialist routing, and the exam rewards the orchestrator pattern over the mega-prompt.</p>
 <p class="note"><strong>Next:</strong> Lab 4 puts the stable front door in front: API Gateway and Lambda as the Bedrock front end.</p>
 <h2 id="4-lab-lambda-as-bedrock-front-end">4. Lab: Lambda as Bedrock front end</h2>
+<figure><img src="assets/img/custom/lab4-trio.svg" alt="Lambda holds the routing logic, API Gateway holds the endpoint, AppConfig holds the model id; CloudFormation and hardcoded ids are the distractors" loading="lazy"><figcaption>Switch models without redeploys: Lambda routes, API Gateway fronts, AppConfig holds the model id. CloudFormation changes are deployments, so it fails the constraint.</figcaption><figcaption class="credit">Drawn for this volume.</figcaption></figure>
 <p class="note"><strong>Why this chapter comes next.</strong> Labs 1 through 3 ran on your laptop. Production needs a stable front door first. This lab puts API Gateway and Lambda in front of Bedrock calls, the serving path every later lab assumes.</p>
 <p>Put a stable HTTP front door in front of your model calls: API Gateway for the endpoint, Lambda for the logic.</p>
 <p class="prereq"><strong>Prerequisites:</strong> None beyond basic AWS ideas; Lambda, API Gateway, and AppConfig are introduced from scratch here.</p>
@@ -1695,6 +1707,7 @@ def lambda_handler(event, context):
 <p>E is wrong because a stack update is a deployment, which directly violates the no-redeploy constraint. This is the CloudFormation-for-runtime-config trap.</p>
 <p class="note"><strong>Next:</strong> Lab 5 flips Lambda around: it becomes the agent's hands via the action-group contract.</p>
 <h2 id="5-lab-lambda-as-agent-action">5. Lab: Lambda as agent action</h2>
+<figure><img src="assets/img/custom/lab5-prepare-trap.svg" alt="Diagnostic flowchart: when the agent ignores a new action group, check PrepareAgent first, then the alias, then IAM and the schema" loading="lazy"><figcaption>The single most common agent bug: the DRAFT was never prepared, or the alias still points at the old version.</figcaption><figcaption class="credit">Drawn for this volume.</figcaption></figure>
 <p class="note"><strong>Why this chapter comes next.</strong> Lab 4 showed Lambda serving the client. Now flip it around: Lambda becomes the agent's hands, the exact request and response contract Bedrock Agents use to call your code.</p>
 <p>Give a Bedrock Agent real hands. The lab's weather function shows the exact event the agent sends and the exact response it expects back.</p>
 <p class="prereq"><strong>Prerequisites:</strong> Chapter 4 (Lambda handlers and the proxy response shape), because action-group Lambdas reuse that shape.</p>
@@ -1903,6 +1916,7 @@ if __name__ == &quot;__main__&quot;:
 <p>D is wrong because the premise is false: Runtime hosts any-framework agents, which is exactly its purpose, and the Bedrock-Agents-to-AgentCore migration path exists precisely for teams that started managed and need framework freedom, not the reverse.</p>
 <p class="note"><strong>Next:</strong> Lab 7 covers the infrastructure underneath: KMS, X-Ray, SQS, and the foundations.</p>
 <h2 id="7-supporting-labs-kms-x-ray-sqs-and-foundations">7. Supporting labs: KMS, X-Ray, SQS, and foundations</h2>
+<figure><img src="assets/img/custom/lab7-xray-trace.svg" alt="X-Ray trace of an 8-second agent run broken into segments: the model call dominates, and CloudTrail is audit logging, not performance tracing" loading="lazy"><figcaption>Where did the 8 seconds go: X-Ray traces latency across calls, Logs Insights holds prompt forensics, CloudTrail is audit logging, not performance tracing.</figcaption><figcaption class="credit">Drawn for this volume.</figcaption></figure>
 <p class="note"><strong>Why this chapter comes next.</strong> The agents are built and deployed. This chapter covers the infrastructure underneath them: encryption, tracing, messaging, and the building blocks every GenAI architecture assumes.</p>
 <p>The remaining lab files, mapped to their exam roles: encryption, tracing, messaging, and the building blocks under every GenAI architecture.</p>
 <p class="prereq"><strong>Prerequisites:</strong> None; these are the service building blocks the other chapters assume.</p>
@@ -1967,6 +1981,7 @@ if __name__ == &quot;__main__&quot;:
 <p>E is wrong because raw unstructured text shatters tables across chunks; structure extraction before chunking is what keeps retrieval quality up.</p>
 <p class="note"><strong>Next:</strong> Lab 8 codifies the stack as CDK, from click-ops to repeatable infrastructure.</p>
 <h2 id="8-lab-cdk-for-genai-infrastructure">8. Lab: CDK for GenAI infrastructure</h2>
+<figure><img src="assets/img/custom/lab8-construct-tree.svg" alt="CDK construct tree: App to Stack to Lambda, DynamoDB, and API Gateway constructs, synthesized to a CloudFormation template and reviewed with cdk diff" loading="lazy"><figcaption>Code becomes a tree, the tree becomes a template. Review cdk diff every time: a small change can replace a database.</figcaption><figcaption class="credit">Drawn for this volume.</figcaption></figure>
 <p class="note"><strong>Why this chapter comes next.</strong> Lab 4's serving path was built by hand. This lab codifies the whole GenAI stack in CDK so it is repeatable, reviewable, and auditable.</p>
 <p>Define the whole GenAI stack in a real programming language and let it compile to CloudFormation.</p>
 <p class="prereq"><strong>Prerequisites:</strong> Chapter 4 (the serving path this stack codifies) and chapter 7 (the services it wires together).</p>
