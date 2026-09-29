@@ -22,7 +22,7 @@ No personal identifiers appear anywhere in this document.
 **Verified from multiple independent corroborating sources (Whizlabs, IT Mastery Exam Prep, official AWS certification listing pages, exam-taker reports):**
 
 - 75 questions total: 65 scored + 10 unscored. 180 minutes. USD 300. Delivery: Pearson VUE testing center or online proctored.
-- During the beta period the exam was 85 questions, 205 minutes, $150 — those numbers are stale and must not appear in study materials.
+- During the beta period the exam was 85 questions, 205 minutes, $150 - those numbers are stale and must not appear in study materials.
 
 **Assumptions / things that could not be confirmed from an official primary source (flagged for writers: present as approximate or community-reported, not as official fact):**
 
@@ -54,8 +54,8 @@ AWS tests whether you climb this ladder in order and stop at the cheapest step t
 - **Prompt engineering** first: new output format, tone, few-shot examples, chain-of-thought. No new knowledge needed.
 - **RAG / Knowledge Bases**: the model needs facts it was not trained on (company docs, policies, product catalogs) or citations/source attribution. Retrieval, not retraining.
 - **Bedrock Agents / agentic**: the task requires actions (call APIs, query databases, multi-step tool use), reasoning over tools, or session memory across turns.
-- **Fine-tuning (SFT / continued pre-training / distillation)**: the model needs a new *behavior* baked into its weights — consistent brand voice at scale, domain-specific classification, a smaller cheaper model that matches a larger one on a narrow task. Requires labeled data in S3, a customization job, and (usually) Provisioned Throughput to serve.
-- **Trap:** choosing fine-tuning when the scenario says "documents updated quarterly" or "must cite sources" — that is RAG. Choosing RAG when the scenario says "same task repeated millions of times, cost is the problem" — that is distillation to a smaller model or prompt caching. Choosing a custom model when the scenario only needs a different tone — prompt engineering.
+- **Fine-tuning (SFT / continued pre-training / distillation)**: the model needs a new *behavior* baked into its weights - consistent brand voice at scale, domain-specific classification, a smaller cheaper model that matches a larger one on a narrow task. Requires labeled data in S3, a customization job, and (usually) Provisioned Throughput to serve.
+- **Trap:** choosing fine-tuning when the scenario says "documents updated quarterly" or "must cite sources" - that is RAG. Choosing RAG when the scenario says "same task repeated millions of times, cost is the problem" - that is distillation to a smaller model or prompt caching. Choosing a custom model when the scenario only needs a different tone - prompt engineering.
 
 ### 3.2 Inference pricing ladder: on-demand -> prompt caching -> batch -> provisioned -> smaller model
 
@@ -64,7 +64,7 @@ AWS tests whether you climb this ladder in order and stop at the cheapest step t
 - **Batch inference**: non-interactive, hours-scale latency acceptable, ~50% cheaper than on-demand. S3 input, S3 output, async.
 - **Provisioned Throughput**: predictable steady baseline traffic, latency guarantees, throttling protection. Hourly commit, 1–6 month terms; must route invocations to the provisioned model ARN (the classic exam bug: buying PT but still calling the base model ID via `invoke_model` and getting throttled).
 - **Smaller model / model cascade**: route simple queries to Haiku/Nova Lite, complex ones to Sonnet/Opus. A classifier or prompt router in front.
-- **Trap:** "provisioned throughput" as the answer to a cost problem on spiky traffic — PT is a latency/throughput guarantee, not a cost saver for bursty workloads. Hybrid answers (PT for baseline + on-demand for peaks) are the "most correct" pattern.
+- **Trap:** "provisioned throughput" as the answer to a cost problem on spiky traffic - PT is a latency/throughput guarantee, not a cost saver for bursty workloads. Hybrid answers (PT for baseline + on-demand for peaks) are the "most correct" pattern.
 
 ### 3.3 Safety control ladder: prompt design -> guardrails -> IAM/network -> evaluation -> human review
 
@@ -88,7 +88,7 @@ The exam's center of gravity. Master this or fail.
 - Matching architecture to constraints: RAG for private/cited/current knowledge; agents for multi-step tool use; fine-tuning for baked-in behavior; prompt engineering for everything else.
 - Proof-of-concept before production: validate feasibility, performance, and business value with Bedrock (on-demand, low setup) before committing to Provisioned Throughput, custom models, or full deployment.
 - AWS Well-Architected Framework **Generative AI Lens**: the exam name-drops it as the standard for "design reviews" and "standardized components." Know it exists and what it covers (responsible AI, data, model selection, cost, security pillars applied to GenAI).
-- Standardized, reusable components across deployments: prompt templates, model routing layers, guardrail policies, evaluation harnesses — built once, reused.
+- Standardized, reusable components across deployments: prompt templates, model routing layers, guardrail policies, evaluation harnesses - built once, reused.
 
 **How AWS asks this:**
 
@@ -98,7 +98,7 @@ Scenario gives a business goal + 3–4 constraints (e.g. 12 languages, 99.9% ava
 
 - "Select the model with the best published benchmarks" as a complete answer: benchmarks alone ignore cost/latency/compliance constraints.
 - Training custom models for multilingual support when Bedrock FMs already cover the languages.
-- EC2 + ALB "high availability" — within-region only, does not solve regional outage failover.
+- EC2 + ALB "high availability" - within-region only, does not solve regional outage failover.
 
 ### Task 1.2: Select and configure FMs
 
@@ -135,7 +135,7 @@ Scenario gives a business goal + 3–4 constraints (e.g. 12 languages, 99.9% ava
 
 **Traps:**
 
-- Using **Bedrock Guardrails to extract content** — wrong tool; Guardrails are safety filters.
+- Using **Bedrock Guardrails to extract content** - wrong tool; Guardrails are safety filters.
 - Using **Kendra** where **Knowledge Bases** are needed (Kendra = enterprise search; KB = RAG with embeddings and generation), and vice versa.
 
 ### Task 1.4: Vector store solutions
@@ -145,7 +145,7 @@ Scenario gives a business goal + 3–4 constraints (e.g. 12 languages, 99.9% ava
 - **Bedrock Knowledge Bases** as the managed RAG service: data sources (S3, web crawler, Confluence, SharePoint, Salesforce), sync schedules, retrieval configuration, Retrieve and RetrieveAndGenerate APIs.
 - Vector store options and their trade-offs: **OpenSearch Serverless** (managed, vector collections), **Aurora PostgreSQL with pgvector** (relational + vectors), **Neptune** (GraphRAG), **S3 Vectors** (cheap, smaller scale), Pinecone/MongoDB/Redis (third-party connectors). Exam framing: OpenSearch for scale, Aurora for relational+vector, S3 Vectors for cost-sensitive dev/test.
 - **Metadata frameworks**: S3 object metadata, custom attributes, tags for domain classification and filtered retrieval.
-- **Freshness**: incremental sync, scheduled refresh pipelines, change detection — KB data sources support sync schedules; "quarterly document updates" in a scenario points to automated ingestion, not one-time loads.
+- **Freshness**: incremental sync, scheduled refresh pipelines, change detection - KB data sources support sync schedules; "quarterly document updates" in a scenario points to automated ingestion, not one-time loads.
 - Performance: OpenSearch sharding, multi-index per domain, hierarchical indexing.
 
 **How AWS asks this:**
@@ -154,15 +154,15 @@ Multi-tenant scenario ("each hotel needs separate access controls, near-real-tim
 
 **Traps:**
 
-- One shared knowledge base for multi-tenant data with different access controls — the exam wants isolation (separate KBs / accounts / IAM boundaries), not prompt instructions to "only answer about your hotel."
-- Storing embeddings in **ElastiCache** for durability — ephemeral; use a real vector store, ElastiCache is for caching.
-- **DynamoDB as the vector store** — metadata and session state yes, vectors no (use OpenSearch/Aurora/S3 Vectors).
+- One shared knowledge base for multi-tenant data with different access controls - the exam wants isolation (separate KBs / accounts / IAM boundaries), not prompt instructions to "only answer about your hotel."
+- Storing embeddings in **ElastiCache** for durability - ephemeral; use a real vector store, ElastiCache is for caching.
+- **DynamoDB as the vector store** - metadata and session state yes, vectors no (use OpenSearch/Aurora/S3 Vectors).
 
 ### Task 1.5: Retrieval mechanisms for FM augmentation
 
 **What AWS tests (this is the most technical sub-domain):**
 
-- **Chunking strategies** (set per data source at creation; changing requires recreating the data source): `default` (~300 tokens, prototyping), `fixed_size` (token count + overlap %, predictable), `hierarchical` (child chunks for matching, parent chunks for context — best for structured docs), `semantic` (meaning boundaries — best quality, slower/more expensive ingestion), `none` (pre-chunked input), custom via Lambda.
+- **Chunking strategies** (set per data source at creation; changing requires recreating the data source): `default` (~300 tokens, prototyping), `fixed_size` (token count + overlap %, predictable), `hierarchical` (child chunks for matching, parent chunks for context - best for structured docs), `semantic` (meaning boundaries - best quality, slower/more expensive ingestion), `none` (pre-chunked input), custom via Lambda.
 - **Embedding models**: Titan Text Embeddings v2 (1024/512/256 dims, cheap default), Cohere Embed (multilingual, `input_type` for query vs document). Dimension choice affects storage and accuracy.
 - **Hybrid search** (vector + keyword) and **reranking** (Bedrock rerank models) to fix "retrieved but not relevant" failures.
 - **Query handling**: query expansion, decomposition (Lambda), transformation (Step Functions).
@@ -174,16 +174,16 @@ Multi-tenant scenario ("each hotel needs separate access controls, near-real-tim
 
 **Traps:**
 
-- Fixing bad retrieval by switching the **generation model** — the failure is in retrieval, not generation.
-- **Fixed-size chunking for structured documents** (manuals, legal) — hierarchical is the exam's preferred answer.
-- Semantic chunking presented as "always best" — it costs more at ingestion; fixed-size is fine for FAQs.
+- Fixing bad retrieval by switching the **generation model** - the failure is in retrieval, not generation.
+- **Fixed-size chunking for structured documents** (manuals, legal) - hierarchical is the exam's preferred answer.
+- Semantic chunking presented as "always best" - it costs more at ingestion; fixed-size is fine for FAQs.
 
 ### Task 1.6: Prompt engineering and governance
 
 **What AWS tests:**
 
-- **Bedrock Prompt Management**: prompts as managed resources — `{{variable}}` placeholders, **variants** (A/B testing), **versions** (immutable snapshots; draft -> version), no extra charge (pay only for model tokens), no redeploy to change a prompt.
-- **Bedrock Prompt Flows** (now "Flows"): visual/no-code builder for multi-step GenAI workflows — nodes (prompt, agent, KB, Lambda, condition), conditional branching, reusable components, test panel.
+- **Bedrock Prompt Management**: prompts as managed resources - `{{variable}}` placeholders, **variants** (A/B testing), **versions** (immutable snapshots; draft -> version), no extra charge (pay only for model tokens), no redeploy to change a prompt.
+- **Bedrock Prompt Flows** (now "Flows"): visual/no-code builder for multi-step GenAI workflows - nodes (prompt, agent, KB, Lambda, condition), conditional branching, reusable components, test panel.
 - Governance: approval workflows, CloudTrail for usage audit, CloudWatch Logs for access logging, S3 for template repositories.
 - Prompt QA: Lambda to verify outputs, Step Functions for edge-case testing, CloudWatch for regression detection.
 - Techniques: system prompts, few-shot, chain-of-thought, structured output (JSON schema / Converse `outputConfig`).
@@ -195,7 +195,7 @@ Multi-tenant scenario ("each hotel needs separate access controls, near-real-tim
 **Traps:**
 
 - Hardcoding prompts in application code when the scenario demands frequent non-engineer changes.
-- **Bedrock Agents** for a fixed deterministic prompt chain — agents are for dynamic tool-using reasoning; Flows/Step Functions are for fixed sequences.
+- **Bedrock Agents** for a fixed deterministic prompt chain - agents are for dynamic tool-using reasoning; Flows/Step Functions are for fixed sequences.
 - Confusing prompt **variants** (A/B comparison) with **versions** (immutable releases).
 
 ---
@@ -221,10 +221,10 @@ Design (D1) becomes build (D2).
 
 **Traps:**
 
-- **Lambda for long-running agent orchestration** — 15-minute limit; Step Functions for workflows with waits/approvals.
-- **S3 for conversation memory** — latency and access patterns; DynamoDB for session state.
-- Describing inter-agent communication as **action groups** in supervisor instructions — the exam (and the service) uses the built-in supervisor/collaborator mechanism.
-- Forgetting **prepare-agent** after changes — the classic "agent ignores new action group" bug.
+- **Lambda for long-running agent orchestration** - 15-minute limit; Step Functions for workflows with waits/approvals.
+- **S3 for conversation memory** - latency and access patterns; DynamoDB for session state.
+- Describing inter-agent communication as **action groups** in supervisor instructions - the exam (and the service) uses the built-in supervisor/collaborator mechanism.
+- Forgetting **prepare-agent** after changes - the classic "agent ignores new action group" bug.
 
 ### Task 2.2: Model deployment strategies
 
@@ -233,7 +233,7 @@ Design (D1) becomes build (D2).
 - **Lambda for on-demand invocation** (spiky/irregular), **Bedrock Provisioned Throughput** for predictable baselines (hybrid is often the "most correct"), **SageMaker AI endpoints** for custom/self-hosted models (real-time, async, serverless inference options).
 - **Batch inference** for non-real-time (50% cheaper, hours latency).
 - **Model cascading**: small model first, escalate to large on low confidence.
-- Container/GPU deployment considerations for self-hosted LLMs (memory, GPU, token throughput) — conceptual, not deep.
+- Container/GPU deployment considerations for self-hosted LLMs (memory, GPU, token throughput) - conceptual, not deep.
 
 **How AWS asks this:**
 
@@ -241,8 +241,8 @@ Design (D1) becomes build (D2).
 
 **Traps:**
 
-- Provisioned Throughput for spiky traffic as a pure cost play — PT is for predictable baselines.
-- **SageMaker Serverless Inference** for sustained high-throughput — it's for intermittent traffic with cold starts; wrong for strict latency SLAs at scale.
+- Provisioned Throughput for spiky traffic as a pure cost play - PT is for predictable baselines.
+- **SageMaker Serverless Inference** for sustained high-throughput - it's for intermittent traffic with cold starts; wrong for strict latency SLAs at scale.
 
 ### Task 2.3: Enterprise integration architectures
 
@@ -261,11 +261,11 @@ Design (D1) becomes build (D2).
 **Traps:**
 
 - One shared KB with prompt-level access instructions instead of IAM-enforced isolation.
-- **CloudTrail for real-time data sync** — CloudTrail is audit logging, not a data pipeline.
+- **CloudTrail for real-time data sync** - CloudTrail is audit logging, not a data pipeline.
 
 ### Task 2.4: FM API integrations
 
-**What AWS tests — the API decision matrix (high yield):**
+**What AWS tests - the API decision matrix (high yield):**
 
 | Need | Answer |
 |---|---|
@@ -278,7 +278,7 @@ Design (D1) becomes build (D2).
 
 - **Converse details**: `modelId`, `messages`, `system`, `inferenceConfig` (maxTokens, temperature, topP), `toolConfig`, `guardrailConfig` (identifier + version + trace), `additionalModelRequestFields` for provider escapes, `cachePoint` for prompt caching, `outputConfig` for structured output.
 - **InvokeModel details**: provider-specific JSON bodies (e.g. Claude requires `anthropic_version: bedrock-2023-05-31` and `max_tokens`); wrong body = `ValidationException`/`Malformed input`.
-- **Streaming**: ConverseStream for incremental delivery; API Gateway has payload/timeout limits — for long streams use WebSockets or direct streaming.
+- **Streaming**: ConverseStream for incremental delivery; API Gateway has payload/timeout limits - for long streams use WebSockets or direct streaming.
 
 **How AWS asks this:**
 
@@ -286,9 +286,9 @@ Design (D1) becomes build (D2).
 
 **Traps:**
 
-- **InvokeModel for embeddings via Converse** — Converse cannot do embeddings.
-- **Converse for provider-specific parameters** without `additionalModelRequestFields` — the escape hatch exists but InvokeModel is the distractor-proof answer for exotic provider features.
-- Assuming **guardrails only work with Converse** — `ApplyGuardrail` is standalone and model-agnostic (works with OpenAI/Gemini/self-hosted too).
+- **InvokeModel for embeddings via Converse** - Converse cannot do embeddings.
+- **Converse for provider-specific parameters** without `additionalModelRequestFields` - the escape hatch exists but InvokeModel is the distractor-proof answer for exotic provider features.
+- Assuming **guardrails only work with Converse** - `ApplyGuardrail` is standalone and model-agnostic (works with OpenAI/Gemini/self-hosted too).
 
 ### Task 2.5: Application integration patterns and development tools
 
@@ -316,7 +316,7 @@ One in five questions. Under-prepared candidates fail here.
 
 ### Task 3.1: Input and output safety controls
 
-**What AWS tests — the Guardrails control matrix (memorize):**
+**What AWS tests - the Guardrails control matrix (memorize):**
 
 | Control | What it does | Configured by |
 |---|---|---|
@@ -342,7 +342,7 @@ Children's tutor scenario (block profanity/violence inputs, prevent harmful outp
 - **Denied topics vs content filters**: denied topics = subject-matter bans in plain language ("investment advice"); content filters = toxicity categories with severity thresholds. Scenario says "prevent the model from discussing X topic" -> denied topics.
 - **Word filters vs sensitive info filters**: word filters = exact strings; PII = entity-type detection with block/mask.
 - **Contextual grounding vs Automated Reasoning**: grounding = "is this supported by the retrieved source?" (RAG hallucination); Automated Reasoning = "does this violate the formal policy?" (compliance rules, deterministic).
-- Relying on the **base model's built-in safety** as the complete answer — never the "most correct" for a sensitive audience.
+- Relying on the **base model's built-in safety** as the complete answer - never the "most correct" for a sensitive audience.
 
 ### Task 3.2: Data security and privacy
 
@@ -360,9 +360,9 @@ Children's tutor scenario (block profanity/violence inputs, prevent harmful outp
 
 **Traps:**
 
-- **Translate for PII obfuscation** — preserves meaning, zero protection.
-- **Rekognition for text PII** — vision service; Comprehend is the text answer.
-- Logging invocations to CloudWatch without encryption in a healthcare scenario — the exam wants KMS or disabled logging.
+- **Translate for PII obfuscation** - preserves meaning, zero protection.
+- **Rekognition for text PII** - vision service; Comprehend is the text answer.
+- Logging invocations to CloudWatch without encryption in a healthcare scenario - the exam wants KMS or disabled logging.
 
 ### Task 3.3: AI governance and compliance
 
@@ -395,7 +395,7 @@ Children's tutor scenario (block profanity/violence inputs, prevent harmful outp
 
 **Traps:**
 
-- Treating fairness as a one-time check — the exam wants **continuous** bias drift monitoring.
+- Treating fairness as a one-time check - the exam wants **continuous** bias drift monitoring.
 
 ---
 
@@ -419,7 +419,7 @@ Small domain, tricky questions: every scenario forces cost vs latency vs quality
 **Traps:**
 
 - **Prompt caching vs Provisioned Throughput**: caching attacks repeated-input cost; PT attacks latency/throughput guarantees. Scenario with "same long system prompt on every call" -> caching. Scenario with "throttling at peak, steady baseline" -> PT.
-- **Semantic caching presented for highly personalized queries** — low hit rate; the Whizlabs-style explanation explicitly rejects it for personalized recommendations.
+- **Semantic caching presented for highly personalized queries** - low hit rate; the Whizlabs-style explanation explicitly rejects it for personalized recommendations.
 
 ### Task 4.2: Application performance
 
@@ -432,12 +432,12 @@ Small domain, tricky questions: every scenario forces cost vs latency vs quality
 
 **How AWS asks this:**
 
-"Sub-3-second latency, 10x Friday spikes" -> PT baseline + on-demand overflow + streaming. "Inconsistent outputs for identical inputs, need 99.5% consistency" -> temperature 0 + deterministic caching + prompt versioning (and note: provisioned throughput stabilizes latency, not output randomness — don't conflate).
+"Sub-3-second latency, 10x Friday spikes" -> PT baseline + on-demand overflow + streaming. "Inconsistent outputs for identical inputs, need 99.5% consistency" -> temperature 0 + deterministic caching + prompt versioning (and note: provisioned throughput stabilizes latency, not output randomness - don't conflate).
 
 **Traps:**
 
-- **Provisioned Throughput to fix nondeterministic outputs** — PT fixes capacity/latency, not randomness; temperature and prompt control fix consistency.
-- **top-k/top-p/temperature as cost controls** — they control randomness/quality, not cost.
+- **Provisioned Throughput to fix nondeterministic outputs** - PT fixes capacity/latency, not randomness; temperature and prompt control fix consistency.
+- **top-k/top-p/temperature as cost controls** - they control randomness/quality, not cost.
 
 ### Task 4.3: Monitoring GenAI applications
 
@@ -456,8 +456,8 @@ Small domain, tricky questions: every scenario forces cost vs latency vs quality
 
 **Traps:**
 
-- **SageMaker Model Monitor for GenAI text quality drift** — built for tabular ML; Bedrock evaluations / golden datasets are the GenAI answer.
-- **CloudTrail for performance monitoring** — audit, not metrics; CloudWatch is the metrics answer.
+- **SageMaker Model Monitor for GenAI text quality drift** - built for tabular ML; Bedrock evaluations / golden datasets are the GenAI answer.
+- **CloudTrail for performance monitoring** - audit, not metrics; CloudWatch is the metrics answer.
 
 ---
 
@@ -467,7 +467,7 @@ Smallest domain; questions punish candidates who debug GenAI like traditional so
 
 ### Task 5.1: Evaluation systems
 
-**What AWS tests — the evaluation matrix (memorize):**
+**What AWS tests - the evaluation matrix (memorize):**
 
 | Method | Metrics | When |
 |---|---|---|
@@ -486,17 +486,17 @@ Smallest domain; questions punish candidates who debug GenAI like traditional so
 
 **Traps:**
 
-- **Programmatic eval for style/brand voice** — subjective metrics need human or LLM-as-judge.
-- **Human eval as the only eval** for large-scale regression — cost/time; the exam wants automated gates with human spot-checks.
+- **Programmatic eval for style/brand voice** - subjective metrics need human or LLM-as-judge.
+- **Human eval as the only eval** for large-scale regression - cost/time; the exam wants automated gates with human spot-checks.
 
 ### Task 5.2: Troubleshooting
 
-**What AWS tests — the GenAI debug order:**
+**What AWS tests - the GenAI debug order:**
 
 1. **Content handling**: context window overflow -> chunking strategy, prompt compression, truncation analysis.
 2. **API integration**: error logging, request validation (body format per provider!), response analysis. Classic: `ValidationException` from wrong InvokeModel body; `AccessDeniedException` (misleading) when the model isn't available in the region.
 3. **Prompt problems**: version comparison, systematic refinement, prompt testing frameworks.
-4. **Retrieval problems**: embedding quality, chunking remediation, drift monitoring, vector search perf — with relevance analysis first.
+4. **Retrieval problems**: embedding quality, chunking remediation, drift monitoring, vector search perf - with relevance analysis first.
 5. **Prompt maintenance**: CloudWatch Logs for prompt confusion diagnosis, X-Ray observability pipelines, schema validation for format drift.
 
 **How AWS asks this:**
@@ -506,7 +506,7 @@ Smallest domain; questions punish candidates who debug GenAI like traditional so
 **Traps:**
 
 - Debugging **retrieval** failures by changing the **generation model** or temperature.
-- **Increasing PT model units** when the code never routes to the provisioned model — capacity isn't the bug, routing is.
+- **Increasing PT model units** when the code never routes to the provisioned model - capacity isn't the bug, routing is.
 
 ---
 
@@ -532,7 +532,7 @@ Condensed facts every volume needs. All from AWS documentation / official exam g
 
 1. Choosing **Lambda** for long-running orchestration with waits/approvals -> Step Functions.
 2. **InvokeModel vs Converse**: provider-specific body vs unified; embeddings need InvokeModel.
-3. **Guardrails denied topics vs content filters** vs word filters vs PII filters — match the control to the scenario verb.
+3. **Guardrails denied topics vs content filters** vs word filters vs PII filters - match the control to the scenario verb.
 4. **Prompt caching vs Provisioned Throughput**: repeated-prefix cost vs latency/throughput guarantee.
 5. **Inference profiles vs prompt routers vs PT**: availability routing vs cost-quality routing vs reserved capacity.
 6. **One shared KB** for multi-tenant data -> separate KBs + IAM isolation.
@@ -541,17 +541,17 @@ Condensed facts every volume needs. All from AWS documentation / official exam g
 9. **S3 for session memory** -> DynamoDB; **ElastiCache for durable vectors** -> OpenSearch/Aurora/S3 Vectors.
 10. **Kendra vs Knowledge Bases**; **Q Business vs Q Developer**.
 11. **Increasing PT units** when code doesn't route to the provisioned model.
-12. **PT for output consistency** — temperature/prompt control, not capacity.
-13. **Custom/manual builds** when a managed service exists — the exam's default bias.
-14. **CloudTrail for metrics / Glue+Athena for real-time hallucination detection** — wrong-plane tools.
-15. **Model's built-in safety** as the complete safety answer — never sufficient for sensitive scenarios.
+12. **PT for output consistency** - temperature/prompt control, not capacity.
+13. **Custom/manual builds** when a managed service exists - the exam's default bias.
+14. **CloudTrail for metrics / Glue+Athena for real-time hallucination detection** - wrong-plane tools.
+15. **Model's built-in safety** as the complete safety answer - never sufficient for sensitive scenarios.
 
 ---
 
 ## 11. Sources consulted
 
 - Official exam guide: AWS Certified Generative AI Developer – Professional (AIP-C01), v1.0, all five content-domain pages, in-scope and out-of-scope service lists (docs.aws.amazon.com).
-- Stephane Maarek + Frank Kane, "Ultimate AWS Certified Generative AI Developer Professional" (Udemy): curriculum themes — Bedrock/SageMaker/Knowledge Bases, agentic systems (Bedrock Agents, Flows, OpenSearch, S3 Vectors, Strands, Agent Squad, AgentCore), RAG/embedding optimization, Prompt Management + Flows, Bedrock Evaluations, Bedrock Data Automation, Glue/Comprehend/Textract pipelines, Step Functions/Lambda/CI-CD orchestration.
+- Stephane Maarek + Frank Kane, "Ultimate AWS Certified Generative AI Developer Professional" (Udemy): curriculum themes - Bedrock/SageMaker/Knowledge Bases, agentic systems (Bedrock Agents, Flows, OpenSearch, S3 Vectors, Strands, Agent Squad, AgentCore), RAG/embedding optimization, Prompt Management + Flows, Bedrock Evaluations, Bedrock Data Automation, Glue/Comprehend/Textract pipelines, Step Functions/Lambda/CI-CD orchestration.
 - TutorialsDojo AIP-C01 study guide (exam-guide PDF preview): task statements per domain.
 - Kodekloud, "AWS AIP-C01 Study Guide: Generative AI Developer Exam 2026": domain scenarios, holy trinity (Agents + Knowledge Bases + Guardrails), cost/latency trade-off framing.
 - Whizlabs AIP-C01 sample questions with explanations: scenario style, AppConfig+Lambda+APIGW model switching, PT hybrid deployment, Strands/Agent Squad multi-agent, Macie+Comprehend+Guardrails PII, defense-in-depth safety.
