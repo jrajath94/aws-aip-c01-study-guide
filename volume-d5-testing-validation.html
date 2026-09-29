@@ -1159,6 +1159,128 @@ footer p{text-align:left}
   #ds-content .ds-site-footer,
   .ds-side-volumes { display: none !important; }
 }
+</style>
+<style>
+/* Hallmark · pre-emit critique: P5 H4 E5 S4 R5 V5
+ * ==========================================================================
+ * Experience layer for study volumes — ADDITIVE ONLY.
+ * Never edits content markup or DS chrome; references DS tokens only
+ * (--accent, --border). No new colors, no gradients, no decorative filler.
+ *
+ * Motion stance: calm delight. Opacity/translate only (GPU-friendly),
+ * one IntersectionObserver, one rAF-throttled scroll listener, zero layout
+ * shift, prefers-reduced-motion respected, fully usable with JS disabled
+ * (every hidden state is gated on html.xp-js, which only this layer's
+ * companion script adds).
+ *
+ * Wiring (final assembly, per volume — same model as ds.css/ds.js):
+ *   1. In <head>, AFTER the DS style block, add:
+ *        <style>
+ *        /* ==== Experience layer — additive, do not edit per-file ==== */
+ *        …this file verbatim…
+ *        [close the style element]
+ *   2. Immediately before the document's LAST closing body tag (the real
+ *      one at the end of the file — some volumes mention a literal closing
+ *      body tag inside their docs prose; ignore those), AFTER the ds.js
+ *      script block, add:
+ *        <script>
+ *        /* ==== Experience layer behavior — additive ==== */
+ *        …experience.js verbatim…
+ *        [close the script element]
+ * (Closing tags are written out in the assembly snippet, not here, so this
+ * file can be pasted verbatim without early-terminating its own element.)
+ * ========================================================================== */
+
+/* ---------- 1. Smooth anchor scrolling (motion-safe readers only) ---------- */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+/* ---------- 2. Scroll-triggered reveals ----------
+   Hidden state exists ONLY under html.xp-js. No-JS readers, print, and
+   reduced-motion users always see full content. Uses the independent
+   `translate` property (not `transform`) so hover feedback below composes
+   without specificity fights. Opacity + translate only: zero layout shift. */
+html.xp-js .xp-reveal {
+  opacity: 0;
+  translate: 0 14px;
+}
+html.xp-js .xp-reveal.xp-in {
+  opacity: 1;
+  translate: 0 0;
+  transition:
+    opacity 0.55s ease,
+    translate 0.55s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+/* ---------- 3. Hero ---------- */
+/* Layout-neutral wrapper the script may add around a volume's title block.
+   Parallax itself is applied inline by the script (transform only). */
+.xp-hero {
+  position: relative;
+}
+
+/* ---------- 4. Calm hover feedback: cards + knowledge checks only ----------
+   translateY(-1px) + accent border. transform composes with the reveal's
+   independent `translate` property — no conflicts. */
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .pq,
+  .watch-card,
+  .ob-board,
+  .lab {
+    transition: transform 0.18s ease, border-color 0.18s ease;
+  }
+  .pq:hover,
+  .watch-card:hover,
+  .ob-board:hover,
+  .lab:hover {
+    transform: translateY(-1px);
+    border-color: var(--accent);
+  }
+  .pq:focus-within,
+  .watch-card:focus-within,
+  .ob-board:focus-within,
+  .lab:focus-within {
+    border-color: var(--accent);
+  }
+}
+
+/* ---------- 5. Reduced motion: everything static and visible ---------- */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  html.xp-js .xp-reveal {
+    opacity: 1;
+    translate: 0 0;
+    transition: none;
+  }
+  .xp-hero {
+    transform: none !important;
+    opacity: 1 !important;
+  }
+  .pq,
+  .watch-card,
+  .ob-board,
+  .lab {
+    transition: none;
+  }
+}
+
+/* ---------- 6. Print: never hide content ---------- */
+@media print {
+  html.xp-js .xp-reveal {
+    opacity: 1 !important;
+    translate: 0 0 !important;
+    transition: none;
+  }
+  .xp-hero {
+    transform: none !important;
+    opacity: 1 !important;
+  }
+}
 
 </style>
 </head>
@@ -1170,7 +1292,11 @@ footer p{text-align:left}
 <p>FACT-CHECK 2026-09-28: all factual claims in this volume were checked against live AWS documentation on 2026-09-28.</p>
 <p><strong>Last verified: 2026-09-28 against AWS documentation.</strong> Evaluation features (automatic metrics, LLM-as-a-judge metric names, human workflows, BYO datasets, <code>CreateEvaluationJob</code>), the <code>ApplyGuardrail</code> API, and CloudWatch/CloudTrail mechanics were checked against current AWS docs.</p>
 <h2 id="the-domain-in-one-paragraph">The domain in one paragraph</h2>
-<p>Domain 5 asks one question in many forms: <strong>how do you prove a GenAI app works, and how do you fix it when it does not?</strong> The proof half is evaluation: automatic metrics for objective checks, LLM-as-a-judge for human-like quality at scale, human reviewers for subjective judgment, RAG-specific evals for retrieval and faithfulness, and eval loops plus A/B tests that keep the app honest as prompts and models change. The fix half is troubleshooting: throttling, guardrail blocks, agent tool failures, knowledge base sync problems, and embedding mismatches, debugged with CloudWatch and CloudTrail, plus grounding checks, red-teaming, and CI/CD gates that keep bad changes out of production.</p>
+<p>The smallest domain on the exam, and the one that punishes candidates who debug GenAI apps like traditional software. About 7 of the 65 scored questions.</p>
+<p>FACT-CHECK 2026-09-28: all factual claims in this volume were checked against live AWS documentation on 2026-09-28.</p>
+<p>Last verified: 2026-09-28 against AWS documentation. Evaluation features (automatic metrics, LLM-as-a-judge metric names, human workflows, BYO datasets, CreateEvaluationJob), the ApplyGuardrail API, and CloudWatch/CloudTrail mechanics were checked against current AWS docs.</p>
+<figure class="fig-light"><img src="assets/img/internet/img-30.png" alt="The GenAI lifecycle: data preparation, experimentation, validation and deployment, then inference and feedback feeding back into data" loading="lazy"><figcaption>The GenAI lifecycle: data preparation, experimentation, validation and deployment, then inference and feedback feeding back into data</figcaption><figcaption class="credit">Source: web image search, saved locally Sept 2026.</figcaption></figure>
+<p>Domain 5 asks one question in many forms: how do you prove a GenAI app works, and how do you fix it when it does not? The proof half is evaluation: automatic metrics for objective checks, LLM-as-a-judge for human-like quality at scale, human reviewers for subjective judgment, RAG-specific evals for retrieval and faithfulness, and eval loops plus A/B tests that keep the app honest as prompts and models change. The fix half is troubleshooting: throttling, guardrail blocks, agent tool failures, knowledge base sync problems, and embedding mismatches, debugged with CloudWatch and CloudTrail, plus grounding checks, red-teaming, and CI/CD gates that keep bad changes out of production.</p>
 <h2 id="what-aws-actually-tests-the-evaluation-matrix">What AWS actually tests (the evaluation matrix)</h2>
 <p>Memorize this table. It is the backbone of Task 5.1, and several exam questions are just this table wearing a scenario costume.</p>
 <div class="table-wrap"><table>
@@ -1210,36 +1336,17 @@ footer p{text-align:left}
 <p>Debugging GenAI like a traditional app. Temperature does not fix bad retrieval. Bigger models do not fix broken chunking. Provisioned Throughput does not fix output randomness. Every troubleshooting question in this domain has one distractor that applies a traditional fix to a GenAI problem.</p></div>
 <h2 id="1-automatic-programmatic-evaluation-in-bedrock">1. Automatic (programmatic) evaluation in Bedrock</h2>
 <p>Bedrock Evaluations is the managed service that runs model evaluations for you. Automatic evaluation is its cheapest, fastest mode: metrics computed by code, no humans, no judge model.</p>
-<h2 id="what-it-is">What it is</h2>
-<p><strong>Automatic evaluation</strong> (also called programmatic evaluation) compares model outputs against known-correct answers using deterministic code. You supply a prompt dataset where each prompt has a <strong>ground truth</strong> label, meaning the answer you already know is correct. Bedrock runs your prompts through the model, then scores each output with built-in metrics. The built-in metric set includes <strong>accuracy</strong> (did it get the right answer), <strong>stability</strong> (does the answer survive small prompt perturbations like typos or rewording), and <strong>toxicity</strong> (does the output contain harmful content). You can also bring custom datasets and define the scoring logic.</p>
+<h3>Deterministic scoring against known answers</h3>
+<p>Automatic evaluation, also called programmatic evaluation, compares model outputs against known-correct answers using deterministic code. You supply a prompt dataset where each prompt has a ground truth label, the answer you already know is correct. Bedrock runs your prompts through the model, then scores each output with built-in metrics. The built-in set includes accuracy (did it get the right answer), stability (does the answer survive small prompt perturbations like typos or rewording; the Bedrock console labels this metric "robustness"), and toxicity (does the output contain harmful content). You can also bring custom datasets and define the scoring logic.</p>
 <p>An evaluation job needs four things: the model to evaluate, the prompt dataset stored in Amazon S3 as JSONL (JSON Lines, one record per line), an output S3 location for the results, and the evaluation configuration that names the metrics. Bedrock does the rest and writes a report you can open in the console.</p>
-<h2 id="why-it-exists">Why it exists</h2>
 <p>Without automated scoring, every prompt or model change requires a human to re-read hundreds of outputs. That does not scale, and it is inconsistent: the same reviewer scores the same answer differently on Monday and Friday. Automatic evaluation gives you a repeatable number you can track across every change, which is exactly what a regression gate needs. If a prompt edit drops accuracy from 94 percent to 81 percent, you catch it before users do.</p>
-<h2 id="how-it-works-under-the-hood">How it works under the hood</h2>
-<ol>
-<li><strong>Ingest.</strong> You upload a JSONL dataset to S3. Each line has a prompt and its ground truth, for example <code>{"prompt": "Classify this ticket...", "referenceResponse": "billing"}</code>. (The key is <code>referenceResponse</code>.
-   The concept it carries is the ground truth.).</li>
-<li><strong>Inference.</strong> Bedrock invokes your chosen model once per prompt. This is ordinary model invocation, billed like any other call, and it runs asynchronously so a 5,000-prompt dataset does not time out.</li>
-<li><strong>Scoring.</strong> For each output, deterministic scorers run: exact-match or similarity comparison against ground truth for accuracy, re-runs with perturbed prompts for stability, classifier checks for toxicity.</li>
-<li><strong>Aggregation.</strong> Scores roll up into per-metric averages and per-prompt detail rows, written to your output S3 bucket and shown in the console with charts.</li>
-</ol>
-<p>The key mechanic: the scorer never reads meaning. It compares strings and labels. That is why automatic evaluation is fast and cheap, and also why it cannot judge style, tone, or nuanced correctness.</p>
-<h2 id="concrete-numbers-and-a-worked-example">Concrete numbers and a worked example</h2>
-<p>Suppose you evaluate a ticket classifier on 1,000 labeled prompts. Automatic accuracy comes back at 0.93, meaning 930 of 1,000 outputs matched the ground truth label exactly. Stability is tested by re-running a sample with small prompt edits; say 45 of 50 perturbed prompts still classify correctly, giving a stability score of 0.90. (The Bedrock console labels this metric "robustness".) Toxicity is 0.00. Total inference cost: 1,000 invocations of a small model at roughly a tenth of a cent per thousand input tokens is a few dollars at most. Illustrative: a full automatic eval on 1,000 prompts typically finishes in minutes and costs less than a coffee, which is why it belongs in every CI pipeline.</p>
-<h2 id="common-misunderstanding">Common misunderstanding</h2>
+<p>Under the hood, the job ingests your JSONL from S3 (each line a prompt plus its ground truth, for example {"prompt": "Classify this ticket...", "referenceResponse": "billing"}), invokes your chosen model once per prompt, ordinary model invocation billed like any other call, running asynchronously so a 5,000-prompt dataset does not time out, then runs deterministic scorers on each output: exact-match or similarity comparison against ground truth for accuracy, re-runs with perturbed prompts for stability, classifier checks for toxicity. Scores aggregate into per-metric averages and per-prompt detail rows, written to your output S3 bucket and shown in the console with charts.</p>
+<p>The key mechanic: the scorer never reads meaning. It compares strings and labels. That is why automatic evaluation is fast and cheap, and also why it cannot judge style, tone, or nuanced correctness. And it needs ground truth, which means someone had to label the dataset correctly first: garbage labels produce confident, wrong scores.</p>
+<p>A worked example: evaluate a ticket classifier on 1,000 labeled prompts. Automatic accuracy comes back at 0.93, meaning 930 of 1,000 outputs matched the ground truth label exactly. Stability is tested by re-running a sample with small prompt edits; say 45 of 50 perturbed prompts still classify correctly, giving a stability score of 0.90. Toxicity is 0.00. Total inference cost: 1,000 invocations of a small model at roughly a tenth of a cent per thousand input tokens is a few dollars at most. Illustrative: a full automatic eval on 1,000 prompts typically finishes in minutes and costs less than a coffee, which is why it belongs in every CI pipeline.</p>
 <div class="exam-ask"><p>Trap.</p>
 <p>Using automatic evaluation for subjective quality like brand voice, style, or "helpfulness." Programmatic scorers compare against labels; they cannot tell you whether a summary sounds like your brand. The exam will offer "run automatic evaluation with the accuracy metric" as a distractor for any scenario that mentions tone, style, or voice. The correct pairing for subjective metrics is LLM-as-a-judge for scale plus human evaluation for final judgment.</p></div>
-<p>A second misunderstanding: automatic evaluation needs ground truth, which means someone had to label the dataset correctly first. Garbage labels produce confident, wrong scores.</p>
-<h2 id="visual">Visual</h2>
-<figure><img src="DATA_URI" alt="Pipeline diagram: prompt dataset feeds model inference, which feeds built-in metrics (accuracy, toxicity, stability), with a score-vs-expected strip below" loading="lazy"><figcaption>Pipeline diagram: prompt dataset feeds model inference, which feeds built-in metrics (accuracy, toxicity, stability), with a score-vs-expected strip below</figcaption><figcaption class="credit"><em>Pipeline diagram: prompt dataset feeds model inference, which feeds built-in metrics (accuracy, toxicity, stability), with a score-vs-expected strip below</em></figcaption></figure>
-<p>How to read this diagram.</p>
-<ol>
-<li><strong>Left box (prompt dataset):</strong> your JSONL file in S3. Each card is one prompt plus its ground truth label. This is your responsibility to curate.</li>
-<li><strong>Arrow to model inference:</strong> Bedrock invokes your model once per prompt, asynchronously. If this step fails, check IAM permissions on the model and your S3 paths first.</li>
-<li><strong>Right box (built-in metrics):</strong> deterministic scorers run on every output. Accuracy, toxicity, and stability are computed by code, not by a model.</li>
-<li><strong>Bottom strip (score vs expected):</strong> each output is compared against its ground truth row, then aggregated. The report shows both the average and the per-prompt misses so you can inspect failures.</li>
-</ol>
-<h2 id="how-aws-asks-this">How AWS asks this</h2>
+<figure><img src="assets/img/mermaid/39-eval-pipeline-metrics.svg" alt="Pipeline diagram: prompt dataset feeds model inference, which feeds built-in metrics (accuracy, toxicity, stability), with a score-vs-expected strip below" loading="lazy"><figcaption>Pipeline diagram: prompt dataset feeds model inference, which feeds built-in metrics (accuracy, toxicity, stability), with a score-vs-expected strip below</figcaption><figcaption class="credit"><em>Pipeline diagram: prompt dataset feeds model inference, which feeds built-in metrics (accuracy, toxicity, stability), with a score-vs-expected strip below</em></figcaption></figure>
+<p>Reading the diagram: your JSONL prompt dataset sits in S3 on the left, one card per prompt plus its ground truth label, curated by you. The arrow to model inference shows Bedrock invoking your model once per prompt, asynchronously; if this step fails, check IAM permissions on the model and your S3 paths first. On the right, deterministic scorers compute accuracy, toxicity, and stability by code, not by a model. The bottom strip compares each output against its ground truth row and aggregates: the report shows both the average and the per-prompt misses so you can inspect failures.</p>
 <div class="exam-ask"><p>Exam framing.</p>
 <p>"A team needs a repeatable, low-cost way to benchmark three models on a 2,000-question labeled QA set before choosing one for production." Correct: automatic evaluation with accuracy metrics. Distractors: LLM-as-a-judge (more expensive than needed for an objective labeled set), human evaluation (too slow and costly for 2,000 questions), or "have developers read a sample" (not repeatable). Watch for the word "labeled" in the stem: labeled data plus objective scoring is the automatic-evaluation signal.</p></div>
 <h2 id="questions">Questions</h2>
@@ -1270,40 +1377,22 @@ footer p{text-align:left}
 <li>C. It supports built-in metrics including accuracy, stability, and toxicity.</li>
 <li>D. It uses a separate judge foundation model to score each output for faithfulness.</li>
 </ol>
-<h2 id="2-llm-as-a-judge-evaluation">2. LLM-as-a-judge evaluation</h2>
-<figure><img src="assets/img/mermaid/06-eval-loop.svg" alt="Evaluation loop: a candidate prompt or model runs against a golden dataset, a judge (LLM or deterministic metric) scores accuracy, faithfulness, toxicity, and latency, and the candidate promotes to production only through a CI/CD eval gate." loading="lazy"><figcaption>Evaluation loop: a candidate prompt or model runs against a golden dataset, a judge (LLM or deterministic metric) scores accuracy, faithfulness, toxicity, and latency, and the candidate promotes to production only through a CI/CD eval gate.</figcaption><figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
 
+<h2 id="2-llm-as-a-judge-evaluation">2. LLM-as-a-judge evaluation</h2>
+<figure class="fig-light"><img src="assets/img/internet/img-19.png" alt="LLM-as-a-judge feedback loop: the application output goes to an eval LLM, which scores it; low scores loop back for improvement" loading="lazy"><figcaption>LLM-as-a-judge feedback loop: the application output goes to an eval LLM, which scores it; low scores loop back for improvement</figcaption><figcaption class="credit">Source: web image search, saved locally Sept 2026.</figcaption></figure>
+<figure><img src="assets/img/mermaid/06-eval-loop.svg" alt="Evaluation loop: a candidate prompt or model runs against a golden dataset, a judge (LLM or deterministic metric) scores accuracy, faithfulness, toxicity, and latency, and the candidate promotes to production only through a CI/CD eval gate." loading="lazy"><figcaption>Evaluation loop: a candidate prompt or model runs against a golden dataset, a judge (LLM or deterministic metric) scores accuracy, faithfulness, toxicity, and latency, and the candidate promotes to production only through a CI/CD eval gate.</figcaption><figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
 <figure class="fig-light"><img src="assets/img/internet/img-20.png" alt="LLM-as-a-judge evaluation pipeline: in-context learning defines the task (scores, yes/no, pairs, multiple-choice), a judge model is selected, outputs are post-processed (special tokens, logits, selected sentences), and a final evaluation is produced." loading="lazy"><figcaption>LLM-as-a-judge evaluation pipeline: in-context learning defines the task (scores, yes/no, pairs, multiple-choice), a judge model is selected, outputs are post-processed (special tokens, logits, selected sentences), and a final evaluation is produced.</figcaption><figcaption class="credit">Source: Paper figure via alphaxiv.org, via image search Sept 2026.</figcaption></figure>
 <p>When no ground truth label can capture quality, you hire a second model to grade the first. Bedrock runs this as a managed evaluation job with built-in and custom judge metrics.</p>
-<h2 id="what-it-is">What it is</h2>
-<p><strong>LLM-as-a-judge</strong> is an evaluation method where a foundation model scores another model's outputs against a rubric you define. Instead of comparing strings to labels, the judge model reads the prompt, the candidate response, and sometimes reference material. Then it returns scores for metrics like <strong>correctness</strong> (is the answer right), <strong>completeness</strong> (did it cover everything asked), <strong>faithfulness</strong> (is every claim supported by the source, the anti-hallucination metric), <strong>harmfulness</strong> (is the content unsafe), <strong>refusal</strong> (did it correctly decline what it should decline), and <strong>style and tone</strong>. You can also define <strong>custom metrics</strong> in plain language, such as "scores 1 to 5 on how well the response matches our brand voice: direct, warm, no jargon."</p>
-<p>In Bedrock, this runs as an evaluation job: you pick the candidate model, the prompt dataset, the <strong>judge model</strong> (usually a larger, more capable model than the candidate, because a weak judge cannot reliably grade a strong candidate), and the metrics. Bedrock invokes the candidate, then the judge, and writes scored results to S3.</p>
-<h2 id="why-it-exists">Why it exists</h2>
+<h3>A second model grades the first</h3>
+<p>LLM-as-a-judge is an evaluation method where a foundation model scores another model's outputs against a rubric you define. Instead of comparing strings to labels, the judge model reads the prompt, the candidate response, and sometimes reference material, then returns scores for metrics like correctness (is the answer right), completeness (did it cover everything asked), faithfulness (is every claim supported by the source, the anti-hallucination metric), harmfulness (is the content unsafe), refusal (did it correctly decline what it should decline), and style and tone. You can also define custom metrics in plain language, such as "scores 1 to 5 on how well the response matches our brand voice: direct, warm, no jargon."</p>
+<p>In Bedrock this runs as an evaluation job: you pick the candidate model, the prompt dataset, the judge model, and the metrics. The judge is usually a larger, more capable model than the candidate, because a weak judge cannot reliably grade a strong candidate and may share its blind spots. Bedrock invokes the candidate, then the judge, and writes scored results to S3.</p>
 <p>Automatic metrics stop working the moment quality becomes subjective or the task has many valid answers. A summary can be excellent in ten different wordings; exact-match scoring calls nine of them wrong. Human review handles this but costs dollars per response and days per round. LLM-as-a-judge sits in the middle: it approximates human judgment at machine speed and near-machine cost, so you can score thousands of responses for tone, faithfulness, and completeness every time a prompt changes.</p>
-<h2 id="how-it-works-under-the-hood">How it works under the hood</h2>
-<ol>
-<li><strong>Candidate generation.</strong> Each prompt in your dataset is sent to the candidate model. The response is captured.</li>
-<li><strong>Judge prompt assembly.</strong> Bedrock builds a grading prompt for the judge model containing: the original prompt, the candidate response, the metric rubric with its scale, and optionally reference content or ground truth.</li>
-<li><strong>Judgment.</strong> The judge model returns a score per metric, usually with a short rationale. To reduce <strong>position bias</strong> (judges favoring the answer shown first) and verbosity bias (judges favoring longer answers), Bedrock's judge prompts randomize presentation order and instruct the judge to ignore length.</li>
-<li><strong>Aggregation.</strong> Scores average across the dataset, and per-prompt rationales are stored so you can audit why a response scored a 2 on faithfulness.</li>
-</ol>
-<p>Under the hood this is two model invocations per prompt per metric set, so cost and latency scale with dataset size and judge model choice. A common pattern is to use a cheaper judge for large screening runs and a stronger judge for final comparisons.</p>
-<h2 id="concrete-numbers-and-a-worked-example">Concrete numbers and a worked example</h2>
-<p>Take a RAG summarizer evaluated on 500 prompts. The candidate is a small fast model; the judge is a flagship model. Per prompt, the candidate costs about $0.001 and the judge about $0.02 (illustrative), so the full run costs roughly $10.50 and finishes in under an hour. Results: correctness 4.2/5, faithfulness 3.6/5, style 4.5/5. The faithfulness gap tells the team exactly where to work: retrieval grounding, not tone. Without the judge, they would have guessed the problem was the prompt's style instructions and wasted a week.</p>
-<p>Rule of thumb for the exam: judge-model cost dominates the run, so shrinking the dataset or the judge model is the cost lever; the candidate model cost is usually noise.</p>
-<h2 id="common-misunderstanding">Common misunderstanding</h2>
+<p>Under the hood this is two model invocations per prompt per metric set, so cost and latency scale with dataset size and judge model choice. The flow: candidate generation (each prompt goes to the candidate model, response captured), judge prompt assembly (Bedrock builds a grading prompt containing the original prompt, the candidate response, the metric rubric with its scale, and optionally reference content or ground truth), judgment (the judge returns a score per metric, usually with a short rationale), aggregation (scores average across the dataset, per-prompt rationales stored so you can audit why a response scored a 2 on faithfulness). To reduce position bias (judges favoring the answer shown first) and verbosity bias (judges favoring longer answers), Bedrock's judge prompts randomize presentation order and instruct the judge to ignore length. A common pattern is to use a cheaper judge for large screening runs and a stronger judge for final comparisons.</p>
+<p>A worked example: a RAG summarizer evaluated on 500 prompts. The candidate is a small fast model; the judge is a flagship model. Per prompt, the candidate costs about $0.001 and the judge about $0.02 (illustrative), so the full run costs roughly $10.50 and finishes in under an hour. Results: correctness 4.2/5, faithfulness 3.6/5, style 4.5/5. The faithfulness gap tells the team exactly where to work: retrieval grounding, not tone. Without the judge, they would have guessed the problem was the prompt's style instructions and wasted a week. Rule of thumb for the exam: judge-model cost dominates the run, so shrinking the dataset or the judge model is the cost lever; the candidate model cost is usually noise.</p>
 <div class="exam-ask"><p>Trap.</p>
 <p>Treating judge scores as ground truth. A judge model has biases: it prefers longer answers, prefers its own model family's style, and can be fooled by confident-sounding hallucinations. The exam tests this with scenarios like "the team trusts judge scores completely and removes human spot-checks." The correct practice is judge for scale plus human spot-checks on a sample to calibrate the judge. A second trap: using the same small model as both candidate and judge. A weak judge grading a strong candidate is the blind grading the sighted.</p></div>
-<h2 id="visual">Visual</h2>
-<figure><img src="DATA_URI" alt="Diagram: answers A and B flow into a judge model, which produces a scorecard with faithfulness and harmfulness bars" loading="lazy"><figcaption>Diagram: answers A and B flow into a judge model, which produces a scorecard with faithfulness and harmfulness bars</figcaption><figcaption class="credit"><em>Diagram: answers A and B flow into a judge model, which produces a scorecard with faithfulness and harmfulness bars</em></figcaption></figure>
-<p>How to read this diagram.</p>
-<ol>
-<li><strong>Left (answers A and B):</strong> outputs from one or two candidate models on the same prompt. For model comparison, both answers go to the judge; presentation order is randomized to fight position bias.</li>
-<li><strong>Center (judge model):</strong> a separate, usually larger model. It receives the prompt, the answer, and the rubric. It is not the model being tested.</li>
-<li><strong>Right (scorecard):</strong> per-metric scores with bars. Faithfulness catches hallucinations; harmfulness catches unsafe content. The rationale behind each score is stored for audit.</li>
-<li><strong>What breaks:</strong> if the judge is too weak, scores are noise. If the rubric is vague ("be good"), scores are inconsistent. Calibrate with a human-labeled sample first.</li>
-</ol>
-<h2 id="how-aws-asks-this">How AWS asks this</h2>
+<figure><img src="assets/img/mermaid/40-llm-judge-pairwise.svg" alt="Diagram: answers A and B flow into a judge model, which produces a scorecard with faithfulness and harmfulness bars" loading="lazy"><figcaption>Diagram: answers A and B flow into a judge model, which produces a scorecard with faithfulness and harmfulness bars</figcaption><figcaption class="credit"><em>Diagram: answers A and B flow into a judge model, which produces a scorecard with faithfulness and harmfulness bars</em></figcaption></figure>
+<p>Reading the diagram: answers A and B on the left are outputs from one or two candidate models on the same prompt; for model comparison both go to the judge, presentation order randomized to fight position bias. The center judge model is a separate, usually larger model, and it is not the model being tested: it receives the prompt, the answer, and the rubric. The right scorecard shows per-metric bars; faithfulness catches hallucinations, harmfulness catches unsafe content, and the rationale behind each score is stored for audit. What breaks: if the judge is too weak, scores are noise. If the rubric is vague ("be good"), scores are inconsistent. Calibrate with a human-labeled sample first.</p>
 <div class="exam-ask"><p>Exam framing.</p>
 <p>"A team must evaluate 5,000 RAG answers for faithfulness and completeness before a production rollout. Human review would take weeks." Correct: Bedrock LLM-as-a-judge evaluation with faithfulness and completeness metrics. Distractors: automatic evaluation (no ground truth for open-ended answers; accuracy metric does not measure faithfulness), human-only evaluation (too slow), or "spot-check 20 by hand" (not statistically meaningful). Also watch for agent evaluation: "measure task completion and tool-use effectiveness for an agent" is judge territory, since no string metric captures multi-step reasoning quality.</p></div>
 <h2 id="questions">Questions</h2>
@@ -1334,35 +1423,19 @@ footer p{text-align:left}
 <li>C. Define custom metrics in plain language for company-specific qualities like brand voice.</li>
 <li>D. Run the judge with temperature set high to get diverse opinions per response.</li>
 </ol>
+
 <h2 id="3-human-evaluation-workflows">3. Human evaluation workflows</h2>
 <p>Some things only a person can judge. Bedrock human evaluation organizes reviewers, instructions, and agreement measurement into a managed workflow.</p>
-<h2 id="what-it-is">What it is</h2>
-<p><strong>Human evaluation</strong> is the Bedrock evaluation method where people read model outputs and score them against your rubric. You define the metrics (relevance, style, brand voice, or anything custom), write <strong>rating instructions</strong> that tell reviewers exactly what each score means, and assemble a <strong>work team</strong>. The team can be your own employees or an <strong>AWS-managed team</strong> (crowd reviewers managed through the same machinery as SageMaker Ground Truth). Each response is typically shown to multiple reviewers, and Bedrock measures <strong>inter-rater agreement</strong>, meaning how often reviewers agree, which tells you whether your instructions are clear enough to trust the scores.</p>
-<h2 id="why-it-exists">Why it exists</h2>
+<h3>People, rubrics, and agreement</h3>
+<p>Human evaluation is the Bedrock evaluation method where people read model outputs and score them against your rubric. You define the metrics (relevance, style, brand voice, or anything custom), write rating instructions that tell reviewers exactly what each score means, and assemble a work team. The team can be your own employees or an AWS-managed team (crowd reviewers managed through the same machinery as SageMaker Ground Truth). Each response is typically shown to multiple reviewers, and Bedrock measures inter-rater agreement, how often reviewers agree, which tells you whether your instructions are clear enough to trust the scores.</p>
 <p>Brand voice, cultural nuance, legal appropriateness, and "would our customers trust this answer" are judgments no metric or judge model makes reliably. Human evaluation is the gold standard for subjective quality and the calibration source that keeps LLM-as-a-judge honest. It also satisfies governance needs: for high-risk use cases, regulators and internal policy often require a human to have reviewed representative outputs before launch.</p>
-<h2 id="how-it-works-under-the-hood">How it works under the hood</h2>
-<ol>
-<li><strong>Setup.</strong> You create an evaluation job of type human: choose the model outputs to review (generated by Bedrock or brought as your own), define custom metrics with 1 to 5 scales and written anchors ("5 = ..."), and attach rating instructions.</li>
-<li><strong>Assignment.</strong> Responses are dealt out to reviewers, usually with overlap: each response seen by two or three reviewers so agreement can be measured.</li>
-<li><strong>Review.</strong> Reviewers score each response in a web UI. Bedrock tracks timing and flags reviewers who rush.</li>
-<li><strong>Aggregation.</strong> Scores are averaged per response and per metric; inter-rater agreement is computed. Low agreement on a metric means the instructions for that metric are ambiguous and need rewriting, not that the model is bad.</li>
-</ol>
+<p>Under the hood: setup (create an evaluation job of type human; choose the model outputs to review, generated by Bedrock or brought as your own; define custom metrics with 1 to 5 scales and written anchors like "5 = ..."; attach rating instructions), assignment (responses dealt out to reviewers, usually with overlap: each response seen by two or three reviewers so agreement can be measured), review (reviewers score each response in a web UI; Bedrock tracks timing and flags reviewers who rush), aggregation (scores averaged per response and per metric; inter-rater agreement computed). Low agreement on a metric means the instructions for that metric are ambiguous and need rewriting, not that the model is bad.</p>
 <p>The workflow is asynchronous and measured in hours to days, not minutes. Cost scales with reviewers times responses, which is why human eval covers samples, not entire datasets.</p>
-<h2 id="concrete-numbers-and-a-worked-example">Concrete numbers and a worked example</h2>
-<p>A team evaluates 300 support answers for brand voice on a 1 to 5 scale, each answer reviewed by 3 employees. That is 900 individual ratings. If each rating takes 2 minutes, the team spends 30 reviewer-hours. At that cost, 300 responses is a calibration sample, not a regression suite. Agreement comes back at 0.82 on "accuracy" but only 0.54 on "warmth", which tells the team the warmth instructions are vague. They rewrite the anchors with concrete examples ("warmth 5: acknowledges the customer's frustration by name before answering"), re-run on 100 responses, and agreement rises to 0.78. That rewritten rubric then becomes a custom metric for LLM-as-a-judge at scale.</p>
-<h2 id="common-misunderstanding">Common misunderstanding</h2>
+<p>A worked example: a team evaluates 300 support answers for brand voice on a 1 to 5 scale, each answer reviewed by 3 employees. That is 900 individual ratings. If each rating takes 2 minutes, the team spends 30 reviewer-hours. At that cost, 300 responses is a calibration sample, not a regression suite. Agreement comes back at 0.82 on "accuracy" but only 0.54 on "warmth", which tells the team the warmth instructions are vague. They rewrite the anchors with concrete examples ("warmth 5: acknowledges the customer's frustration by name before answering"), re-run on 100 responses, and agreement rises to 0.78. That rewritten rubric then becomes a custom metric for LLM-as-a-judge at scale. This is the canonical pattern: human eval calibrates, judge eval scales.</p>
 <div class="exam-ask"><p>Trap.</p>
 <p>"Human evaluation is the most accurate, so use it for everything." It is the most accurate per judgment and the least scalable per dollar. The exam will offer "have the team review all outputs" as a distractor for any large-scale scenario. The correct pattern is layered: automatic metrics for the objective bulk, LLM-as-a-judge for subjective scale, human evaluation for samples, calibration, and final sign-off on high-risk changes.</p></div>
-<h2 id="visual">Visual</h2>
-<figure><img src="DATA_URI" alt="Diagram: model responses flow to human reviewers at desks, then to a consensus card with checkmarks and an agreement gauge" loading="lazy"><figcaption>Diagram: model responses flow to human reviewers at desks, then to a consensus card with checkmarks and an agreement gauge</figcaption><figcaption class="credit"><em>Diagram: model responses flow to human reviewers at desks, then to a consensus card with checkmarks and an agreement gauge</em></figcaption></figure>
-<p>How to read this diagram.</p>
-<ol>
-<li><strong>Left (model responses):</strong> a sampled subset, not the full dataset. Sampling strategy matters: include edge cases and recent failures, not just easy prompts.</li>
-<li><strong>Center (human reviewers):</strong> your employees for domain nuance, or an AWS-managed team for scale. Each response goes to multiple reviewers.</li>
-<li><strong>Right (consensus card):</strong> averaged scores plus the agreement gauge. High agreement means the rubric is clear; low agreement means fix the instructions before blaming the model.</li>
-<li><strong>Bottom strip (spot-check sample):</strong> human eval's role in the larger system is calibration: its labels become the ground truth that validates automatic metrics and judge models.</li>
-</ol>
-<h2 id="how-aws-asks-this">How AWS asks this</h2>
+<figure><img src="assets/img/mermaid/41-human-review.svg" alt="Diagram: model responses flow to human reviewers at desks, then to a consensus card with checkmarks and an agreement gauge" loading="lazy"><figcaption>Diagram: model responses flow to human reviewers at desks, then to a consensus card with checkmarks and an agreement gauge</figcaption><figcaption class="credit"><em>Diagram: model responses flow to human reviewers at desks, then to a consensus card with checkmarks and an agreement gauge</em></figcaption></figure>
+<p>Reading the diagram: model responses on the left are a sampled subset, not the full dataset; sampling strategy matters, include edge cases and recent failures, not just easy prompts. In the center, human reviewers are your employees for domain nuance or an AWS-managed team for scale, each response going to multiple reviewers. The right consensus card shows averaged scores plus the agreement gauge: high agreement means the rubric is clear, low agreement means fix the instructions before blaming the model. The bottom strip shows human eval's role in the larger system as calibration: its labels become the ground truth that validates automatic metrics and judge models.</p>
 <div class="exam-ask"><p>Exam framing.</p>
 <p>"Compare two models for summarization quality including brand voice." Correct: LLM-as-a-judge for scale plus human evaluation for brand voice. The exam loves the word "subjective": whenever the stem says quality is subjective or mentions brand, tone, or cultural fit, human evaluation must appear in the answer, usually paired with a scalable method. A second framing: "no in-house reviewers available" points to the AWS-managed team option rather than skipping human review.</p></div>
 <h2 id="questions">Questions</h2>
@@ -1393,38 +1466,19 @@ footer p{text-align:left}
 <li>C. Calibrate the LLM-as-a-judge by supplying trusted labels on a sample.</li>
 <li>D. Replace automatic metrics entirely because humans are more accurate.</li>
 </ol>
+
 <h2 id="4-bring-your-own-datasets-and-choosing-metrics">4. Bring-your-own datasets and choosing metrics</h2>
 <p>Bedrock's built-in datasets cover generic tasks. Your app is not generic. This chapter covers bringing your own prompt datasets and matching each task type to the metric that actually measures it.</p>
-<h2 id="what-it-is">What it is</h2>
-<p><strong>Bring-your-own (BYO) prompt datasets</strong> means supplying your own evaluation prompts instead of using Bedrock's built-in ones. You upload a JSONL file to S3 where each line is a prompt, optionally with ground truth, reference context, or metadata. Bedrock's evaluation jobs accept this file for all three methods: automatic, judge, and human. A related option is <strong>bring-your-own-inference (BYOI)</strong>: instead of letting Bedrock invoke the model, you supply the model responses yourself. BYOI lets you evaluate any system: a model outside Bedrock, a full RAG pipeline, an agent with tools, or last month's production responses replayed for regression.</p>
-<p><strong>Choosing metrics</strong> is the discipline of matching the metric to the task. The three task families the exam names are <strong>summarization</strong>, <strong>question answering</strong>, and <strong>classification</strong>, and each has a natural metric family.</p>
-<h2 id="why-it-exists">Why it exists</h2>
+<h3>Your prompts, the right metric</h3>
+<p>Bring-your-own (BYO) prompt datasets means supplying your own evaluation prompts instead of using Bedrock's built-in ones. You upload a JSONL file to S3 where each line is a prompt, optionally with ground truth, reference context, or metadata. Bedrock's evaluation jobs accept this file for all three methods: automatic, judge, and human. A related option is bring-your-own-inference (BYOI): instead of letting Bedrock invoke the model, you supply the model responses yourself. BYOI lets you evaluate any system: a model outside Bedrock, a full RAG pipeline, an agent with tools, or last month's production responses replayed for regression.</p>
 <p>Built-in datasets test generic capabilities like "answer trivia questions." Your app answers questions about your product catalog, your policies, your ticket taxonomy. Only your own prompts, drawn from real usage, measure what your users will actually experience. And the wrong metric actively misleads: judging a summary with exact-match accuracy punishes every good paraphrase, so a better model scores worse. The metric must measure what the task requires.</p>
-<h2 id="how-it-works-under-the-hood">How it works under the hood</h2>
-<p>The metric families, from first principles:</p>
-<ul>
-<li><strong>Classification: accuracy and F1.</strong> Classification has one right label per input, so counting matches works. <strong>Accuracy</strong> is correct predictions divided by total. <strong>F1 score</strong> is the harmonic mean of precision (of the items labeled X, how many truly are X) and recall (of the items truly X, how many were labeled X). Use F1 when classes are imbalanced: a fraud detector that labels everything "not fraud" gets 99 percent accuracy on a 99-to-1 dataset and is useless; F1 exposes that.</li>
-<li><strong>Question answering: exact match and token F1.</strong><strong>Exact match</strong> is binary: the answer string equals the reference or it does not. <strong>Token-level F1</strong> gives partial credit for overlapping words, which is fairer for longer answers. For open-ended QA with many valid phrasings, switch to LLM-as-a-judge correctness.</li>
-<li><strong>Summarization: ROUGE.</strong><strong>ROUGE</strong> (Recall-Oriented Understudy for Gisting Evaluation) measures n-gram overlap between the generated summary and reference summaries. ROUGE-1 counts single words, ROUGE-2 counts word pairs, ROUGE-L counts the longest common subsequence. It rewards covering the reference's content, not matching its exact wording.</li>
-</ul>
+<p>The metric families, from first principles. Classification: accuracy and F1. Classification has one right label per input, so counting matches works. Accuracy is correct predictions divided by total. F1 score is the harmonic mean of precision (of the items labeled X, how many truly are X) and recall (of the items truly X, how many were labeled X). Use F1 when classes are imbalanced: a fraud detector that labels everything "not fraud" gets 99 percent accuracy on a 99-to-1 dataset and is useless; F1 exposes that. Question answering: exact match and token F1. Exact match is binary: the answer string equals the reference or it does not. Token-level F1 gives partial credit for overlapping words, which is fairer for longer answers. For open-ended QA with many valid phrasings, switch to LLM-as-a-judge correctness. Summarization: ROUGE. ROUGE (Recall-Oriented Understudy for Gisting Evaluation) measures n-gram overlap between the generated summary and reference summaries. ROUGE-1 counts single words, ROUGE-2 counts word pairs, ROUGE-L counts the longest common subsequence. It rewards covering the reference's content, not matching its exact wording.</p>
 <p>Under the hood, all three are string-comparison metrics: they need reference texts or labels, they run deterministically, and they are blind to paraphrase quality beyond word overlap. That is the boundary where you hand off to a judge model.</p>
-<h2 id="concrete-numbers-and-a-worked-example">Concrete numbers and a worked example</h2>
-<p>A ticket classifier evaluated on 1,000 tickets: 950 correct, accuracy 0.95. But the "urgent" class has only 40 tickets, and the model caught 20 of them while mislabeling 30 normal tickets as urgent. Precision for urgent is 20/50 = 0.40, recall is 20/40 = 0.50, F1 is 0.44. The headline accuracy of 0.95 hides an F1 of 0.44 on the class that matters most. This is the worked example the exam wants you to carry: accuracy lies on imbalanced data, F1 tells the truth.</p>
-<p>For summarization, a ROUGE-L of 0.62 against two reference summaries means the generated summary shares a longest common subsequence covering 62 percent of the reference content. Illustrative ranges: ROUGE-L above 0.5 is typically solid for news-style summarization.
-Below 0.3 usually means the summary misses the point. Always compare against a baseline, never against an absolute bar.</p>
-<h2 id="common-misunderstanding">Common misunderstanding</h2>
+<p>A worked example: a ticket classifier evaluated on 1,000 tickets gets 950 correct, accuracy 0.95. But the "urgent" class has only 40 tickets, and the model caught 20 of them while mislabeling 30 normal tickets as urgent. Precision for urgent is 20/50 = 0.40, recall is 20/40 = 0.50, F1 is 0.44. The headline accuracy of 0.95 hides an F1 of 0.44 on the class that matters most. This is the worked example the exam wants you to carry: accuracy lies on imbalanced data, F1 tells the truth. For summarization, a ROUGE-L of 0.62 against two reference summaries means the generated summary shares a longest common subsequence covering 62 percent of the reference content. Illustrative ranges: ROUGE-L above 0.5 is typically solid for news-style summarization; below 0.3 usually means the summary misses the point. Always compare against a baseline, never against an absolute bar.</p>
 <div class="exam-ask"><p>Trap.</p>
 <p>Using one favorite metric for every task. The exam's favorite distractor is "run automatic evaluation with accuracy" for a summarization or open-ended QA scenario. Accuracy needs exact labels; summarization has no single correct string. Match the metric to the task: classification gets accuracy/F1, extractive QA gets exact match, summarization gets ROUGE, and anything subjective or open-ended gets a judge model or humans. A second trap: BYOI confused with fine-tuning data. BYOI is evaluation input (prompts plus your own generated responses); it trains nothing.</p></div>
-<h2 id="visual">Visual</h2>
-<figure><img src="DATA_URI" alt="Diagram: three task cards (summarize, question answer, classify) each arrowing to its matching metric chip (ROUGE-L, exact match, F1 score)" loading="lazy"><figcaption>Diagram: three task cards (summarize, question answer, classify) each arrowing to its matching metric chip (ROUGE-L, exact match, F1 score)</figcaption><figcaption class="credit"><em>Diagram: three task cards (summarize, question answer, classify) each arrowing to its matching metric chip (ROUGE-L, exact match, F1 score)</em></figcaption></figure>
-<p>How to read this diagram.</p>
-<ol>
-<li><strong>Left column (tasks):</strong> the three task families AWS names. Your BYO dataset rows are tagged by task so each row can route to its metric.</li>
-<li><strong>Arrows:</strong> the routing rule. Summarize flows to ROUGE-L, question answering to exact match or token F1, classification to accuracy/F1.</li>
-<li><strong>Right chips:</strong> each chip shows the metric plus its icon: overlap for ROUGE, target for exact match, grid for F1. The icon reminds you what the metric literally counts.</li>
-<li><strong>What breaks:</strong> if a summarization row is scored with accuracy, good paraphrases score zero. If an imbalanced classification row is scored with accuracy alone, the majority class hides minority-class failures.</li>
-</ol>
-<h2 id="how-aws-asks-this">How AWS asks this</h2>
+<figure><img src="assets/img/mermaid/42-task-metrics.svg" alt="Diagram: three task cards (summarize, question answer, classify) each arrowing to its matching metric chip (ROUGE-L, exact match, F1 score)" loading="lazy"><figcaption>Diagram: three task cards (summarize, question answer, classify) each arrowing to its matching metric chip (ROUGE-L, exact match, F1 score)</figcaption><figcaption class="credit"><em>Diagram: three task cards (summarize, question answer, classify) each arrowing to its matching metric chip (ROUGE-L, exact match, F1 score)</em></figcaption></figure>
+<p>Reading the diagram: the left column lists the three task families AWS names, and your BYO dataset rows are tagged by task so each row routes to its metric. The routing rule: summarization flows to ROUGE-L, question answering to exact match or token F1, classification to accuracy/F1. Each right chip shows the metric plus its icon: overlap for ROUGE, target for exact match, grid for F1; the icon reminds you what the metric literally counts. What breaks: if a summarization row is scored with accuracy, good paraphrases score zero. If an imbalanced classification row is scored with accuracy alone, the majority class hides minority-class failures.</p>
 <div class="exam-ask"><p>Exam framing.</p>
 <p>"A team evaluates a fraud classifier where 1 percent of transactions are fraud. Which metric should they use?" Correct: F1 (or precision/recall), because accuracy is dominated by the majority class. Distractor: accuracy. For summarization: "compare two summarization models" points to ROUGE or judge-based correctness/completeness; the distractor is exact match. For BYOI: "evaluate responses from a model hosted outside Bedrock" or "evaluate the full RAG pipeline end to end" points to bring-your-own-inference, since Bedrock cannot invoke what it does not host.</p></div>
 <h2 id="questions">Questions</h2>
@@ -1455,36 +1509,19 @@ Below 0.3 usually means the summary misses the point. Always compare against a b
 <li>C. They should score summarization-style answers with exact-match accuracy.</li>
 <li>D. They can run LLM-as-a-judge faithfulness metrics on their own responses to check grounding.</li>
 </ol>
+
 <h2 id="5-rag-evaluation-retrieval-quality-faithfulness-relevance">5. RAG evaluation: retrieval quality, faithfulness, relevance</h2>
+<figure class="fig-light"><img src="assets/img/internet/img-18.webp" alt="The RAG evaluation triad: answer relevance, context relevance, and groundedness, the three RAGAS-style metrics every RAG eval needs" loading="lazy"><figcaption>The RAG evaluation triad: answer relevance, context relevance, and groundedness, the three RAGAS-style metrics every RAG eval needs</figcaption><figcaption class="credit">Source: web image search, saved locally Sept 2026.</figcaption></figure>
 <p>A RAG pipeline has two halves that fail independently. Evaluating only the final answer cannot tell you which half broke. RAG evaluation scores retrieval and generation separately.</p>
-<h2 id="what-it-is">What it is</h2>
-<p><strong>RAG evaluation</strong> measures a retrieval-augmented generation pipeline in two stages. <strong>Retrieval quality</strong> asks: did the retriever find the right chunks? Metrics include <strong>relevance</strong> (are the retrieved chunks on topic), <strong>recall at k</strong> (of the chunks that contain the answer, how many appear in the top k retrieved), and precision at k. <strong>Generation quality</strong> asks: given the retrieved chunks, did the model answer well? The key metric is <strong>faithfulness</strong> (also called groundedness): every factual claim in the answer must be supported by the retrieved context. A related metric is <strong>answer relevance</strong>: does the answer actually address the question asked. In Bedrock, RAG evaluation is powered by LLM-as-a-judge with these metrics, often run against a dataset of questions paired with the documents that should answer them.</p>
-<h2 id="why-it-exists">Why it exists</h2>
+<h3>Score the retriever and the generator apart</h3>
+<p>RAG evaluation measures a retrieval-augmented generation pipeline in two stages. Retrieval quality asks: did the retriever find the right chunks? Metrics include relevance (are the retrieved chunks on topic), recall at k (of the chunks that contain the answer, how many appear in the top k retrieved), and precision at k. Generation quality asks: given the retrieved chunks, did the model answer well? The key metric is faithfulness (also called groundedness): every factual claim in the answer must be supported by the retrieved context. A related metric is answer relevance: does the answer actually address the question asked. In Bedrock, RAG evaluation is powered by LLM-as-a-judge with these metrics, often run against a dataset of questions paired with the documents that should answer them.</p>
 <p>The most common RAG failure mode is a confident, fluent, wrong answer. When that happens, teams instinctively blame the model and reach for a bigger one or a lower temperature. Half the time the real failure is upstream: the retriever returned irrelevant chunks, or the right chunk was split across a chunk boundary, and the model faithfully answered from bad context. Without separate retrieval and generation scores, you cannot distinguish "retrieved garbage, answered faithfully" from "retrieved gold, hallucinated anyway," so you cannot fix the right component.</p>
-<h2 id="how-it-works-under-the-hood">How it works under the hood</h2>
-<ol>
-<li><strong>Dataset.</strong> You build question-plus-source pairs: each question, the set of chunks that should be retrieved, and optionally a reference answer.</li>
-<li><strong>Retrieval run.</strong> Each question is issued to the knowledge base. Bedrock's Retrieve API returns the ranked chunks. Relevance and recall at k are computed against your expected chunk set, by code or by a judge.</li>
-<li><strong>Generation run.</strong> The retrieved chunks plus the question go to the generator. The judge model then scores faithfulness by checking each claim in the answer against the retrieved chunks, and answer relevance by checking the answer against the question.</li>
-<li><strong>Diagnosis.</strong> The score pair tells the story: low retrieval plus low faithfulness means fix retrieval (chunking, embeddings, hybrid search, reranking). High retrieval plus low faithfulness means fix generation (grounding instructions, contextual grounding checks, lower temperature). Low answer relevance with good retrieval means the prompt or question handling is wrong.</li>
-</ol>
-<h2 id="concrete-numbers-and-a-worked-example">Concrete numbers and a worked example</h2>
-<p>A support RAG over 200 questions: retrieval recall at 5 is 0.70, meaning for 30 percent of questions the answer-bearing chunk is not in the top 5 retrieved. Faithfulness is 0.62. The team first fixes chunking, moving from fixed-size to hierarchical chunking for their manuals, and adds a reranker. Recall at 5 rises to 0.88 and faithfulness rises to 0.81 without touching the generator or the prompt. The numbers told them the failure was upstream; the fix cost one configuration change instead of a model swap.</p>
-<p>Illustrative cost: a judge-based RAG eval on 200 questions with a mid-tier judge runs in the low tens of dollars and under an hour. Run it after every chunking, embedding, or prompt change.</p>
-<h2 id="common-misunderstanding">Common misunderstanding</h2>
+<p>Under the hood: dataset (build question-plus-source pairs: each question, the set of chunks that should be retrieved, optionally a reference answer), retrieval run (each question goes to the knowledge base; Bedrock's Retrieve API returns the ranked chunks; relevance and recall at k are computed against your expected chunk set, by code or by a judge), generation run (the retrieved chunks plus the question go to the generator; the judge model scores faithfulness by checking each claim in the answer against the retrieved chunks, and answer relevance by checking the answer against the question), diagnosis. The score pair tells the story: low retrieval plus low faithfulness means fix retrieval (chunking, embeddings, hybrid search, reranking). High retrieval plus low faithfulness means fix generation (grounding instructions, contextual grounding checks, lower temperature). Low answer relevance with good retrieval means the prompt or question handling is wrong.</p>
+<p>A worked example: a support RAG over 200 questions shows retrieval recall at 5 of 0.70, meaning for 30 percent of questions the answer-bearing chunk is not in the top 5 retrieved, and faithfulness of 0.62. The team first fixes chunking, moving from fixed-size to hierarchical chunking for their manuals, and adds a reranker. Recall at 5 rises to 0.88 and faithfulness rises to 0.81 without touching the generator or the prompt. The numbers told them the failure was upstream; the fix cost one configuration change instead of a model swap. Illustrative cost: a judge-based RAG eval on 200 questions with a mid-tier judge runs in the low tens of dollars and under an hour. Run it after every chunking, embedding, or prompt change.</p>
 <div class="exam-ask"><p>Trap.</p>
 <p>Fixing bad retrieval by switching the generation model. This is the single most-tested Domain 5 trap. If retrieved chunks are irrelevant, no model can produce a faithful correct answer from them; a bigger model just hallucinates more fluently. The exam stem gives it away with phrases like "retrieved chunks look relevant but answers are wrong" (generation/grounding problem) versus "answers cite facts not in the documents" (check retrieval first, then faithfulness). Always diagnose retrieval before generation.</p></div>
-<h2 id="visual">Visual</h2>
-<figure><img src="DATA_URI" alt="Two-panel diagram: top panel shows retrieval quality with relevant and missed documents; bottom panel shows generation faithfulness with claims linked to source lines and one hallucination marked" loading="lazy"><figcaption>Two-panel diagram: top panel shows retrieval quality with relevant and missed documents; bottom panel shows generation faithfulness with claims linked to source lines and one hallucination marked</figcaption><figcaption class="credit"><em>Two-panel diagram: top panel shows retrieval quality with relevant and missed documents; bottom panel shows generation faithfulness with claims linked to source lines and one hallucination marked</em></figcaption></figure>
-<p>How to read this diagram.</p>
-<ol>
-<li><strong>Top panel (retrieval quality):</strong> the query enters the document stack. Blue documents were retrieved and are relevant.
-   Grayed documents contain the answer but were missed. The gauge reads relevance at k. Misses here are chunking, embedding, or ranking failures.</li>
-<li><strong>Bottom panel (generation faithfulness):</strong> the model's answer bubble. Thin lines tie each sentence to a highlighted source line with a green check. The red-X sentence has no source line: a hallucination the faithfulness metric catches.</li>
-<li><strong>Reading the pair:</strong> blue docs plus red-X sentences means the generator ignores good context. Grayed docs plus grounded-but-incomplete answers means retrieval starves the generator.</li>
-<li><strong>What breaks:</strong> evaluating only the final answer merges these signals and points the fix at the wrong component.</li>
-</ol>
-<h2 id="how-aws-asks-this">How AWS asks this</h2>
+<figure><img src="assets/img/mermaid/43-rag-eval-panels.svg" alt="Two-panel diagram: top panel shows retrieval quality with relevant and missed documents; bottom panel shows generation faithfulness with claims linked to source lines and one hallucination marked" loading="lazy"><figcaption>Two-panel diagram: top panel shows retrieval quality with relevant and missed documents; bottom panel shows generation faithfulness with claims linked to source lines and one hallucination marked</figcaption><figcaption class="credit"><em>Two-panel diagram: top panel shows retrieval quality with relevant and missed documents; bottom panel shows generation faithfulness with claims linked to source lines and one hallucination marked</em></figcaption></figure>
+<p>Reading the diagram: the top panel shows retrieval quality. The query enters the document stack; blue documents were retrieved and are relevant, grayed documents contain the answer but were missed. The gauge reads relevance at k. Misses here are chunking, embedding, or ranking failures. The bottom panel shows generation faithfulness: the model's answer bubble, thin lines tying each sentence to a highlighted source line with a green check. The red-X sentence has no source line: a hallucination the faithfulness metric catches. Reading the pair: blue docs plus red-X sentences means the generator ignores good context. Grayed docs plus grounded-but-incomplete answers means retrieval starves the generator. What breaks: evaluating only the final answer merges these signals and points the fix at the wrong component.</p>
 <div class="exam-ask"><p>Exam framing.</p>
 <p>"A RAG application returns confident but wrong answers. The retrieved chunks look relevant." Correct first step: evaluate faithfulness and grounding of the generation step, since retrieval looks fine. Variant: "answers cite facts absent from the source documents" points to retrieval quality evaluation plus faithfulness. The distractor in both is "switch to a larger generation model" or "lower the temperature." Also watch for agent eval in judge clothing: "evaluate an agent's task completion and tool-use effectiveness" is LLM-as-a-judge with agent metrics, a cousin of RAG eval.</p></div>
 <h2 id="questions">Questions</h2>
@@ -1515,38 +1552,18 @@ Below 0.3 usually means the summary misses the point. Always compare against a b
 <li>C. ROUGE-L, measured on the retrieval stage to rank chunk similarity.</li>
 <li>D. Perplexity, measured on the generation stage as the primary quality gate.</li>
 </ol>
+
 <h2 id="6-eval-loops-and-iteration-regression-canary-golden-datasets">6. Eval loops and iteration: regression, canary, golden datasets</h2>
 <p>Evaluation is not a one-time event. An eval loop re-runs your quality suite on every change and blocks bad ones before users see them.</p>
-<h2 id="what-it-is">What it is</h2>
-<p>An <strong>eval loop</strong> is the continuous practice of running your evaluation suite whenever something changes: a prompt edit, a model swap, a chunking tweak, a guardrail update. Its three core mechanisms are <strong>regression testing</strong> (re-running a fixed suite and comparing against the last known-good baseline, so you catch quality drops the way unit tests catch code bugs), <strong>golden datasets</strong> (a curated, versioned set of prompts with trusted expected outputs that serves as the stable measuring stick), and <strong>canary testing</strong> (releasing the change to a small slice of traffic first and watching real metrics before full rollout). Bedrock evaluations supply the scoring; your pipeline supplies the triggering, comparison, and gating.</p>
-<h2 id="why-it-exists">Why it exists</h2>
+<h3>The loop that keeps bad changes out</h3>
+<p>An eval loop is the continuous practice of running your evaluation suite whenever something changes: a prompt edit, a model swap, a chunking tweak, a guardrail update. Its three core mechanisms are regression testing (re-running a fixed suite and comparing against the last known-good baseline, so you catch quality drops the way unit tests catch code bugs), golden datasets (a curated, versioned set of prompts with trusted expected outputs that serves as the stable measuring stick), and canary testing (releasing the change to a small slice of traffic first and watching real metrics before full rollout). Bedrock evaluations supply the scoring; your pipeline supplies the triggering, comparison, and gating.</p>
 <p>GenAI changes are deceptively small and disproportionately destructive. Rewording one sentence in a system prompt can flip refusal behavior across hundreds of prompts. Swapping to a cheaper model can silently degrade faithfulness. Without an eval loop, these regressions reach production and are discovered through user complaints, which is the most expensive monitoring system ever built. The loop turns "we think the new prompt is fine" into a measured comparison against a baseline.</p>
-<h2 id="how-it-works-under-the-hood">How it works under the hood</h2>
-<ol>
-<li><strong>Curate the golden dataset.</strong> Collect 100 to 1,000 prompts covering your critical paths: common queries, edge cases, past failures, adversarial inputs, and safety probes. Label expected outputs or at least the metric each prompt targets. Version it in S3 like code.</li>
-<li><strong>Baseline.</strong> Run the full eval suite against the current production configuration and record the scores. This is the number every future change is compared to.</li>
-<li><strong>Change and compare.</strong> On each change, run the identical suite against the new configuration. Compare metric by metric: accuracy, faithfulness, toxicity, latency, cost. A drop beyond your threshold fails the gate.</li>
-<li><strong>Canary.</strong> If the offline eval passes, route a small percentage of live traffic (often 1 to 5 percent) to the new version. Watch production signals: user satisfaction proxies, guardrail block rates, token costs, error rates.</li>
-<li><strong>Promote or roll back.</strong> Clean canary metrics promote the change to 100 percent. Any regression rolls back to the previous version, which your prompt versioning makes instant.</li>
-</ol>
-<p>The loop also needs <strong>semantic drift checks</strong>: periodic re-runs that detect slow quality decay as user behavior or source documents change, even when nobody edited a prompt.</p>
-<h2 id="concrete-numbers-and-a-worked-example">Concrete numbers and a worked example</h2>
-<p>A team manages a support assistant with a 400-prompt golden dataset. Their baseline: faithfulness 0.88, refusal correctness 0.97, average cost $0.004 per conversation. A prompt engineer shortens the system prompt to cut costs. The loop runs: faithfulness drops to 0.79, refusal correctness drops to 0.91, cost drops to $0.003. The gate threshold is "no metric may drop more than 0.03," so the change fails before canary. The engineer discovers the shortened prompt removed the grounding instruction. They restore it, re-run, all metrics hold, cost still drops 10 percent from tighter wording elsewhere. Without the loop, the 0.09 faithfulness drop would have shipped.</p>
-<p>Illustrative cadence: full golden-dataset runs on every prompt or model change, canary at 5 percent traffic for 24 hours on model swaps, semantic drift checks weekly.</p>
-<h2 id="common-misunderstanding">Common misunderstanding</h2>
+<p>Under the hood: curate the golden dataset (collect 100 to 1,000 prompts covering your critical paths: common queries, edge cases, past failures, adversarial inputs, safety probes; label expected outputs or at least the metric each prompt targets; version it in S3 like code), baseline (run the full eval suite against the current production configuration and record the scores; this is the number every future change is compared to), change and compare (on each change, run the identical suite against the new configuration; compare metric by metric: accuracy, faithfulness, toxicity, latency, cost; a drop beyond your threshold fails the gate), canary (if the offline eval passes, route a small percentage of live traffic, often 1 to 5 percent, to the new version; watch production signals: user satisfaction proxies, guardrail block rates, token costs, error rates), promote or roll back (clean canary metrics promote the change to 100 percent; any regression rolls back to the previous version, which your prompt versioning makes instant). The loop also needs semantic drift checks: periodic re-runs that detect slow quality decay as user behavior or source documents change, even when nobody edited a prompt.</p>
+<p>A worked example: a team manages a support assistant with a 400-prompt golden dataset. Their baseline: faithfulness 0.88, refusal correctness 0.97, average cost $0.004 per conversation. A prompt engineer shortens the system prompt to cut costs. The loop runs: faithfulness drops to 0.79, refusal correctness drops to 0.91, cost drops to $0.003. The gate threshold is "no metric may drop more than 0.03," so the change fails before canary. The engineer discovers the shortened prompt removed the grounding instruction. They restore it, re-run, all metrics hold, cost still drops 10 percent from tighter wording elsewhere. Without the loop, the 0.09 faithfulness drop would have shipped. Illustrative cadence: full golden-dataset runs on every prompt or model change, canary at 5 percent traffic for 24 hours on model swaps, semantic drift checks weekly.</p>
 <div class="exam-ask"><p>Trap.</p>
 <p>Treating the golden dataset as write-once. If the dataset never gains new prompts from production failures, the loop converges on passing a stale test while real quality drifts. The exam tests this indirectly: "the eval suite passes but users report new failure modes" points to a golden dataset missing those failure modes. The loop is only as good as the dataset's coverage, so every production incident should add its prompts to the golden set.</p></div>
-<h2 id="visual">Visual</h2>
-<figure><img src="DATA_URI" alt="Circular loop diagram: change prompt or model, run eval suite, compare to baseline, gate pass or fail, with a golden dataset database at the center and a stop sign on the gate" loading="lazy"><figcaption>Circular loop diagram: change prompt or model, run eval suite, compare to baseline, gate pass or fail, with a golden dataset database at the center and a stop sign on the gate</figcaption><figcaption class="credit"><em>Circular loop diagram: change prompt or model, run eval suite, compare to baseline, gate pass or fail, with a golden dataset database at the center and a stop sign on the gate</em></figcaption></figure>
-<p>How to read this diagram.</p>
-<ol>
-<li><strong>Top box (change prompt or model):</strong> the trigger. Any configuration change starts the loop, the same way a commit starts CI.</li>
-<li><strong>Right box (run eval suite):</strong> Bedrock evaluations score the new configuration on the golden dataset: automatic, judge, and sampled human metrics.</li>
-<li><strong>Bottom box (compare to baseline):</strong> metric-by-metric diff against the last known-good run. Small deltas pass; drops beyond threshold fail.</li>
-<li><strong>Left box (gate pass or fail):</strong> the red stop sign is the point: a failed gate blocks the rollout automatically. Passing gates proceed to canary.</li>
-<li><strong>Center (golden dataset):</strong> the stable measuring stick everything is compared against. Curate it, version it, grow it with every incident.</li>
-</ol>
-<h2 id="how-aws-asks-this">How AWS asks this</h2>
+<figure><img src="assets/img/mermaid/06-eval-loop.svg" alt="Circular loop diagram: change prompt or model, run eval suite, compare to baseline, gate pass or fail, with a golden dataset database at the center and a stop sign on the gate" loading="lazy"><figcaption>Circular loop diagram: change prompt or model, run eval suite, compare to baseline, gate pass or fail, with a golden dataset database at the center and a stop sign on the gate</figcaption><figcaption class="credit"><em>Circular loop diagram: change prompt or model, run eval suite, compare to baseline, gate pass or fail, with a golden dataset database at the center and a stop sign on the gate</em></figcaption></figure>
+<p>Reading the diagram: the top box (change prompt or model) is the trigger; any configuration change starts the loop, the same way a commit starts CI. The right box (run eval suite) shows Bedrock evaluations scoring the new configuration on the golden dataset: automatic, judge, and sampled human metrics. The bottom box (compare to baseline) diffs metric by metric against the last known-good run; small deltas pass, drops beyond threshold fail. The left box (gate pass or fail) is the point: the red stop sign blocks a failed rollout automatically, passing gates proceed to canary. The center (golden dataset) is the stable measuring stick everything is compared against: curate it, version it, grow it with every incident.</p>
 <div class="exam-ask"><p>Exam framing.</p>
 <p>"A team must validate every prompt change before production with minimal manual effort." Correct: automated regression testing on a golden dataset with eval gates in the deployment pipeline. Distractors: manual review of each change (does not scale), canary without offline eval (exposes users to unvetted changes), or "trust the prompt engineer's judgment." A second framing: "detect slow quality decay over months" points to scheduled semantic drift checks and continuous evaluation, not one-time testing.</p></div>
 <h2 id="questions">Questions</h2>
@@ -1577,39 +1594,22 @@ Below 0.3 usually means the summary misses the point. Always compare against a b
 <li>C. If offline evals pass, canary the new version on a small traffic slice and monitor guardrail blocks, cost, and error rates.</li>
 <li>D. Skip the baseline comparison since the new model has better published benchmarks.</li>
 </ol>
+
 <h2 id="7-ab-testing-prompts-and-models">7. A/B testing prompts and models</h2>
 <p>When two options both look good offline, let production traffic decide. A/B testing routes real users to variants and measures the difference.</p>
-<h2 id="what-it-is">What it is</h2>
-<p><strong>A/B testing</strong> (online experimentation) serves two or more <strong>variants</strong> to different slices of live traffic and compares their outcomes. In GenAI, the variants are usually prompt versions (Bedrock Prompt Management <strong>variants</strong> exist for exactly this) or model choices (small versus flagship, old versus new). Traffic is split, commonly 50/50 for a decisive read or 90/10 when the new variant is riskier, and each variant's metrics are collected: task success, user satisfaction signals, guardrail block rate, latency, and cost per conversation.</p>
-<h2 id="why-it-exists">Why it exists</h2>
+<h3>Let real traffic pick the winner</h3>
+<p>A/B testing (online experimentation) serves two or more variants to different slices of live traffic and compares their outcomes. In GenAI, the variants are usually prompt versions (Bedrock Prompt Management variants exist for exactly this) or model choices (small versus flagship, old versus new). Traffic is split, commonly 50/50 for a decisive read or 90/10 when the new variant is riskier, and each variant's metrics are collected: task success, user satisfaction signals, guardrail block rate, latency, and cost per conversation.</p>
 <p>Offline evals measure what you thought to test. Production measures what users actually do, including the long tail of prompts your golden dataset never imagined. A prompt that scores 0.90 offline can lose to a 0.87 prompt online because real users phrase things differently, or because the "worse" prompt is 40 percent cheaper at equal user satisfaction. A/B testing is also the fairness tool: the exam names A/B testing via prompt variants as a way to check for biased outcomes across demographic groups before committing to a change.</p>
-<h2 id="how-it-works-under-the-hood">How it works under the hood</h2>
-<ol>
-<li><strong>Define variants.</strong> In Bedrock Prompt Management, create variants of a prompt: same variables, different instructions. For models, the variants are model IDs behind a routing layer (Lambda reading an AppConfig flag is the exam's canonical pattern).</li>
-<li><strong>Split traffic.</strong> A router assigns each request to variant A or B, sticky per user or session so one user does not flip between variants mid-conversation. Sticky assignment matters: mixed experiences corrupt satisfaction signals.</li>
-<li><strong>Collect.</strong> Log per-variant metrics: task completion (did the user accept the answer, retry, or escalate), thumbs up/down, guardrail interventions, tokens and cost, latency percentiles.</li>
-<li><strong>Decide.</strong> Compare with statistical awareness: run long enough for the difference to be real, not noise. The winner becomes the new default; the loser is kept as a variant for the next round.</li>
-</ol>
-<p>A/B testing and eval loops complement each other: the loop keeps bad changes out, the A/B test picks the best among good ones.</p>
-<h2 id="concrete-numbers-and-a-worked-example">Concrete numbers and a worked example</h2>
-<p>A team A/B tests two support prompts 50/50 over 10,000 conversations each. Variant A: 78 percent first-answer resolution, $0.0050 per conversation. Variant B: 76 percent resolution, $0.0028 per conversation. Resolution differs by 2 points (likely noise at this sample size; a stats check confirms it is not significant), but cost differs by 44 percent. The team ships variant B and saves roughly $22 per 1,000 conversations with no measurable quality loss. Illustrative: this is the classic GenAI A/B outcome, where the cheaper variant wins on economics at equal quality, and only production traffic could prove the quality was equal.</p>
-<h2 id="common-misunderstanding">Common misunderstanding</h2>
+<p>Under the hood: define variants (in Bedrock Prompt Management, create variants of a prompt: same variables, different instructions; for models, the variants are model IDs behind a routing layer, Lambda reading an AppConfig flag is the exam's canonical pattern), split traffic (a router assigns each request to variant A or B, sticky per user or session so one user does not flip between variants mid-conversation; sticky assignment matters because mixed experiences corrupt satisfaction signals), collect (log per-variant metrics: task completion, did the user accept the answer, retry, or escalate; thumbs up/down; guardrail interventions; tokens and cost; latency percentiles), decide (compare with statistical awareness: run long enough for the difference to be real, not noise; the winner becomes the new default, the loser is kept as a variant for the next round). A/B testing and eval loops complement each other: the loop keeps bad changes out, the A/B test picks the best among good ones.</p>
+<p>A worked example: a team A/B tests two support prompts 50/50 over 10,000 conversations each. Variant A: 78 percent first-answer resolution, $0.0050 per conversation. Variant B: 76 percent resolution, $0.0028 per conversation. Resolution differs by 2 points (likely noise at this sample size; a stats check confirms it is not significant), but cost differs by 44 percent. The team ships variant B and saves roughly $22 per 1,000 conversations with no measurable quality loss. Illustrative: this is the classic GenAI A/B outcome, where the cheaper variant wins on economics at equal quality, and only production traffic could prove the quality was equal.</p>
 <div class="exam-ask"><p>Trap.</p>
 <p>Confusing prompt</p>
 <p>variants</p>
 <p>with prompt</p>
 <p>versions</p>
 <p>. Versions are immutable snapshots for release and rollback; variants are parallel alternatives for comparison. The exam will swap the terms in distractors: "create a new prompt version for each A/B arm" is wrong because versions are sequential releases, not parallel experiments. A second trap: A/B testing without sticky routing, which mixes variants within a single user's session and poisons the comparison.</p></div>
-<h2 id="visual">Visual</h2>
-<figure><img src="DATA_URI" alt="Diagram: user traffic splits into variant A and variant B branches, converging on a comparison dashboard where variant B wins on win rate" loading="lazy"><figcaption>Diagram: user traffic splits into variant A and variant B branches, converging on a comparison dashboard where variant B wins on win rate</figcaption><figcaption class="credit"><em>Diagram: user traffic splits into variant A and variant B branches, converging on a comparison dashboard where variant B wins on win rate</em></figcaption></figure>
-<p>How to read this diagram.</p>
-<ol>
-<li><strong>Left (users):</strong> a single traffic arrow splits into equal branches. The split ratio reflects risk appetite: 50/50 for speed, 90/10 for caution.</li>
-<li><strong>Branches (variants A and B):</strong> the only difference between branches is the variable under test: the prompt text or the model. Everything else, including guardrails and retrieval, stays identical or the comparison is invalid.</li>
-<li><strong>Right (dashboard):</strong> win-rate bars per variant across all metrics: quality, cost, latency, safety. The check badge marks the winner only after statistical significance, not after the first hundred requests.</li>
-<li><strong>What breaks:</strong> non-sticky routing (users flip variants mid-session), changing two things at once (prompt and model), or stopping the test at the first favorable reading.</li>
-</ol>
-<h2 id="how-aws-asks-this">How AWS asks this</h2>
+<figure><img src="assets/img/mermaid/44-ab-testing.svg" alt="Diagram: user traffic splits into variant A and variant B branches, converging on a comparison dashboard where variant B wins on win rate" loading="lazy"><figcaption>Diagram: user traffic splits into variant A and variant B branches, converging on a comparison dashboard where variant B wins on win rate</figcaption><figcaption class="credit"><em>Diagram: user traffic splits into variant A and variant B branches, converging on a comparison dashboard where variant B wins on win rate</em></figcaption></figure>
+<p>Reading the diagram: a single traffic arrow on the left splits into equal branches; the split ratio reflects risk appetite, 50/50 for speed, 90/10 for caution. The branches (variants A and B) differ only in the variable under test, the prompt text or the model: everything else, including guardrails and retrieval, stays identical or the comparison is invalid. The right dashboard shows win-rate bars per variant across quality, cost, latency, and safety; the check badge marks the winner only after statistical significance, not after the first hundred requests. What breaks: non-sticky routing (users flip variants mid-session), changing two things at once (prompt and model), or stopping the test at the first favorable reading.</p>
 <div class="exam-ask"><p>Exam framing.</p>
 <p>"A team wants to compare two prompt wordings on live traffic with minimal code changes." Correct: Bedrock Prompt Management variants plus traffic splitting, measuring resolution and cost. Distractors: deploying two separate applications, or "pick the one with the better offline score" when the stem emphasizes real user behavior. Fairness framing: "verify a new prompt does not produce worse outcomes for any user group" points to A/B testing with segmented metrics, the exam's fairness-check pattern.</p></div>
 <h2 id="questions">Questions</h2>
@@ -1640,46 +1640,26 @@ Below 0.3 usually means the summary misses the point. Always compare against a b
 <li>C. The test stops as soon as one variant leads after 200 requests.</li>
 <li>D. Both variants are deployed as separate CloudFormation stacks in different regions.</li>
 </ol>
+
 <h2 id="8-troubleshooting-common-failures">8. Troubleshooting common failures</h2>
 <figure><img src="assets/img/mermaid/08-troubleshoot-tree.svg" alt="Bedrock failure triage: throttling gets backoff and quota increases, validation errors mean bad request shape or token limits, guardrail blocks need the firing filter identified in CloudWatch, timeouts need streaming or smaller context." loading="lazy"><figcaption>Bedrock failure triage: throttling gets backoff and quota increases, validation errors mean bad request shape or token limits, guardrail blocks need the firing filter identified in CloudWatch, timeouts need streaming or smaller context.</figcaption><figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
 <p>Five failure patterns cause most GenAI production incidents. Learn to recognize each by its error signature and reach for the right fix first.</p>
-<h2 id="what-it-is">What it is</h2>
+<h3>Five signatures, five fixes</h3>
 <p>GenAI apps fail in ways traditional apps do not, and each failure has a characteristic signature. The five the exam tests:</p>
 <ol>
-<li><strong>Throttling and quota errors.</strong> Too many requests for your allocated capacity. Bedrock returns throttling exceptions.
-   The app sees retries and latency spikes. Causes include traffic bursts beyond quota, all traffic on on-demand when Provisioned Throughput was purchased but never routed to, and retry storms where every client retries at once.</li>
-<li><strong>Guardrail blocks.</strong> Bedrock Guardrails intervenes on an input or output: content filters, denied topics, word filters, or sensitive-information filters trigger. The response is blocked or redacted, and the API returns a guardrail trace showing which policy fired.</li>
-<li><strong>Agent action-group failures.</strong> A Bedrock agent fails to call its tools. Signatures: the agent ignores a newly added action group (the <strong>prepare-agent</strong> step was skipped after the change), the Lambda executor throws permission errors (the agent's IAM role lacks invoke rights), or the OpenAPI schema does not match the Lambda's actual parameters.</li>
-<li><strong>Knowledge base sync issues.</strong> The KB serves stale or missing content. Causes: the data source sync failed or never ran on schedule, files exceed ingestion limits, or the chunking strategy was changed, which requires recreating the data source because chunking is set at creation time.</li>
-<li><strong>Embedding dimension mismatches.</strong> The vector store expects one vector size and receives another. This happens when the embedding model is swapped (for example, moving from a 1024-dimension model to a 256-dimension one) without re-embedding the corpus and rebuilding the index. Ingestion fails, or queries silently return garbage because the query vector and stored vectors live in different spaces.</li>
+<li>Throttling and quota errors. Too many requests for your allocated capacity. Bedrock returns throttling exceptions; the app sees retries and latency spikes. Causes include traffic bursts beyond quota, all traffic on on-demand when Provisioned Throughput was purchased but never routed to, and retry storms where every client retries at once.</li>
+<li>Guardrail blocks. Bedrock Guardrails intervenes on an input or output: content filters, denied topics, word filters, or sensitive-information filters trigger. The response is blocked or redacted, and the API returns a guardrail trace showing which policy fired.</li>
+<li>Agent action-group failures. A Bedrock agent fails to call its tools. Signatures: the agent ignores a newly added action group (the prepare-agent step was skipped after the change), the Lambda executor throws permission errors (the agent's IAM role lacks invoke rights), or the OpenAPI schema does not match the Lambda's actual parameters.</li>
+<li>Knowledge base sync issues. The KB serves stale or missing content. Causes: the data source sync failed or never ran on schedule, files exceed ingestion limits, or the chunking strategy was changed, which requires recreating the data source because chunking is set at creation time.</li>
+<li>Embedding dimension mismatches. The vector store expects one vector size and receives another. This happens when the embedding model is swapped (for example, moving from a 1024-dimension model to a 256-dimension one) without re-embedding the corpus and rebuilding the index. Ingestion fails, or queries silently return garbage because the query vector and stored vectors live in different spaces. There is no shortcut: vectors from different models are not interchangeable even at the same dimension, because each model defines its own vector space.</li>
 </ol>
-<h2 id="why-it-exists-as-a-discipline">Why it exists as a discipline</h2>
 <p>Each of these failures looks like the others from the user's perspective: "the app is broken." Without signature recognition, teams apply random fixes: they buy more Provisioned Throughput when the code never routes to it, they switch models when the KB sync is stale, they loosen guardrails when the real problem is a poisoned prompt. Troubleshooting is the skill of mapping symptom to layer, and GenAI stacks have more layers than traditional ones: prompt, retrieval, generation, tools, safety, and capacity.</p>
-<h2 id="how-it-works-under-the-hood">How it works under the hood</h2>
-<p>The debug order for any GenAI incident:</p>
-<ol>
-<li><strong>Read the error, not the symptom.</strong> Throttling exceptions name the quota. Guardrail blocks carry a trace naming the policy. Agent failures surface in the trace with <code>enableTrace</code>. KB sync status lives in the console per data source.</li>
-<li><strong>Check the last change.</strong> New action group ignored means prepare-agent was skipped. Chunking changed means the data source must be recreated. Embedding model changed means the index must be rebuilt.</li>
-<li><strong>Verify routing.</strong> Bought Provisioned Throughput but still throttled on on-demand? Check whether the code invokes the provisioned model ARN. The classic exam bug is paying for capacity and never sending traffic to it.</li>
-<li><strong>Isolate the layer.</strong> Test retrieval alone with the Retrieve API before blaming generation. Test the Lambda tool directly before blaming the agent. Test the guardrail with ApplyGuardrail before blaming the prompt.</li>
-</ol>
-<h2 id="concrete-numbers-and-a-worked-example">Concrete numbers and a worked example</h2>
-<p>A team buys Provisioned Throughput for their support model, then sees throttling exceptions at peak. Investigation: their code calls <code>invoke_model</code> with the base model ID <code>anthropic.claude-...</code> instead of the provisioned model ARN. All traffic still hits on-demand quotas, which throttle at peak. The fix is one line: invoke the provisioned model identifier. Capacity was never the problem; routing was. The exam repeats this scenario almost verbatim because it tests whether you understand that buying capacity and using capacity are two different steps.</p>
-<p>Embedding example: a KB built with 1024-dimension embeddings is switched to a 256-dimension model for cost. Ingestion jobs start failing with dimension errors, and hybrid search returns nonsense. The fix: re-embed the full corpus with the new model and rebuild the vector index. There is no shortcut; vectors from different models are not interchangeable even at the same dimension, because each model defines its own vector space.</p>
-<h2 id="common-misunderstanding">Common misunderstanding</h2>
+<p>The debug order for any GenAI incident. Read the error, not the symptom: throttling exceptions name the quota, guardrail blocks carry a trace naming the policy, agent failures surface in the trace with enableTrace, KB sync status lives in the console per data source. Check the last change: new action group ignored means prepare-agent was skipped; chunking changed means the data source must be recreated; embedding model changed means the index must be rebuilt. Verify routing: bought Provisioned Throughput but still throttled on on-demand? Check whether the code invokes the provisioned model ARN. The classic exam bug is paying for capacity and never sending traffic to it. Isolate the layer: test retrieval alone with the Retrieve API before blaming generation; test the Lambda tool directly before blaming the agent; test the guardrail with ApplyGuardrail before blaming the prompt.</p>
+<p>A worked example: a team buys Provisioned Throughput for their support model, then sees throttling exceptions at peak. Investigation: their code calls invoke_model with the base model ID instead of the provisioned model ARN. All traffic still hits on-demand quotas, which throttle at peak. The fix is one line: invoke the provisioned model identifier. Capacity was never the problem; routing was. The exam repeats this scenario almost verbatim because it tests whether you understand that buying capacity and using capacity are two different steps.</p>
 <div class="exam-ask"><p>Trap.</p>
 <p>Treating every failure as a capacity or model problem. The exam's distractors for a guardrail-block scenario include "switch to a larger model" and "increase Provisioned Throughput." Neither changes a policy decision. For an agent ignoring a new tool, the distractor is "rewrite the agent instructions" when the fix is running prepare-agent. For stale KB answers, the distractor is "switch the generation model" when the fix is checking the sync job. Read the signature, fix the layer.</p></div>
-<h2 id="visual">Visual</h2>
-<figure><img src="DATA_URI" alt="Decision-tree diagram: a failure warning branches to throttled, guardrail blocked, and agent tool failed, each with its fix icon" loading="lazy"><figcaption>Decision-tree diagram: a failure warning branches to throttled, guardrail blocked, and agent tool failed, each with its fix icon</figcaption><figcaption class="credit"><em>Decision-tree diagram: a failure warning branches to throttled, guardrail blocked, and agent tool failed, each with its fix icon</em></figcaption></figure>
-<p>How to read this diagram.</p>
-<ol>
-<li><strong>Top (failure):</strong> the user-visible symptom. Your job is to classify it before touching anything.</li>
-<li><strong>Left branch (throttled):</strong> hourglass icon. Check whether traffic routes to provisioned capacity, whether quotas cover the burst, and whether clients retry with backoff instead of stampeding.</li>
-<li><strong>Middle branch (guardrail blocked):</strong> shield icon. Read the guardrail trace to see which policy fired, then decide: fix the input, tune the threshold, or adjust the policy. Do not just disable the guardrail.</li>
-<li><strong>Right branch (agent tool failed):</strong> broken gear icon. Check prepare-agent status, Lambda permissions, and schema match, in that order.</li>
-<li><strong>Green fix icons:</strong> each branch ends in its cheapest correct fix. If the first fix does not resolve it, move to the next layer, not to a different branch.</li>
-</ol>
-<h2 id="how-aws-asks-this">How AWS asks this</h2>
+<figure><img src="assets/img/mermaid/08-troubleshoot-tree.svg" alt="Decision-tree diagram: a failure warning branches to throttled, guardrail blocked, and agent tool failed, each with its fix icon" loading="lazy"><figcaption>Decision-tree diagram: a failure warning branches to throttled, guardrail blocked, and agent tool failed, each with its fix icon</figcaption><figcaption class="credit"><em>Decision-tree diagram: a failure warning branches to throttled, guardrail blocked, and agent tool failed, each with its fix icon</em></figcaption></figure>
+<p>Reading the diagram: the top (failure) is the user-visible symptom; your job is to classify it before touching anything. The left branch (throttled) shows the hourglass: check whether traffic routes to provisioned capacity, whether quotas cover the burst, and whether clients retry with backoff instead of stampeding. The middle branch (guardrail blocked) shows the shield: read the guardrail trace to see which policy fired, then decide: fix the input, tune the threshold, or adjust the policy; do not just disable the guardrail. The right branch (agent tool failed) shows the broken gear: check prepare-agent status, Lambda permissions, and schema match, in that order. Each branch ends in green fix icons, each branch's cheapest correct fix. If the first fix does not resolve it, move to the next layer, not to a different branch.</p>
 <div class="exam-ask"><p>Exam framing.</p>
 <p>"The application purchased Provisioned Throughput but still gets throttled.
 The code calls invoke_model with the base model ID." Correct: route invocations to the provisioned model ARN. Distractor: buy more model units. "The agent ignores the new action group" points to prepare-agent.
@@ -1713,41 +1693,19 @@ The distractor is changing the generation model. "Embedding model changed, inges
 <li>C. The corpus must be re-embedded with the new model; old vectors cannot be reused.</li>
 <li>D. Changing the chunking strategy alone will realign the dimensions.</li>
 </ol>
+
 <h2 id="9-debugging-with-cloudwatch-logs-and-cloudtrail">9. Debugging with CloudWatch Logs and CloudTrail</h2>
 <p>Two AWS services, two different questions. CloudWatch tells you what the app did. CloudTrail tells you who called what. Mixing them up is an exam favorite.</p>
-<h2 id="what-it-is">What it is</h2>
-<p><strong>Amazon CloudWatch</strong> is the metrics and logs service. For GenAI it gives you <strong>Bedrock metrics</strong> such as <code>Invocations</code>, <code>InputTokenCount</code>, <code>OutputTokenCount</code>, <code>InvocationThrottles</code>, and latency percentiles; <strong>CloudWatch Logs</strong> for application and prompt/response logging.
-<strong>Logs Insights</strong> for querying those logs ("show me all prompts where the response was blocked").
-And <strong>anomaly detection</strong> plus alarms for token-burst or cost spikes. <strong>Model invocation logging</strong> can be enabled to record full Bedrock requests and responses to S3 or CloudWatch Logs, optionally encrypted with KMS.</p>
-<p><strong>AWS CloudTrail</strong> is the audit service. It records every API call: who called it, when, from where, and with what parameters. For GenAI it answers "which IAM role invoked which model at 3 AM" and "who changed the guardrail policy yesterday." It does not record application content or performance metrics.</p>
-<p>The one-line distinction: <strong>CloudWatch is for operations, CloudTrail is for audit.</strong></p>
-<h2 id="why-it-exists">Why it exists</h2>
-<p>GenAI failures hide in places traditional monitoring cannot see. A prompt that slowly drifts into jailbreak territory shows up in invocation logs, not in CPU graphs. A cost spike from a runaway agent loop shows up in token metrics, not in error rates. And when something changes unexpectedly, the first question is always "who changed what," which only an audit trail answers. Together they cover the full debug loop: CloudWatch shows the anomaly, Logs Insights shows the content, CloudTrail shows the actor.</p>
-<h2 id="how-it-works-under-the-hood">How it works under the hood</h2>
-<ol>
-<li><strong>Metrics flow.</strong> Bedrock emits per-model metrics to CloudWatch automatically. You build dashboards for invocation counts, token in/out, throttles, and latency, and set anomaly-detection alarms on token spend.</li>
-<li><strong>Log flow.</strong> Your application logs prompts, responses, guardrail traces, and agent reasoning traces to CloudWatch Logs. Logs Insights queries slice them: filter by guardrail block, group by error type, or sample prompts for confusion analysis.</li>
-<li><strong>Invocation logging.</strong> Enable Bedrock model invocation logging to capture full request/response pairs to S3 or CloudWatch. In compliance environments, encrypt with KMS or disable it, because logs may contain PII.</li>
-<li><strong>Audit flow.</strong> CloudTrail logs every Bedrock, agent, and KB API call with identity and parameters. When a guardrail policy changes overnight, CloudTrail names the IAM principal and the exact API call.</li>
-</ol>
-<p>For distributed debugging, <strong>AWS X-Ray</strong> traces multi-step agent and FM call chains, showing where latency accumulates across Lambda, Bedrock, and tool calls.</p>
-<h2 id="concrete-numbers-and-a-worked-example">Concrete numbers and a worked example</h2>
-<p>A team notices the daily token bill tripled overnight with no traffic increase. Debug path: the CloudWatch <code>OutputTokenCount</code> metric shows the spike started at 02:00; Logs Insights reveals a single session generating 40,000-token responses in a loop; the agent trace shows a tool returning an error the agent retries forever. CloudTrail shows no config change, ruling out a bad deploy. The fix: a Step Functions stopping condition capping agent iterations. Total debug time under an hour because each service answered its own question: what (metrics), content (logs), who (trail).</p>
-<p>Illustrative: model invocation logs for a busy app can reach gigabytes per day; use S3 lifecycle policies to age them out, and sample rather than storing everything in high-volume environments.</p>
-<h2 id="common-misunderstanding">Common misunderstanding</h2>
+<h3>Operations vs audit</h3>
+<p>Amazon CloudWatch is the metrics and logs service. For GenAI it gives you Bedrock metrics such as Invocations, InputTokenCount, OutputTokenCount, InvocationThrottles, and latency percentiles; CloudWatch Logs for application and prompt/response logging; Logs Insights for querying those logs ("show me all prompts where the response was blocked"); and anomaly detection plus alarms for token-burst or cost spikes. Model invocation logging can be enabled to record full Bedrock requests and responses to S3 or CloudWatch Logs, optionally encrypted with KMS.</p>
+<p>AWS CloudTrail is the audit service. It records every API call: who called it, when, from where, and with what parameters. For GenAI it answers "which IAM role invoked which model at 3 AM" and "who changed the guardrail policy yesterday." It does not record application content or performance metrics.</p>
+<p>The one-line distinction: CloudWatch is for operations, CloudTrail is for audit. GenAI failures hide in places traditional monitoring cannot see: a prompt that slowly drifts into jailbreak territory shows up in invocation logs, not in CPU graphs; a cost spike from a runaway agent loop shows up in token metrics, not in error rates. And when something changes unexpectedly, the first question is always "who changed what," which only an audit trail answers. Together they cover the full debug loop: CloudWatch shows the anomaly, Logs Insights shows the content, CloudTrail shows the actor.</p>
+<p>Under the hood: metrics flow (Bedrock emits per-model metrics to CloudWatch automatically; you build dashboards for invocation counts, token in/out, throttles, and latency, and set anomaly-detection alarms on token spend), log flow (your application logs prompts, responses, guardrail traces, and agent reasoning traces to CloudWatch Logs; Logs Insights queries slice them: filter by guardrail block, group by error type, sample prompts for confusion analysis), invocation logging (enable Bedrock model invocation logging to capture full request/response pairs to S3 or CloudWatch; in compliance environments, encrypt with KMS or disable it, because logs may contain PII), audit flow (CloudTrail logs every Bedrock, agent, and KB API call with identity and parameters; when a guardrail policy changes overnight, CloudTrail names the IAM principal and the exact API call). For distributed debugging, AWS X-Ray traces multi-step agent and FM call chains, showing where latency accumulates across Lambda, Bedrock, and tool calls.</p>
+<p>A worked example: a team notices the daily token bill tripled overnight with no traffic increase. Debug path: the CloudWatch OutputTokenCount metric shows the spike started at 02:00; Logs Insights reveals a single session generating 40,000-token responses in a loop; the agent trace shows a tool returning an error the agent retries forever. CloudTrail shows no config change, ruling out a bad deploy. The fix: a Step Functions stopping condition capping agent iterations. Total debug time under an hour because each service answered its own question: what (metrics), content (logs), who (trail). Illustrative: model invocation logs for a busy app can reach gigabytes per day; use S3 lifecycle policies to age them out, and sample rather than storing everything in high-volume environments.</p>
 <div class="exam-ask"><p>Trap.</p>
 <p>Using CloudTrail for performance monitoring or CloudWatch for audit. The exam phrases it as "find which user invoked the model" (CloudTrail) versus "detect abnormal token spend in near real time" (CloudWatch metrics with anomaly detection). A second trap: building Glue and Athena pipelines for real-time hallucination detection. That is the high-overhead distractor; the managed answer is Bedrock evaluation jobs with judge metrics plus CloudWatch anomaly detection.</p></div>
-<h2 id="visual">Visual</h2>
-<figure><img src="DATA_URI" alt="Diagram: the GenAI app sends what-it-said to CloudWatch Logs and who-called-what to CloudTrail, both feeding a monitoring dashboard with an alert bell" loading="lazy"><figcaption>Diagram: the GenAI app sends what-it-said to CloudWatch Logs and who-called-what to CloudTrail, both feeding a monitoring dashboard with an alert bell</figcaption><figcaption class="credit"><em>Diagram: the GenAI app sends what-it-said to CloudWatch Logs and who-called-what to CloudTrail, both feeding a monitoring dashboard with an alert bell</em></figcaption></figure>
-<p>How to read this diagram.</p>
-<ol>
-<li><strong>Left (GenAI app):</strong> the system under debug. Two arrows leave it because it emits two kinds of evidence.</li>
-<li><strong>Upper arrow (what it said):</strong> prompts, responses, traces, and metrics flow to CloudWatch Logs. This is where you investigate behavior and content.</li>
-<li><strong>Lower arrow (who called what):</strong> every API call with identity, time, and parameters flows to CloudTrail. This is where you investigate changes and access.</li>
-<li><strong>Right (dashboard and alert):</strong> metrics feed dashboards and anomaly alarms. When the bell rings, you start at the dashboard, drill into logs for content, and check the trail for the actor.</li>
-<li><strong>What breaks:</strong> invocation logging disabled means no prompt/response forensics. Trail without log file validation or restricted access means the audit itself is untrustworthy.</li>
-</ol>
-<h2 id="how-aws-asks-this">How AWS asks this</h2>
+<figure><img src="assets/img/mermaid/45-observability-logs.svg" alt="Diagram: the GenAI app sends what-it-said to CloudWatch Logs and who-called-what to CloudTrail, both feeding a monitoring dashboard with an alert bell" loading="lazy"><figcaption>Diagram: the GenAI app sends what-it-said to CloudWatch Logs and who-called-what to CloudTrail, both feeding a monitoring dashboard with an alert bell</figcaption><figcaption class="credit"><em>Diagram: the GenAI app sends what-it-said to CloudWatch Logs and who-called-what to CloudTrail, both feeding a monitoring dashboard with an alert bell</em></figcaption></figure>
+<p>Reading the diagram: the GenAI app on the left emits two kinds of evidence, so two arrows leave it. The upper arrow (what it said): prompts, responses, traces, and metrics flow to CloudWatch Logs; this is where you investigate behavior and content. The lower arrow (who called what): every API call with identity, time, and parameters flows to CloudTrail; this is where you investigate changes and access. On the right, metrics feed dashboards and anomaly alarms. When the bell rings, you start at the dashboard, drill into logs for content, and check the trail for the actor. What breaks: invocation logging disabled means no prompt/response forensics. A trail without log file validation or restricted access means the audit itself is untrustworthy.</p>
 <div class="exam-ask"><p>Exam framing.</p>
 <p>"Near-real-time detection of hallucinations plus abnormal token spend with minimal custom work" points to Bedrock evaluation jobs (judge metrics) plus CloudWatch anomaly detection on token metrics. "Determine which IAM role changed the guardrail configuration" is pure CloudTrail. "Analyze prompt and response patterns for confusion" is CloudWatch Logs Insights. The exam rewards the managed, low-overhead answer every time.</p></div>
 <h2 id="questions">Questions</h2>
@@ -1778,38 +1736,20 @@ And <strong>anomaly detection</strong> plus alarms for token-burst or cost spike
 <li>C. Apply token-level redaction to decision logs before storage.</li>
 <li>D. Store full unencrypted prompts in CloudWatch Logs for easier debugging.</li>
 </ol>
+
 <h2 id="10-validating-grounding-and-hallucination-control">10. Validating grounding and hallucination control</h2>
 <p>Hallucination is the GenAI failure users notice first. Contextual grounding checks turn "the model should stick to the sources" from a prompt wish into a measured, enforced control.</p>
-<h2 id="what-it-is">What it is</h2>
-<p><strong>Grounding</strong> means every factual claim in the model's response is supported by the source content you provided, usually retrieved chunks. A <strong>hallucination</strong> is any claim that is not supported: invented facts, distorted numbers, or confident answers from missing context. <strong>Contextual grounding checks</strong> are a Bedrock Guardrails policy that verifies grounding automatically: you provide the source content and the model's response, and the check scores whether the response is grounded in the source, blocking or flagging ungrounded output based on a threshold you set. This is distinct from <strong>Automated Reasoning checks</strong>, which verify outputs against formal policy rules deterministically; grounding checks ask "is this supported by the source," Automated Reasoning asks "does this violate the written policy."</p>
-<h2 id="why-it-exists">Why it exists</h2>
+<h3>From prompt wish to enforced control</h3>
+<p>Grounding means every factual claim in the model's response is supported by the source content you provided, usually retrieved chunks. A hallucination is any claim that is not supported: invented facts, distorted numbers, or confident answers from missing context. Contextual grounding checks are a Bedrock Guardrails policy that verifies grounding automatically: you provide the source content and the model's response, and the check scores whether the response is grounded in the source, blocking or flagging ungrounded output based on a threshold you set. This is distinct from Automated Reasoning checks, which verify outputs against formal policy rules deterministically: grounding checks ask "is this supported by the source," Automated Reasoning asks "does this violate the written policy."</p>
 <p>Prompt instructions like "only use the provided context" reduce hallucinations but do not eliminate them, and they cannot be measured. In RAG apps serving customers, an ungrounded answer is a liability: wrong refund policies, invented product specs, fabricated legal citations. Grounding checks add a runtime enforcement layer with a numeric threshold, so grounding becomes a tested property of every response rather than a hope about prompt wording.</p>
-<h2 id="how-it-works-under-the-hood">How it works under the hood</h2>
-<ol>
-<li><strong>Provide source and response.</strong> The grounding check receives two inputs: the source content (the retrieved chunks or reference documents) and the generated response.</li>
-<li><strong>Claim extraction and verification.</strong> The check breaks the response into factual claims and verifies each against the source, producing a grounding score.</li>
-<li><strong>Threshold decision.</strong> You set a threshold. Responses scoring below it are blocked or flagged, depending on configuration. A higher threshold means fewer hallucinations but more false blocks on borderline answers.</li>
-<li><strong>Placement.</strong> Grounding checks run as a guardrail policy, so they can apply to inputs, outputs, or both, via inline guardrail config in Converse or the standalone ApplyGuardrail API.</li>
-</ol>
-<p>Grounding validation also happens offline: faithfulness metrics in RAG evaluation (chapter 5) measure the same property across your dataset, and <strong>golden datasets</strong> with known hallucination traps verify the check catches them.</p>
-<h2 id="concrete-numbers-and-a-worked-example">Concrete numbers and a worked example</h2>
-<p>A team sets the grounding threshold at 0.75 for a product-support assistant. On a 300-question golden set seeded with 40 known hallucination traps, the check blocks 37 of the 40 traps (recall 0.925) while falsely blocking 8 legitimate answers (precision cost the team reviews). They tune the threshold to 0.70: traps caught drop to 35, false blocks drop to 3. The business accepts 35 of 40 because the remaining traps are caught by the offline faithfulness eval that gates releases. Illustrative: the threshold is a business decision trading hallucination recall against false-block friction, and the right way to set it is measured on a seeded dataset, not guessed.</p>
-<h2 id="common-misunderstanding">Common misunderstanding</h2>
+<p>Under the hood: provide source and response (the grounding check receives the source content, the retrieved chunks or reference documents, and the generated response), claim extraction and verification (the check breaks the response into factual claims and verifies each against the source, producing a grounding score), threshold decision (you set a threshold; responses scoring below it are blocked or flagged; a higher threshold means fewer hallucinations but more false blocks on borderline answers), placement (grounding checks run as a guardrail policy, so they can apply to inputs, outputs, or both, via inline guardrail config in Converse or the standalone ApplyGuardrail API). Grounding validation also happens offline: faithfulness metrics in RAG evaluation (chapter 5) measure the same property across your dataset, and golden datasets with known hallucination traps verify the check catches them.</p>
+<p>A worked example: a team sets the grounding threshold at 0.75 for a product-support assistant. On a 300-question golden set seeded with 40 known hallucination traps, the check blocks 37 of the 40 traps (recall 0.925) while falsely blocking 8 legitimate answers (precision cost the team reviews). They tune the threshold to 0.70: traps caught drop to 35, false blocks drop to 3. The business accepts 35 of 40 because the remaining traps are caught by the offline faithfulness eval that gates releases. Illustrative: the threshold is a business decision trading hallucination recall against false-block friction, and the right way to set it is measured on a seeded dataset, not guessed.</p>
 <div class="exam-ask"><p>Trap.</p>
 <p>Confusing contextual grounding with Automated Reasoning. The exam tests this pair directly: "verify the answer is supported by the retrieved documents" is contextual grounding.
 "verify the answer complies with the formal refund policy written as logical rules" is Automated Reasoning. Grounding checks evidence.
 Automated Reasoning checks logic. A second trap: believing a grounding check replaces RAG evaluation. The check enforces at runtime; the eval measures across the dataset. You need both.</p></div>
-<h2 id="visual">Visual</h2>
-<figure><img src="DATA_URI" alt="Diagram: source documents on the left, a model answer on the right with claims linked to source lines and green checks, one unlinked claim marked as hallucination, with a grounding check magnifier" loading="lazy"><figcaption>Diagram: source documents on the left, a model answer on the right with claims linked to source lines and green checks, one unlinked claim marked as hallucination, with a grounding check magnifier</figcaption><figcaption class="credit"><em>Diagram: source documents on the left, a model answer on the right with claims linked to source lines and green checks, one unlinked claim marked as hallucination, with a grounding check magnifier</em></figcaption></figure>
-<p>How to read this diagram.</p>
-<ol>
-<li><strong>Left (source context):</strong> the retrieved chunks. Highlighted lines are the facts available to the model. Anything not highlighted cannot be claimed.</li>
-<li><strong>Right (model answer):</strong> three sentences. Thin lines connect the first two to their source lines: these are grounded.</li>
-<li><strong>Red X (hallucination):</strong> the third sentence has no source line. The grounding check flags it and, past the threshold, blocks the response.</li>
-<li><strong>Magnifier (grounding check):</strong> the guardrail policy doing the verification at runtime, scored against your threshold.</li>
-<li><strong>What breaks:</strong> if retrieval returns the wrong documents, the check enforces grounding to wrong sources. Grounding checks verify support, not truth; retrieval quality still matters.</li>
-</ol>
-<h2 id="how-aws-asks-this">How AWS asks this</h2>
+<figure><img src="assets/img/mermaid/46-faithfulness-check.svg" alt="Diagram: source documents on the left, a model answer on the right with claims linked to source lines and green checks, one unlinked claim marked as hallucination, with a grounding check magnifier" loading="lazy"><figcaption>Diagram: source documents on the left, a model answer on the right with claims linked to source lines and green checks, one unlinked claim marked as hallucination, with a grounding check magnifier</figcaption><figcaption class="credit"><em>Diagram: source documents on the left, a model answer on the right with claims linked to source lines and green checks, one unlinked claim marked as hallucination, with a grounding check magnifier</em></figcaption></figure>
+<p>Reading the diagram: the source context on the left is the retrieved chunks; highlighted lines are the facts available to the model, and anything not highlighted cannot be claimed. The model answer on the right has three sentences; thin lines connect the first two to their source lines, these are grounded. The red X sentence has no source line: a hallucination the grounding check flags and, past the threshold, blocks. The magnifier is the grounding check itself: the guardrail policy doing the verification at runtime, scored against your threshold. What breaks: if retrieval returns the wrong documents, the check enforces grounding to wrong sources. Grounding checks verify support, not truth; retrieval quality still matters.</p>
 <div class="exam-ask"><p>Exam framing.</p>
 <p>"A RAG application must detect when responses are not supported by retrieved sources, enforced at runtime." Correct: contextual grounding checks in Bedrock Guardrails with a threshold. Distractors: denied topics (blocks subjects, not hallucinations), word filters (exact strings only), or "a stronger prompt" (not enforced or measured). The grounding-versus-Automated-Reasoning distinction appears as a straight definition question: match the scenario verb to the control.</p></div>
 <h2 id="questions">Questions</h2>
@@ -1840,35 +1780,18 @@ Automated Reasoning checks logic. A second trap: believing a grounding check rep
 <li>C. The grounding check eliminates the need for retrieval quality evaluation.</li>
 <li>D. Raising the grounding threshold always improves answer quality with no trade-offs.</li>
 </ol>
+
 <h2 id="11-testing-safety-red-teaming-basics-with-aws-tooling">11. Testing safety: red-teaming basics with AWS tooling</h2>
 <p>Guardrails are only as good as the attacks they have survived. Red-teaming is the practice of attacking your own app before someone else does.</p>
-<h2 id="what-it-is">What it is</h2>
-<p><strong>Red-teaming</strong> is systematic adversarial testing: deliberately trying to make your GenAI app misbehave, using prompt injection, jailbreaks, data exfiltration probes, and edge-case inputs, then fixing what breaks. "Red team" is the attacker role; the "blue team" builds the defenses. With AWS tooling, red-teaming combines several mechanisms: Bedrock Guardrails' <strong>prompt attack detection</strong> (the content-filter category that spots injection and jailbreak attempts), <strong>evaluation jobs with harmfulness and refusal metrics</strong> scoring how the app handles adversarial prompts at scale, <strong>Automated Reasoning checks</strong> verifying policy compliance deterministically, and <strong>human red teams</strong> (your own security staff or an AWS-managed team) crafting creative attacks no automated suite imagines.</p>
-<h2 id="why-it-exists">Why it exists</h2>
+<h3>Attack your own app first</h3>
+<p>Red-teaming is systematic adversarial testing: deliberately trying to make your GenAI app misbehave, using prompt injection, jailbreaks, data exfiltration probes, and edge-case inputs, then fixing what breaks. "Red team" is the attacker role; the "blue team" builds the defenses. With AWS tooling, red-teaming combines several mechanisms: Bedrock Guardrails' prompt attack detection (the content-filter category that spots injection and jailbreak attempts), evaluation jobs with harmfulness and refusal metrics scoring how the app handles adversarial prompts at scale, Automated Reasoning checks verifying policy compliance deterministically, and human red teams (your own security staff or an AWS-managed team) crafting creative attacks no automated suite imagines.</p>
 <p>Every safety control is a hypothesis until it is attacked. A denied-topics policy looks complete until a red-teamer phrases the banned request as a hypothetical, a translation task, or a role-play. Guardrail thresholds look right until adversarial prompts show they block the obvious attacks and miss the subtle ones. Red-teaming finds these gaps in a controlled setting, where the finding becomes a new test case instead of a headline.</p>
-<h2 id="how-it-works-under-the-hood">How it works under the hood</h2>
-<ol>
-<li><strong>Build an adversarial suite.</strong> Collect attack prompts across categories: direct jailbreaks ("ignore your instructions"), indirect prompt injection (malicious instructions hidden in retrieved documents or tool outputs), PII extraction probes, disallowed-content requests in disguise, and multi-turn attacks that build trust before striking.</li>
-<li><strong>Run at scale.</strong> Feed the suite through Bedrock evaluations with harmfulness and refusal metrics. The judge scores whether the app refused correctly, complied safely, or broke.</li>
-<li><strong>Attack the retrieval layer too.</strong> Red-team the RAG pipeline specifically: poisoned documents in the KB, injection payloads in web-crawled sources, and prompt-injection strings inside tool outputs for agents.</li>
-<li><strong>Human creativity round.</strong> Automated suites cover known patterns. Human red-teamers invent new ones. Their successful attacks become new automated test cases, so the suite grows with every round.</li>
-<li><strong>Fix and re-test.</strong> Tune guardrail policies, harden system prompts, add input sanitization, then re-run the full suite to confirm the fix and check for regressions.</li>
-</ol>
-<h2 id="concrete-numbers-and-a-worked-example">Concrete numbers and a worked example</h2>
-<p>A team red-teams a finance assistant with 150 adversarial prompts. Baseline: 22 prompts produce policy-violating or unsafe responses, a 14.7 percent break rate. Analysis shows 15 of the 22 are indirect prompt injections hidden in retrieved KB documents, which the input guardrail never sees because it only scans the user message. The fix: apply guardrail scanning to retrieved context as well as user input, and add an instruction hierarchy note in the system prompt. Re-run: 3 of 150 break (2 percent), all three novel multi-turn attacks that become new test cases. Illustrative: the highest-value finding is usually architectural (where the guardrail scans), not threshold tuning.</p>
-<h2 id="common-misunderstanding">Common misunderstanding</h2>
+<p>Under the hood: build an adversarial suite (collect attack prompts across categories: direct jailbreaks like "ignore your instructions"; indirect prompt injection, malicious instructions hidden in retrieved documents or tool outputs; PII extraction probes; disallowed-content requests in disguise; multi-turn attacks that build trust before striking), run at scale (feed the suite through Bedrock evaluations with harmfulness and refusal metrics; the judge scores whether the app refused correctly, complied safely, or broke), attack the retrieval layer too (red-team the RAG pipeline specifically: poisoned documents in the KB, injection payloads in web-crawled sources, prompt-injection strings inside tool outputs for agents), human creativity round (automated suites cover known patterns; human red-teamers invent new ones; their successful attacks become new automated test cases, so the suite grows with every round), fix and re-test (tune guardrail policies, harden system prompts, add input sanitization, then re-run the full suite to confirm the fix and check for regressions).</p>
+<p>A worked example: a team red-teams a finance assistant with 150 adversarial prompts. Baseline: 22 prompts produce policy-violating or unsafe responses, a 14.7 percent break rate. Analysis shows 15 of the 22 are indirect prompt injections hidden in retrieved KB documents, which the input guardrail never sees because it only scans the user message. The fix: apply guardrail scanning to retrieved context as well as user input, and add an instruction hierarchy note in the system prompt. Re-run: 3 of 150 break (2 percent), all three novel multi-turn attacks that become new test cases. Illustrative: the highest-value finding is usually architectural (where the guardrail scans), not threshold tuning.</p>
 <div class="exam-ask"><p>Trap.</p>
 <p>"Our guardrails passed the default tests, so we are safe." Default tests cover default attacks. The exam tests this with scenarios where the app is attacked through the retrieval layer or tool outputs while guardrails only scan user input. Red-teaming must cover every input channel: user messages, retrieved documents, tool outputs, and multi-turn conversation history. A second trap: treating red-teaming as one-time. New attack techniques appear constantly; the suite must be re-run on every significant change.</p></div>
-<h2 id="visual">Visual</h2>
-<figure><img src="DATA_URI" alt="Diagram: adversarial prompts attack a guardrails shield; blocked attacks bounce off as red X marks, one passes through to a findings report" loading="lazy"><figcaption>Diagram: adversarial prompts attack a guardrails shield; blocked attacks bounce off as red X marks, one passes through to a findings report</figcaption><figcaption class="credit"><em>Diagram: adversarial prompts attack a guardrails shield; blocked attacks bounce off as red X marks, one passes through to a findings report</em></figcaption></figure>
-<p>How to read this diagram.</p>
-<ol>
-<li><strong>Left (adversarial prompts):</strong> the red-team figure launches attack arrows: jailbreaks, injections, exfiltration probes, disguised requests.</li>
-<li><strong>Center (guardrails shield):</strong> the defense layer. Two arrows bounce off as red X marks: blocked attacks. The shield must cover all input channels, not just user messages.</li>
-<li><strong>Right (findings report):</strong> the arrow that passed through is the valuable one. Each successful attack is documented with severity and becomes a permanent regression test.</li>
-<li><strong>What breaks:</strong> a shield that scans only user input while attacks arrive via retrieved documents or tool outputs. Red-team every channel the model reads.</li>
-</ol>
-<h2 id="how-aws-asks-this">How AWS asks this</h2>
+<figure><img src="assets/img/mermaid/47-red-teaming.svg" alt="Diagram: adversarial prompts attack a guardrails shield; blocked attacks bounce off as red X marks, one passes through to a findings report" loading="lazy"><figcaption>Diagram: adversarial prompts attack a guardrails shield; blocked attacks bounce off as red X marks, one passes through to a findings report</figcaption><figcaption class="credit"><em>Diagram: adversarial prompts attack a guardrails shield; blocked attacks bounce off as red X marks, one passes through to a findings report</em></figcaption></figure>
+<p>Reading the diagram: the red-team figure on the left launches attack arrows: jailbreaks, injections, exfiltration probes, disguised requests. The center guardrails shield is the defense layer; two arrows bounce off as red X marks, blocked attacks. The shield must cover all input channels, not just user messages. The right findings report holds the valuable arrow, the one that passed through: each successful attack is documented with severity and becomes a permanent regression test. What breaks: a shield that scans only user input while attacks arrive via retrieved documents or tool outputs. Red-team every channel the model reads.</p>
 <div class="exam-ask"><p>Exam framing.</p>
 <p>"A team must systematically test their assistant against jailbreak and prompt-injection attacks before launch." Correct: adversarial test suite plus Bedrock evaluations with harmfulness/refusal metrics plus human red-team review. Distractors: "enable guardrails" alone (untested defenses), or "run automatic evaluation" (accuracy does not measure attack resistance). Watch for the retrieval-channel twist: "attacks hidden in knowledge base documents" points to scanning retrieved context and red-teaming the RAG pipeline, not just user inputs.</p></div>
 <h2 id="questions">Questions</h2>
@@ -1899,37 +1822,18 @@ Automated Reasoning checks logic. A second trap: believing a grounding check rep
 <li>C. Limit testing to user-message inputs since those are the primary attack surface.</li>
 <li>D. Treat a single passing red-team round as permanent safety certification.</li>
 </ol>
+
 <h2 id="12-cicd-for-genai-apps-prompt-versioning-and-eval-gates">12. CI/CD for GenAI apps: prompt versioning and eval gates</h2>
 <p>Traditional CI/CD ships code. GenAI CI/CD ships prompts, model choices, and retrieval config, and it gates every one of them on measured quality.</p>
-<h2 id="what-it-is">What it is</h2>
-<p><strong>CI/CD for GenAI</strong> extends the build-test-deploy pipeline to everything that changes model behavior. The two load-bearing concepts are <strong>prompt versioning</strong> and <strong>eval gates</strong>. Prompt versioning treats prompts as released artifacts: Bedrock Prompt Management stores prompts with <strong>versions</strong>, which are immutable snapshots. You edit a draft, publish a version, and deploy that version identifier. Rollback is instant: point the app at the previous version. <strong>Eval gates</strong> are pipeline stages, typically in AWS CodePipeline with CodeBuild running the tests, that execute the evaluation suite and block the deployment when scores regress. A common pipeline shape: commit, build, prompt version publish, eval gate (automatic plus judge metrics on the golden dataset), canary deploy, production.</p>
-<h2 id="why-it-exists">Why it exists</h2>
+<h3>Versioned prompts, gated deploys</h3>
+<p>CI/CD for GenAI extends the build-test-deploy pipeline to everything that changes model behavior. The two load-bearing concepts are prompt versioning and eval gates. Prompt versioning treats prompts as released artifacts: Bedrock Prompt Management stores prompts with versions, which are immutable snapshots. You edit a draft, publish a version, and deploy that version identifier. Rollback is instant: point the app at the previous version. Eval gates are pipeline stages, typically in AWS CodePipeline with CodeBuild running the tests, that execute the evaluation suite and block the deployment when scores regress. A common pipeline shape: commit, build, prompt version publish, eval gate (automatic plus judge metrics on the golden dataset), canary deploy, production.</p>
 <p>Without versioning, a prompt edit is an unreviewed production change with no undo. Without eval gates, quality regressions ship at the speed of the pipeline. Teams that hardcode prompts in application code discover both problems at once: every wording tweak requires a code deploy, and nothing measures whether the tweak helped. Versioned prompts plus eval gates give GenAI changes the same discipline code has had for a decade: reviewed, tested, reversible.</p>
-<h2 id="how-it-works-under-the-hood">How it works under the hood</h2>
-<ol>
-<li><strong>Version the prompt.</strong> Authors edit the draft in Prompt Management. Publishing creates an immutable version, for example <code>my-prompt:7</code>. The application references the version ARN, never the draft.</li>
-<li><strong>Pipeline trigger.</strong> A commit or a version publish triggers CodePipeline. CodeBuild runs unit tests for the app code and then the eval stage.</li>
-<li><strong>Eval gate.</strong> CodeBuild invokes Bedrock evaluation jobs against the golden dataset for the new prompt version, comparing scores to the baseline of the current production version. Thresholds are codified: for example, faithfulness may not drop more than 0.03 and toxicity must stay at zero.</li>
-<li><strong>Canary and promote.</strong> Passing versions deploy to a canary (often via weighted routing or AppConfig flags), production metrics are watched, then the version promotes to full traffic. A failing canary rolls back by repointing to the previous version ARN, no redeploy needed.</li>
-<li><strong>Audit.</strong> CloudTrail records every version publish and deployment; the eval reports are stored in S3 as release evidence.</li>
-</ol>
-<h2 id="concrete-numbers-and-a-worked-example">Concrete numbers and a worked example</h2>
-<p>A team ships prompt changes twice a week. Their pipeline: CodeBuild runs a 400-prompt golden eval (about 20 minutes, roughly $8 in judge costs, illustrative) on every publish. Gate thresholds: no metric down more than 0.03, harmfulness must be zero, cost per conversation may not rise more than 10 percent. Over three months, the gate blocks 11 of 46 publishes. Of those 11, post-mortems show 9 would have caused user-visible regressions. The canary stage (5 percent traffic, 4 hours) catches 2 more issues the offline eval missed, both related to real user phrasing. Rollback in both cases is a version-ARN repoint taking under a minute.</p>
-<h2 id="common-misunderstanding">Common misunderstanding</h2>
+<p>Under the hood: version the prompt (authors edit the draft in Prompt Management; publishing creates an immutable version, for example my-prompt:7; the application references the version ARN, never the draft), pipeline trigger (a commit or a version publish triggers CodePipeline; CodeBuild runs unit tests for the app code and then the eval stage), eval gate (CodeBuild invokes Bedrock evaluation jobs against the golden dataset for the new prompt version, comparing scores to the baseline of the current production version; thresholds are codified: for example, faithfulness may not drop more than 0.03 and toxicity must stay at zero), canary and promote (passing versions deploy to a canary, often via weighted routing or AppConfig flags; production metrics are watched, then the version promotes to full traffic; a failing canary rolls back by repointing to the previous version ARN, no redeploy needed), audit (CloudTrail records every version publish and deployment; the eval reports are stored in S3 as release evidence).</p>
+<p>A worked example: a team ships prompt changes twice a week. Their pipeline: CodeBuild runs a 400-prompt golden eval (about 20 minutes, roughly $8 in judge costs, illustrative) on every publish. Gate thresholds: no metric down more than 0.03, harmfulness must be zero, cost per conversation may not rise more than 10 percent. Over three months, the gate blocks 11 of 46 publishes. Of those 11, post-mortems show 9 would have caused user-visible regressions. The canary stage (5 percent traffic, 4 hours) catches 2 more issues the offline eval missed, both related to real user phrasing. Rollback in both cases is a version-ARN repoint taking under a minute.</p>
 <div class="exam-ask"><p>Trap.</p>
 <p>Versioning the application code but not the prompt. The exam will describe a team with "full CI/CD" whose prompts are hardcoded strings, then ask why a prompt rollback requires a redeploy. The answer: prompts are configuration, and configuration needs its own versioning. A second trap: eval gates that only run unit tests. Unit tests verify code; only eval jobs verify model behavior. A GenAI pipeline without an eval gate is a deployment pipeline with no quality check on the thing users actually experience.</p></div>
-<h2 id="visual">Visual</h2>
-<figure><img src="DATA_URI" alt="Pipeline diagram: commit, prompt version, eval gate with a fail stop sign, canary at 5 percent, prod, with a rollback arrow back to prompt version" loading="lazy"><figcaption>Pipeline diagram: commit, prompt version, eval gate with a fail stop sign, canary at 5 percent, prod, with a rollback arrow back to prompt version</figcaption><figcaption class="credit"><em>Pipeline diagram: commit, prompt version, eval gate with a fail stop sign, canary at 5 percent, prod, with a rollback arrow back to prompt version</em></figcaption></figure>
-<p>How to read this diagram.</p>
-<ol>
-<li><strong>Commit:</strong> the trigger. Code and prompt changes enter the same pipeline but are versioned separately.</li>
-<li><strong>Prompt version:</strong> publishing creates the immutable version artifact. The app will reference this version ARN, making rollback a pointer change.</li>
-<li><strong>Eval gate:</strong> the red stop sign is the heart of GenAI CI/CD. Bedrock eval jobs score the new version against the production baseline.
-   A failed gate stops the pipeline here, before any user sees the change.</li>
-<li><strong>Canary:</strong> 5 percent of live traffic validates what offline evals cannot: real user phrasing and real traffic patterns.</li>
-<li><strong>Prod and rollback:</strong> full promotion on clean canary metrics. The dashed rollback arrow shows the escape hatch: repoint to the previous version, no rebuild, no redeploy.</li>
-</ol>
-<h2 id="how-aws-asks-this">How AWS asks this</h2>
+<figure><img src="assets/img/mermaid/48-cicd-eval-gate.svg" alt="Pipeline diagram: commit, prompt version, eval gate with a fail stop sign, canary at 5 percent, prod, with a rollback arrow back to prompt version" loading="lazy"><figcaption>Pipeline diagram: commit, prompt version, eval gate with a fail stop sign, canary at 5 percent, prod, with a rollback arrow back to prompt version</figcaption><figcaption class="credit"><em>Pipeline diagram: commit, prompt version, eval gate with a fail stop sign, canary at 5 percent, prod, with a rollback arrow back to prompt version</em></figcaption></figure>
+<p>Reading the diagram: the commit is the trigger; code and prompt changes enter the same pipeline but are versioned separately. Publishing creates the prompt version, the immutable version artifact the app will reference by version ARN, making rollback a pointer change. The eval gate, the red stop sign, is the heart of GenAI CI/CD: Bedrock eval jobs score the new version against the production baseline, and a failed gate stops the pipeline here, before any user sees the change. The canary puts 5 percent of live traffic on the new version to validate what offline evals cannot: real user phrasing and real traffic patterns. Full promotion follows clean canary metrics. The dashed rollback arrow is the escape hatch: repoint to the previous version, no rebuild, no redeploy.</p>
 <div class="exam-ask"><p>Exam framing.</p>
 <p>"Marketing needs to change prompt wording frequently without engineering deploys, and every change must be tested before production." Correct: Bedrock Prompt Management versioning plus a CodePipeline eval gate. Distractors: hardcoded prompts with faster code deploys (still a deploy, still untested), or versioning without eval gates (reversible but unmeasured). "Rollback must be instant" points to version ARNs; the distractor is CloudFormation rollback of the whole stack.</p></div>
 <h2 id="questions">Questions</h2>
@@ -1961,12 +1865,16 @@ Automated Reasoning checks logic. A second trap: believing a grounding check rep
 <li>D. Store eval reports only in the pipeline's ephemeral build logs.</li>
 </ol>
 <p>Domain 5 complete: 12 topics, evaluation through CI/CD. Key exam instincts: match the eval method to what is being measured, diagnose retrieval before generation, read the error signature before reaching for a fix, and gate every GenAI change on measured quality.</p>
+
 </div></main>
 <script>
 window.DS_TRACK = "aipc01";
 window.DS_TRACK_TITLE = "AIP-C01 Study Guide";
 window.DS_MANIFEST = [
   { file: "index.html", label: "Start · Exam Overview & Study Map" },
+  { file: "prereq-aif-c01.html", label: "Prereq · AIF-C01 AI Practitioner Crash Course" },
+  { file: "prereq-aws-cloud-foundations.html", label: "Prereq · AWS Cloud Foundations" },
+  { file: "prereq-ml-specialty.html", label: "Prereq · ML Specialty Essentials" },
   { file: "volume-d1-foundation-models.html", label: "D1 · Foundation Models, Data & Compliance (31%)" },
   { file: "volume-d2-implementation-integration.html", label: "D2 · Implementation & Integration (26%)" },
   { file: "volume-d3-safety-security-governance.html", label: "D3 · Safety, Security & Governance (20%)" },
@@ -1977,7 +1885,7 @@ window.DS_MANIFEST = [
   { file: "volume-question-patterns.html", label: "Question Patterns · How AWS Asks" },
   { file: "volume-system-design.html", label: "System Design Guide" },
   { file: "volume-crash-course.html", label: "Crash Course · One-Volume Sprint" },
-  { file: "volume-appendix-gaps.html", label: "Appendix · Coverage Gaps" }
+  { file: "volume-appendix-gaps.html", label: "Appendix · Coverage Gaps" },
 ];
 </script>
 <script>
@@ -2542,6 +2450,151 @@ window.DS_MANIFEST = [
         tel.scrollIntoView({ behavior: "smooth", block: "start" });
         if (tel.focus) tel.focus({ preventScroll: true });
       }
+    }
+  });
+})();
+
+</script>
+<script>
+/* ==== Experience layer behavior — additive ====
+ * Calm, GPU-friendly page motion for study volumes. No-JS safe: every hidden
+ * state in experience.css is gated on `html.xp-js`, which only this script
+ * adds — without it the page is fully readable. Respects
+ * prefers-reduced-motion (exits early; CSS keeps everything static).
+ *
+ * Three jobs:
+ *  1. Hero parallax — detects the volume hero (.banner/.hero, else wraps the
+ *     h1 + lede block in .xp-hero) and drifts it gently as the reader
+ *     scrolls on. Transform/opacity only, rAF-throttled, passive listener.
+ *  2. Scroll reveals — one IntersectionObserver fades+rises figures, key
+ *     callouts and knowledge checks exactly once. Elements already in view
+ *     on load appear immediately (no load flash).
+ *  3. Nothing else: progress bar, scroll-spy, sidebar, quiz toggles are
+ *     owned by ds.js and are left untouched.
+ *
+ * (In the assembly snippet the closing element tags are written literally;
+ * inside this file they are escaped as <\/style> / <\/script> so the file
+ * pastes verbatim without early-terminating its own element.)
+ */
+(function () {
+  'use strict';
+
+  var root = document.documentElement;
+
+  var reduceMotion = false;
+  try {
+    reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  } catch (e) { /* matchMedia unavailable: assume motion is fine */ }
+  if (reduceMotion) { return; } /* leave no footprint: no xp-js, CSS stays static */
+
+  /* From here on the reader is fine with calm motion: mark the document so
+     the CSS reveal/parallax states may apply. Without this class (no-JS or
+     reduced-motion) every hidden state stays off and the page is fully
+     readable. */
+  root.classList.add('xp-js');
+
+  /* ---------------- 1. Hero detection + gentle parallax ---------------- */
+  var hero = document.querySelector('.banner, .hero');
+  if (!hero) {
+    /* No banner hero: wrap the volume title (h1) plus its lede paragraphs
+       in a layout-neutral div. Never touches headings ds.js needs. */
+    var main = document.querySelector('main');
+    var h1 = main ? main.querySelector('h1') : null;
+    if (h1 && h1.parentNode) {
+      var wrap = document.createElement('div');
+      wrap.className = 'xp-hero';
+      h1.parentNode.insertBefore(wrap, h1);
+      var node = h1, moved = 0, paras = 0;
+      while (node && moved < 8) {
+        var next = node.nextSibling;
+        if (node.nodeType === 3) { node = next; continue; } /* skip whitespace text nodes */
+        var isPara = node.nodeType === 1 && node.tagName === 'P';
+        if (node !== h1 && !isPara) { break; }
+        wrap.appendChild(node);
+        moved += 1;
+        if (isPara) {
+          paras += 1;
+          if (paras >= 3) { break; }
+        }
+        node = next;
+      }
+      hero = wrap;
+    }
+  }
+
+  var heroH = 0, ticking = false, pxOn = false;
+  function measure() { heroH = hero ? hero.offsetHeight : 0; }
+  function render() {
+    ticking = false;
+    if (!hero || !heroH) { return; }
+    var y = window.pageYOffset || root.scrollTop || 0;
+    if (y <= 0) {
+      if (pxOn) { hero.style.transform = ''; hero.style.opacity = ''; pxOn = false; }
+      return;
+    }
+    var range = heroH * 1.4;
+    if (y < range) {
+      /* Drift up slightly slower than the scroll and fade a whisper —
+         the title recedes calmly instead of snapping away. */
+      var k = Math.min(y / range, 1);
+      hero.style.transform = 'translate3d(0,' + (-y * 0.06).toFixed(1) + 'px,0)';
+      hero.style.opacity = (1 - k * 0.22).toFixed(3);
+      pxOn = true;
+    } else if (pxOn) {
+      hero.style.transform = '';
+      hero.style.opacity = '';
+      pxOn = false;
+    }
+  }
+  function requestRender() {
+    if (!ticking) { ticking = true; window.requestAnimationFrame(render); }
+  }
+  if (hero) {
+    measure();
+    render();
+    window.addEventListener('scroll', requestRender, { passive: true });
+    window.addEventListener('resize', function () { measure(); requestRender(); });
+  }
+
+  /* ---------------- 2. Scroll-triggered reveals ---------------- */
+  var SELECTOR = [
+    'figure',
+    '.takeaway', '.exam-ask', '.trapbox', '.trap', '.board',
+    '.diagram-walkthrough', '.walkthrough', '.warn', '.callout',
+    '.ob-board', '.nums', '.watch-card', '.lab', '.pq', '.go-deeper-note'
+  ].join(', ');
+
+  var targets = [];
+  Array.prototype.forEach.call(document.querySelectorAll(SELECTOR), function (el) {
+    if (hero && hero.contains(el)) { return; } /* hero has its own motion */
+    targets.push(el);
+  });
+
+  function showAll(list) {
+    list.forEach(function (el) { el.classList.add('xp-reveal', 'xp-in'); });
+  }
+
+  if (!targets.length) { return; }
+
+  if (!('IntersectionObserver' in window)) { showAll(targets); return; }
+
+  var io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (en) {
+      if (en.isIntersecting) {
+        en.target.classList.add('xp-in');
+        io.unobserve(en.target);
+      }
+    });
+  }, { rootMargin: '0px 0px -6% 0px', threshold: 0.06 });
+
+  var vh = window.innerHeight || 800;
+  targets.forEach(function (el) {
+    el.classList.add('xp-reveal');
+    var r = el.getBoundingClientRect();
+    if (r.top < vh && r.bottom > 0) {
+      el.classList.add('xp-in'); /* in view on load: appear, no animation */
+    } else {
+      io.observe(el);
     }
   });
 })();
