@@ -1360,12 +1360,12 @@ details.kc[open] summary::before{content:"\2212 "}
 </code></pre>
 <p>A <strong>Region</strong> is a geographic area, like us-east-1 (N. Virginia) or eu-west-1 (Ireland). Each Region is fully independent. AWS does not copy your data between Regions unless you ask it to. Pick a Region for four reasons: closeness to your users (latency), law (some data must stay in a country), price (same service can cost different amounts per Region), and availability (new services land in big Regions first).</p>
 <p>An <strong>Availability Zone (AZ)</strong> is one or more discrete data centers inside a Region, with its own power, cooling, and network. The name is the Region code plus a letter: us-east-1a, us-east-1b. AZs in a Region sit close together and connect over fast private fiber. The exam's favorite sentence is "deploy across multiple AZs". That is how you survive a data center fire.</p>
-<p><strong>Edge locations</strong> are the third layer: small points of presence in hundreds of cities. They do not run your app. They cache content (CloudFront) and answer DNS (Route 53) close to users.</p>
+<p><strong>Edge locations</strong> are the third layer: small points of presence in hundreds of cities. They do not run your app. They cache content (CloudFront) and answer DNS (the Domain Name System; Route 53 is AWS's DNS service) close to users.</p>
 <div class="takeaway"><p>Region = where in the world. AZ = which buildings in that place (use two or more). Edge = cache near the user. "High availability" on the exam almost always means multi-AZ.</p></div>
 
 <div class="pq" id="foundations-map-check">
 <p class="pq-meta"><span class="constraint">Foundations</span><span class="constraint">knowledge check</span></p>
-<p class="pq-question">A startup serves users in Berlin and must keep all customer data inside the EU. Their app runs on one EC2 instance in us-east-1a. What is the smallest set of changes that fixes both the latency and the compliance problem?</p>
+<p class="pq-question">A startup serves users in Berlin and must keep all customer data inside the EU. Their app runs on one EC2 instance (a rented virtual machine) in us-east-1a. What is the smallest set of changes that fixes both the latency and the compliance problem?</p>
 <ul class="pq-options">
 <li class="pq-option wrong"><strong>A) </strong>Add a second instance in us-east-1b and enable CloudFront.</li>
 <li class="pq-option correct"><strong>B) </strong>Move the workload to the eu-central-1 Region and run instances in at least two AZs.</li>
@@ -1378,7 +1378,9 @@ details.kc[open] summary::before{content:"\2212 "}
 <p><span class="wrong">A is wrong:</span> more AZs in Virginia do not move data to the EU. C is wrong: you cannot "add" edge locations, and caching does not move the data store. D is wrong: the data would sit in two places, still including the US.</p>
 </div>
 </div>
+<p><strong>Next:</strong> the deal you sign for living in this world: shared responsibility.</p>
 <h2 id="shared-responsibility">2. The deal you sign: shared responsibility</h2>
+<p>You know where AWS lives. Now the terms of living there: who secures what.</p>
 <p>AWS and you split security down the middle. AWS handles security <strong>of</strong> the cloud. You handle security <strong>in</strong> the cloud.</p>
 <pre><code>  AWS takes care of                        You take care of
   -----------------                        ------------------
@@ -1388,7 +1390,7 @@ details.kc[open] summary::before{content:"\2212 "}
   virtualization layer                     your app code and its config
   managed service platforms                firewall rules (security groups)
 </code></pre>
-<p>The line moves with the service. On EC2 (rented raw computers), you patch the operating system yourself. On RDS (managed database), AWS patches the OS and you still control the data, passwords, and network access. On S3 or Bedrock (fully managed), AWS runs everything under the API and you control the data, encryption settings, and IAM permissions.</p>
+<p>The line moves with the service. On EC2 (rented raw computers), you patch the operating system yourself. On RDS (managed database), AWS patches the OS and you still control the data, passwords, and network access. On S3 or Bedrock (Amazon's API service for foundation models; fully managed), AWS runs everything under the API and you control the data, encryption settings, and IAM permissions.</p>
 <div class="exam-ask"><p>"Who patches the OS?" is a classic. EC2: you. RDS: AWS. Lambda: AWS. If the service name contains "managed" or "serverless", AWS owns the OS. If you got a virtual machine, you own it.</p></div>
 
 <div class="pq" id="shared-responsibility-check">
@@ -1406,8 +1408,10 @@ details.kc[open] summary::before{content:"\2212 "}
 <p><span class="wrong">A is wrong:</span> AWS never manages your data access or your EC2 guest OS. C is wrong: AWS does not patch your EC2 instances. D is wrong: bucket permissions are the customer's job, not AWS's.</p>
 </div>
 </div>
+<p><strong>Next:</strong> IAM, the bouncer at every door.</p>
 <h2 id="iam">3. IAM: the bouncer at every door</h2>
-<p>Every single AWS request passes through IAM first. Your Lambda calling Bedrock, your laptop listing an S3 bucket, an EC2 instance reading a file. IAM answers two questions: who are you (authentication), and what may you do (authorization).</p>
+<p>The deal splits security down the middle. IAM enforces your half, at every door.</p>
+<p>Every single AWS request passes through IAM (Identity and Access Management) first. Your Lambda (serverless code) calling Bedrock, your laptop listing an S3 bucket (object storage), an EC2 instance (a rented virtual machine) reading a file. Each service gets its own section below; for now, treat them as examples of AWS callers. IAM answers two questions: who are you (authentication), and what may you do (authorization).</p>
 <p>Three characters do the work. A <strong>user</strong> is a permanent identity, usually a person. A <strong>group</strong> is a bundle of users that share permissions. A <strong>role</strong> is a temporary badge anyone trusted can pick up, use, and put back.</p>
 <pre><code>  alice (user) ──┐
                  ├──&gt; group &quot;developers&quot; ──&gt; policy: read S3, run EC2
@@ -1418,7 +1422,7 @@ details.kc[open] summary::before{content:"\2212 "}
   Lambda function ── assumes ───────┘   (temporary keys, auto-rotated)
 </code></pre>
 <p>Why roles matter: a user carries long-term keys. If those leak, they work until you revoke them. A role hands out temporary keys that die on their own, usually within hours. So the rule is simple. People sign in with short-lived sessions (IAM Identity Center). Programs and services use roles. Long-term access keys are a last resort.</p>
-<p>The <strong>root user</strong> is the account itself. It can do everything, including closing the account. Lock it down on day one: strong password, MFA, no access keys, and never use it for daily work. A few tasks only root can do, like changing the support plan or closing the account. The exam loves asking which tasks need root.</p>
+<p>The <strong>root user</strong> is the account itself. It can do everything, including closing the account. Lock it down on day one: strong password, MFA (multi-factor authentication: a second proof of identity, like a code from your phone), no access keys, and never use it for daily work. A few tasks only root can do, like changing the support plan or closing the account. The exam loves asking which tasks need root.</p>
 <h3 id="policies-the-rule-sheets">Policies: the rule sheets</h3>
 <p>A policy is a JSON document that says allow or deny. Here is one, as a Python dict you could hand to boto3:</p>
 <pre><code class="language-python">policy = {
@@ -1442,13 +1446,18 @@ details.kc[open] summary::before{content:"\2212 "}
 <p>Walkthrough: <code>Effect</code> decides allow or deny. <code>Action</code> names API calls, and the service prefix tells you which service (s3:, ec2:, bedrock:). <code>Resource</code> uses ARNs, Amazon's address format for everything. The <code>/*</code> means "all objects inside the bucket". No Condition here, so the rule always applies.</p>
 <p>Two flavors of policy. <strong>Identity-based</strong> policies attach to users, groups, or roles and say what that identity may do. <strong>Resource-based</strong> policies attach to the thing itself (an S3 bucket policy, a KMS key policy) and say who may touch it. Within one account, an allow from either side is enough. That is the union rule.</p>
 <p>Managed policies are reusable rule sheets. AWS-managed (like <code>ReadOnlyAccess</code>) are maintained by AWS. Customer-managed are yours. Inline policies belong to exactly one identity and die with it.</p>
+<figure class="fig-light">
+<img src="assets/img/foundations/found-policy-anatomy.svg" alt="IAM policy anatomy: Effect allow or deny, Action naming API calls, Resource using ARN addresses; identity-based and resource-based policies combine with a union rule, and any explicit Deny overrides every Allow" loading="lazy">
+<figcaption>A policy in plain English: allow or deny, on API calls, on resources addressed by ARN. An allow from either the identity side or the resource side is enough, but one explicit Deny anywhere overrides everything.</figcaption>
+</figure>
+
 <h3 id="how-aws-decides-deny-wins">How AWS decides: deny wins</h3>
 <p>The evaluation order is short enough to memorize:</p>
 <ol>
 <li>Start: everything is denied (implicit deny).</li>
 <li>If any policy has an explicit <strong>Deny</strong> for this request, stop. Denied.</li>
 <li>Otherwise, if any policy has an explicit <strong>Allow</strong>, continue to the boundary checks.</li>
-<li>Boundaries (permission boundary, SCPs, session policy) can only shrink permissions, never grow them.</li>
+<li>Boundaries (permission boundaries, SCPs (Service Control Policies: rules set at the organization level), and session policies) can only shrink permissions, never grow them.</li>
 <li>If all checks pass, allowed.</li>
 </ol>
 <figure class="fig-light"><img src="assets/img/internet/permissions_policies_effective.png" alt="How identity-based and resource-based policies combine: an allow from either side grants access within one account, but one explicit deny anywhere overrides everything." loading="lazy"><figcaption>How identity-based and resource-based policies combine: an allow from either side grants access within one account, but one explicit deny anywhere overrides everything.</figcaption><figcaption class="credit">Source: AWS IAM User Guide (docs.aws.amazon.com), downloaded Sept 2026.</figcaption></figure>
@@ -1456,7 +1465,12 @@ details.kc[open] summary::before{content:"\2212 "}
 <p>A <strong>permission boundary</strong> is a managed policy that caps what an identity can ever do. The real permissions are the overlap of the identity's policies and the boundary. Admins use it to delegate safely: "you may grant your team anything, but never more than this ceiling."</p>
 <figure class="fig-light"><img src="assets/img/internet/permissions_boundary.png" alt="A permissions boundary intersects with identity-based policies. Removing the boundary can only widen access; adding one can only narrow it." loading="lazy"><figcaption>A permissions boundary intersects with identity-based policies. Removing the boundary can only widen access; adding one can only narrow it.</figcaption><figcaption class="credit">Source: AWS IAM User Guide (docs.aws.amazon.com), downloaded Sept 2026.</figcaption></figure>
 <h3 id="iam-identity-center-sso-for-humans">IAM Identity Center: SSO for humans</h3>
-<p>Real companies do not make an IAM user per employee. They connect their company login (Google Workspace, Okta, Active Directory) to <strong>IAM Identity Center</strong>, and people get short-lived AWS access through permission sets. One login, many accounts, no long-term keys floating around.</p>
+<p>Real companies do not make an IAM user per employee. They connect their company login (Google Workspace, Okta, Active Directory) to <strong>IAM Identity Center</strong> (AWS's SSO, or single sign-on, service for the workforce), and people get short-lived AWS access through permission sets. One login, many accounts, no long-term keys floating around.</p>
+<figure class="fig-light">
+<img src="assets/img/foundations/found-sso-vs-roles.svg" alt="Humans get SSO through IAM Identity Center: one company login, permission sets, short-lived access. Machines and services get IAM roles with temporary auto-expiring keys." loading="lazy">
+<figcaption>Humans get SSO through Identity Center: one company login, permission sets, short-lived access. Machines and services get IAM roles with temporary keys. No long-term keys floating around.</figcaption>
+</figure>
+
 <div class="exam-ask"><p>Four patterns cover nearly every IAM exam question. (1) "An EC2 instance needs to read from S3": give the instance an IAM role (instance profile), never bake access keys into the code. (2) "A developer needs admin for two hours": let them assume a role, not a second user. (3) "Let team leads create users but never touch billing": permission boundary on the team leads. (4) "A partner company needs read access to our bucket": cross-account role, or a bucket policy naming their account.</p>
 <p>Traps: groups cannot contain groups. A policy with only Deny and no Allow grants nothing. Deleting a user does not delete their access keys first is wrong, actually deleting a user deletes everything attached, which can break running apps that used those keys, which is why apps should use roles.</p></div>
 
@@ -1490,10 +1504,12 @@ details.kc[open] summary::before{content:"\2212 "}
 <button class="pq-reveal" type="button">Reveal answer</button>
 <div class="pq-answer">
 <p><span class="correct">Correct: B.</span> A permissions boundary caps the maximum permissions of the identity it is attached to, so team-written policies cannot exceed it.</p>
-<p><span class="wrong">A is wrong:</span> SCPs apply at the AWS Organizations account level, and this scenario is about identities inside one account. C is wrong: authentication strength does not limit authorization scope. D is wrong: the product team could attach another policy or edit this one; an identity policy does not cap future policies the way a boundary does.</p>
+<p><span class="wrong">A is wrong:</span> SCPs apply at the AWS Organizations (the service that groups many AWS accounts) account level, and this scenario is about identities inside one account. C is wrong: authentication strength does not limit authorization scope. D is wrong: the product team could attach another policy or edit this one; an identity policy does not cap future policies the way a boundary does.</p>
 </div>
 </div>
+<p><strong>Next:</strong> S3, the infinite hard drive.</p>
 <h2 id="s3">4. S3: the infinite hard drive</h2>
+<p>Identity is settled. The first thing you store goes in S3.</p>
 <p>S3 stores objects. An object is a file plus its metadata. Objects live in <strong>buckets</strong>. Bucket names are globally unique (one namespace for all of AWS) but each bucket lives in one Region. You can store unlimited objects; each can be up to 5 TB.</p>
 <p>S3 is built for 99.999999999% (eleven nines) durability: your data is copied across at least three AZs. Reads and writes are strongly consistent since 2020, so a write followed by a read always sees the new data.</p>
 <h3 id="storage-classes-pay-for-how-often-you-touch-it">Storage classes: pay for how often you touch it</h3>
@@ -1507,6 +1523,11 @@ details.kc[open] summary::before{content:"\2212 "}
 <div class="rung"><span class="rung-n">6</span><div><b><strong>S3 Glacier Deep Archive</strong>: The cheapest. Retrieval takes 12 to 48 hours. 180-day minimum. Built for 7-to-10-year compliance keeps.</b><span></span></div></div>
 </div>
 <p>The exam traps hide in the minimums. Store a file in Deep Archive and delete it after 60 days, and you still pay for 180. That single fact answers a whole family of "cheapest compliant storage" questions.</p>
+<figure class="fig-light">
+<img src="assets/img/foundations/found-storage-classes.svg" alt="S3 storage classes ordered by access frequency: Standard, Intelligent-Tiering, Standard-IA with a 30-day minimum, Glacier Instant and Flexible with 90-day minimums, Deep Archive with a 180-day minimum and 12 to 48 hour retrieval" loading="lazy">
+<figcaption>Pick the storage class by how often you touch the data. The exam traps hide in the minimum days: delete early and you still pay for them.</figcaption>
+</figure>
+
 <h3 id="versioning-lifecycle-replication">Versioning, lifecycle, replication</h3>
 <p><strong>Versioning</strong> keeps every version of an object. Overwrite or delete, and the old copy stays. It is the undo button for "someone deleted the training data". MFA Delete can require a hardware code to permanently remove a version.</p>
 <p><strong>Lifecycle rules</strong> move or delete objects on a schedule without you touching them. Classic exam answer: training logs go Standard for 30 days, then Standard-IA, then Glacier Flexible at 90 days, then expire at 7 years.</p>
@@ -1537,10 +1558,20 @@ s3.put_bucket_lifecycle_configuration(
 )
 </code></pre>
 <p><strong>Replication</strong> (CRR across Regions, SRR within one) copies new objects to a second bucket automatically. It needs versioning turned on in both buckets. Exam phrasing: "low-latency access on two continents" or "regulatory copy in a second Region".</p>
+<figure class="fig-light">
+<img src="assets/img/foundations/found-lifecycle.svg" alt="S3 lifecycle timeline: day 0 S3 Standard, day 30 Standard-IA, day 90 Glacier Flexible, year 7 expire; versioning keeps every version as an undo button, replication copies buckets automatically" loading="lazy">
+<figcaption>Lifecycle rules move objects down the cost ladder on a schedule: Standard at day 0, Standard-IA at day 30, Glacier at day 90, expire at year 7. Versioning is the undo button; replication copies buckets automatically.</figcaption>
+</figure>
+
 <h3 id="encryption-and-sharing">Encryption and sharing</h3>
-<p>Encryption at rest has three server-side flavors. <strong>SSE-S3</strong>: AWS manages the keys, AES-256, free. <strong>SSE-KMS</strong>: your KMS keys, so every encrypt and decrypt is logged in CloudTrail and you can revoke access by disabling the key. <strong>SSE-C</strong>: you bring the key with each request. Data in flight is TLS, always.</p>
+<p>Encryption at rest has three server-side flavors. <strong>SSE-S3</strong>: AWS manages the keys, AES-256, free. <strong>SSE-KMS</strong>: your KMS keys, so every encrypt and decrypt is logged in CloudTrail and you can revoke access by disabling the key. <strong>SSE-C</strong>: you bring the key with each request. Data in flight is TLS (Transport Layer Security, the encryption behind HTTPS), always.</p>
 <p>To share one private file without opening the bucket, hand out a <strong>presigned URL</strong>. It is a signed link that works until it expires (minutes to 7 days). The bucket stays private. This is the answer to every "share a private object temporarily" question.</p>
-<div class="exam-ask"><p>S3 greatest hits. "Users report stale data after overwrite" is outdated: S3 is strongly consistent now. "Bucket must never be public": S3 Block Public Access at the account level. "Ransomware-proof backups": versioning plus Object Lock (WORM: nobody, not even root, can delete until the retention date). "Website hosting": S3 static website hosting plus CloudFront, not EC2 for static files.</p></div>
+<figure class="fig-light">
+<img src="assets/img/foundations/found-encryption.svg" alt="S3 server-side encryption flavors: SSE-S3 with AWS-managed keys, SSE-KMS with customer keys and per-use CloudTrail logging, SSE-C with keys brought per request; presigned URLs share one private file while the bucket stays private" loading="lazy">
+<figcaption>Three server-side flavors: SSE-S3 with AWS-managed keys, SSE-KMS with your keys and per-use audit logging, SSE-C where you bring the key each request. Share one private file with a presigned URL: the bucket stays private.</figcaption>
+</figure>
+
+<div class="exam-ask"><p>S3 greatest hits. "Users report stale data after overwrite" is outdated: S3 is strongly consistent now. "Bucket must never be public": S3 Block Public Access at the account level. "Ransomware-proof backups": versioning plus Object Lock (WORM, write once read many: nobody, not even root, can delete until the retention date). "Website hosting": S3 static website hosting plus CloudFront, not EC2 for static files.</p></div>
 
 <div class="takeaway"><p>S3 = buckets of objects, eleven nines, strongly consistent. Match the storage class to touch frequency and respect the minimum days. Versioning is your undo button. Lifecycle rules are your janitor. Presigned URLs share without exposing.</p></div>
 
@@ -1575,8 +1606,10 @@ s3.put_bucket_lifecycle_configuration(
 <p><span class="wrong">A is wrong:</span> a public window, however short, is how leaks happen. C is wrong: creating IAM identities for external customers is heavy and wrong-shaped. D is wrong: a public distribution exposes the file to everyone, not one customer.</p>
 </div>
 </div>
+<p><strong>Next:</strong> EC2, rented computers.</p>
 <h2 id="ec2">5. EC2: rented computers</h2>
-<p>EC2 rents you virtual machines by the second. Pick a size, pick an operating system image (AMI), launch it in a subnet, and it is yours. Stop paying attention to the hardware; AWS owns that. Everything above the hypervisor is yours, including patching the OS.</p>
+<p>Storage handled. Now compute: EC2 rents you machines by the second.</p>
+<p>EC2 rents you virtual machines by the second. Pick a size, pick an operating system image (AMI, Amazon Machine Image), launch it in a subnet, and it is yours. Stop paying attention to the hardware; AWS owns that. Everything above the hypervisor is yours, including patching the OS.</p>
 <h3 id="instance-types-the-letter-tells-you-the-strength">Instance types: the letter tells you the strength</h3>
 <p>Types look like <code>m7i.large</code>. The first letter is the family, which tells you what the machine is good at:</p>
 <ul>
@@ -1587,14 +1620,23 @@ s3.put_bucket_lifecycle_configuration(
 <li><strong>P, G</strong>: GPU (training, graphics); <strong>Inf, Trn</strong>: AWS chips for inference and training</li>
 </ul>
 <p>You do not need to memorize every type. The exam gives you the workload ("memory-intensive database") and expects the family ("R").</p>
+<figure class="fig-light">
+<img src="assets/img/foundations/found-instance-types.svg" alt="EC2 instance type letters map to strengths: T and M general purpose, C compute-heavy, R and X memory-heavy, I and D storage-heavy, P and G GPU, Inf and Trn AWS chips" loading="lazy">
+<figcaption>The first letter of an instance type names its strength: T and M are balanced, C computes, R and X remember, I and D store, P and G accelerate with GPUs. The exam gives the workload and expects the family.</figcaption>
+</figure>
+
 <h3 id="pricing-five-ways-to-pay">Pricing: five ways to pay</h3>
 <div class="ladder">
 <div class="rung"><span class="rung-n">1</span><div><b><strong>On-Demand</strong>: No commitment, pay per second. Highest price, total flexibility. Default for spiky or unknown workloads.</b><span></span></div></div>
-<div class="rung"><span class="rung-n">2</span><div><b><strong>Spot</strong>: Bid on spare capacity, up to 90% off. AWS can reclaim the instance with a 2-minute warning. Only for work that survives interruption: batch jobs, CI runners, fault-tolerant training.</b><span></span></div></div>
+<div class="rung"><span class="rung-n">2</span><div><b><strong>Spot</strong>: Bid on spare capacity, up to 90% off. AWS can reclaim the instance with a 2-minute warning. Only for work that survives interruption: batch jobs, CI (continuous integration) runners, fault-tolerant training.</b><span></span></div></div>
 <div class="rung"><span class="rung-n">3</span><div><b><strong>Reserved Instances</strong>: Commit 1 or 3 years to a type and Region, save up to 72%. For steady-state servers you know will run.</b><span></span></div></div>
 <div class="rung"><span class="rung-n">4</span><div><b><strong>Savings Plans</strong>: Commit to a dollar-per-hour spend for 1 or 3 years, save up to 72%, with flexibility to change instance types.</b><span></span></div></div>
 <div class="rung"><span class="rung-n">5</span><div><b><strong>Dedicated Hosts</strong>: A whole physical server, for license or compliance rules that demand it. Most expensive.</b><span></span></div></div>
 </div>
+<figure class="fig-light">
+<img src="assets/img/foundations/found-pricing.svg" alt="EC2 pricing by commitment: On-Demand with no commitment, Spot with spare capacity up to 90 percent off and a 2-minute reclaim warning, Reserved and Savings Plans with 1 to 3 year commitments up to 72 percent off, Dedicated Host with a whole server for compliance" loading="lazy">
+<figcaption>Five ways to pay, ordered by commitment: On-Demand for the unknown, Spot for interruptible work at up to 90 percent off, Reserved and Savings Plans for the steady state, Dedicated Host when compliance wants the hardware.</figcaption>
+</figure>
 <h3 id="storage-three-very-different-disks">Storage: three very different disks</h3>
 <pre><code>  EBS                    Instance store              EFS
   network disk           physical disk on            shared file system
@@ -1605,7 +1647,7 @@ s3.put_bucket_lifecycle_configuration(
   snapshots to S3        terminate                   scales automatically
   gp3 SSD default        fastest, free                many writers at once
 </code></pre>
-<p><strong>EBS</strong> is the normal boot disk: network-attached, persists independently of the instance, snapshot it to S3 for backups. <strong>Instance store</strong> is the raw disk inside the physical host: blazing fast and free, but everything on it dies when the instance stops. <strong>EFS</strong> is a shared NFS file system many instances mount at once, even across AZs.</p>
+<p><strong>EBS</strong> is the normal boot disk: network-attached, persists independently of the instance, snapshot it to S3 for backups. <strong>Instance store</strong> is the raw disk inside the physical host: blazing fast and free, but everything on it dies when the instance stops. <strong>EFS</strong> is a shared NFS (Network File System) file system many instances mount at once, even across AZs.</p>
 <div class="exam-ask"><p>EC2 greatest hits. "Shared file system for 20 web servers": EFS, not EBS (EBS attaches to one instance). "Cheapest way to run nightly batch that tolerates interruption": Spot. "Database needs its disk to survive a stop": EBS with delete-on-termination off. "Bootstrap script on first launch": user data (runs once as root at launch). "Distribute load across instances": Auto Scaling group plus a load balancer, which the exam pairs with multi-AZ.</p></div>
 
 <div class="takeaway"><p>EC2 = VMs you fully own above the hypervisor. Letter = family. Pay model = commitment level. EBS persists, instance store evaporates, EFS is shared.</p></div>
@@ -1641,17 +1683,23 @@ s3.put_bucket_lifecycle_configuration(
 <p><span class="wrong">A is wrong:</span> On-Demand is the flexible but expensive default. C is wrong: a 3-year commitment for a 3-hour nightly job wastes money most of the day. D is wrong: dedicated hardware is for compliance, not cost.</p>
 </div>
 </div>
+<p><strong>Next:</strong> VPC, your private network.</p>
 <h2 id="vpc">6. VPC: your private network</h2>
+<p>Machines need a network to live in. That is the VPC.</p>
 <p>A VPC is your own isolated network inside AWS. You draw the map: the IP range, the subnets, the roads between them, and the gates to the outside. Nothing gets in or out unless you build the road.</p>
 <p>Start with the picture from the AWS docs: one VPC, one subnet per AZ, EC2 instances inside, an internet gateway on the edge.</p>
 <figure class="fig-light"><img src="assets/img/internet/vpc-how-it-works.png" alt="A VPC with subnets spread across three AZs, EC2 instances in each subnet, and an internet gateway connecting the VPC to the internet." loading="lazy"><figcaption>A VPC with subnets spread across three AZs, EC2 instances in each subnet, and an internet gateway connecting the VPC to the internet.</figcaption><figcaption class="credit">Source: AWS VPC User Guide (docs.aws.amazon.com), downloaded Sept 2026.</figcaption></figure>
 <h3 id="the-pieces-one-by-one">The pieces, one by one</h3>
-<p>You create a VPC with a <strong>CIDR block</strong>, your private IP range, like <code>10.0.0.0/16</code> (65,536 addresses). Inside it you carve <strong>subnets</strong>, each pinned to exactly one AZ, like <code>10.0.1.0/24</code> in us-east-1a. AWS reserves 5 addresses per subnet, so a /24 gives you 251 usable.</p>
-<p>A <strong>route table</strong> is the road map: rows that say "traffic for this destination goes to that target". A subnet is <strong>public</strong> when its route table sends <code>0.0.0.0/0</code> (everything) to an <strong>internet gateway</strong>. No IGW route means <strong>private</strong>.</p>
-<p>The <strong>internet gateway (IGW)</strong> is the two-way door to the internet. Attach one per VPC. The <strong>NAT gateway</strong> sits in a public subnet and gives private subnets a one-way door: instances inside can reach out (download patches, call APIs) but nobody outside can reach in. NAT gateways cost money per hour plus per GB, which the exam sometimes uses as a cost trap.</p>
+<p>You create a VPC with a <strong>CIDR block</strong> (CIDR is Classless Inter-Domain Routing), your private IP range, like <code>10.0.0.0/16</code> (65,536 addresses). Inside it you carve <strong>subnets</strong>, each pinned to exactly one AZ, like <code>10.0.1.0/24</code> in us-east-1a. AWS reserves 5 addresses per subnet, so a /24 gives you 251 usable.</p>
+<p>A <strong>route table</strong> is the road map: rows that say "traffic for this destination goes to that target". A subnet is <strong>public</strong> when its route table sends <code>0.0.0.0/0</code> (everything) to an <strong>internet gateway</strong> (IGW). No IGW route means <strong>private</strong>.</p>
+<p>The <strong>internet gateway</strong> is the two-way door to the internet. Attach one per VPC. The <strong>NAT gateway</strong> sits in a public subnet and gives private subnets a one-way door: instances inside can reach out (download patches, call APIs) but nobody outside can reach in. NAT gateways cost money per hour plus per GB, which the exam sometimes uses as a cost trap.</p>
+<figure class="fig-light">
+<img src="assets/img/foundations/found-vpc-pieces.svg" alt="VPC layout: a VPC with a public subnet in one AZ routing 0.0.0.0/0 to the internet gateway, a private subnet in another AZ routing 0.0.0.0/0 to a NAT gateway, and a database in the private subnet" loading="lazy">
+<figcaption>A VPC holds subnets in different AZs. The public subnet routes 0.0.0.0/0 to the internet gateway (two-way). The private subnet routes it to the NAT gateway (one-way out). Databases sit in private subnets with no route at all.</figcaption>
+</figure>
 <h3 id="security-groups-vs-nacls-the-exams-favorite-pair">Security groups vs NACLs: the exam's favorite pair</h3>
 <pre><code>  Security group                        Network ACL
-  at the INSTANCE (ENI)                 at the SUBNET
+  at the INSTANCE (ENI, the virtual network card)                 at the SUBNET
   stateful: reply traffic               stateless: you must allow
     auto-allowed                          both directions yourself
   ALLOW rules only                      ALLOW and DENY rules
@@ -1704,11 +1752,13 @@ s3.put_bucket_lifecycle_configuration(
 <p><span class="wrong">A is wrong:</span> security groups have no deny rules, only allow. C is wrong: route tables route traffic, they do not filter by source IP. D is wrong: endpoint policies control access to AWS services, not inbound traffic.</p>
 </div>
 </div>
+<p><strong>Next:</strong> databases, picked by shape of data.</p>
 <h2 id="databases">7. Databases: pick by shape of data</h2>
+<p>Compute and storage are in place. When data has a shape, pick the database that fits it.</p>
 <p>AWS has a database for every shape. The exam tests the pick, not the internals. Three cover almost everything.</p>
 <p><strong>RDS</strong> is managed relational: MySQL, Postgres, MariaDB, Oracle, SQL Server. AWS handles patching, backups, and failover; you handle the schema, queries, and access. <strong>Multi-AZ</strong> keeps a hot standby in another AZ for failover. <strong>Read replicas</strong> are async copies (up to 5, cross-Region allowed) that take read load.</p>
 <p><strong>Aurora</strong> is AWS's own relational engine, speaking MySQL and Postgres wire protocols. Storage auto-grows to 128 TB, is copied 6 ways across 3 AZs, and fails over in under 30 seconds with up to 15 read replicas. Pick it when a relational database must scale hard with minimal babysitting. Aurora Serverless v2 scales capacity up and down automatically.</p>
-<p><strong>DynamoDB</strong> is serverless NoSQL: key-value and document, single-digit millisecond latency at any scale. No servers, no patching. Pay per request (on-demand) or per provisioned throughput. Features the exam names: DAX (in-memory cache), Global Tables (multi-Region active-active), Streams (change feed), TTL (auto-expire items).</p>
+<p><strong>DynamoDB</strong> is serverless NoSQL: key-value and document, single-digit millisecond latency at any scale. No servers, no patching. Pay per request (on-demand) or per provisioned throughput. Features the exam names: DAX (DynamoDB Accelerator, an in-memory cache), Global Tables (multi-Region active-active), Streams (change feed), TTL (time to live: an expiry timestamp on each item).</p>
 <pre><code>  Need SQL tables? ── yes ──&gt; Must scale past one box with near-zero ops?
   │                                   │ yes            │ no
   │                              Aurora          RDS
@@ -1737,7 +1787,9 @@ s3.put_bucket_lifecycle_configuration(
 <p><span class="wrong">A is wrong:</span> one relational box cannot do 100k rps at 5 ms. B is wrong: Aurora is relational and heavier than this workload needs. D is wrong: Redshift is an analytics warehouse, not a live leaderboard.</p>
 </div>
 </div>
+<p><strong>Next:</strong> Lambda, code with no servers.</p>
 <h2 id="lambda">8. Lambda: code with no servers</h2>
+<p>EC2 rents whole machines. Lambda skips the machine entirely.</p>
 <p>Lambda runs your function when something happens, then disappears. No provisioning, no patching, no idle bill. You upload code (or a container image), pick memory (128 MB to 10 GB) and a timeout (max 15 minutes), and AWS runs it per event, billed per millisecond.</p>
 <pre><code>  S3 upload ──┐
   SQS message ─┼──&gt; Lambda runs ──&gt; writes to DynamoDB
@@ -1767,7 +1819,7 @@ def handler(event, context):
     return {&quot;statusCode&quot;: 200, &quot;body&quot;: json.dumps({&quot;copied&quot;: key})}
 </code></pre>
 <p>Walkthrough: Lambda hands your function an <code>event</code> dict describing what happened. For S3, that means bucket and key. <code>context</code> carries runtime info (time left, request id). The function does its work with boto3 and returns. Keep it short: anything over 15 minutes does not belong here.</p>
-<div class="exam-ask"><p>"Run code when a file lands in S3": Lambda trigger, not a polling EC2. "Job takes 45 minutes": not Lambda; use Fargate, EC2, or Batch. "API with spiky traffic and zero idle cost": API Gateway plus Lambda. "Cold starts hurting p99": provisioned concurrency. "Function needs a VPC resource": attach it to private subnets (then it needs a NAT or endpoint for the internet).</p></div>
+<div class="exam-ask"><p>"Run code when a file lands in S3": Lambda trigger, not a polling EC2. "Job takes 45 minutes": not Lambda; use Fargate (serverless containers), EC2, or Batch (AWS Batch, for scheduled heavy jobs). "API with spiky traffic and zero idle cost": API Gateway plus Lambda. "Cold starts hurting p99 (the 99th-percentile latency: the slowest 1% of requests)": provisioned concurrency. "Function needs a VPC resource": attach it to private subnets (then it needs a NAT or endpoint for the internet).</p></div>
 
 <div class="takeaway"><p>Lambda = event in, code runs, bill per millisecond. Fifteen minutes max. Triggers are the whole game.</p></div>
 
@@ -1786,14 +1838,21 @@ def handler(event, context):
 <p><span class="wrong">A is wrong:</span> a full-time server for a nightly 10-minute job. C is wrong: polling every minute burns invocations for no reason when the trigger exists. D is wrong: RDS cannot reach into S3 like that, and it is the wrong tool.</p>
 </div>
 </div>
+<p><strong>Next:</strong> the watchmen: CloudWatch, CloudTrail, Config.</p>
 <h2 id="observability">9. The watchmen: CloudWatch, CloudTrail, Config</h2>
+<p>Things are running. Now you need to see them: metrics, logs, and the audit trail.</p>
 <p>Three services, three questions. <strong>CloudWatch</strong> asks "how healthy is it right now?" Metrics, alarms, logs, dashboards. <strong>CloudTrail</strong> asks "who did what, when?" Every API call in the account, logged to S3. <strong>Config</strong> asks "is it still configured correctly?" Records resource settings over time and flags drift with rules.</p>
 <pre><code>  CloudWatch:  CPU &gt; 80% for 5 min ──&gt; alarm ──&gt; page the on-call
   CloudTrail:  &quot;who deleted the bucket?&quot; ──&gt; alice, 02:14, from 198.51.100.7
   Config:      &quot;are all EBS volumes encrypted?&quot; ──&gt; rule: no ──&gt; flag it
 </code></pre>
 <p>The exam confuses them on purpose. "Alert me before the disk fills": CloudWatch alarm on a metric. "Prove to auditors that MFA was enabled all quarter": CloudTrail history plus Config timeline. "Auto-remediate unencrypted buckets": Config rule triggering a Lambda.</p>
-<div class="takeaway"><p>CloudWatch watches health. CloudTrail audits actions. Config audits configuration. Who/what/when = Trail; is-it-right = Config.</p></div>
+<div class="takeaway"><p>CloudWatch watches health. CloudTrail audits actions. Config audits configuration. Who/what/when = Trail; is-it-right = Config.</p>
+<figure class="fig-light">
+<img src="assets/img/foundations/found-observability.svg" alt="Observability trio: CloudWatch answers how healthy it is right now with metrics, alarms, and logs; CloudTrail answers who did what and when; Config answers whether resources are still configured right" loading="lazy">
+<figcaption>CloudWatch answers how healthy it is right now. CloudTrail answers who did what and when. Config answers whether it is still configured right.</figcaption>
+</figure>
+</div>
 
 <div class="pq" id="observability-check">
 <p class="pq-meta"><span class="constraint">Observability</span><span class="constraint">knowledge check</span><span class="constraint">exam pattern</span></p>
@@ -1810,7 +1869,9 @@ def handler(event, context):
 <p><span class="wrong">A is wrong:</span> CloudWatch holds metrics and app logs, not the API audit trail. C is wrong: Config would show the group changed, not who changed it. D is wrong: flow logs show network packets, not API calls.</p>
 </div>
 </div>
+<p><strong>Next:</strong> the messengers: SQS, SNS, EventBridge.</p>
 <h2 id="messaging">10. Messengers: SQS, SNS, EventBridge</h2>
+<p>Services that call each other directly wait on each other. Messaging breaks that coupling.</p>
 <p>Services talk through messages so none of them waits on another. Three messengers, three shapes.</p>
 <p><strong>SQS</strong> is a queue: senders drop messages in, receivers pull them out. It decouples and buffers. Two flavors: Standard (huge scale, at-least-once delivery, order best-effort) and FIFO (exactly-once, strict order, lower throughput, name ends in <code>.fifo</code>). If processing fails, the message returns after the visibility timeout; after enough failures it moves to a <strong>dead-letter queue (DLQ)</strong> for inspection.</p>
 <p><strong>SNS</strong> is pub/sub: publish once to a topic, and every subscriber gets a push (email, SMS, Lambda, SQS, HTTP). It is fan-out: one event, many consumers.</p>
@@ -1834,7 +1895,12 @@ print(resp[&quot;MessageId&quot;])  # unique id; use it to trace the message
 </code></pre>
 <div class="exam-ask"><p>"Two services must not call each other directly": SQS between them. "Notify five systems when an order ships": SNS fan-out, often SNS to SQS queues per consumer. "Run a Lambda every hour and also when a file lands": EventBridge schedule plus S3 trigger. "Messages must not be lost and order matters": SQS FIFO plus DLQ.</p></div>
 
-<div class="takeaway"><p>SQS = queue, pull, buffer. SNS = broadcast, push, fan-out. EventBridge = rules over events, plus cron. DLQ catches the poison messages.</p></div>
+<div class="takeaway"><p>SQS = queue, pull, buffer. SNS = broadcast, push, fan-out. EventBridge = rules over events, plus cron. DLQ catches the poison messages.</p>
+<figure class="fig-light">
+<img src="assets/img/foundations/found-messaging.svg" alt="Messaging patterns: SQS queue with senders, queue, and workers, plus a dead-letter queue; SNS topic fanning out to email, SMS, Lambda, and SQS; EventBridge matching events to targets with cron schedules" loading="lazy">
+<figcaption>SQS is the queue: producers drop in, workers pull out, failures go to the dead-letter queue. SNS is the broadcast: one publish, everyone subscribed gets it. EventBridge matches events to rules and adds cron.</figcaption>
+</figure>
+</div>
 
 <div class="pq" id="messaging-check">
 <p class="pq-meta"><span class="constraint">Messaging</span><span class="constraint">knowledge check</span><span class="constraint">exam pattern</span></p>
@@ -1851,9 +1917,11 @@ print(resp[&quot;MessageId&quot;])  # unique id; use it to trace the message
 <p><span class="wrong">A is wrong:</span> sequential calls couple availability and latency of all four systems. C is wrong: one queue means one consumer eats each message; the other two never see it. D is wrong: cross-service database writes are the tightest coupling there is.</p>
 </div>
 </div>
+<p><strong>Next:</strong> API Gateway, the front door.</p>
 <h2 id="api-gateway">11. API Gateway: the front door</h2>
-<p>API Gateway puts a managed front door in front of your backends. Clients hit one HTTPS endpoint; the gateway handles throttling, authentication, request validation, caching, and routing to Lambda, EC2, or any HTTP service.</p>
-<p>Three flavors: <strong>HTTP APIs</strong> (cheap, fast, for Lambda and HTTP backends), <strong>REST APIs</strong> (full features: usage plans, API keys, request/response mapping, WAF), <strong>WebSocket APIs</strong> (two-way, for chat and live feeds). Deploy in <strong>stages</strong> (dev, prod), each with its own URL. Protect backends with auth: IAM, Cognito user pools, or a Lambda authorizer.</p>
+<p>Internal traffic is decoupled. External clients need one front door.</p>
+<p>API Gateway puts a managed front door in front of your backends. Clients hit one HTTPS (encrypted web traffic) endpoint; the gateway handles throttling, authentication, request validation, caching, and routing to Lambda, EC2, or any HTTP service.</p>
+<p>Three flavors: <strong>HTTP APIs</strong> (cheap, fast, for Lambda and HTTP backends), <strong>REST APIs</strong> (full features: usage plans, API keys, request/response mapping, WAF (Web Application Firewall)), <strong>WebSocket APIs</strong> (two-way, for chat and live feeds). Deploy in <strong>stages</strong> (dev, prod), each with its own URL. Protect backends with auth: IAM, Cognito (Amazon's sign-in service for app users) user pools, or a Lambda authorizer.</p>
 <pre><code>  client ──&gt; API Gateway ──&gt; Lambda (or EC2 / HTTP)
                 ├── throttle: 1000 req/s, burst 2000
                 ├── auth: Cognito token required
@@ -1861,7 +1929,12 @@ print(resp[&quot;MessageId&quot;])  # unique id; use it to trace the message
 </code></pre>
 <div class="exam-ask"><p>"REST API in front of Lambda with rate limiting": API Gateway. "Millions of requests, lowest cost, Lambda backend": HTTP API, not REST. "Real-time chat": WebSocket API. "Same API, safe rollout": canary deployments shift a percent of traffic to the new stage.</p></div>
 
-<div class="takeaway"><p>API Gateway = managed front door. HTTP API for cheap and simple, REST API for full control, WebSocket for two-way.</p></div>
+<div class="takeaway"><p>API Gateway = managed front door. HTTP API for cheap and simple, REST API for full control, WebSocket for two-way.</p>
+<figure class="fig-light">
+<img src="assets/img/foundations/found-api-gateway.svg" alt="API Gateway flavors: clients hit one HTTPS endpoint, API Gateway handles throttling, auth, and validation, with HTTP API for cheap and fast, REST API for usage plans, API keys, WAF, and caching, and WebSocket API for two-way traffic" loading="lazy">
+<figcaption>One HTTPS front door for your backends. HTTP API is cheap and fast. REST API adds usage plans, API keys, WAF, and caching. WebSocket API stays open for two-way traffic.</figcaption>
+</figure>
+</div>
 
 <div class="pq" id="apigw-check">
 <p class="pq-meta"><span class="constraint">API Gateway</span><span class="constraint">knowledge check</span><span class="constraint">exam pattern</span></p>
@@ -1878,7 +1951,9 @@ print(resp[&quot;MessageId&quot;])  # unique id; use it to trace the message
 <p><span class="wrong">A is wrong:</span> HTTP APIs lack usage plans and API keys. C is wrong: WebSocket is for two-way messaging, not REST billing tiers. D is wrong: an ALB does not do API keys, usage plans, or response caching.</p>
 </div>
 </div>
+<p><strong>Next:</strong> KMS, the key keeper.</p>
 <h2 id="kms">12. KMS: the key keeper</h2>
+<p>Traffic flows. Now lock it down: KMS keeps the encryption keys.</p>
 <p>KMS creates and guards encryption keys. You never see the raw key material; you ask KMS to encrypt and decrypt for you, and every use is written to CloudTrail.</p>
 <p>The trick is <strong>envelope encryption</strong>: KMS makes a data key, the data key encrypts your file (fast, local), then KMS encrypts the data key itself with your master key. To read the file, you ask KMS to unwrap the data key.</p>
 <pre><code>  your file ──encrypt with data key──&gt; ciphertext
@@ -1889,7 +1964,12 @@ print(resp[&quot;MessageId&quot;])  # unique id; use it to trace the message
 <p>Key types: <strong>AWS-managed</strong> (free-ish, one per service), <strong>customer-managed</strong> (your policies, your rotation, your disable switch), <strong>CloudHSM</strong> (dedicated hardware, for compliance that demands it). A <strong>key policy</strong> (resource-based) says which IAM principals may use the key. Disable the key and everything encrypted under it becomes unreadable instantly, which is both the safety switch and the footgun.</p>
 <div class="exam-ask"><p>"Audit every decryption of patient records": SSE-KMS, because each use lands in CloudTrail; SSE-S3 has no per-use log. "Instantly revoke access to archived data": disable the KMS key. "Encrypt an EBS volume": one checkbox, AWS-managed key by default. "Who can use this key": the key policy, not just IAM policies.</p></div>
 
-<div class="takeaway"><p>KMS holds the keys, you hold the policies. Envelope encryption keeps it fast. Every use is logged. Disabling a key revokes everything under it.</p></div>
+<div class="takeaway"><p>KMS holds the keys, you hold the policies. Envelope encryption keeps it fast. Every use is logged. Disabling a key revokes everything under it.</p>
+<figure class="fig-light">
+<img src="assets/img/foundations/found-kms.svg" alt="KMS envelope encryption: KMS creates a data key, the data key encrypts the file locally, the master key encrypts the data key; every unwrap is logged in CloudTrail and disabling the key instantly revokes everything under it" loading="lazy">
+<figcaption>Envelope encryption: KMS makes a data key, the data key encrypts your file locally (fast), and the master key encrypts the data key. Every unwrap is logged in CloudTrail. Disable the key and everything under it goes dark.</figcaption>
+</figure>
+</div>
 
 <div class="pq" id="kms-check">
 <p class="pq-meta"><span class="constraint">KMS</span><span class="constraint">knowledge check</span><span class="constraint">exam pattern</span></p>
@@ -1906,7 +1986,9 @@ print(resp[&quot;MessageId&quot;])  # unique id; use it to trace the message
 <p><span class="wrong">A is wrong:</span> SSE-S3 has no per-decryption audit log. C is wrong: emailing keys is never the answer, and SSE-C has no central revoke. D is wrong: hardcoded keys are un-auditable and un-revocable.</p>
 </div>
 </div>
+<p><strong>Next:</strong> CloudFormation, infrastructure as code.</p>
 <h2 id="cloudformation">13. CloudFormation: infrastructure as code</h2>
+<p>Every service so far is clickable. CloudFormation makes it all repeatable text.</p>
 <p>CloudFormation turns your architecture into a text file. You write a <strong>template</strong> (YAML or JSON) describing every resource; CloudFormation creates them together as a <strong>stack</strong>. Re-run the same template and you get the same environment, in any Region.</p>
 <pre><code class="language-python"># You do not write CloudFormation in boto3 day to day; you write the
 # template. This is the smallest honest example: one S3 bucket.
@@ -1925,10 +2007,15 @@ print(resp[&quot;MessageId&quot;])  # unique id; use it to trace the message
 # (AWS::S3::Bucket) and its properties. CloudFormation figures out
 # the order, creates everything, and rolls back if anything fails.
 </code></pre>
-<p><strong>Change sets</strong> preview what an update will do before it runs. <strong>Drift detection</strong> tells you when someone hand-edited a resource outside the template. <strong>StackSets</strong> deploy one template across many accounts and Regions. The CDK lets you write the same idea in Python or TypeScript instead of YAML; Terraform is the popular third-party alternative.</p>
+<p><strong>Change sets</strong> preview what an update will do before it runs. <strong>Drift detection</strong> tells you when someone hand-edited a resource outside the template. <strong>StackSets</strong> deploy one template across many accounts and Regions. The CDK (Cloud Development Kit) lets you write the same idea in Python or TypeScript instead of YAML; Terraform is the popular third-party alternative.</p>
 <div class="exam-ask"><p>"Deploy identical environments for dev, staging, prod": CloudFormation or CDK, not click-ops. "See what an update will change first": change sets. "One template, fifty accounts": StackSets. "Someone changed a security group by hand": drift detection.</p></div>
 
-<div class="takeaway"><p>Template in, stack out. Same file, same environment, every time. Preview with change sets, catch hand edits with drift detection.</p></div>
+<div class="takeaway"><p>Template in, stack out. Same file, same environment, every time. Preview with change sets, catch hand edits with drift detection.</p>
+<figure class="fig-light">
+<img src="assets/img/foundations/found-cloudformation.svg" alt="CloudFormation flow: a YAML template goes in, CloudFormation creates every resource as one stack, identical in any Region; change sets preview updates, drift detection catches hand edits, StackSets repeat across accounts" loading="lazy">
+<figcaption>Template in, stack out: CloudFormation creates every resource in the file as one stack, identical in any Region. Change sets preview updates; drift detection catches hand edits.</figcaption>
+</figure>
+</div>
 
 <div class="pq" id="cfn-check">
 <p class="pq-meta"><span class="constraint">CloudFormation</span><span class="constraint">knowledge check</span><span class="constraint">exam pattern</span></p>
@@ -1945,13 +2032,21 @@ print(resp[&quot;MessageId&quot;])  # unique id; use it to trace the message
 <p><span class="wrong">A is wrong:</span> screenshots document nothing enforceable. C is wrong: fewer clickers does not make clicks reproducible. D is wrong: S3 replication copies objects, not infrastructure.</p>
 </div>
 </div>
+<p><strong>Next:</strong> billing: how AWS charges you.</p>
 <h2 id="billing">14. Billing: how AWS charges you</h2>
+<p>Everything above costs money. Here is how AWS charges you.</p>
 <p>AWS bills pay-as-you-go: per second of EC2, per GB-month of S3, per million Lambda invocations. No upfront cost unless you choose a commitment for a discount.</p>
+<details class="cc-qa"><summary>Worked example: billing units in plain math</summary><p>Three units from this chapter, with the page's own numbers. Free Tier: 750 EC2 hours a month. One always-on instance runs 24 x 30 = 720 hours a month, so 750 - 720 = 30 hours of headroom: one instance, free, all month. Always-free Lambda: 1,000,000 invocations a month = 1,000,000 / 30 = about 33,333 a day, forever.</p><p style="text-align:center;font-size:1.15em;">billed GB-months = GB stored x fraction of the month</p><p>500 GB stored for half the month = 500 x 0.5 = 250 GB-months billed. The unit is GB-months, not GB: storing less data or storing it for less time both cut the bill.</p></details>
 <p>The tools: <strong>Cost Explorer</strong> shows where money went. <strong>Budgets</strong> alert (and can act) when spend crosses a line you set. <strong>Cost Anomaly Detection</strong> pings you on weird spikes. <strong>Cost allocation tags</strong> split the bill by team or project. <strong>Consolidated billing</strong> (via Organizations) merges many accounts into one bill with volume discounts.</p>
-<p>The <strong>Free Tier</strong> has three kinds: 12 months free for new accounts (750 EC2 hours a month), always-free amounts (1M Lambda invocations a month, forever), and short trials. <strong>Support plans</strong> step up from Basic (free) to Developer, Business, and Enterprise; the exam sometimes asks which plan gives a 15-minute response or a TAM (Business and up for fast response; Enterprise for the TAM).</p>
+<p>The <strong>Free Tier</strong> has three kinds: 12 months free for new accounts (750 EC2 hours a month), always-free amounts (1M Lambda invocations a month, forever), and short trials. <strong>Support plans</strong> step up from Basic (free) to Developer, Business, and Enterprise; the exam sometimes asks which plan gives a 15-minute response or a TAM (Business and up for fast response; Enterprise adds the TAM, a Technical Account Manager).</p>
 <div class="exam-ask"><p>"Finance needs each department billed separately": cost allocation tags plus consolidated billing. "Alert at 80% of the monthly budget": AWS Budgets. "Cheapest support with fast incident response": Business. "Estimate a new architecture's cost": the AWS Pricing Calculator.</p></div>
 
-<div class="takeaway"><p>Pay as you go, tag everything, budget everything. Free Tier is real but limited. Consolidated billing merges accounts and discounts.</p></div>
+<div class="takeaway"><p>Pay as you go, tag everything, budget everything. Free Tier is real but limited. Consolidated billing merges accounts and discounts.</p>
+<figure class="fig-light">
+<img src="assets/img/foundations/found-billing.svg" alt="Billing tools: Cost Explorer shows where the money went, Budgets alert and act at 80 percent, Anomaly Detection pings on weird spikes, cost allocation tags split the bill by team, consolidated billing merges many accounts for volume discounts" loading="lazy">
+<figcaption>Cost Explorer shows where the money went. Budgets alert and act at 80 percent. Anomaly Detection pings on weird spikes. Tags split the bill by team. Organizations merge the bills and stack the volume discounts.</figcaption>
+</figure>
+</div>
 
 <div class="pq" id="billing-check">
 <p class="pq-meta"><span class="constraint">Billing</span><span class="constraint">knowledge check</span><span class="constraint">exam pattern</span></p>
@@ -1968,7 +2063,9 @@ print(resp[&quot;MessageId&quot;])  # unique id; use it to trace the message
 <p><span class="wrong">A is wrong:</span> IAM users do not merge bills across accounts. C is wrong: manual and discount-free. D is wrong: one account destroys isolation and per-team tracking.</p>
 </div>
 </div>
+<p><strong>Next:</strong> putting it all together: a GenAI app on AWS.</p>
 <h2 id="genai-architecture">15. Putting it together: a GenAI app on AWS</h2>
+<p>All the pieces are in. Here they wire into one picture.</p>
 <p>Everything above wires into one picture. Here is a RAG chatbot, the architecture AIP-C01 scenarios are built from:</p>
 <pre><code>  user
    │
@@ -1991,10 +2088,18 @@ print(resp[&quot;MessageId&quot;])  # unique id; use it to trace the message
    │
    └── CloudWatch Logs + CloudTrail audit + Config rules
 </code></pre>
-<p>Read it bottom to top, the way the exam does. The user never touches your compute directly: CloudFront and API Gateway stand in front. Lambda runs the logic in <strong>private subnets</strong> with no public IP, reaching the internet only through a NAT gateway if it must. It reads documents from <strong>S3</strong> (versioned so a bad upload is reversible, KMS-encrypted so auditors are happy). It calls <strong>Bedrock</strong> through a <strong>VPC endpoint</strong>, so prompts never cross the public internet. The function's <strong>IAM role</strong> allows exactly two things: invoke the model and read that one bucket. Every call is logged by <strong>CloudTrail</strong>; every error surfaces in <strong>CloudWatch</strong>; <strong>Config</strong> flags any bucket that drifts from encryption.</p>
+<p>Read it bottom to top, the way the exam does. The user never touches your compute directly: CloudFront and API Gateway stand in front. Lambda runs the logic in <strong>private subnets</strong> with no public IP, reaching the internet only through a NAT gateway if it must. It reads documents from <strong>S3</strong> (versioned so a bad upload is reversible, KMS-encrypted so auditors are happy). It calls <strong>Bedrock</strong> through a <strong>VPC endpoint</strong>, so prompts never cross the public internet.</p>
+<p><strong>The security half.</strong> The function's <strong>IAM role</strong> allows exactly two things: invoke the model and read that one bucket. Every call is logged by <strong>CloudTrail</strong>; every error surfaces in <strong>CloudWatch</strong>; <strong>Config</strong> flags any bucket that drifts from encryption.</p>
 <p>Swap pieces and the exam scenario changes shape. Batch embeddings overnight? The S3 upload event triggers a Lambda, or EventBridge cron starts a Fargate task for long runs. Multi-Region users? Replicate the docs bucket (CRR) and deploy the stack with CloudFormation StackSets. Cost alarm? Budgets on the Bedrock and Lambda spend.</p>
-<div class="exam-ask"><p>When a scenario says "secure GenAI application", check four things in order: (1) network, private subnets plus endpoints; (2) identity, least-privilege roles, no keys; (3) data, KMS encryption and versioning; (4) audit, CloudTrail and CloudWatch. Miss one and an option will punish you for it.</p></div>
+<div class="exam-ask"><p>When a scenario says "secure GenAI application", check four things in order: (1) network, private subnets plus endpoints; (2) identity, least-privilege roles, no keys; (3) data, KMS encryption and versioning; (4) audit, CloudTrail and CloudWatch. Miss one and an option will punish you for it.</p>
+<figure class="fig-light">
+<img src="assets/img/foundations/found-genai-arch.svg" alt="Secure RAG chatbot architecture: users reach CloudFront and API Gateway, Lambda in private subnets reads documents from an encrypted versioned S3 bucket and calls Bedrock through a VPC endpoint; CloudTrail, CloudWatch, and Config form the audit layer" loading="lazy">
+<figcaption>The RAG chatbot, assembled: the user reaches CloudFront and API Gateway, Lambda in private subnets reads documents from an encrypted S3 bucket and calls Bedrock through a VPC endpoint, and the audit layer logs everything.</figcaption>
+</figure>
+</div>
+<p><strong>Next:</strong> the exam decision trees.</p>
 <h2 id="exam-decision-trees">16. Exam decision trees</h2>
+<p>The knowledge is built. This chapter compresses it into tear-out rules.</p>
 <p>Tear-out-and-keep rules. When the scenario gives you the constraint on the left, reach for the answer on the right.</p>
 <div class="ladder">
 <div class="rung"><span class="rung-n">1</span><div><b><strong>Cheapest storage, rarely read, keep for years</strong>: S3 Glacier Deep Archive plus a lifecycle rule. Watch the 180-day minimum.</b><span></span></div></div>
@@ -2098,6 +2203,7 @@ print(resp[&quot;MessageId&quot;])  # unique id; use it to trace the message
 <h2 id="go-deeper">Go deeper</h2>
 <p>Two links worth your time. The <a href="https://github.com/awscertifications/awscertificationswiki/blob/HEAD/docs/foundational/cloud-practitioner.md">AWS certification wiki's Cloud Practitioner page</a> keeps a maintained minimum-viable path: one video course plus practice exams, with honest notes on what each resource covers. On Reddit, r/AWSCertifications has years of "I passed CLF-C02" posts naming the exact trap questions people hit; search it for any service in this volume before exam day.</p>
 <p>You now know the ground AIP-C01 stands on. Regions place you, IAM guards you, S3 keeps everything, EC2 and Lambda compute it, VPC networks it, KMS seals it, and CloudFormation rebuilds it anywhere. The main volumes build GenAI on top of exactly this.</p>
+<div class="takeaway"><p><strong>Where to go next.</strong> Foundations done. If AI and ML vocabulary feels thin, take <a href="prereq-aif-c01.html">the AIF-C01 prereq</a> next; otherwise start the exam proper with <a href="volume-d1-foundation-models.html">D1 · Foundation Models, Data &amp; Compliance</a>.</p></div>
 </div></main>
 <script>
 window.DS_TRACK = "aipc01";
