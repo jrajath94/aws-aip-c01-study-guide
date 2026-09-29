@@ -1159,6 +1159,128 @@ footer p{text-align:left}
   #ds-content .ds-site-footer,
   .ds-side-volumes { display: none !important; }
 }
+</style>
+<style>
+/* Hallmark · pre-emit critique: P5 H4 E5 S4 R5 V5
+ * ==========================================================================
+ * Experience layer for study volumes — ADDITIVE ONLY.
+ * Never edits content markup or DS chrome; references DS tokens only
+ * (--accent, --border). No new colors, no gradients, no decorative filler.
+ *
+ * Motion stance: calm delight. Opacity/translate only (GPU-friendly),
+ * one IntersectionObserver, one rAF-throttled scroll listener, zero layout
+ * shift, prefers-reduced-motion respected, fully usable with JS disabled
+ * (every hidden state is gated on html.xp-js, which only this layer's
+ * companion script adds).
+ *
+ * Wiring (final assembly, per volume — same model as ds.css/ds.js):
+ *   1. In <head>, AFTER the DS style block, add:
+ *        <style>
+ *        /* ==== Experience layer — additive, do not edit per-file ==== */
+ *        …this file verbatim…
+ *        [close the style element]
+ *   2. Immediately before the document's LAST closing body tag (the real
+ *      one at the end of the file — some volumes mention a literal closing
+ *      body tag inside their docs prose; ignore those), AFTER the ds.js
+ *      script block, add:
+ *        <script>
+ *        /* ==== Experience layer behavior — additive ==== */
+ *        …experience.js verbatim…
+ *        [close the script element]
+ * (Closing tags are written out in the assembly snippet, not here, so this
+ * file can be pasted verbatim without early-terminating its own element.)
+ * ========================================================================== */
+
+/* ---------- 1. Smooth anchor scrolling (motion-safe readers only) ---------- */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+/* ---------- 2. Scroll-triggered reveals ----------
+   Hidden state exists ONLY under html.xp-js. No-JS readers, print, and
+   reduced-motion users always see full content. Uses the independent
+   `translate` property (not `transform`) so hover feedback below composes
+   without specificity fights. Opacity + translate only: zero layout shift. */
+html.xp-js .xp-reveal {
+  opacity: 0;
+  translate: 0 14px;
+}
+html.xp-js .xp-reveal.xp-in {
+  opacity: 1;
+  translate: 0 0;
+  transition:
+    opacity 0.55s ease,
+    translate 0.55s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+/* ---------- 3. Hero ---------- */
+/* Layout-neutral wrapper the script may add around a volume's title block.
+   Parallax itself is applied inline by the script (transform only). */
+.xp-hero {
+  position: relative;
+}
+
+/* ---------- 4. Calm hover feedback: cards + knowledge checks only ----------
+   translateY(-1px) + accent border. transform composes with the reveal's
+   independent `translate` property — no conflicts. */
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .pq,
+  .watch-card,
+  .ob-board,
+  .lab {
+    transition: transform 0.18s ease, border-color 0.18s ease;
+  }
+  .pq:hover,
+  .watch-card:hover,
+  .ob-board:hover,
+  .lab:hover {
+    transform: translateY(-1px);
+    border-color: var(--accent);
+  }
+  .pq:focus-within,
+  .watch-card:focus-within,
+  .ob-board:focus-within,
+  .lab:focus-within {
+    border-color: var(--accent);
+  }
+}
+
+/* ---------- 5. Reduced motion: everything static and visible ---------- */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  html.xp-js .xp-reveal {
+    opacity: 1;
+    translate: 0 0;
+    transition: none;
+  }
+  .xp-hero {
+    transform: none !important;
+    opacity: 1 !important;
+  }
+  .pq,
+  .watch-card,
+  .ob-board,
+  .lab {
+    transition: none;
+  }
+}
+
+/* ---------- 6. Print: never hide content ---------- */
+@media print {
+  html.xp-js .xp-reveal {
+    opacity: 1 !important;
+    translate: 0 0 !important;
+    transition: none;
+  }
+  .xp-hero {
+    transform: none !important;
+    opacity: 1 !important;
+  }
+}
 
 </style>
 </head>
@@ -1166,10 +1288,11 @@ footer p{text-align:left}
 <div id="ds-sidebar-root"></div>
 <main id="ds-content"><div class="ds-content-inner">
 <h1 id="aws-aip-c01-question-patterns">AWS AIP-C01: Question Patterns</h1>
-<p>81 original practice questions across all five domains, built from the question patterns AWS actually uses. Formats: matching 3, mc 63, mr 12, ordering 3. Every question shows the trap AWS set and hides the answer until you ask for it. Last verified against AWS documentation: 2026-09-28.</p>
+<p>81 original practice questions across all five domains, built from the question patterns AWS actually uses: 3 matching, 63 multiple choice, 12 multiple response, 3 ordering. Every question shows the trap AWS set and hides the answer until you ask for it. Last verified against AWS documentation: 2026-09-28.</p>
 <h2 id="how-aws-asks-the-6-question-patterns">How AWS Asks: the 6 question patterns</h2>
+<p>AWS reuses a small set of question moves. Learn the moves and the scenarios stop mattering.</p>
 <h3 id="pattern-1-constraint-extraction">Pattern 1: Constraint extraction</h3>
-<p>Every stem hides 2 to 4 hard constraints (cost, latency, no ML team, no redeploy, region lock). The correct answer is the only option that satisfies ALL of them. Method: underline each constraint before reading options, then eliminate any option that violates even one.</p>
+<p>Every stem hides 2 to 4 hard constraints: cost, latency, no ML team, no redeploy, region lock. The correct answer is the only option that satisfies ALL of them. Underline each constraint before reading the options, then eliminate any option that violates even one.</p>
 <h3 id="pattern-2-most-correct-not-merely-correct">Pattern 2: MOST correct, not merely correct</h3>
 <p>Two or three options will technically work. The winner is decided by tiebreakers in this order: managed service over custom build, cheaper over pricier at the same quality, simpler architecture over complex, AWS-native over third-party. When torn, ask: which option would an AWS solutions architect defend in a review?</p>
 <h3 id="pattern-3-ordering-and-lifecycle">Pattern 3: Ordering and lifecycle</h3>
@@ -1226,6 +1349,7 @@ footer p{text-align:left}
 <li><strong>Time management:</strong> 75 questions in 180 minutes is about 2.4 minutes per question. If an option violates a constraint on sight, eliminate and move on.</li>
 </ul>
 <h2 id="trap-catalog-the-30-traps-aws-reuses">Trap catalog: the 30 traps AWS reuses</h2>
+<figure><img src="assets/img/mermaid/85-trap-catalog.svg" alt="The 30 exam traps: distractor services, absolute wording, associate-level answers, reversed causality, and missed constraints in the stem" loading="lazy"><figcaption>The 30 exam traps: distractor services, absolute wording, associate-level answers, reversed causality, and missed constraints in the stem</figcaption><figcaption class="credit"><em>The 30 exam traps: distractor services, absolute wording, associate-level answers, reversed causality, and missed constraints in the stem</em></figcaption></figure>
 <ol>
 <li><strong>Lambda 15-minute timeout:</strong> any option with a Lambda waiting, sleeping, or polling for a long task dies. Go async or use Step Functions.</li>
 <li><strong>Custom code vs managed:</strong> when the stem says no ML team or least effort, custom builds lose to Bedrock managed features.</li>
@@ -1259,6 +1383,7 @@ footer p{text-align:left}
 <li><strong>Adjective precision:</strong> "least custom development effort" favors managed features over Lambda code. "Least operational overhead" favors the fewest self-managed components. "Most cost-effective" favors token math (smaller model, caching, batch). Three adjectives, three different winners. Read the exact word.</li>
 </ol>
 <h2 id="D1">D1: Develop and Optimize GenAI Apps with Bedrock</h2>
+<figure><img src="assets/img/mermaid/86-pattern-d1.svg" alt="D1 question pattern: if the stem mentions data you do not have, the answer is RAG; if it mentions behavior change, fine-tuning; otherwise prompt engineering or model choice" loading="lazy"><figcaption>D1 question pattern: if the stem mentions data you do not have, the answer is RAG; if it mentions behavior change, fine-tuning; otherwise prompt engineering or model choice</figcaption><figcaption class="credit"><em>D1 question pattern: if the stem mentions data you do not have, the answer is RAG; if it mentions behavior change, fine-tuning; otherwise prompt engineering or model choice</em></figcaption></figure>
 <p>Q1</p>
 <p>Easy</p>
 <p>Multiple choice</p>
@@ -1611,6 +1736,7 @@ footer p{text-align:left}
 <p>The trap AWS set here:</p>
 <p>Pattern 6: a real API restriction with a clean workaround. The trap answers either weaken safety or destroy governance.</p>
 <h2 id="D2">D2: Agents, Tools, and Workflow Automation</h2>
+<figure><img src="assets/img/mermaid/87-pattern-d2.svg" alt="D2 question pattern: multi-step tasks with tools point to Bedrock Agents; workflows with approvals point to Step Functions; simple calls point to the Converse API" loading="lazy"><figcaption>D2 question pattern: multi-step tasks with tools point to Bedrock Agents; workflows with approvals point to Step Functions; simple calls point to the Converse API</figcaption><figcaption class="credit"><em>D2 question pattern: multi-step tasks with tools point to Bedrock Agents; workflows with approvals point to Step Functions; simple calls point to the Converse API</em></figcaption></figure>
 <p>Q26</p>
 <p>Medium</p>
 <p>Ordering</p>
@@ -1922,6 +2048,7 @@ footer p{text-align:left}
 <p>The trap AWS set here:</p>
 <p>Pattern 6: money movement needs a hard control (returnControl), not just instructions. Guide plus gate.</p>
 <h2 id="D3">D3: Responsible AI, Guardrails, and Evaluation</h2>
+<figure><img src="assets/img/mermaid/88-pattern-d3.svg" alt="D3 question pattern: harmful content risk means Guardrails; PII in data means the sensitive information filter; otherwise IAM, KMS, and VPC controls" loading="lazy"><figcaption>D3 question pattern: harmful content risk means Guardrails; PII in data means the sensitive information filter; otherwise IAM, KMS, and VPC controls</figcaption><figcaption class="credit"><em>D3 question pattern: harmful content risk means Guardrails; PII in data means the sensitive information filter; otherwise IAM, KMS, and VPC controls</em></figcaption></figure>
 <p>Q48</p>
 <p>Hard</p>
 <p>Matching</p>
@@ -2157,6 +2284,7 @@ footer p{text-align:left}
 <p>The trap AWS set here:</p>
 <p>Pattern 6, trap 15: built-in safety never transfers the deployer's responsibility. The exam always keeps responsibility with the deployer.</p>
 <h2 id="D4">D4: FM Customization and Training</h2>
+<figure><img src="assets/img/mermaid/89-pattern-d4.svg" alt="D4 question pattern: cost concerns point to batch, caching, or smaller models; latency concerns point to streaming or provisioned throughput" loading="lazy"><figcaption>D4 question pattern: cost concerns point to batch, caching, or smaller models; latency concerns point to streaming or provisioned throughput</figcaption><figcaption class="credit"><em>D4 question pattern: cost concerns point to batch, caching, or smaller models; latency concerns point to streaming or provisioned throughput</em></figcaption></figure>
 <p>Q64</p>
 <p>Easy</p>
 <p>Multiple choice</p>
@@ -2292,6 +2420,7 @@ footer p{text-align:left}
 <p>The trap AWS set here:</p>
 <p>Pattern 2: 'scale fixes data' is the tempting fallacy. The exam rewards the curation pipeline in order.</p>
 <h2 id="D5">D5: Security, Governance, and Monitoring</h2>
+<figure><img src="assets/img/mermaid/90-pattern-d5.svg" alt="D5 question pattern: security incidents mean CloudTrail and invocation logs; quality concerns mean model evaluation; otherwise CloudWatch monitoring" loading="lazy"><figcaption>D5 question pattern: security incidents mean CloudTrail and invocation logs; quality concerns mean model evaluation; otherwise CloudWatch monitoring</figcaption><figcaption class="credit"><em>D5 question pattern: security incidents mean CloudTrail and invocation logs; quality concerns mean model evaluation; otherwise CloudWatch monitoring</em></figcaption></figure>
 <p>Q74</p>
 <p>Easy</p>
 <p>Multiple choice</p>
@@ -2420,12 +2549,16 @@ footer p{text-align:left}
 <li>UNVERIFIED: No exact default chunk-size token count is asserted anywhere; chunking questions use relative comparisons only.</li>
 </ul>
 <p>Built from original questions written for the AIP-C01 exam blueprint. Public sources were studied for style and coverage only; no question text was copied from any source. Generic content only.</p>
-</div></main>
+</div>
+</main>
 <script>
 window.DS_TRACK = "aipc01";
 window.DS_TRACK_TITLE = "AIP-C01 Study Guide";
 window.DS_MANIFEST = [
   { file: "index.html", label: "Start · Exam Overview & Study Map" },
+  { file: "prereq-aif-c01.html", label: "Prereq · AIF-C01 AI Practitioner Crash Course" },
+  { file: "prereq-aws-cloud-foundations.html", label: "Prereq · AWS Cloud Foundations" },
+  { file: "prereq-ml-specialty.html", label: "Prereq · ML Specialty Essentials" },
   { file: "volume-d1-foundation-models.html", label: "D1 · Foundation Models, Data & Compliance (31%)" },
   { file: "volume-d2-implementation-integration.html", label: "D2 · Implementation & Integration (26%)" },
   { file: "volume-d3-safety-security-governance.html", label: "D3 · Safety, Security & Governance (20%)" },
@@ -2436,7 +2569,7 @@ window.DS_MANIFEST = [
   { file: "volume-question-patterns.html", label: "Question Patterns · How AWS Asks" },
   { file: "volume-system-design.html", label: "System Design Guide" },
   { file: "volume-crash-course.html", label: "Crash Course · One-Volume Sprint" },
-  { file: "volume-appendix-gaps.html", label: "Appendix · Coverage Gaps" }
+  { file: "volume-appendix-gaps.html", label: "Appendix · Coverage Gaps" },
 ];
 </script>
 <script>
@@ -3001,6 +3134,151 @@ window.DS_MANIFEST = [
         tel.scrollIntoView({ behavior: "smooth", block: "start" });
         if (tel.focus) tel.focus({ preventScroll: true });
       }
+    }
+  });
+})();
+
+</script>
+<script>
+/* ==== Experience layer behavior — additive ====
+ * Calm, GPU-friendly page motion for study volumes. No-JS safe: every hidden
+ * state in experience.css is gated on `html.xp-js`, which only this script
+ * adds — without it the page is fully readable. Respects
+ * prefers-reduced-motion (exits early; CSS keeps everything static).
+ *
+ * Three jobs:
+ *  1. Hero parallax — detects the volume hero (.banner/.hero, else wraps the
+ *     h1 + lede block in .xp-hero) and drifts it gently as the reader
+ *     scrolls on. Transform/opacity only, rAF-throttled, passive listener.
+ *  2. Scroll reveals — one IntersectionObserver fades+rises figures, key
+ *     callouts and knowledge checks exactly once. Elements already in view
+ *     on load appear immediately (no load flash).
+ *  3. Nothing else: progress bar, scroll-spy, sidebar, quiz toggles are
+ *     owned by ds.js and are left untouched.
+ *
+ * (In the assembly snippet the closing element tags are written literally;
+ * inside this file they are escaped as <\/style> / <\/script> so the file
+ * pastes verbatim without early-terminating its own element.)
+ */
+(function () {
+  'use strict';
+
+  var root = document.documentElement;
+
+  var reduceMotion = false;
+  try {
+    reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  } catch (e) { /* matchMedia unavailable: assume motion is fine */ }
+  if (reduceMotion) { return; } /* leave no footprint: no xp-js, CSS stays static */
+
+  /* From here on the reader is fine with calm motion: mark the document so
+     the CSS reveal/parallax states may apply. Without this class (no-JS or
+     reduced-motion) every hidden state stays off and the page is fully
+     readable. */
+  root.classList.add('xp-js');
+
+  /* ---------------- 1. Hero detection + gentle parallax ---------------- */
+  var hero = document.querySelector('.banner, .hero');
+  if (!hero) {
+    /* No banner hero: wrap the volume title (h1) plus its lede paragraphs
+       in a layout-neutral div. Never touches headings ds.js needs. */
+    var main = document.querySelector('main');
+    var h1 = main ? main.querySelector('h1') : null;
+    if (h1 && h1.parentNode) {
+      var wrap = document.createElement('div');
+      wrap.className = 'xp-hero';
+      h1.parentNode.insertBefore(wrap, h1);
+      var node = h1, moved = 0, paras = 0;
+      while (node && moved < 8) {
+        var next = node.nextSibling;
+        if (node.nodeType === 3) { node = next; continue; } /* skip whitespace text nodes */
+        var isPara = node.nodeType === 1 && node.tagName === 'P';
+        if (node !== h1 && !isPara) { break; }
+        wrap.appendChild(node);
+        moved += 1;
+        if (isPara) {
+          paras += 1;
+          if (paras >= 3) { break; }
+        }
+        node = next;
+      }
+      hero = wrap;
+    }
+  }
+
+  var heroH = 0, ticking = false, pxOn = false;
+  function measure() { heroH = hero ? hero.offsetHeight : 0; }
+  function render() {
+    ticking = false;
+    if (!hero || !heroH) { return; }
+    var y = window.pageYOffset || root.scrollTop || 0;
+    if (y <= 0) {
+      if (pxOn) { hero.style.transform = ''; hero.style.opacity = ''; pxOn = false; }
+      return;
+    }
+    var range = heroH * 1.4;
+    if (y < range) {
+      /* Drift up slightly slower than the scroll and fade a whisper —
+         the title recedes calmly instead of snapping away. */
+      var k = Math.min(y / range, 1);
+      hero.style.transform = 'translate3d(0,' + (-y * 0.06).toFixed(1) + 'px,0)';
+      hero.style.opacity = (1 - k * 0.22).toFixed(3);
+      pxOn = true;
+    } else if (pxOn) {
+      hero.style.transform = '';
+      hero.style.opacity = '';
+      pxOn = false;
+    }
+  }
+  function requestRender() {
+    if (!ticking) { ticking = true; window.requestAnimationFrame(render); }
+  }
+  if (hero) {
+    measure();
+    render();
+    window.addEventListener('scroll', requestRender, { passive: true });
+    window.addEventListener('resize', function () { measure(); requestRender(); });
+  }
+
+  /* ---------------- 2. Scroll-triggered reveals ---------------- */
+  var SELECTOR = [
+    'figure',
+    '.takeaway', '.exam-ask', '.trapbox', '.trap', '.board',
+    '.diagram-walkthrough', '.walkthrough', '.warn', '.callout',
+    '.ob-board', '.nums', '.watch-card', '.lab', '.pq', '.go-deeper-note'
+  ].join(', ');
+
+  var targets = [];
+  Array.prototype.forEach.call(document.querySelectorAll(SELECTOR), function (el) {
+    if (hero && hero.contains(el)) { return; } /* hero has its own motion */
+    targets.push(el);
+  });
+
+  function showAll(list) {
+    list.forEach(function (el) { el.classList.add('xp-reveal', 'xp-in'); });
+  }
+
+  if (!targets.length) { return; }
+
+  if (!('IntersectionObserver' in window)) { showAll(targets); return; }
+
+  var io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (en) {
+      if (en.isIntersecting) {
+        en.target.classList.add('xp-in');
+        io.unobserve(en.target);
+      }
+    });
+  }, { rootMargin: '0px 0px -6% 0px', threshold: 0.06 });
+
+  var vh = window.innerHeight || 800;
+  targets.forEach(function (el) {
+    el.classList.add('xp-reveal');
+    var r = el.getBoundingClientRect();
+    if (r.top < vh && r.bottom > 0) {
+      el.classList.add('xp-in'); /* in view on load: appear, no animation */
+    } else {
+      io.observe(el);
     }
   });
 })();
