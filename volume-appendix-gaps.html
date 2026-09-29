@@ -2,6 +2,14 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<style>
+/* Validation-assembly: bridge + equation rendering (additive, 2026-09-29). */
+.chapter-bridge,.topic-bridge,.u-bridge{border-left:3px solid #8a8f98;border-left:3px solid color-mix(in srgb,currentColor 40%,transparent);padding:.55rem .9rem;margin:1.1rem 0;background:rgba(128,128,128,.08);border-radius:0 6px 6px 0}
+.next-chapter,.u-next,.u-goto{font-weight:650;margin:1.15rem 0}
+.display-eq,.eq{text-align:center;margin:1.15rem 0;font-size:1.12em;line-height:1.7}
+.eq-where{margin:.1rem 0 1rem 1.25rem;font-size:.93em;opacity:.92}
+.eq-worked{border:1px solid #8a8f98;border:1px solid color-mix(in srgb,currentColor 30%,transparent);border-radius:8px;padding:.7rem 1rem;margin:1rem 0;background:rgba(128,128,128,.06)}
+</style>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="dark">
 <title>AIP-C01 Gap Appendix: 17 Topics the Other Volumes Skip</title>
@@ -1298,20 +1306,12 @@ html.xp-js .xp-reveal.xp-in {
 </ul>
 <p>Entries marked UNVERIFIED could not be confirmed in live AWS documentation on the verification date and should be treated as lower confidence. Numbers that are volatile (pricing, quotas) are labeled illustrative.</p>
 <h2 id="scope">Scope and gap types</h2>
-<p>Every entry gives you the concept, the reason it exists, the mechanics, concrete numbers, the misunderstanding AWS exploits, a diagram with a walkthrough, and a "how AWS will ask" line. Two gap types matter: a <strong>hard gap</strong> appears in no other volume, so the entry here is the complete teaching condensed to exam size; a <strong>partial</strong> is mentioned elsewhere but never taught as a topic, so the entry here teaches the missing piece and points at the home volume for context.</p>
+<p>Every entry gives you the concept
+<figure class="fig-light"><img src="assets/img/gaps/gap-taxonomy.svg" alt="Hard gaps versus partial gaps: the 17 topics this appendix closes." loading="lazy"><figcaption>The 17 topics, split by gap type: 5 hard gaps taught here in full, 12 partials taught here properly for the first time.</figcaption></figure><div class="walkthrough">Read the two columns as a coverage map. The left column is material you will not find in any other volume; the right column is material the other volumes mention but never teach. If a practice question names a topic from either column, this appendix is the reference.</div>, the reason it exists, the mechanics, concrete numbers, the misunderstanding AWS exploits, a diagram with a walkthrough, and a "how AWS will ask" line. Two gap types matter: a <strong>hard gap</strong> appears in no other volume, so the entry here is the complete teaching condensed to exam size; a <strong>partial</strong> is mentioned elsewhere but never taught as a topic, so the entry here teaches the missing piece and points at the home volume for context.</p>
 <h2 id="ladder">Decision ladder placement</h2>
 <p>Each entry ends with a one-line placement on the GenAI decision ladder so you can answer "which service" questions fast:</p>
-<pre><code>  GenAI decision ladder (where each gap topic sits)
+<figure class="fig-light"><img src="assets/img/gaps/gap-ladder.svg" alt="Pipeline grid: each appendix topic sits in one column from data in to ops." loading="lazy"><figcaption>Figure 0.1. Each appendix topic placed on the pipeline it belongs to. Read left to right: raw data becomes model input becomes answers becomes monitored products.</figcaption></figure>
 
-  Data in        Ingestion        Processing        Model        App        Ops
-  |--------------|---------------|-----------------|------------|----------|------------|
-  Transfer Fam.  AppFlow          Textract          SageMaker    Q Apps     QuickSight
-  (file drops)   (SaaS sync)      (doc OCR)         (large dep)  (no-code)  (dashboards)
-                                EMR (big ETL)     top_k / TTFT Evidently
-                                dividers          CountTokens  WAF/CloudFront
-                                vector-opt        Neptune An.  Secrets Mgr
-</code></pre>
-<p>Figure 0.1. Each appendix topic placed on the pipeline it belongs to. Read left to right: raw data becomes model input becomes answers becomes monitored products.</p>
 <p>How to read this diagram</p>
 <ol>
 <li><strong>Left to right is time.</strong> Data enters on the left as files, SaaS records, or documents, and exits on the right as dashboards and monitored applications.</li>
@@ -1334,16 +1334,9 @@ html.xp-js .xp-reveal.xp-in {
 <div class="exam-ask"><p>Trap.</p>
 <p>AWS will offer Amazon EventBridge or a custom Lambda poller as distractors for "sync Salesforce cases into S3 for RAG." EventBridge routes events.
 It does not do field mapping, transformation, or incremental record pulls. The moment the scenario mentions field mapping or masking PII during the sync, the answer is AppFlow.</p></div>
-<pre><code>  Salesforce cases -----&gt;  +-----------+  field map / mask PII  +--------+  Glue / KB
-                            |  AppFlow  | ----------------------&gt; |   S3   | -----------&gt; RAG
-  Zendesk tickets  -----&gt;  |   flow    |   incremental pulls      +--------+    answers
-                            +-----------+
-                                 ^
-                          credentials in
-                          Secrets Manager
-</code></pre>
-<p>Figure 1.1. AppFlow syncs SaaS data into S3, where it becomes RAG fuel. The flow handles auth, mapping, masking, and incremental sync.
-Downstream, Glue or a Knowledge Base treats the S3 prefix as a normal data source.</p>
+<figure class="fig-light"><img src="assets/img/gaps/gap-appflow.svg" alt="AppFlow flow: SaaS source to S3 to Glue crawler and Bedrock knowledge base." loading="lazy"><figcaption>Figure 1.1. AppFlow syncs SaaS data into S3, where it becomes RAG fuel. The flow handles auth, mapping, masking, and incremental sync.
+Downstream, Glue or a Knowledge Base treats the S3 prefix as a normal data source.</figcaption></figure>
+
 <p>How to read this diagram</p>
 <ol>
 <li><strong>Left boxes are SaaS sources.</strong> Data starts in systems AWS does not own. AppFlow's whole job is the arrow from left to middle.</li>
@@ -1406,13 +1399,8 @@ Downstream, Glue or a Knowledge Base treats the S3 prefix as a normal data sourc
 
 <div class="exam-ask"><p>Trap.</p>
 <p>The classic distractor is "use S3 presigned URLs" for partner file exchange. Presigned URLs work for your own applications, not for partners who only speak SFTP and will not rewrite their tooling. The phrase "partners upload files using their existing SFTP clients" is the Transfer Family trigger.</p></div>
-<pre><code>  Partner SFTP client --SSH--&gt;  Transfer Family  --S3 API--&gt;  s3://ingest-bucket/
-  (unchanged tooling)            SFTP server                      |
-                                                                 v  S3 event
-                                                        Lambda / BDA / KB ingest
-                                                        (GenAI pipeline, D1 ch9)
-</code></pre>
-<p>Figure 1.2. Transfer Family terminates the legacy protocol and stores objects in S3. From there the standard GenAI ingestion pipeline takes over; the partner never learns anything changed.</p>
+<figure class="fig-light"><img src="assets/img/gaps/gap-transfer.svg" alt="Transfer Family: partner file drops land in S3, then a pipeline wakes up." loading="lazy"><figcaption>Figure 1.2. Transfer Family terminates the legacy protocol and stores objects in S3. From there the standard GenAI ingestion pipeline takes over; the partner never learns anything changed.</figcaption></figure>
+
 <p>How to read this diagram</p>
 <ol>
 <li><strong>The partner is unchanged.</strong> That is the entire value proposition: no client migration, no retraining.</li>
@@ -1447,13 +1435,8 @@ Downstream, Glue or a Knowledge Base treats the S3 prefix as a normal data sourc
 <div class="exam-ask"><p>Trap.</p>
 <p>AWS will offer OpenSearch Dashboards as the distractor for log analytics and QuickSight as the distractor for log analytics. The split: OpenSearch Dashboards visualizes data already in OpenSearch (logs, traces).
 QuickSight aggregates business data across many sources (S3, Athena, Redshift) with governed sharing. "Dashboard of monthly Bedrock spend per team from CUR (Cost and Usage Report, the detailed AWS billing file) data in S3" is QuickSight.</p></div>
-<pre><code>  S3 (CUR billing) --\
-  Athena (eval logs) ---&gt; QuickSight --SPICE import--&gt; dashboard: spend/team, eval trend
-  Redshift (usage)  ---/                    |
-                                            +-- anomaly detection: spend spike alert
-                                            +-- RLS: team A sees only team A rows
-</code></pre>
-<p>Figure 2.1. QuickSight aggregates GenAI operational data from several sources into one governed dashboard. SPICE keeps repeated views fast; ML insights watch for anomalies automatically.</p>
+<figure class="fig-light"><img src="assets/img/gaps/gap-quicksight.svg" alt="QuickSight: data sources to SPICE to dashboards, with ML extras." loading="lazy"><figcaption>Figure 2.1. QuickSight aggregates GenAI operational data from several sources into one governed dashboard. SPICE keeps repeated views fast; ML insights watch for anomalies automatically.</figcaption></figure>
+
 <p>How to read this diagram</p>
 <ol>
 <li><strong>Left: the raw sources.</strong> Billing data, evaluation logs, and usage tables. None of them is dashboard-shaped.</li>
@@ -1491,15 +1474,8 @@ QuickSight aggregates business data across many sources (S3, Athena, Redshift) w
 <p>will appear as an answer choice; the current name is</p>
 <p>topK.byEmbedding</p>
 <p>. Second, Neptune Analytics vs. Neptune Database: "transactional graph with ACID writes" is the Database; "in-memory analytics and vector similarity over a loaded graph" is Analytics.</p></div>
-<pre><code>  Neptune Database            Neptune Analytics (serverless, in-memory)
-  (transactional)             +------------------------------------------+
-  nodes/edges + vectors  --&gt;  |  graph load  --&gt;  HNSW vector index       |
-  ACID writes                 |  query: vectors.topK.byEmbedding(emb, k) |
-  GraphRAG lookups            |  dims fixed at creation (max 65,000)      |
-                              +------------------------------------------+
-                              analytic queries: similarity, communities
-</code></pre>
-<p>Figure 2.2. Neptune Database serves transactional graph reads and writes; Neptune Analytics loads the graph into memory for analytical vector and traversal queries. Pick by workload shape, not by brand.</p>
+<figure class="fig-light"><img src="assets/img/gaps/gap-neptune.svg" alt="Neptune Database for live graph queries versus Neptune Analytics for in-memory analysis." loading="lazy"><figcaption>Figure 2.2. Neptune Database serves transactional graph reads and writes; Neptune Analytics loads the graph into memory for analytical vector and traversal queries. Pick by workload shape, not by brand.</figcaption></figure>
+
 <p>How to read this diagram</p>
 <ol>
 <li><strong>Left: the database.</strong> Optimized for writes and point reads. This is the D1 ch11 GraphRAG home.</li>
@@ -1533,19 +1509,9 @@ QuickSight aggregates business data across many sources (S3, Athena, Redshift) w
 
 <div class="exam-ask"><p>Trap.</p>
 <p>AWS will confuse Q Apps with Q Developer and with Bedrock Agents. Q Developer is the coding assistant for developers; Bedrock Agents are developer-built autonomous agents with action groups and Lambda. Q Apps are for non-developers, built in natural language, with no code and no Lambda. "The HR team wants a reusable leave-policy Q and A tool they build themselves" is Q Apps, not an agent.</p></div>
-<pre><code>  natural language description
-        |
-        v
-  +-----------+   @input    +-----------+   @summary   +-----------+
-  | input     | ---------&gt; | text      | -----------&gt; | action    |
-  | card      |             | output    |              | card      |
-  | (notes)   |             | (summary) |              | (Jira     |
-  +-----------+             +-----------+              |  ticket)  |
-                                                       +-----------+
-  published to org app library; Q Business guardrails + permissions apply
-</code></pre>
-<p>Figure 2.3. A Q App is a chain of cards wired with @ mentions. The user fills the input card; each downstream card runs in turn.
-The finished app is shared like a template, not like code.</p>
+<figure class="fig-light"><img src="assets/img/gaps/gap-qapps.svg" alt="Q Apps: describe, generate, wire cards, share." loading="lazy"><figcaption>Figure 2.3. A Q App is a chain of cards wired with @ mentions. The user fills the input card; each downstream card runs in turn.
+The finished app is shared like a template, not like code.</figcaption></figure>
+
 <p>How to read this diagram</p>
 <ol>
 <li><strong>Top: the starting point.</strong> A sentence, not a codebase. That is the whole audience distinction.</li>
@@ -1581,16 +1547,8 @@ Custom Lambda for the rest. (4) Secrets are KMS-encrypted at rest.</p></div>
 <div class="exam-ask"><p>Trap.</p>
 <p>The distractor is always SSM Parameter Store. Parameter Store (even Advanced) stores parameters cheaply but has no built-in rotation engine for databases.
 The phrase "automatically rotate the database password every 30 days" is Secrets Manager. A second trap: rotation changes the secret on the database too (setSecret), not just the stored copy.</p></div>
-<pre><code>  rotation trigger (30d)
-        |
-        v
-  createSecret --&gt; setSecret --&gt; testSecret --&gt; finishSecret
-   AWSPENDING      (DB updated)   (login test)   AWSPENDING -&gt; AWSCURRENT
-        |                                                     ^
-        +---- on any failure: old secret stays AWSCURRENT ----+
-  app reads GetSecretValue at runtime; never embeds the password
-</code></pre>
-<p>Figure 3.1. The four-step rotation. The new secret is staged, installed, and tested before promotion; failure at any step leaves the old secret live. Applications are insulated because they read at runtime.</p>
+<figure class="fig-light"><img src="assets/img/gaps/gap-secrets.svg" alt="Secret rotation in four steps: create, update, promote, clean up." loading="lazy"><figcaption>Figure 3.1. The four-step rotation. The new secret is staged, installed, and tested before promotion; failure at any step leaves the old secret live. Applications are insulated because they read at runtime.</figcaption></figure>
+
 <p>How to read this diagram</p>
 <ol>
 <li><strong>Top: the schedule.</strong> Rotation is a cron-like trigger, not a manual runbook.</li>
@@ -1624,15 +1582,8 @@ The phrase "automatically rotate the database password every 30 days" is Secrets
 <div class="exam-ask"><p>Trap.</p>
 <p>AWS will offer Security Groups or NACLs as the "firewall" answer. Those filter at layers 3/4 (IP and port).
 WAF inspects layer 7 (HTTP bodies, SQLi strings, bot signatures). "Block requests containing SQL injection payloads" can only be WAF. A second trap: creating the CloudFront web ACL in the application's region instead of us-east-1.</p></div>
-<pre><code>  internet --&gt; WAF web ACL (priority order) --&gt; CloudFront / ALB / API Gateway
-                    |  1. AWSManagedRulesCommonRuleSet -&gt; Block
-                    |  2. IP reputation list           -&gt; Block
-                    |  3. rate-based rule              -&gt; Block
-                    |  4. new custom rule              -&gt; Count (observe first)
-                    v
-              logs -&gt; S3 / CloudWatch Logs / Firehose
-</code></pre>
-<p>Figure 3.2. WAF evaluates rules top to bottom; the first match decides. Managed rule groups carry the OWASP coverage; custom rules start in Count mode to avoid blocking legitimate traffic.</p>
+<figure class="fig-light"><img src="assets/img/gaps/gap-waf.svg" alt="WAF rules in priority order: lowest number runs first." loading="lazy"><figcaption>Figure 3.2. WAF evaluates rules top to bottom; the first match decides. Managed rule groups carry the OWASP coverage; custom rules start in Count mode to avoid blocking legitimate traffic.</figcaption></figure>
+
 <p>How to read this diagram</p>
 <ol>
 <li><strong>Left: untrusted traffic.</strong> Every request passes the ACL before touching your origin.</li>
@@ -1665,17 +1616,8 @@ Signed cookies = many files. (4) ACM certificate for CloudFront lives in us-east
 <div class="exam-ask"><p>Trap.</p>
 <p>The OAC-vs-OAI trap: any answer choice using Origin Access Identity for a new design is wrong; OAC is current. The signed-URL-vs-cookie trap: one premium file is a signed URL.
 A library of premium files is signed cookies. The us-east-1 trap appears for both WAF and ACM certificates.</p></div>
-<pre><code>  user --&gt; nearest edge: cache hit? --yes--&gt; serve (ms)
-                            |
-                            no
-                            v
-                     origin via OAC (private S3)
-                     or ALB / API Gateway (dynamic)
-                            |
-                     edge caches per behavior TTL, then serves
-  WAF web ACL (us-east-1) inspects here; Shield Standard absorbs DDoS
-</code></pre>
-<p>Figure 3.3. The CloudFront request path. Edge caching, origin fetch on miss, and security (WAF, Shield) all happen before your origin sees the request.</p>
+<figure class="fig-light"><img src="assets/img/gaps/gap-cloudfront.svg" alt="CloudFront edge location: cache hit serves instantly, miss forwards to S3 origin via OAC." loading="lazy"><figcaption>Figure 3.3. The CloudFront request path. Edge caching, origin fetch on miss, and security (WAF, Shield) all happen before your origin sees the request.</figcaption></figure>
+
 <p>How to read this diagram</p>
 <ol>
 <li><strong>Top: the happy path.</strong> A cache hit never touches your origin; that is the latency and cost win.</li>
@@ -1708,12 +1650,8 @@ A library of premium files is signed cookies. The us-east-1 trap appears for bot
 <div class="exam-ask"><p>Trap.</p>
 <p>AWS will offer "estimate with a local tokenizer" or "send a real InvokeModel and read the usage fields" as distractors. Local tokenizers drift from the true count.
 A real invocation costs money and generates output. CountTokens is the free, exact answer.</p></div>
-<pre><code>  prompt candidate --+
-                     +--&gt; CountTokens (free) --&gt; 3,412 tokens
-  &quot;fits in 8k window?&quot; --yes--&gt; Converse (billed)
-                        --no--&gt; prune context, recount (free), then call
-</code></pre>
-<p>Figure 3.4. CountTokens as a gate before billed inference. The loop is free until the prompt fits; only the final call costs money.</p>
+<figure class="fig-light"><img src="assets/img/gaps/gap-counttokens.svg" alt="CountTokens as a free gate before billed inference, with a cost worked example." loading="lazy"><figcaption>Figure 3.4. CountTokens as a gate before billed inference. The loop is free until the prompt fits; only the final call costs money.</figcaption></figure>
+
 <p>How to read this diagram</p>
 <ol>
 <li><strong>Left: the candidate prompt.</strong> Whatever your RAG pipeline assembled, chunks and all.</li>
@@ -1753,12 +1691,8 @@ A real invocation costs money and generates output. CountTokens is the free, exa
 <p>and ask why it fails or which field is invalid. The answer is that topK is not a valid</p>
 <p>inferenceConfig</p>
 <p>member. A second trap swaps in the Agents API, where topK is valid, to punish memorization without context.</p></div>
-<pre><code>  Converse API
-  inferenceConfig: { maxTokens, stopSequences, temperature, topP }   &lt;- topK NOT here
-  additionalModelRequestFields: { &quot;top_k&quot;: 50 }                      &lt;- topK goes here
-  Bedrock Agents InferenceConfiguration: { ..., topK }               &lt;- valid here
-</code></pre>
-<p>Figure 3.5. Where topK is and is not allowed. Converse keeps a small standard config and pushes provider specifics into additionalModelRequestFields; the Agents API has its own configuration shape.</p>
+<figure class="fig-light"><img src="assets/img/gaps/gap-topk.svg" alt="Where top_k lives: Converse allowlist versus model-specific fields versus Agents API." loading="lazy"><figcaption>Figure 3.5. Where topK is and is not allowed. Converse keeps a small standard config and pushes provider specifics into additionalModelRequestFields; the Agents API has its own configuration shape.</figcaption></figure>
+
 <p>How to read this diagram</p>
 <ol>
 <li><strong>Line 1: the Converse allowlist.</strong> Four fields. If a question puts anything else inside <code>inferenceConfig</code>, it is wrong.</li>
@@ -1799,15 +1733,8 @@ It is only absent from that one config object. D is wrong because guardrailConfi
 
 <div class="exam-ask"><p>Trap.</p>
 <p>AWS will offer "deploy two Lambda versions and compare CloudWatch dashboards by eye" as the distractor. Eyeballing dashboards is not an experiment: no randomization, no significance. The phrase "statistically significant" or "which variant wins" points to Evidently. A second trap: Prompt Management variants are for prompt text; model or pipeline A/B tests need Evidently.</p></div>
-<pre><code>  user request --&gt; EvaluateFeature(user) --&gt; variant A (90%): haiku, topK 10
-                                          \-&gt; variant B (10%): sonnet, topK 50
-  each request runs its variant, then PutProjectEvents(outcome: satisfied?)
-                                          |
-                                          v
-                              Evidently: B wins, p significant
-                                          --&gt; promote B to default
-</code></pre>
-<p>Figure 3.6. The Evidently experiment loop. Assignment is per request and sticky per user; outcomes flow back as events; statistics decide the winner.</p>
+<figure class="fig-light"><img src="assets/img/gaps/gap-evidently.svg" alt="Evidently loop: EvaluateFeature serves flags, PutProjectEvents records metrics." loading="lazy"><figcaption>Figure 3.6. The Evidently experiment loop. Assignment is per request and sticky per user; outcomes flow back as events; statistics decide the winner.</figcaption></figure>
+
 <p>How to read this diagram</p>
 <ol>
 <li><strong>Top: the assignment.</strong><code>EvaluateFeature</code> is called per request; the same user consistently gets the same variant.</li>
@@ -1851,13 +1778,8 @@ It is only absent from that one config object. D is wrong because guardrailConfi
 "the whole request took 8 seconds" is end-to-end. A second trap: applying TTFT reasoning to non-streaming.</p>
 <p>Converse</p>
 <p>calls, where the metric does not exist.</p></div>
-<pre><code>  request sent --[prefill: whole prompt processed]--&gt; first token --&gt; token --&gt; token ...
-               |&lt;-------------- TTFT ----------------&gt;|
-               |&lt;----- TPOT ----&gt;|&lt;----- TPOT -------&gt;|
-               |&lt;------------------- end-to-end --------------------&gt;|
-  long prompt stretches the prefill block; caching shrinks it
-</code></pre>
-<p>Figure 3.7. The three latency metrics on one timeline. TTFT covers the prefill wait; TPOT covers the streaming rate; end-to-end covers everything.</p>
+<figure class="fig-light"><img src="assets/img/gaps/gap-ttft.svg" alt="Request timeline showing TTFT, TPOT, and end-to-end latency." loading="lazy"><figcaption>Figure 3.7. The three latency metrics on one timeline. TTFT covers the prefill wait; TPOT covers the streaming rate; end-to-end covers everything.</figcaption></figure>
+
 <p>How to read this diagram</p>
 <ol>
 <li><strong>The prefill block.</strong> Everything before the first token: the model reads your entire prompt. This is where TTFT lives and where long prompts hurt.</li>
@@ -1917,17 +1839,8 @@ It is only absent from that one config object. D is wrong because guardrailConfi
 <p>with no</p>
 <p>FeatureTypes</p>
 <p>when the scenario needs tables; raw OCR does not reconstruct table structure.</p></div>
-<pre><code>  single page ---&gt; DetectDocumentText ---&gt; words + lines (raw OCR)
-                -&gt; AnalyzeDocument [TABLES, FORMS] ---&gt; blocks: TABLE-&gt;CELLs,
-                                                        KEY_VALUE_SET pairs
-  multi-page PDF in S3 ---&gt; StartDocumentAnalysis ---&gt; job ID
-                                                        | (SNS on done)
-                                                        v
-                                               GetDocumentAnalysis ---&gt; blocks
-  invoice scan ---&gt; AnalyzeExpense ---&gt; {total, line items, vendor}
-  low confidence blocks ---&gt; A2I human review
-</code></pre>
-<p>Figure 4.1. The Textract API decision tree. Page count picks sync vs async; document type picks the specialized API; confidence picks whether humans review.</p>
+<figure class="fig-light"><img src="assets/img/gaps/gap-textract.svg" alt="Textract API decision tree: page count and document type pick the API." loading="lazy"><figcaption>Figure 4.1. The Textract API decision tree. Page count picks sync vs async; document type picks the specialized API; confidence picks whether humans review.</figcaption></figure>
+
 <p>How to read this diagram</p>
 <ol>
 <li><strong>Top: the sync branch.</strong> One page, immediate answer. The <code>FeatureTypes</code> list is the dial that buys structure beyond raw text.</li>
@@ -1965,13 +1878,8 @@ It is only absent from that one config object. D is wrong because guardrailConfi
 <div class="exam-ask"><p>Trap.</p>
 <p>AWS will offer "smaller fixed-size chunks" as the fix for bad retrieval. Smaller blind chunks just make more fragments.
 The fix for boundary violations is boundary-aware splitting. The trigger phrase is "chunks split tables/procedures in the middle.".</p></div>
-<pre><code>  blind fixed-size split:        divider-first split:
-  [....procedure A....|....]     [#### procedure A ####]
-  [..continuation..|..table..]   [#### table 3      ####]
-  [..rest of table....|....]     [#### procedure B ####]
-  fragments confuse retrieval    each chunk is one whole unit
-</code></pre>
-<p>Figure 4.2. Blind splitting cuts wherever the counter lands; divider-first splitting cuts only at marked boundaries. Retrieval quality follows chunk coherence.</p>
+<figure class="fig-light"><img src="assets/img/gaps/gap-dividers.svg" alt="Blind splitting versus divider-first splitting of documents." loading="lazy"><figcaption>Figure 4.2. Blind splitting cuts wherever the counter lands; divider-first splitting cuts only at marked boundaries. Retrieval quality follows chunk coherence.</figcaption></figure>
+
 <p>How to read this diagram</p>
 <ol>
 <li><strong>Left: the failure.</strong> Vertical bars are cut points landing inside procedures and tables. Each fragment is retrievable but misleading alone.</li>
@@ -2003,17 +1911,8 @@ Neural/k-NN plugin enables vector search.</p></div>
 <div class="exam-ask"><p>Trap.</p>
 <p>AWS will offer "add more nodes" or "move to a bigger instance" for an expensive vector index. The cost-efficient answer is quantization first, scale second. A second trap: claiming quantization is lossless.
 It is approximate, which is why the rerank step exists.</p></div>
-<pre><code>  query vector --&gt; binary index (32x smaller) --&gt; top 200 candidates
-                                                        |
-                                                        v
-                                              rerank with float32
-                                              (or reranker model)
-                                                        |
-                                                        v
-                                                   top 10 answers
-  memory: 60 GB -&gt; under 2 GB; accuracy cost ~2% (illustrative)
-</code></pre>
-<p>Figure 4.3. The two-stage quantized retrieval pattern. Cheap approximate search narrows the field; expensive precise scoring picks the winners.</p>
+<figure class="fig-light"><img src="assets/img/gaps/gap-vecquant.svg" alt="Two-stage quantized retrieval with a memory worked example." loading="lazy"><figcaption>Figure 4.3. The two-stage quantized retrieval pattern. Cheap approximate search narrows the field; expensive precise scoring picks the winners.</figcaption></figure>
+
 <p>How to read this diagram</p>
 <ol>
 <li><strong>Top: the cheap pass.</strong> The binary index scans the full corpus in a fraction of the memory.</li>
@@ -2057,13 +1956,8 @@ It is approximate, which is why the rerank step exists.</p></div>
 The timeouts do. A second trap swaps the instance families: putting a small NER model on.</p>
 <p>ml.p4d.24xlarge</p>
 <p>is technically possible but economically wrong, and the exam tests cost-awareness.</p></div>
-<pre><code>  endpoint creation timeline (large model)
-  |--- download artifact (slow: 100s of GB) ---|--- container loads weights ---|--- healthy
-      ^ ModelDataDownloadTimeoutInSeconds           ^ ContainerStartupHealthCheckTimeoutInSeconds
-      defaults expire here -&gt; false failure         defaults expire here -&gt; false failure
-  instance: ml.p4d.24xlarge (large GPU model)  vs  ml.c5.9xlarge (small CPU task, e.g. NER)
-</code></pre>
-<p>Figure 4.4. Where large-model deployments actually fail: the two timeout windows. Both must cover the real duration of their phase, and the instance family must match the workload, not just be large.</p>
+<figure class="fig-light"><img src="assets/img/gaps/gap-sagemaker.svg" alt="SageMaker hosting timeouts: 60 seconds real-time versus up to 1 hour async." loading="lazy"><figcaption>Figure 4.4. Where large-model deployments actually fail: the two timeout windows. Both must cover the real duration of their phase, and the instance family must match the workload, not just be large.</figcaption></figure>
+
 <p>How to read this diagram</p>
 <ol>
 <li><strong>The timeline has two slow phases.</strong> Downloading the artifact and loading weights into the container are the long poles; inference has not started yet.</li>
@@ -2096,15 +1990,8 @@ The bottleneck is download time. C is wrong because it changes the model rather 
 
 <div class="exam-ask"><p>Trap.</p>
 <p>AWS will offer Glue for a "massive custom Spark job needing specific framework versions and fine-grained cluster control." That specificity is the EMR trigger. Conversely, "standard nightly ETL, no cluster management" is Glue, not EMR.</p></div>
-<pre><code>  raw data (S3) --&gt; EMR cluster --&gt; processed data (S3 / Redshift)
-                      |  primary: coordinates
-                      |  core: tasks + HDFS (ephemeral)
-                      |  task: compute only (Spot-friendly)
-  EMR vs Glue: need framework control, huge/long jobs --&gt; EMR
-               standard ETL, no cluster ops          --&gt; Glue
-               Spark job, no cluster at all           --&gt; EMR Serverless
-</code></pre>
-<p>Figure 4.5. EMR's shape and the three-way decision. Topology and framework control are what you buy with EMR; Glue and EMR Serverless trade control for simplicity.</p>
+<figure class="fig-light"><img src="assets/img/gaps/gap-emr.svg" alt="EMR cluster topology: primary, core, and task nodes, and when to skip the cluster." loading="lazy"><figcaption>Figure 4.5. EMR's shape and the three-way decision. Topology and framework control are what you buy with EMR; Glue and EMR Serverless trade control for simplicity.</figcaption></figure>
+
 <p>How to read this diagram</p>
 <ol>
 <li><strong>Top: the pipeline.</strong> S3 in, S3 out; the cluster is the compute between. Durable data never lives on HDFS.</li>
@@ -2127,6 +2014,7 @@ The bottleneck is download time. C is wrong because it changes the model rather 
 <p><strong>Next:</strong> how every fact in this volume was checked.</p>
 <h2 id="5-qa-and-verification-log">5. QA and verification log</h2>
 <p>The facts are all in. This chapter shows how each one was checked.</p>
+<figure class="fig-light"><img src="assets/img/gaps/gap-qa.svg" alt="Verification flow: prose, diagram, and AWS docs must all agree." loading="lazy"><figcaption>How each entry was verified: the prose, the diagram, and the documented service behavior must all agree before an entry ships.</figcaption></figure><div class="walkthrough">Follow the arrows: the prose teaches, the diagram shows, and the AWS docs confirm. The gate at the end is the rule: if the three disagree, the entry is rewritten, not shipped.</div>
 <p>How this volume was checked, what passed, what is open, and where every fact came from.</p>
 <h3 id="qa-checklist">QA checklist results</h3>
 <div class="table-wrap"><table>
@@ -2163,7 +2051,7 @@ The bottleneck is download time. C is wrong because it changes the model rather 
 </tr>
 <tr>
 <td>Every topic has a visual plus walkthrough</td>
-<td>Pass: 17 topics, 17 ASCII figures (Figures 1.1 through 4.5 plus 0.1), each with a numbered "How to read this diagram" walkthrough.</td>
+<td>Pass: 17 topics, 18 SVG figures (Figures 0.1 and 1.1 through 4.5), each with a numbered "How to read this diagram" walkthrough, plus the gap-taxonomy and verification-flow diagrams.</td>
 </tr>
 <tr>
 <td>Depth elements per topic</td>
@@ -2187,8 +2075,7 @@ The bottleneck is download time. C is wrong because it changes the model rather 
 </tr>
 </tbody>
 </table></div>
-<p><strong>Open items:</strong> none structural. Two inline UNVERIFIED markers are intentional (see log below). Image count: zero raster images by design.
-All figures are ASCII in styled pre blocks, which guarantees rendering on an office laptop with no image pipeline.</p>
+<p><strong>Open items:</strong> none structural. Two inline UNVERIFIED markers are intentional (see log below). Image count: 20 SVG figures (18 numbered topic figures plus the gap-taxonomy and verification-flow diagrams), hand-built in the guide's flat visual language and raster-checked for defects before landing.</p>
 <h3 id="verification-log">Verification log</h3>
 <p>Method: web search against live AWS documentation and corroborating sources on 2026-09-28. Findings:</p>
 <div class="table-wrap"><table>
