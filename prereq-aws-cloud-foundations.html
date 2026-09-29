@@ -2,6 +2,14 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<style>
+/* Validation-assembly: bridge + equation rendering (additive, 2026-09-29). */
+.chapter-bridge,.topic-bridge,.u-bridge{border-left:3px solid #8a8f98;border-left:3px solid color-mix(in srgb,currentColor 40%,transparent);padding:.55rem .9rem;margin:1.1rem 0;background:rgba(128,128,128,.08);border-radius:0 6px 6px 0}
+.next-chapter,.u-next,.u-goto{font-weight:650;margin:1.15rem 0}
+.display-eq,.eq{text-align:center;margin:1.15rem 0;font-size:1.12em;line-height:1.7}
+.eq-where{margin:.1rem 0 1rem 1.25rem;font-size:.93em;opacity:.92}
+.eq-worked{border:1px solid #8a8f98;border:1px solid color-mix(in srgb,currentColor 30%,transparent);border-radius:8px;padding:.7rem 1rem;margin:1rem 0;background:rgba(128,128,128,.06)}
+</style>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="dark">
 <title>AWS Cloud Foundations: the AWS underneath AIP-C01</title>
@@ -1340,24 +1348,7 @@ details.kc[open] summary::before{content:"\2212 "}
 <p>Why this one: it is the 2024 CLF-C02 refresh (not the older CLF-C01 cut), it walks shared responsibility, IAM, S3 storage classes, EC2 pricing, and Aurora with exam phrasing, and it ships with a free practice exam. Chapters are timestamped, so you can jump straight to VPC or KMS.</p>
 
 
-<h2 id="the-world-map">1. The world map: regions, AZs, edge locations</h2>
-<p>AWS is not one computer. It is data centers spread across the planet, grouped in three layers. Every exam scenario with the words "low latency", "disaster recovery", or "compliance" is testing whether you know these layers.</p>
-<pre><code>  +---------------- region: us-east-1 (N. Virginia) ----------------+
-  |                                                                 |
-  |   +---- AZ a ----+    +---- AZ b ----+    +---- AZ c ----+      |
-  |   | data center  |    | data center  |    | data center  |      |
-  |   | (or several) |    | (or several) |    | (or several) |      |
-  |   +--------------+    +--------------+    +--------------+      |
-  |        \________ low-latency links ________/                   |
-  +-----------------------------------------------------------------+
-
-  +---------------- region: eu-west-1 (Ireland) ---------------------+
-  |   +---- AZ a ----+    +---- AZ b ----+    +---- AZ c ----+      |
-  |   ...same pattern, fully isolated from us-east-1...            |
-  +-----------------------------------------------------------------+
-
-        .  .  .  600+ edge locations worldwide (CloudFront, Route 53)
-</code></pre>
+<figure class="fig-light"><img src="assets/img/foundations/found-regions.svg" alt="Region, AZ, edge location nesting: a region with three AZs, all under one edge location layer." loading="lazy"><figcaption>Three layers of the world map: a region holds the AZs, edge locations sit on top.</figcaption></figure><div class="walkthrough">Read outside in. A region is a geographic area; it holds two or more AZs, which are separate data centers; edge locations are hundreds of cache points in cities. High availability means two or more AZs.</div>
 <p>A <strong>Region</strong> is a geographic area, like us-east-1 (N. Virginia) or eu-west-1 (Ireland). Each Region is fully independent. AWS does not copy your data between Regions unless you ask it to. Pick a Region for four reasons: closeness to your users (latency), law (some data must stay in a country), price (same service can cost different amounts per Region), and availability (new services land in big Regions first).</p>
 <p>An <strong>Availability Zone (AZ)</strong> is one or more discrete data centers inside a Region, with its own power, cooling, and network. The name is the Region code plus a letter: us-east-1a, us-east-1b. AZs in a Region sit close together and connect over fast private fiber. The exam's favorite sentence is "deploy across multiple AZs". That is how you survive a data center fire.</p>
 <p><strong>Edge locations</strong> are the third layer: small points of presence in hundreds of cities. They do not run your app. They cache content (CloudFront) and answer DNS (the Domain Name System; Route 53 is AWS's DNS service) close to users.</p>
@@ -1379,17 +1370,7 @@ details.kc[open] summary::before{content:"\2212 "}
 </div>
 </div>
 <p><strong>Next:</strong> the deal you sign for living in this world: shared responsibility.</p>
-<h2 id="shared-responsibility">2. The deal you sign: shared responsibility</h2>
-<p>You know where AWS lives. Now the terms of living there: who secures what.</p>
-<p>AWS and you split security down the middle. AWS handles security <strong>of</strong> the cloud. You handle security <strong>in</strong> the cloud.</p>
-<pre><code>  AWS takes care of                        You take care of
-  -----------------                        ------------------
-  physical buildings                       your data (classify it, encrypt it)
-  hardware, servers                        who can touch it (IAM)
-  network cables                           the guest OS on your EC2 (patch it)
-  virtualization layer                     your app code and its config
-  managed service platforms                firewall rules (security groups)
-</code></pre>
+<figure class="fig-light"><img src="assets/img/foundations/found-sharedresp.svg" alt="Shared responsibility: AWS of the cloud on the left, you in the cloud on the right." loading="lazy"><figcaption>The deal: AWS secures the cloud itself; you secure what you put in it.</figcaption></figure><div class="walkthrough">Read the two columns as a contract. The line moves with the service: on EC2 you patch the OS; on RDS and Lambda, AWS does. 'Who patches the OS' is a classic exam question.</div>
 <p>The line moves with the service. On EC2 (rented raw computers), you patch the operating system yourself. On RDS (managed database), AWS patches the OS and you still control the data, passwords, and network access. On S3 or Bedrock (Amazon's API service for foundation models; fully managed), AWS runs everything under the API and you control the data, encryption settings, and IAM permissions.</p>
 <div class="exam-ask"><p>"Who patches the OS?" is a classic. EC2: you. RDS: AWS. Lambda: AWS. If the service name contains "managed" or "serverless", AWS owns the OS. If you got a virtual machine, you own it.</p></div>
 
@@ -1472,7 +1453,7 @@ details.kc[open] summary::before{content:"\2212 "}
 </figure>
 
 <div class="exam-ask"><p>Four patterns cover nearly every IAM exam question. (1) "An EC2 instance needs to read from S3": give the instance an IAM role (instance profile), never bake access keys into the code. (2) "A developer needs admin for two hours": let them assume a role, not a second user. (3) "Let team leads create users but never touch billing": permission boundary on the team leads. (4) "A partner company needs read access to our bucket": cross-account role, or a bucket policy naming their account.</p>
-<p>Traps: groups cannot contain groups. A policy with only Deny and no Allow grants nothing. Deleting a user does not delete their access keys first is wrong, actually deleting a user deletes everything attached, which can break running apps that used those keys, which is why apps should use roles.</p></div>
+<p>Traps: groups cannot contain groups. A policy with only Deny and no Allow grants nothing. Deleting a user deletes everything attached, including their access keys, which can break running apps that used those keys; that is why apps should use roles.</p></div>
 
 <div class="takeaway"><p>Users are for people in small setups, groups bundle them, roles are for everything temporary. Deny beats allow. Boundaries only shrink. Humans get SSO; machines get roles.</p></div>
 
@@ -1753,20 +1734,7 @@ s3.put_bucket_lifecycle_configuration(
 </div>
 </div>
 <p><strong>Next:</strong> databases, picked by shape of data.</p>
-<h2 id="databases">7. Databases: pick by shape of data</h2>
-<p>Compute and storage are in place. When data has a shape, pick the database that fits it.</p>
-<p>AWS has a database for every shape. The exam tests the pick, not the internals. Three cover almost everything.</p>
-<p><strong>RDS</strong> is managed relational: MySQL, Postgres, MariaDB, Oracle, SQL Server. AWS handles patching, backups, and failover; you handle the schema, queries, and access. <strong>Multi-AZ</strong> keeps a hot standby in another AZ for failover. <strong>Read replicas</strong> are async copies (up to 5, cross-Region allowed) that take read load.</p>
-<p><strong>Aurora</strong> is AWS's own relational engine, speaking MySQL and Postgres wire protocols. Storage auto-grows to 128 TB, is copied 6 ways across 3 AZs, and fails over in under 30 seconds with up to 15 read replicas. Pick it when a relational database must scale hard with minimal babysitting. Aurora Serverless v2 scales capacity up and down automatically.</p>
-<p><strong>DynamoDB</strong> is serverless NoSQL: key-value and document, single-digit millisecond latency at any scale. No servers, no patching. Pay per request (on-demand) or per provisioned throughput. Features the exam names: DAX (DynamoDB Accelerator, an in-memory cache), Global Tables (multi-Region active-active), Streams (change feed), TTL (time to live: an expiry timestamp on each item).</p>
-<pre><code>  Need SQL tables? ── yes ──&gt; Must scale past one box with near-zero ops?
-  │                                   │ yes            │ no
-  │                              Aurora          RDS
-  │
-  └── no ──&gt; Key-value / document, huge scale, ms latency? ──&gt; DynamoDB
-             Time-series, graph, cache, warehouse? ──&gt; Timestream, Neptune,
-                                                       ElastiCache, Redshift
-</code></pre>
+<figure class="fig-light"><img src="assets/img/foundations/found-dbpicker.svg" alt="Database picker: SQL tables to RDS or Aurora, key-value document at scale to DynamoDB." loading="lazy"><figcaption>Pick the database by the shape of the data.</figcaption></figure><div class="walkthrough">Answer the first question: do you need SQL tables? If yes, the scale question picks Aurora or RDS; if no, DynamoDB fits key-value and document data at any scale.</div>
 <p>One-liners for the rest: <strong>ElastiCache</strong> (Redis/Memcached) sits in front of a database to absorb reads. <strong>Redshift</strong> is the data warehouse for analytics over petabytes. <strong>Neptune</strong> is for graph data (relationships first). The exam mentions them to test whether you reach past the big three.</p>
 <div class="exam-ask"><p>"Relational, needs cross-Region reads": RDS read replica or Aurora Global Database. "Session store for a million users, sub-10ms": DynamoDB or ElastiCache, not RDS. "Zero database administration": Aurora Serverless or DynamoDB on-demand. "Lift-and-shift Oracle with minimal changes": RDS for Oracle.</p></div>
 
@@ -1788,14 +1756,7 @@ s3.put_bucket_lifecycle_configuration(
 </div>
 </div>
 <p><strong>Next:</strong> Lambda, code with no servers.</p>
-<h2 id="lambda">8. Lambda: code with no servers</h2>
-<p>EC2 rents whole machines. Lambda skips the machine entirely.</p>
-<p>Lambda runs your function when something happens, then disappears. No provisioning, no patching, no idle bill. You upload code (or a container image), pick memory (128 MB to 10 GB) and a timeout (max 15 minutes), and AWS runs it per event, billed per millisecond.</p>
-<pre><code>  S3 upload ──┐
-  SQS message ─┼──&gt; Lambda runs ──&gt; writes to DynamoDB
-  API call ────┘         ^
-  schedule ──────────────┘   (EventBridge cron)
-</code></pre>
+<figure class="fig-light"><img src="assets/img/foundations/found-lambdaflow.svg" alt="Lambda flow: event sources trigger the function, which runs and writes results." loading="lazy"><figcaption>Lambda: event sources on the left, your function in the middle, results on the right.</figcaption></figure><div class="walkthrough">Anything on the left can wake the function: S3, SQS, API Gateway, a schedule. The function runs, writes to DynamoDB or S3, and disappears. Triggers are the whole game.</div>
 <p>Triggers are the vocabulary: S3 events, SQS queues, DynamoDB Streams, API Gateway requests, EventBridge schedules and events. <strong>Concurrency</strong> is how many copies run at once; reserve some for critical functions so a noisy neighbor cannot starve them. <strong>Provisioned concurrency</strong> keeps copies warm to kill cold starts for latency-sensitive APIs.</p>
 <pre><code class="language-python">import json
 import boto3
@@ -1820,6 +1781,7 @@ def handler(event, context):
 </code></pre>
 <p>Walkthrough: Lambda hands your function an <code>event</code> dict describing what happened. For S3, that means bucket and key. <code>context</code> carries runtime info (time left, request id). The function does its work with boto3 and returns. Keep it short: anything over 15 minutes does not belong here.</p>
 <div class="exam-ask"><p>"Run code when a file lands in S3": Lambda trigger, not a polling EC2. "Job takes 45 minutes": not Lambda; use Fargate (serverless containers), EC2, or Batch (AWS Batch, for scheduled heavy jobs). "API with spiky traffic and zero idle cost": API Gateway plus Lambda. "Cold starts hurting p99 (the 99th-percentile latency: the slowest 1% of requests)": provisioned concurrency. "Function needs a VPC resource": attach it to private subnets (then it needs a NAT or endpoint for the internet).</p></div>
+<figure class="fig-light"><img src="assets/img/foundations/found-lambdalimits.svg" alt="Lambda limits: 15 minute max, memory and disk sizes, provisioned concurrency, VPC attachment." loading="lazy"><figcaption>Lambda's limits at a glance: 15-minute max, memory up to 10 GB, warm copies on demand.</figcaption></figure><div class="walkthrough">The 15-minute line is the exam's favorite tripwire: a 45-minute job is not Lambda, it is Fargate or Batch. Provisioned concurrency keeps copies warm when cold starts hurt p99.</div>
 
 <div class="takeaway"><p>Lambda = event in, code runs, bill per millisecond. Fifteen minutes max. Triggers are the whole game.</p></div>
 
