@@ -106,7 +106,6 @@
   unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
 }
 
-
 /* ---------- Base ---------- */
 
 * { box-sizing: border-box; }
@@ -1159,6 +1158,128 @@ footer p{text-align:left}
   #ds-content .ds-site-footer,
   .ds-side-volumes { display: none !important; }
 }
+</style>
+<style>
+/* Hallmark · pre-emit critique: P5 H4 E5 S4 R5 V5
+ * ==========================================================================
+ * Experience layer for study volumes — ADDITIVE ONLY.
+ * Never edits content markup or DS chrome; references DS tokens only
+ * (--accent, --border). No new colors, no gradients, no decorative filler.
+ *
+ * Motion stance: calm delight. Opacity/translate only (GPU-friendly),
+ * one IntersectionObserver, one rAF-throttled scroll listener, zero layout
+ * shift, prefers-reduced-motion respected, fully usable with JS disabled
+ * (every hidden state is gated on html.xp-js, which only this layer's
+ * companion script adds).
+ *
+ * Wiring (final assembly, per volume — same model as ds.css/ds.js):
+ *   1. In <head>, AFTER the DS style block, add:
+ *        <style>
+ *        /* ==== Experience layer — additive, do not edit per-file ==== */
+ *        …this file verbatim…
+ *        [close the style element]
+ *   2. Immediately before the document's LAST closing body tag (the real
+ *      one at the end of the file — some volumes mention a literal closing
+ *      body tag inside their docs prose; ignore those), AFTER the ds.js
+ *      script block, add:
+ *        <script>
+ *        /* ==== Experience layer behavior — additive ==== */
+ *        …experience.js verbatim…
+ *        [close the script element]
+ * (Closing tags are written out in the assembly snippet, not here, so this
+ * file can be pasted verbatim without early-terminating its own element.)
+ * ========================================================================== */
+
+/* ---------- 1. Smooth anchor scrolling (motion-safe readers only) ---------- */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+/* ---------- 2. Scroll-triggered reveals ----------
+   Hidden state exists ONLY under html.xp-js. No-JS readers, print, and
+   reduced-motion users always see full content. Uses the independent
+   `translate` property (not `transform`) so hover feedback below composes
+   without specificity fights. Opacity + translate only: zero layout shift. */
+html.xp-js .xp-reveal {
+  opacity: 0;
+  translate: 0 14px;
+}
+html.xp-js .xp-reveal.xp-in {
+  opacity: 1;
+  translate: 0 0;
+  transition:
+    opacity 0.55s ease,
+    translate 0.55s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+/* ---------- 3. Hero ---------- */
+/* Layout-neutral wrapper the script may add around a volume's title block.
+   Parallax itself is applied inline by the script (transform only). */
+.xp-hero {
+  position: relative;
+}
+
+/* ---------- 4. Calm hover feedback: cards + knowledge checks only ----------
+   translateY(-1px) + accent border. transform composes with the reveal's
+   independent `translate` property — no conflicts. */
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .pq,
+  .watch-card,
+  .ob-board,
+  .lab {
+    transition: transform 0.18s ease, border-color 0.18s ease;
+  }
+  .pq:hover,
+  .watch-card:hover,
+  .ob-board:hover,
+  .lab:hover {
+    transform: translateY(-1px);
+    border-color: var(--accent);
+  }
+  .pq:focus-within,
+  .watch-card:focus-within,
+  .ob-board:focus-within,
+  .lab:focus-within {
+    border-color: var(--accent);
+  }
+}
+
+/* ---------- 5. Reduced motion: everything static and visible ---------- */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  html.xp-js .xp-reveal {
+    opacity: 1;
+    translate: 0 0;
+    transition: none;
+  }
+  .xp-hero {
+    transform: none !important;
+    opacity: 1 !important;
+  }
+  .pq,
+  .watch-card,
+  .ob-board,
+  .lab {
+    transition: none;
+  }
+}
+
+/* ---------- 6. Print: never hide content ---------- */
+@media print {
+  html.xp-js .xp-reveal {
+    opacity: 1 !important;
+    translate: 0 0 !important;
+    transition: none;
+  }
+  .xp-hero {
+    transform: none !important;
+    opacity: 1 !important;
+  }
+}
 
 </style>
 </head>
@@ -1175,17 +1296,16 @@ footer p{text-align:left}
 <p>Questions:</p>
 <p>75 total, 65 scored, pass 750/1000</p>
 <h2 id="how-to-use-this-volume">How to use this volume</h2>
-<p>Every topic follows the same shape: what it is (from zero), why it exists, how it works under the hood, concrete numbers, the common misunderstanding AWS exploits, a visual with a numbered walkthrough, and a "How AWS asks this" exam line. Read a chapter, then do its drill questions at the end. The questions are written in the exam's "choose the MOST correct answer" style, and every answer explains why the right option is right and why each distractor is wrong.</p>
+<p>Every topic reads as one flowing explanation: each fact stated once, every term defined when it first appears, visuals placed at each step with a numbered walkthrough, and exam traps called out where AWS likes to hide them. Read a topic, then do its drill questions at the end. The questions are written in the exam's "choose the MOST correct answer" style, and every answer explains why the right option is right and why each distractor is wrong.</p>
 <p>Three ideas run through the whole domain. First, <strong>climb the ladder in order</strong>: prompt engineering, then RAG, then agents, then fine-tuning. Stop at the cheapest step that works. Second, <strong>prefer managed and serverless</strong>: the exam rewards the option with the least operational overhead unless a constraint forces custom work. Third, <strong>match the tool to the scenario verb</strong>: "cite sources" means RAG, "take actions" means agents, "block a topic" means denied topics, "repeated prefix" means caching. Most questions are won by reading the scenario carefully and mapping each constraint to one decision.</p>
 <h2 id="1-the-approach-ladder-prompt-rag-agents-fine-tuning">1. The approach ladder: prompt, RAG, agents, fine-tuning</h2>
-<figure class="fig-light"><img src="assets/img/internet/img-14.png" alt="RAG vs fine-tuning decision quadrant: high external knowledge need points to RAG, high model adaptation need points to fine-tuning, both high means hybrid." loading="lazy"><figcaption>RAG vs fine-tuning decision quadrant: high external knowledge need points to RAG, high model adaptation need points to fine-tuning, both high means hybrid.</figcaption><figcaption class="credit">Source: DailyDoseofDS.com, via image search Sept 2026.</figcaption></figure>
-<p>The single most-tested judgment call in Domain 1: given a business need, which GenAI approach do you pick, and in which order do you try them?</p>
-<h3 id="what-it-is">What it is</h3>
-<p>The approach ladder is the order in which you should attempt GenAI solutions, from cheapest to most expensive. <strong>Prompt engineering</strong> means changing the instructions and examples you send the model, with no new knowledge and no new training. <strong>RAG</strong> (Retrieval-Augmented Generation) means the model looks up facts from your documents at answer time and cites them. <strong>Agents</strong> means the model can take actions: call APIs, query databases, run multi-step tool use. <strong>Fine-tuning</strong> means retraining parts of the model on your labeled data so a new behavior is baked into its weights. The rule: start at the bottom of the ladder and climb only when the cheaper step cannot satisfy the requirement.</p>
-<h3 id="why-it-exists">Why it exists</h3>
-<p>Without this ladder, teams jump straight to the most impressive and most expensive option. A team that fine-tunes a model because "documents change every quarter" will retrain forever, because the training data is stale the day it ships. A team that builds an agent when the task is "answer questions from our policy PDFs" pays for tool-calling complexity it never needed. Each rung exists for a distinct failure mode of the rung below: prompting cannot inject new knowledge, RAG cannot take actions, agents cannot bake in a permanent behavior cheaply, and fine-tuning cannot stay fresh.</p>
-<h3 id="how-it-works-under-the-hood">How it works under the hood</h3>
-<p>The ladder is a decision tree on two questions. Question one: does the model need <strong>new knowledge</strong> it was not trained on, like company policies or product catalogs? If no, stay with prompt engineering. If yes, ask question two: does the answer need to <strong>cite sources</strong> or stay current as documents change? If yes, RAG. Next: does the task require <strong>actions</strong>, like looking up a live order status, booking a slot, or querying a database? If yes, agents. Next: does the model need a new <strong>baked-in behavior</strong>, like a consistent brand voice repeated millions of times, or a small cheap model that matches a big model on one narrow task? If yes, fine-tuning or distillation (training a small model to copy a big model). If none of these are true, you never left the first rung.</p>
+<figure><img src="assets/img/mermaid/53-approach-ladder.svg" alt="The approach ladder: prompt engineering, then RAG, then fine-tuning, then continued pre-training, then training from scratch, in order of rising cost and effort" loading="lazy"><figcaption>The approach ladder: prompt engineering, then RAG, then fine-tuning, then continued pre-training, then training from scratch, in order of rising cost and effort</figcaption><figcaption class="credit"><em>The approach ladder: prompt engineering, then RAG, then fine-tuning, then continued pre-training, then training from scratch, in order of rising cost and effort</em></figcaption></figure>
+<figure class="fig-light"><img src="assets/img/internet/img-15.png" alt="Decision matrix: when external knowledge is the need, use RAG; when model behavior must change, fine-tune; when both, use a hybrid" loading="lazy"><figcaption>Decision matrix: when external knowledge is the need, use RAG; when model behavior must change, fine-tune; when both, use a hybrid</figcaption><figcaption class="credit">Source: web image search, saved locally Sept 2026.</figcaption></figure>
+<figure class="fig-light"><img src="assets/img/internet/img-14.png" alt="RAG vs fine-tuning decision quadrant: high external knowledge need points to RAG, high model adaptation need points to fine-tuning, both high means hybrid." loading="lazy"><figcaption>RAG vs fine-tuning decision quadrant: high external knowledge need points to RAG, high model adaptation need points to fine-tuning, both high means hybrid.</figcaption><figcaption class="credit">Source: DailyDoseofDS.com, via image search Sept 2026.</figcaption></figure><p>The single most-tested judgment call in Domain 1: given a business need, which GenAI approach do you pick, and in which order do you try them?</p>
+<p>Think of it as a ladder with four rungs, ordered from cheapest to most expensive. <strong>Rung 1, prompt engineering</strong>, means changing the instructions and examples you send the model. No new knowledge, no training: you get a new format, tone, or reasoning style. <strong>Rung 2, RAG (Retrieval-Augmented Generation)</strong>, means the model looks up facts in your documents at answer time and cites them. <strong>Rung 3, agents</strong>, means the model can take actions: call APIs, query databases, run multi-step tool use. <strong>Rung 4, fine-tuning</strong>, means retraining parts of the model on your labeled data so a new behavior is baked into its weights. A cousin of rung 4 is <strong>distillation</strong>: training a small model to copy a big model, so you get near-big quality at small cost on one narrow task.</p>
+<p>The rule: start at the bottom and climb only when the cheaper rung cannot satisfy the requirement. Without this discipline, teams jump straight to the most impressive and most expensive option. A team that fine-tunes because "documents change every quarter" will retrain forever, because the training data is stale the day it ships. A team that builds an agent for "answer questions from our policy PDFs" pays for tool-calling complexity it never needed. Each rung exists for a distinct failure of the rung below: prompting cannot inject new knowledge, RAG cannot take actions, agents cannot bake in a permanent behavior cheaply, and fine-tuning cannot stay fresh.</p>
+<p>Turn that into a decision tree with two questions. First: does the model need new knowledge it was not trained on, like company policies or product catalogs? If no, stay with prompt engineering. If yes, ask: do answers need to cite sources or stay current as documents change? If yes, RAG. Next: does the task need actions, like checking a live order status, booking a slot, or querying a database? If yes, agents. Next: does the model need a new baked-in behavior, like a consistent brand voice repeated millions of times, or a small cheap model that matches a big model on one narrow task? If yes, fine-tuning or distillation. If none of these are true, you never left the first rung.</p>
+<p>The trap is treating fine-tuning as the "serious" answer and RAG as the "prototype" answer. It is backwards: RAG is the production answer for knowledge problems, because retraining on documents that change quarterly means you are always stale. The exam's favorite wrong answer is "fine-tune the model on the company documents" when the scenario says documents update regularly or answers must cite sources. Fine-tuning also cannot cite sources, because the model cannot point at a page it absorbed during training. If the scenario says "cite sources," the answer is RAG, full stop.</p>
 <pre><code>Decision flow: which approach?
 
   New behavior needed? (brand voice at scale, narrow-task small model)
@@ -1203,16 +1323,7 @@ footer p{text-align:left}
   New output format, tone, examples, reasoning style?
    YES --&gt; Prompt engineering (system prompt, few-shot, chain-of-thought)
    NO  --&gt; The base model already does it
-</code></pre>
-<h3 id="concrete-numbers">Concrete numbers</h3>
-<p>Cost order of magnitude (illustrative): prompt engineering costs engineering hours only; RAG adds vector storage plus per-query embedding and retrieval cost.
-An agent call chains several model calls and tool calls per user question, so it can cost 5 to 20 times a single RAG call.
-Fine-tuning a model on Bedrock needs labeled data in S3 (hundreds to thousands of examples for useful results) plus a customization job and usually Provisioned Throughput to serve it. The exam does not test exact dollars.
-It tests the.</p>
-<p>relative order</p>
-<p>: prompt is cheaper than RAG, which is cheaper than agents, which are cheaper than fine-tuning.</p>
-<h3 id="common-misunderstanding">Common misunderstanding</h3>
-<p>The trap is treating fine-tuning as the "serious" answer and RAG as the "prototype" answer. It is backwards: RAG is the production answer for knowledge problems, because retraining on documents that change quarterly means you are always stale. The exam's favorite wrong answer is "fine-tune the model on the company documents" when the scenario says documents update regularly or answers must cite sources. Fine-tuning also cannot cite sources, because the model cannot point at a page it absorbed during training. If the scenario says "cite sources," the answer is RAG, full stop.</p>
+</code></pre><p>Cost order of magnitude (illustrative): prompt engineering costs engineering hours only; RAG adds vector storage plus per-query embedding and retrieval cost. An agent call chains several model calls and tool calls per user question, so it can cost 5 to 20 times a single RAG call. Fine-tuning a model on Bedrock needs labeled data in S3 (hundreds to thousands of examples for useful results) plus a customization job and usually Provisioned Throughput to serve it. The exam does not test exact dollars. It tests the <em>relative order</em>: prompt is cheaper than RAG, which is cheaper than agents, which are cheaper than fine-tuning.</p>
 <pre><code>  The ladder (climb in order, stop at the cheapest rung that works)
 
   ┌─────────────────────────────────────────────────────────────┐
@@ -1238,30 +1349,14 @@ It tests the.</p>
 <li>Climb to agents only when the task needs actions (API calls, database queries), not just text.</li>
 <li>Climb to fine-tuning only when a behavior must be baked into the weights permanently and repeated at scale.</li>
 <li>If a component fails the "cheapest rung" test (for example, fine-tuning for documents that change quarterly), the answer is wrong: go back down one rung.</li>
-</ol>
-<p>Exam trap</p>
-<p>Distractors climb too high ("fine-tune on the documents" for a knowledge question) or too low ("prompt engineering" for a task that needs live API calls). Map each scenario verb to its rung:</p>
-<p>format/tone</p>
-<p>is prompt;</p>
-<p>facts/citations/current</p>
-<p>is RAG;</p>
-<p>actions/tools</p>
-<p>is agents;</p>
-<p>baked-in behavior at scale</p>
-<p>is fine-tuning.</p>
-<p>How AWS asks this</p>
-<p>A 4-6 sentence scenario with a business goal and constraints ("documents updated quarterly", "must cite sources", "same task 10M times a day, cost is the problem"). The right answer is the lowest rung that satisfies every constraint. Distractors each pick the rung above or below.</p>
+</ol><p><strong>Exam trap.</strong> Distractors climb too high ("fine-tune on the documents" for a knowledge question) or too low ("prompt engineering" for a task that needs live API calls). Map each scenario verb to its rung: format/tone is prompt; facts/citations/current is RAG; actions/tools is agents; baked-in behavior at scale is fine-tuning.</p>
+<p><strong>How AWS asks this.</strong> A 4-6 sentence scenario with a business goal and constraints ("documents updated quarterly", "must cite sources", "same task 10M times a day, cost is the problem"). The right answer is the lowest rung that satisfies every constraint. Distractors each pick the rung above or below.</p>
 <h2 id="2-poc-first-the-genai-lens-and-reusable-components">2. PoC first, the GenAI Lens, and reusable components</h2>
-<p>How AWS expects you to design before you build: prove it small, check it against the standard lens, and build parts once that every team reuses.</p>
-<h3 id="what-it-is_1">What it is</h3>
-<p>Three design habits. A <strong>proof of concept</strong> (PoC) is a small throwaway build on Bedrock with on-demand inference that validates feasibility, performance, and business value before any production commitment. The <strong>AWS Well-Architected Framework Generative AI Lens</strong> is AWS's published checklist for reviewing GenAI workloads across pillars like responsible AI, data, model selection, cost, and security; the exam name-drops it as the standard for "design reviews." <strong>Standardized reusable components</strong> are the parts you build once and reuse across deployments: prompt templates, model routing layers, guardrail policies, evaluation harnesses.</p>
-<h3 id="why-it-exists_1">Why it exists</h3>
+<figure><img src="assets/img/mermaid/54-poc-lifecycle.svg" alt="PoC-first lifecycle: build a small proof of concept on Bedrock, review it against the GenAI Lens, extract reusable components, then go to production" loading="lazy"><figcaption>PoC-first lifecycle: build a small proof of concept on Bedrock, review it against the GenAI Lens, extract reusable components, then go to production</figcaption><figcaption class="credit"><em>PoC-first lifecycle: build a small proof of concept on Bedrock, review it against the GenAI Lens, extract reusable components, then go to production</em></figcaption></figure><p>How AWS expects you to design before you build: prove it small, check it against the standard lens, and build parts once that every team reuses.</p>
+<p>Three design habits. A <strong>proof of concept (PoC)</strong> is a small throwaway build on Bedrock with on-demand inference that validates feasibility, performance, and business value before any production commitment. The <strong>AWS Well-Architected Framework Generative AI Lens</strong> is AWS's published checklist for reviewing GenAI workloads across pillars like responsible AI, data, model selection, cost, and security; the exam name-drops it as the standard for "design reviews." <strong>Standardized reusable components</strong> are the parts you build once and reuse across deployments: prompt templates, model routing layers, guardrail policies, evaluation harnesses.</p>
 <p>GenAI projects fail expensively when teams commit to Provisioned Throughput, custom models, or full deployments before knowing the approach works. A PoC on Bedrock costs almost nothing to stand up (on-demand, no infrastructure) and answers the three questions that kill projects: does it work, is it fast enough, is it worth it? The GenAI Lens exists so design reviews are not opinion-based; it gives reviewers a shared checklist. Reusable components exist because every new GenAI feature otherwise reinvents prompt handling, model routing, safety checks, and evaluation, and each reinvention is a new place to fail.</p>
-<h3 id="how-it-works-under-the-hood_1">How it works under the hood</h3>
-<p>The PoC flow: pick a Bedrock foundation model, run it on-demand (no throughput commitment), wire a minimal RAG or agent loop, measure quality with a small golden dataset, measure latency and token cost, then decide. If the PoC validates, the production design moves through the Lens review: is the data pipeline governed, is model selection justified against cost and latency, are guardrails applied, is there an evaluation gate before each release, is there monitoring? The reusable components that come out of this: a prompt template library (Prompt Management, chapter 16), a routing layer that hides model choice behind an internal API (chapter 7), a standard guardrail configuration applied to every model call. Plus an evaluation harness that every new model version must pass.</p>
-<h3 id="concrete-numbers_1">Concrete numbers</h3>
+<p>The PoC flow: pick a Bedrock foundation model, run it on-demand (no throughput commitment), wire a minimal RAG or agent loop, measure quality with a small golden dataset, measure latency and token cost, then decide. If the PoC validates, the production design moves through the Lens review: is the data pipeline governed, is model selection justified against cost and latency, are guardrails applied, is there an evaluation gate before each release, is there monitoring? The reusable components that come out of this: a prompt template library (Prompt Management, topic 16), a routing layer that hides model choice behind an internal API (topic 7), a standard guardrail configuration applied to every model call, plus an evaluation harness that every new model version must pass.</p>
 <p>A Bedrock PoC can start with zero committed spend: on-demand inference is pay-per-token, and Prompt Management charges nothing extra (you pay only model tokens). A golden dataset for a PoC is typically tens to a few hundred question-answer pairs, enough to spot a failing approach before any throughput commitment. The exam treats "skip the PoC and commit to Provisioned Throughput" as a distractor pattern.</p>
-<h3 id="common-misunderstanding_1">Common misunderstanding</h3>
 <p>The trap is reading "validate before production" as "write more design documents." The exam means a working PoC on Bedrock with real measurements. Another trap: the GenAI Lens is a review checklist, not a product you deploy; a distractor may say "deploy the GenAI Lens," which is nonsense. A third trap: treating reusable components as optional polish. When a scenario says "five teams building GenAI features" and asks for the most correct architecture, the answer includes shared components (routing layer, guardrail policies, prompt templates), because five bespoke stacks is operational overhead the exam always punishes.</p>
 <pre><code>  PoC-first design flow
 
@@ -1284,46 +1379,29 @@ It tests the.</p>
 <li>If the PoC fails, you stop or change approach; you never proceed to commitments like Provisioned Throughput.</li>
 <li>The GenAI Lens review checks the design against the standard pillars before production.</li>
 <li>Production ships with shared components (prompt templates, routing layer, guardrail policies, evaluation harness) so the next team reuses them instead of rebuilding.</li>
-</ol>
-<p>Exam trap</p>
-<p>"Select the model with the best published benchmarks" is never a complete answer: benchmarks ignore cost, latency, regional availability, and compliance constraints. Another favorite: training custom models for multilingual support when Bedrock foundation models already cover the needed languages. And EC2 plus load balancer "high availability" only covers one region; it does not answer a failover-across-regions constraint.</p>
-<p>How AWS asks this</p>
-<p>Scenario: "12 languages, 99.9 percent availability with automatic failover, switch models without code changes, CTO wants validation before production." The correct chain is: PoC on Bedrock, cross-region inference for failover, Lambda plus API Gateway plus AppConfig for model switching, GenAI Lens alignment. Distractors hardcode endpoints, stay single-region, or skip the PoC.</p>
+</ol><p><strong>Exam trap.</strong> "Select the model with the best published benchmarks" is never a complete answer: benchmarks ignore cost, latency, regional availability, and compliance constraints. Another favorite: training custom models for multilingual support when Bedrock foundation models already cover the needed languages. And EC2 plus load balancer "high availability" only covers one region; it does not answer a failover-across-regions constraint.</p>
+<p><strong>How AWS asks this.</strong> Scenario: "12 languages, 99.9 percent availability with automatic failover, switch models without code changes, CTO wants validation before production." The correct chain is: PoC on Bedrock, cross-region inference for failover, Lambda plus API Gateway plus AppConfig for model switching, GenAI Lens alignment. Distractors hardcode endpoints, stay single-region, or skip the PoC.</p>
 <h2 id="3-foundation-models-on-bedrock">3. Foundation models on Bedrock</h2>
-<figure class="fig-light"><img src="assets/img/internet/img-00.png" alt="Amazon Bedrock: users send requests through the console to foundation models (Titan, Stable Diffusion) via chat, text, and image playgrounds." loading="lazy"><figcaption>Amazon Bedrock: users send requests through the console to foundation models (Titan, Stable Diffusion) via chat, text, and image playgrounds.</figcaption><figcaption class="credit">Source: AWS blog (aws.amazon.com), via image search Sept 2026.</figcaption></figure>
-<p>The catalog you are choosing from: what each model family is for, and how you get access to call them.</p>
-<h3 id="what-it-is_2">What it is</h3>
-<p><strong>Amazon Bedrock</strong> is the fully managed service that lets you call foundation models (FMs) from many providers through one set of AWS APIs, without managing any servers or GPUs. A <strong>foundation model</strong> is a large model pre-trained on broad data that you use as-is or adapt; you never train it from scratch. Bedrock hosts models from Amazon (<strong>Titan</strong>, the first-party family for text, embeddings, and image generation; <strong>Nova</strong>, the newer Amazon family spanning fast cheap models to flagship models, with multimodal variants). It also hosts <strong>Anthropic Claude</strong> (strong reasoning and long context, a frequent exam default), <strong>Meta Llama</strong> (open-weights, good for cost-sensitive and customizable deployments), <strong>Mistral AI</strong> (efficient European models, strong at multilingual and code tasks), and <strong>Cohere</strong> (strong at multilingual, search, and embeddings). One API surface, many providers: that is the whole point.</p>
-<h3 id="why-it-exists_2">Why it exists</h3>
+<figure class="fig-light"><img src="assets/img/internet/img-00.png" alt="Amazon Bedrock: users send requests through the console to foundation models (Titan, Stable Diffusion) via chat, text, and image playgrounds." loading="lazy"><figcaption>Amazon Bedrock: users send requests through the console to foundation models (Titan, Stable Diffusion) via chat, text, and image playgrounds.</figcaption><figcaption class="credit">Source: AWS blog (aws.amazon.com), via image search Sept 2026.</figcaption></figure><p>The catalog you are choosing from: what each model family is for, and how you get access to call them.</p>
+<p>Amazon Bedrock is the fully managed service that lets you call foundation models (FMs) from many providers through one set of AWS APIs, without managing any servers or GPUs. A <strong>foundation model</strong> is a large model pre-trained on broad data that you use as-is or adapt; you never train it from scratch. Bedrock hosts models from Amazon (<strong>Titan</strong>, the first-party family for text, embeddings, and image generation; <strong>Nova</strong>, the newer Amazon family spanning fast cheap models to flagship models, with multimodal variants). It also hosts Anthropic <strong>Claude</strong> (strong reasoning and long context, a frequent exam default), Meta <strong>Llama</strong> (open-weights, good for cost-sensitive and customizable deployments), <strong>Mistral AI</strong> (efficient European models, strong at multilingual and code tasks), and <strong>Cohere</strong> (strong at multilingual, search, and embeddings). One API surface, many providers: that is the whole point.</p>
 <p>Before Bedrock, using a model meant either calling a third-party API (your data leaves AWS, different auth, different contract per vendor) or self-hosting open models on GPUs (capacity planning, patching, scaling). Bedrock gives you one IAM-controlled, VPC-capable, CloudTrail-logged front door to many models. For the exam, this matters because the "most correct" architecture almost always routes through Bedrock rather than a direct vendor API or a self-hosted endpoint, unless the scenario explicitly needs something Bedrock cannot do.</p>
-<h3 id="how-it-works-under-the-hood_2">How it works under the hood</h3>
-<p>Bedrock has two API planes. The <strong>control plane</strong> (<code>bedrock</code> endpoint) manages resources: models, knowledge bases, agents, guardrails, provisioned throughput. The <strong>data plane</strong> (<code>bedrock-runtime</code> endpoint) runs inference: <code>InvokeModel</code>, <code>Converse</code>, streaming variants. Before you can call a model, you must <strong>request model access</strong> in the Bedrock console for your account and region; some models also require submitting use-case details. Access is per model, per region, per account. Once granted, your IAM principal needs <code>bedrock:InvokeModel</code> (or the Converse equivalent) permission, ideally scoped to specific model ARNs. The request then flows: your code, IAM authorization, the runtime endpoint, the provider's model, and the response back, with usage logged for billing.</p>
-<h3 id="concrete-numbers_2">Concrete numbers</h3>
-<p>Model access is a one-time console action per model per region; there is no charge to enable it. Bedrock regions each publish a supported-model list, and availability differs: a model available in us-east-1 may not exist in eu-west-1, which is exactly why cross-region inference profiles exist (chapter 6). Context windows are model-specific and measured in tokens; flagship models handle hundreds of thousands of tokens, small fast models handle tens of thousands. The exam tests the</p>
-<p>principle</p>
-<p>(bigger context is not always better; you pay per token) more than exact numbers.</p>
-<h3 id="common-misunderstanding_2">Common misunderstanding</h3>
-<p>The trap is assuming every model is available in every region the moment you need it. The exam loves the scenario "model X is only available in two regions, and the application needs resilience": the answer is a cross-region inference profile, not "deploy in more regions" (you cannot deploy a Bedrock model; AWS hosts it). Another trap: <code>AccessDeniedException</code> on a model call usually means model access was never requested or the model is not available in that region, not that your IAM policy is wrong. Check access first.</p>
-<figure><img src="DATA_URI" alt="Amazon Bedrock with six model provider families" loading="lazy"><figcaption>Amazon Bedrock with six model provider families</figcaption><figcaption class="credit"><em>Amazon Bedrock with six model provider families</em></figcaption></figure>
+<p>Bedrock has two API planes. The <strong>control plane</strong> (bedrock endpoint) manages resources: models, knowledge bases, agents, guardrails, provisioned throughput. The <strong>data plane</strong> (bedrock-runtime endpoint) runs inference: InvokeModel, Converse, streaming variants. Before you can call a model, you must request <strong>model access</strong> in the Bedrock console for your account and region; some models also require submitting use-case details. Access is per model, per region, per account, and there is no charge to enable it. Once granted, your IAM principal needs <code>bedrock:InvokeModel</code> (or the Converse equivalent) permission, ideally scoped to specific model ARNs. The request then flows: your code, IAM authorization, the runtime endpoint, the provider's model, and the response back, with usage logged for billing.</p>
+<p>Bedrock regions each publish a supported-model list, and availability differs: a model available in us-east-1 may not exist in eu-west-1, which is exactly why cross-region inference profiles exist (topic 6). Context windows are model-specific and measured in tokens; flagship models handle hundreds of thousands of tokens, small fast models handle tens of thousands. The exam tests the <em>principle</em> (bigger context is not always better; you pay per token) more than exact numbers.</p>
+<p>The trap is assuming every model is available in every region the moment you need it. The exam loves the scenario "model X is only available in two regions, and the application needs resilience": the answer is a cross-region inference profile, not "deploy in more regions" (you cannot deploy a Bedrock model; AWS hosts it). Another trap: AccessDeniedException on a model call usually means model access was never requested or the model is not available in that region, not that your IAM policy is wrong. Check access first.</p>
+<figure><img src="assets/img/mermaid/10-bedrock-providers.svg" alt="Amazon Bedrock with six model provider families" loading="lazy"><figcaption>Amazon Bedrock with six model provider families</figcaption><figcaption class="credit"><em>Amazon Bedrock with six model provider families</em></figcaption></figure>
 <h4 id="how-to-read-this-diagram">How to read this diagram</h4>
 <ol>
 <li>The central box is Amazon Bedrock: the managed service you talk to.</li>
 <li>The surrounding boxes are model families from different providers: Amazon Titan and Nova, Anthropic Claude, Meta Llama, Mistral, Cohere.</li>
 <li>Each line is an integration you do not have to build: AWS maintains the provider connection, you just call the model ID.</li>
 <li>What breaks if a link fails: if you have not requested access for a model, or it is not available in your region, calls to that box fail with access errors.</li>
-</ol>
-<p>Exam trap</p>
-<p>Scenarios that ask for "the best model" with no constraints are testing whether you push back: selection needs cost, latency, context, and regional availability constraints (chapter 4). Also watch for "self-host Llama on EC2 for full control" as a distractor when Bedrock already serves Llama as a managed model; the exam prefers managed unless a constraint forces self-hosting.</p>
-<p>How AWS asks this</p>
-<p>"The team needs Claude for reasoning and Titan Embeddings for search, with one auth model and one audit trail." The answer is Bedrock: request access for both models, scope IAM to the two model ARNs, call both through bedrock-runtime. The distractor is calling each provider's own API directly.</p>
+</ol><p><strong>Exam trap.</strong> Scenarios that ask for "the best model" with no constraints are testing whether you push back: selection needs cost, latency, context, and regional availability constraints (topic 4). Also watch for "self-host Llama on EC2 for full control" as a distractor when Bedrock already serves Llama as a managed model; the exam prefers managed unless a constraint forces self-hosting.</p>
+<p><strong>How AWS asks this.</strong> "The team needs Claude for reasoning and Titan Embeddings for search, with one auth model and one audit trail." The answer is Bedrock: request access for both models, scope IAM to the two model ARNs, call both through bedrock-runtime. The distractor is calling each provider's own API directly.</p>
 <h2 id="4-choosing-the-right-model">4. Choosing the right model</h2>
-<p>Model selection is a trade-off across five axes. The exam tests whether you can hold all five in your head at once.</p>
-<h3 id="what-it-is">What it is</h3>
-<p>Model selection means picking which foundation model serves a workload. Judge on five axes: <strong>capability</strong> (can it do the task well: reasoning, multilingual, code, vision), <strong>cost per token</strong> (input and output prices differ), <strong>latency</strong> (time to first token and tokens per second), <strong>context window</strong> (how much text fits in one call), and <strong>regional availability</strong> (is it offered where you run). Smaller models (Claude Haiku, Llama 8B, Nova Lite/Micro class) win on cost and latency; flagship models (Claude Sonnet/Opus class, Nova Pro class) win on complex reasoning. There is no universally best model, only the best fit for the constraints.</p>
-<h3 id="why-it-exists">Why it exists</h3>
+<figure><img src="assets/img/mermaid/55-model-selection-tree.svg" alt="Model selection decision tree: pick by latency needs first, then reasoning difficulty, then evaluate on your own data" loading="lazy"><figcaption>Model selection decision tree: pick by latency needs first, then reasoning difficulty, then evaluate on your own data</figcaption><figcaption class="credit"><em>Model selection decision tree: pick by latency needs first, then reasoning difficulty, then evaluate on your own data</em></figcaption></figure><p>Model selection is a trade-off across five axes. The exam tests whether you can hold all five in your head at once.</p>
+<p>Judge every candidate model on five axes: <strong>capability</strong> (can it do the task well: reasoning, multilingual, code, vision), <strong>cost per token</strong> (input and output prices differ), <strong>latency</strong> (time to first token and tokens per second), <strong>context window</strong> (how much text fits in one call), and <strong>regional availability</strong> (is it offered where you run). Smaller models (Claude Haiku, Llama 8B, Nova Lite/Micro class) win on cost and latency; flagship models (Claude Sonnet/Opus class, Nova Pro class) win on complex reasoning. There is no universally best model, only the best fit for the constraints.</p>
 <p>Picking on capability alone burns money: a flagship model summarizing support tickets costs many times what a small model costs for the same output quality. Picking on cost alone fails tasks: a tiny model cannot do multi-step reasoning over a 200-page contract. The five-axis trade-off exists because real workloads have hard constraints on at least two axes at once, like "sub-second responses in the EU for a multilingual summarizer," and the exam writes scenarios exactly that way.</p>
-<h3 id="how-it-works-under-the-hood">How it works under the hood</h3>
-<p>Selection is a filtering process. First filter by <strong>capability floor</strong>: run the task on candidate models with a golden dataset and drop anything below the quality bar. Second filter by <strong>regional availability</strong>: drop models not offered in your region (or add a cross-region inference profile, chapter 6, if the model is worth it). Third, rank survivors by <strong>cost and latency</strong>: measure tokens per request and time to first token on realistic inputs. Fourth, check <strong>context window</strong> against your longest realistic input plus expected output; if it does not fit, you need chunking, summarization, or a bigger window. The survivor with the lowest cost that clears every bar wins. Revisit the choice quarterly: model prices and capabilities move.</p>
+<p>Selection is a filtering process. First filter by <strong>capability floor</strong>: run the task on candidate models with a golden dataset (a fixed set of question-answer pairs used as a quality benchmark) and drop anything below the quality bar. Second filter by <strong>regional availability</strong>: drop models not offered in your region, or add a cross-region inference profile (topic 6) if the model is worth it. Third, rank survivors by <strong>cost and latency</strong>: measure tokens per request and time to first token on realistic inputs. Fourth, check <strong>context window</strong> against your longest realistic input plus expected output; if it does not fit, you need chunking, summarization, or a bigger window. The survivor with the lowest cost that clears every bar wins. Revisit the choice quarterly: model prices and capabilities move.</p>
 <pre><code>Selection filters (apply in order):
 
   Candidates ──▶ capability floor? ──▶ region available? ──▶ cost + latency
@@ -1340,24 +1418,16 @@ It tests the.</p>
 <li>Rank the survivors by cost per token and latency on realistic inputs.</li>
 <li>Verify the context window fits your longest realistic input plus expected output; if not, you need chunking or a bigger window.</li>
 <li>The winner is the cheapest model that clears every bar; revisit the choice when models or prices change.</li>
-</ol>
-<h3 id="concrete-numbers">Concrete numbers</h3>
-<p>Price ratios are illustrative but the order is stable: a flagship model typically costs roughly 10 to 20 times more per token than the smallest model in the same family. Time to first token on a small model is often under a second; on a flagship model with a long prompt it can be several seconds. The exam will not ask you to quote prices; it will give you relative facts ("Model A costs 15x Model B, the task is simple classification") and expect you to pick the cheaper model or a cascade.</p>
-<h3 id="common-misunderstanding">Common misunderstanding</h3>
+</ol><p>Price ratios are illustrative but the order is stable: a flagship model typically costs roughly 10 to 20 times more per token than the smallest model in the same family. Time to first token on a small model is often under a second; on a flagship model with a long prompt it can be several seconds. The exam will not ask you to quote prices; it will give you relative facts ("Model A costs 15x Model B, the task is simple classification") and expect you to pick the cheaper model or a cascade.</p>
 <p>The trap is "bigger is safer," so teams default to the flagship model for everything. The exam punishes this: for classification, extraction, and simple summarization, the small model usually matches the big one on a golden dataset, and the "most correct" answer picks it or routes by complexity. The opposite trap is picking the cheapest model for a reasoning task and hoping prompt engineering closes the gap; measure on a golden dataset instead of hoping.</p>
-<p>Exam trap</p>
-<p>Watch for "choose the model with the best published benchmarks" as the entire answer: benchmarks ignore your cost, latency, and region constraints. Also watch for picking a model that is not available in the scenario's region without adding cross-region inference.
-That is a guaranteed distractor kill.</p>
-<p>How AWS asks this</p>
-<p>"Millions of simple support-ticket classifications per day, plus a weekly complex contract analysis, EU data residency, tight budget." The answer: small model (Haiku/Llama 8B/Nova Lite class) for the daily volume, flagship for the weekly analysis, EU region or EU inference profile, golden dataset to prove the small model is good enough. Distractors use the flagship for everything or ignore the EU constraint.</p>
+<p><strong>Exam trap.</strong> Watch for "choose the model with the best published benchmarks" as the entire answer: benchmarks ignore your cost, latency, and region constraints. Also watch for picking a model that is not available in the scenario's region without adding cross-region inference. That is a guaranteed distractor kill.</p>
+<p><strong>How AWS asks this.</strong> "Millions of simple support-ticket classifications per day, plus a weekly complex contract analysis, EU data residency, tight budget." The answer: small model (Haiku/Llama 8B/Nova Lite class) for the daily volume, flagship for the weekly analysis, EU region or EU inference profile, golden dataset to prove the small model is good enough. Distractors use the flagship for everything or ignore the EU constraint.</p>
 <h2 id="5-calling-models-invokemodel-vs-converse-vs-streaming">5. Calling models: InvokeModel vs Converse vs streaming</h2>
-<figure class="fig-light"><img src="assets/img/internet/img-26.jpeg" alt="LLM generation parameters: max_tokens caps output length, temperature reshapes the token probability distribution (more randomness), top_p (nucleus sampling) limits the candidate set." loading="lazy"><figcaption>LLM generation parameters: max_tokens caps output length, temperature reshapes the token probability distribution (more randomness), top_p (nucleus sampling) limits the candidate set.</figcaption><figcaption class="credit">Source: DailyDoseofDS.com, via image search Sept 2026.</figcaption></figure>
-<p>Two APIs do the same job with different trade-offs. Picking the wrong one is a classic exam bug.</p>
-<h3 id="what-it-is_1">What it is</h3>
+<figure><img src="assets/img/mermaid/62-temperature-sampling.svg" alt="Temperature and sampling: low temperature gives sharp, deterministic output; high temperature gives flat, creative output; top-p and top-k then cut the tail" loading="lazy"><figcaption>Temperature and sampling: low temperature gives sharp, deterministic output; high temperature gives flat, creative output; top-p and top-k then cut the tail</figcaption><figcaption class="credit"><em>Temperature and sampling: low temperature gives sharp, deterministic output; high temperature gives flat, creative output; top-p and top-k then cut the tail</em></figcaption></figure>
+<figure class="fig-light"><img src="assets/img/internet/img-27.png" alt="Temperature effect on token probabilities: cooler temperature sharpens the distribution toward the top token, higher temperature flattens it" loading="lazy"><figcaption>Temperature effect on token probabilities: cooler temperature sharpens the distribution toward the top token, higher temperature flattens it</figcaption><figcaption class="credit">Source: web image search, saved locally Sept 2026.</figcaption></figure>
+<figure class="fig-light"><img src="assets/img/internet/img-26.jpeg" alt="LLM generation parameters: max_tokens caps output length, temperature reshapes the token probability distribution (more randomness), top_p (nucleus sampling) limits the candidate set." loading="lazy"><figcaption>LLM generation parameters: max_tokens caps output length, temperature reshapes the token probability distribution (more randomness), top_p (nucleus sampling) limits the candidate set.</figcaption><figcaption class="credit">Source: DailyDoseofDS.com, via image search Sept 2026.</figcaption></figure><p>Two APIs do the same job with different trade-offs. Picking the wrong one is a classic exam bug.</p>
 <p><strong>InvokeModel</strong> is the original Bedrock runtime API: you send a provider-specific JSON body and get the provider-specific response. Each provider has its own body format; for Anthropic Claude you must include <code>anthropic_version: "bedrock-2023-05-31"</code> and <code>max_tokens</code>, or the call fails. <strong>Converse</strong> is the newer unified API: one request shape (<code>modelId</code>, <code>messages</code>, <code>system</code>, <code>inferenceConfig</code>, <code>toolConfig</code>, <code>guardrailConfig</code>) works across providers, with built-in tool use, inline guardrails, prompt caching hooks (<code>cachePoint</code>), and structured output (<code>outputConfig</code>). <strong>Streaming</strong> variants (<code>ConverseStream</code>, <code>InvokeModelWithResponseStream</code>) return tokens as they are generated instead of waiting for the full answer. <strong>Batch inference</strong> is the async option: S3 input, S3 output, hours of latency, roughly half the price.</p>
-<h3 id="why-it-exists_1">Why it exists</h3>
 <p>InvokeModel exists because providers have unique features that a unified API cannot express: embeddings, provider-specific sampling controls, image generation parameters. Converse exists because writing a different request body per provider is operational overhead, and cross-provider features like tool use and guardrails need one contract. Streaming exists because users perceive a chat that starts answering in 300 milliseconds as fast even if the full answer takes 10 seconds; without streaming, every answer waits for the last token. Batch exists for non-interactive work where waiting hours is fine and you want the discount.</p>
-<h3 id="how-it-works-under-the-hood_1">How it works under the hood</h3>
 <p>A Converse call carries: <code>modelId</code> (the model or inference profile ID), <code>messages</code> (the conversation in roles: user and assistant), <code>system</code> (the system prompt), <code>inferenceConfig</code> (<code>maxTokens</code>, <code>temperature</code>, <code>topP</code>), optional <code>toolConfig</code> (tool definitions for function calling), optional <code>guardrailConfig</code> (guardrail identifier, version, and whether to trace), optional <code>cachePoint</code> (marks where prompt caching applies), and <code>additionalModelRequestFields</code> (the escape hatch for provider-specific parameters). An InvokeModel call carries the raw provider body instead; send the wrong shape and you get <code>ValidationException</code>. Streaming returns an event stream of token chunks; your client reassembles them. Batch inference takes a JSONL file in S3, runs the model over every record, and writes results to S3.</p>
 <p>Walkthrough: the code below is the canonical boto3 Converse call the exam expects you to recognize. Read it top to bottom. First you build the runtime client. Then you make one <code>converse()</code> call carrying the model ID, a system prompt, one user message, inference settings, and a guardrail attached inline. Then you read the answer out of the response and check why generation stopped.</p>
 <pre><code>import boto3
@@ -1406,8 +1476,7 @@ response = client.converse(
 for block in response[&quot;output&quot;][&quot;message&quot;][&quot;content&quot;]:
     print(block[&quot;text&quot;])
 print(&quot;stop reason:&quot;, response[&quot;stopReason&quot;])
-</code></pre>
-<p>The response shape is the exam payload: <code>output.message.content</code> is a list of blocks, and <code>stopReason</code> names why generation ended. <code>guardrail_intervened</code> as a stop reason is the tell that the guardrail blocked the call.</p>
+</code></pre><p>The response shape is the exam payload: <code>output.message.content</code> is a list of blocks, and <code>stopReason</code> names why generation ended. <code>guardrail_intervened</code> as a stop reason is the tell that the guardrail blocked the call.</p>
 <pre><code>Which API? (the decision matrix)
 
   Need                    Use
@@ -1431,36 +1500,16 @@ print(&quot;stop reason:&quot;, response[&quot;stopReason&quot;])
 <li>Note the escape hatch: Converse covers most cross-provider work, with additionalModelRequestFields for provider-specific extras.</li>
 <li>Streaming rows are about perceived latency: tokens appear as generated, though total time is unchanged.</li>
 <li>If a row is misread (for example, batch inference for a chat UI), the latency or capability constraint fails immediately.</li>
-</ol>
-<h3 id="concrete-numbers_1">Concrete numbers</h3>
-<p>Batch inference costs roughly 50 percent less per token than on-demand, in exchange for hours of latency. Streaming cuts perceived latency to the first token (often under a second) while total generation time is unchanged. API Gateway, if placed in front of a GenAI API, has payload and timeout limits (documented, and they change), so long streams usually go through WebSockets or stream directly to the client rather than through a REST API proxy.</p>
-<h3 id="common-misunderstanding_1">Common misunderstanding</h3>
-<p>The big trap: <strong>Converse cannot do embeddings</strong>. Embeddings need InvokeModel with the embedding model's provider body. The exam will offer Converse as a distractor for an embeddings task. The second trap: assuming guardrails only work with Converse. The standalone <code>ApplyGuardrail</code> API applies guardrails to any text, including output from non-Bedrock models, which is the answer when the scenario says "we call an external model but need AWS guardrails." The third trap: calling <code>invoke_model</code> with a provider body missing required fields (like Claude's <code>anthropic_version</code>) and debugging IAM for an hour; the error is the request shape, not permissions.</p>
-<p>Exam trap</p>
-<p>"The application bought Provisioned Throughput but still gets throttled; the code calls</p>
-<p>invoke_model(modelId='anthropic.claude-...')</p>
-<p>." The code is calling the base on-demand model, not the provisioned model. The fix is to invoke the provisioned model ARN or identifier. Buying capacity and then not routing to it is one of the exam's favorite bugs.</p>
-<p>How AWS asks this</p>
-<p>"One codebase must call Claude, Llama, and Titan with tool use and guardrails, and stream answers to a web UI." The answer is Converse plus ConverseStream with</p>
-<p>toolConfig</p>
-<p>and</p>
-<p>guardrailConfig</p>
-<p>. Distractors use InvokeModel with three hand-rolled request bodies, or put guardrails only on the model instead of the call.</p>
+</ol><p>Batch inference costs roughly 50 percent less per token than on-demand, in exchange for hours of latency. Streaming cuts perceived latency to the first token (often under a second) while total generation time is unchanged. API Gateway, if placed in front of a GenAI API, has payload and timeout limits (documented, and they change), so long streams usually go through WebSockets or stream directly to the client rather than through a REST API proxy.</p>
+<p>The big trap: Converse cannot do <strong>embeddings</strong>. Embeddings need InvokeModel with the embedding model's provider body. The exam will offer Converse as a distractor for an embeddings task. The second trap: assuming guardrails only work with Converse. The standalone <strong>ApplyGuardrail</strong> API applies guardrails to any text, including output from non-Bedrock models, which is the answer when the scenario says "we call an external model but need AWS guardrails." The third trap: calling <code>invoke_model</code> with a provider body missing required fields (like Claude's <code>anthropic_version</code>) and debugging IAM for an hour; the error is the request shape, not permissions.</p>
+<p><strong>Exam trap.</strong> "The application bought Provisioned Throughput but still gets throttled; the code calls <code>invoke_model(modelId='anthropic.claude-...')</code>." The code is calling the base on-demand model, not the provisioned model. The fix is to invoke the provisioned model ARN or identifier. Buying capacity and then not routing to it is one of the exam's favorite bugs.</p>
+<p><strong>How AWS asks this.</strong> "One codebase must call Claude, Llama, and Titan with tool use and guardrails, and stream answers to a web UI." The answer is Converse plus ConverseStream with <code>toolConfig</code> and <code>guardrailConfig</code>. Distractors use InvokeModel with three hand-rolled request bodies, or put guardrails only on the model instead of the call.</p>
 <h2 id="6-inference-routing-and-pricing-profiles-routers-throughput">6. Inference routing and pricing: profiles, routers, throughput</h2>
 <p>Three mechanisms the exam deliberately confuses: inference profiles (availability), prompt routers (cost/quality), Provisioned Throughput (reserved capacity).</p>
-<h3 id="what-it-is_2">What it is</h3>
-<p><strong>Cross-region inference profiles</strong> route your request to a model in another region when your region cannot serve it, giving resilience and wider availability. You call the profile ID (with prefixes like <code>us.</code>, <code>eu.</code>, <code>apac.</code>, <code>global.</code>) instead of the bare model ID; for Converse you can pass the profile ARN or ID, for InvokeModel you pass the profile ID. <strong>Prompt routers</strong> (also called model routers) route each prompt to the cheapest model that can handle its complexity: simple prompts go to a small model, hard ones to the flagship. <strong>Provisioned Throughput</strong> (PT) is reserved capacity: you commit to model units per hour for 1 to 6 months and get guaranteed throughput and stable latency. <strong>On-demand</strong> is pay-per-token with no commitment. <strong>Batch inference</strong> is async and roughly half price. <strong>Prompt caching</strong> makes repeated input prefixes cheaper.</p>
-<h3 id="why-it-exists_2">Why it exists</h3>
-<p>Each mechanism fixes a different pain. Inference profiles exist because models are not available in every region and a single region can have an outage.
-Without them, "the model is down" means your application is down. Prompt routers exist because sending every prompt to the flagship model wastes money on easy questions. Provisioned Throughput exists because on-demand has quotas and can throttle you at peak.
-When you have a steady baseline and a latency promise, you need capacity that is yours. Caching exists because many applications resend the same long system prompt or documents on every call, and paying full price to reprocess identical tokens is waste.</p>
-<h3 id="how-it-works-under-the-hood_2">How it works under the hood</h3>
-<p>With an inference profile, your request hits the profile endpoint in your region.
-Bedrock routes it across the AWS backbone (encrypted in transit) to a region hosting the model, and quotas are managed at the source region. With a prompt router, a small classifier or heuristic scores each incoming prompt and picks the target model.
-The application calls the router ID instead of a model ID. With Provisioned Throughput, you create the commitment with <code>CreateProvisionedModelThroughput</code>, then you must invoke the <strong>provisioned model ARN</strong>, not the base model ID.
-The classic bug is buying PT and still calling the base model, which keeps throttling on on-demand quotas. With prompt caching, you mark a <code>cachePoint</code> in the Converse request (or <code>cache_control</code> in InvokeModel).
-The provider caches the prefix, and cache hits bill at a reduced input-token rate. Caches have a TTL (5 minutes default, up to 1 hour on supported models) and minimum token thresholds per model.</p>
-<figure><img src="DATA_URI" alt="Inference pricing ladder: on demand, caching, batch, provisioned, smaller model" loading="lazy"><figcaption>Inference pricing ladder: on demand, caching, batch, provisioned, smaller model</figcaption><figcaption class="credit"><em>Inference pricing ladder: on demand, caching, batch, provisioned, smaller model</em></figcaption></figure>
+<p><strong>Cross-region inference profiles</strong> route your request to a model in another region when your region cannot serve it, giving resilience and wider availability. You call the profile ID (with prefixes like <code>us.</code>, <code>eu.</code>, <code>apac.</code>, <code>global.</code>) instead of the bare model ID; for Converse you can pass the profile ARN or ID, for InvokeModel you pass the profile ID. <strong>Prompt routers</strong> (also called model routers) route each prompt to the cheapest model that can handle its complexity: simple prompts go to a small model, hard ones to the flagship. <strong>Provisioned Throughput (PT)</strong> is reserved capacity: you commit to model units per hour for 1 to 6 months and get guaranteed throughput and stable latency. <strong>On-demand</strong> is pay-per-token with no commitment. <strong>Batch inference</strong> is async and roughly half price. <strong>Prompt caching</strong> makes repeated input prefixes cheaper.</p>
+<p>Each mechanism fixes a different pain. Inference profiles exist because models are not available in every region and a single region can have an outage. Without them, "the model is down" means your application is down. Prompt routers exist because sending every prompt to the flagship model wastes money on easy questions. Provisioned Throughput exists because on-demand has quotas and can throttle you at peak. When you have a steady baseline and a latency promise, you need capacity that is yours. Caching exists because many applications resend the same long system prompt or documents on every call, and paying full price to reprocess identical tokens is waste.</p>
+<p>With an inference profile, your request hits the profile endpoint in your region. Bedrock routes it across the AWS backbone (encrypted in transit) to a region hosting the model, and quotas are managed at the source region. With a prompt router, a small classifier or heuristic scores each incoming prompt and picks the target model. The application calls the router ID instead of a model ID. With Provisioned Throughput, you create the commitment with <code>CreateProvisionedModelThroughput</code>, then you must invoke the <strong>provisioned model ARN</strong>, not the base model ID. The classic bug is buying PT and still calling the base model, which keeps throttling on on-demand quotas. With prompt caching, you mark a <code>cachePoint</code> in the Converse request (or <code>cache_control</code> in InvokeModel). The provider caches the prefix, and cache hits bill at a reduced input-token rate. Caches have a TTL (5 minutes default, up to 1 hour on supported models) and minimum token thresholds per model.</p>
+<figure><img src="assets/img/mermaid/11-inference-pricing-ladder.svg" alt="Inference pricing ladder: on demand, caching, batch, provisioned, smaller model" loading="lazy"><figcaption>Inference pricing ladder: on demand, caching, batch, provisioned, smaller model</figcaption><figcaption class="credit"><em>Inference pricing ladder: on demand, caching, batch, provisioned, smaller model</em></figcaption></figure>
 <h4 id="how-to-read-this-diagram">How to read this diagram</h4>
 <ol>
 <li>The staircase starts at on-demand: no commitment, highest per-token flexibility, the right default for spiky or experimental traffic.</li>
@@ -1480,23 +1529,17 @@ The provider caches the prefix, and cache hits bill at a reduced input-token rat
                          per prompt           the model per prompt
   Provisioned            guaranteed capacity  the PROVISIONED model
   Throughput             + stable latency     ARN, not the base model
-</code></pre>
-<h3 id="concrete-numbers">Concrete numbers</h3>
-<p>Provisioned Throughput commits run 1 to 6 months and bill per model unit per hour whether you use the capacity or not, which is why spiky traffic on PT wastes money. Batch inference is roughly 50 percent cheaper per token than on-demand. Prompt caching typically needs a minimum prefix length (model-dependent, on the order of a thousand tokens) and the cache TTL is 5 minutes by default with up to 1 hour on supported models; values are documented per model and change, so treat them as current-documented, not exam-memorized.</p>
-<h3 id="common-misunderstanding">Common misunderstanding</h3>
+</code></pre><p>Provisioned Throughput commits run 1 to 6 months and bill per model unit per hour whether you use the capacity or not, which is why spiky traffic on PT wastes money. Batch inference is roughly 50 percent cheaper per token than on-demand. Prompt caching typically needs a minimum prefix length (model-dependent, on the order of a thousand tokens) and the cache TTL is 5 minutes by default with up to 1 hour on supported models; values are documented per model and change, so treat them as current-documented, not exam-memorized.</p>
 <p>The triple confusion above is the trap. "Provisioned Throughput" is the answer to "steady baseline, latency guarantee, throttling at peak," never to "spiky traffic, cut costs." "Prompt caching" is the answer to "same long system prompt on every call," never to "guarantee capacity." "Inference profile" is the answer to "model not available in our region" or "need regional failover," never to "route by prompt complexity." A hybrid answer (PT for the predictable baseline, on-demand for peaks) is often the "most correct" option when both patterns appear in one scenario.</p>
-<p>Exam trap</p>
-<p>Any scenario that says the team "bought Provisioned Throughput but still gets throttled" is testing one bug: the code invokes the base model ID instead of the provisioned model ARN. Increasing model units does not fix routing. Read the code snippet in the scenario before you touch capacity.</p>
-<p>How AWS asks this</p>
-<p>"2M requests a day baseline plus 10x Friday spikes, sub-3s latency." The most correct answer is hybrid: Provisioned Throughput for the baseline, on-demand for spikes, often with a smaller model for simple queries. "Entirely SageMaker with GPU autoscaling" fails on cost and cold starts; "fixed EC2 for peak" fails on cost.</p>
+<p><strong>Exam trap.</strong> Any scenario that says the team "bought Provisioned Throughput but still gets throttled" is testing one bug: the code invokes the base model ID instead of the provisioned model ARN. Increasing model units does not fix routing. Read the code snippet in the scenario before you touch capacity.</p>
+<p><strong>How AWS asks this.</strong> "2M requests a day baseline plus 10x Friday spikes, sub-3s latency." The most correct answer is hybrid: Provisioned Throughput for the baseline, on-demand for spikes, often with a smaller model for simple queries. "Entirely SageMaker with GPU autoscaling" fails on cost and cold starts; "fixed EC2 for peak" fails on cost.</p>
 <h2 id="7-swapping-models-without-redeploys">7. Swapping models without redeploys</h2>
-<p>Operations wants to switch between Claude, Titan, and Llama without a code deployment. Here is the canonical AWS answer.</p>
-<h3 id="what-it-is">What it is</h3>
+<figure><img src="assets/img/mermaid/57-model-swap.svg" alt="Swapping models without redeploys: keep the model ID in config, call through the Converse API, canary the new model behind an eval gate" loading="lazy"><figcaption>Swapping models without redeploys: keep the model ID in config, call through the Converse API, canary the new model behind an eval gate</figcaption><figcaption class="credit"><em>Swapping models without redeploys: keep the model ID in config, call through the Converse API, canary the new model behind an eval gate</em></figcaption></figure><p>Operations wants to switch between Claude, Titan, and Llama without a code deployment. Here is the canonical AWS answer.</p>
 <p>The pattern is three services. <strong>AWS AppConfig</strong> holds the model choice as runtime configuration: a feature flag or config value like <code>active_model = us.anthropic.claude-sonnet-...</code> that you can change in seconds with validation and gradual rollout. <strong>AWS Lambda</strong> holds the routing logic: it reads the current config and calls the chosen model through the Converse API. <strong>API Gateway</strong> is the stable front door: one endpoint for clients, with throttling and usage plans, unchanged no matter which model is behind it. Together they let operations switch models, roll back a bad model, or run A/B tests with zero deployments.</p>
-<h3 id="why-it-exists">Why it exists</h3>
 <p>Hardcoding a model ID in application code makes every model change a deployment: build, test, deploy, rollback plan. Model changes are frequent (new versions, price changes, a provider outage, a better small model), and deployments are risky and slow. Externalizing the choice to AppConfig turns a deployment into a config change with validation rules and automatic rollback on bad values. The exam treats "no code changes" and "no redeploy" as hard constraints, and only this pattern satisfies them cleanly.</p>
-<h3 id="how-it-works-under-the-hood">How it works under the hood</h3>
 <p>AppConfig stores a configuration document (JSON or YAML) with the active model identifier, plus optional per-route overrides and rollout strategy. The Lambda function fetches the config at startup and polls or receives updates; on each request it reads <code>active_model</code> and calls Converse with that <code>modelId</code>, because Converse works across providers with one request shape. API Gateway fronts the Lambda with a fixed URL, throttling rules, and API keys per client. For resilience, add a <strong>circuit breaker</strong>: the Lambda (or a Step Functions wrapper) watches for repeated model errors and temporarily routes to a fallback model or a cached response, then probes the primary before switching back. That is <strong>graceful degradation</strong>: the system gets cheaper or simpler under failure instead of dying.</p>
+<p>AppConfig configuration changes propagate in seconds and support validation lambdas plus deployment strategies (all-at-once, linear, canary) with automatic rollback. API Gateway throttling is configured per route and per usage plan, which protects the model endpoint from client bursts. A circuit breaker typically trips after a small number of consecutive failures (illustrative: 5 failures in a minute) and half-opens after a cooldown to probe recovery.</p>
+<p>The trap is reaching for the wrong config store. CloudFormation changes are deployments: using a CloudFormation parameter for the model ID violates "no redeploy" because updating it redeploys the stack. EventBridge routes events. It does not hold configuration, so "store the model choice in EventBridge" is nonsense. Environment variables need a redeploy to change on most compute. AppConfig is the exam's favorite "no redeploy" mechanism. When you see those words, think AppConfig.</p>
 <pre><code>  Client ──▶ API Gateway (stable URL, throttling)
                   │
                   ▼
@@ -1519,26 +1562,16 @@ The provider caches the prefix, and cache hits bill at a reduced input-token rat
 <li>AppConfig is the control plane for the choice: operations edits a config value, with validation and rollback, and no code deploys.</li>
 <li>Bedrock serves whichever model is active; the circuit breaker watches for repeated errors.</li>
 <li>On failure, traffic degrades to the fallback model or cached responses instead of dying, and the breaker probes the primary before restoring it.</li>
-</ol>
-<h3 id="concrete-numbers_1">Concrete numbers</h3>
-<p>AppConfig configuration changes propagate in seconds and support validation lambdas plus deployment strategies (all-at-once, linear, canary) with automatic rollback. API Gateway throttling is configured per route and per usage plan, which protects the model endpoint from client bursts. A circuit breaker typically trips after a small number of consecutive failures (illustrative: 5 failures in a minute) and half-opens after a cooldown to probe recovery.</p>
-<h3 id="common-misunderstanding_1">Common misunderstanding</h3>
-<p>The trap is reaching for the wrong config store. <strong>CloudFormation</strong> changes are deployments: using a CloudFormation parameter for the model ID violates "no redeploy" because updating it redeploys the stack. <strong>EventBridge</strong> routes events.
-It does not hold configuration, so "store the model choice in EventBridge" is nonsense. Environment variables need a redeploy to change on most compute. AppConfig is the exam's favorite "no redeploy" mechanism.
-When you see those words, think AppConfig.</p>
-<p>Exam trap</p>
-<p>The select-three version of this question lists AppConfig, API Gateway, and Lambda as the correct trio. Distractors swap in CloudFormation ("redeploys"), EventBridge ("routes events, holds no config"), or hardcoded model IDs ("needs a deployment to change"). Also: Step Functions is the answer for orchestration with waits and approvals, not for per-request model routing; Lambda does that.</p>
-<p>How AWS asks this</p>
-<p>"Operations must switch between Claude, Titan, and Llama without code deployments, and the endpoint URL must never change." Select-three: AppConfig plus API Gateway plus Lambda. A second common framing adds "if the primary model fails, fall back automatically": add the circuit breaker and fallback model to the same pattern.</p>
+</ol><p><strong>Exam trap.</strong> The select-three version of this question lists AppConfig, API Gateway, and Lambda as the correct trio. Distractors swap in CloudFormation ("redeploys"), EventBridge ("routes events, holds no config"), or hardcoded model IDs ("needs a deployment to change"). Also: Step Functions is the answer for orchestration with waits and approvals, not for per-request model routing; Lambda does that.</p>
+<p><strong>How AWS asks this.</strong> "Operations must switch between Claude, Titan, and Llama without code deployments, and the endpoint URL must never change." Select-three: AppConfig plus API Gateway plus Lambda. A second common framing adds "if the primary model fails, fall back automatically": add the circuit breaker and fallback model to the same pattern.</p>
 <h2 id="8-custom-models-fine-tuning-continued-pre-training-distillation-imports">8. Custom models: fine-tuning, continued pre-training, distillation, imports</h2>
-<figure><img src="assets/img/mermaid/07-grounding-decision.svg" alt="Grounding decision ladder: private or fresh knowledge points to RAG; stable knowledge with a new behavior or tone points to fine-tuning; new domain language points to continued pre-training; otherwise prompt engineering plus Guardrails." loading="lazy"><figcaption>Grounding decision ladder: private or fresh knowledge points to RAG; stable knowledge with a new behavior or tone points to fine-tuning; new domain language points to continued pre-training; otherwise prompt engineering plus Guardrails.</figcaption><figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
-<p>When the ladder says "bake it into the weights," these are the Bedrock customization options and what each one is for.</p>
-<h3 id="what-it-is_1">What it is</h3>
-<p>Bedrock <strong>custom models</strong> adapt a foundation model with your data. <strong>Fine-tuning</strong> (supervised fine-tuning) trains the model on labeled prompt-and-response pairs in S3 so it learns a behavior: a support tone, a classification task, a response format. <strong>Continued pre-training</strong> trains further on unlabeled domain text (manuals, papers) so the model absorbs domain knowledge and vocabulary. <strong>Distillation</strong> trains a small, fast, cheap student model to imitate a large teacher model on your task, so you get near-teacher quality at student cost. <strong>Imported models</strong> let you bring a model you customized elsewhere (for example, a fine-tuned open model) into Bedrock to serve it through Bedrock APIs. <strong>Reinforcement fine-tuning</strong> exists for tuning with feedback signals. On the SageMaker side, the same ideas appear as <strong>LoRA</strong> (Low-Rank Adaptation): a parameter-efficient method that trains only small weight deltas (adapters) instead of all weights, then versions them in the <strong>SageMaker Model Registry</strong> with deployment pipelines and rollback.</p>
-<h3 id="why-it-exists_1">Why it exists</h3>
+<figure><img src="assets/img/mermaid/58-customization-options.svg" alt="Customization options: fine-tuning changes behavior, continued pre-training adds domain knowledge, distillation makes a cheaper copy" loading="lazy"><figcaption>Customization options: fine-tuning changes behavior, continued pre-training adds domain knowledge, distillation makes a cheaper copy</figcaption><figcaption class="credit"><em>Customization options: fine-tuning changes behavior, continued pre-training adds domain knowledge, distillation makes a cheaper copy</em></figcaption></figure>
+<figure><img src="assets/img/mermaid/07-grounding-decision.svg" alt="Grounding decision ladder: private or fresh knowledge points to RAG; stable knowledge with a new behavior or tone points to fine-tuning; new domain language points to continued pre-training; otherwise prompt engineering plus Guardrails." loading="lazy"><figcaption>Grounding decision ladder: private or fresh knowledge points to RAG; stable knowledge with a new behavior or tone points to fine-tuning; new domain language points to continued pre-training; otherwise prompt engineering plus Guardrails.</figcaption><figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure><p>When the ladder says "bake it into the weights," these are the Bedrock customization options and what each one is for.</p>
+<p>Bedrock custom models adapt a foundation model with your data. <strong>Fine-tuning</strong> (supervised fine-tuning) trains the model on labeled prompt-and-response pairs in S3 so it learns a behavior: a support tone, a classification task, a response format. <strong>Continued pre-training</strong> trains further on unlabeled domain text (manuals, papers) so the model absorbs domain knowledge and vocabulary. <strong>Distillation</strong> trains a small, fast, cheap student model to imitate a large teacher model on your task, so you get near-teacher quality at student cost. <strong>Imported models</strong> let you bring a model you customized elsewhere (for example, a fine-tuned open model) into Bedrock to serve it through Bedrock APIs. Reinforcement fine-tuning exists for tuning with feedback signals. On the SageMaker side, the same ideas appear as <strong>LoRA (Low-Rank Adaptation)</strong>: a parameter-efficient method that trains only small weight deltas (adapters) instead of all weights, then versions them in the SageMaker Model Registry with deployment pipelines and rollback.</p>
 <p>Prompt engineering has limits: a 40-page style guide in the system prompt costs tokens on every call and the model still drifts. When a behavior must be consistent across millions of calls, baking it into the weights is cheaper and more reliable than repeating instructions forever. Distillation exists because the best quality often comes from a big model you cannot afford to run at scale; the student gives you the economics. Continued pre-training exists for domains with heavy jargon (legal, medical, engineering) where the base model simply lacks the vocabulary. Imports exist so work done outside Bedrock is not stranded outside Bedrock.</p>
-<h3 id="how-it-works-under-the-hood_1">How it works under the hood</h3>
-<p>A Bedrock fine-tuning job reads your training and validation files from S3, runs the training, and produces a custom model with its own model ARN. You then serve it: most custom models need <strong>Provisioned Throughput</strong> to be invocable (some, like Nova custom models, support on-demand). The lifecycle on SageMaker looks like: prepare labeled data, train with LoRA adapters (small and swappable), register the version in Model Registry, deploy through a pipeline with automated tests and rollback, monitor, and retire-and-replace when a better version lands. Imported models skip training: you upload weights in a supported format, Bedrock validates them, and you get a Bedrock model ARN you can call like any other.</p>
+<p>A Bedrock fine-tuning job reads your training and validation files from S3, runs the training, and produces a custom model with its own model ARN. You then serve it: most custom models need Provisioned Throughput to be invocable (some, like Nova custom models, support on-demand). The lifecycle on SageMaker looks like: prepare labeled data, train with LoRA adapters (small and swappable), register the version in Model Registry, deploy through a pipeline with automated tests and rollback, monitor, and retire-and-replace when a better version lands. Imported models skip training: you upload weights in a supported format, Bedrock validates them, and you get a Bedrock model ARN you can call like any other.</p>
+<p>Useful fine-tuning typically starts at hundreds to a few thousand high-quality labeled examples; more is better, but quality beats quantity. Training jobs run for hours; you pay for the compute. Serving a custom model usually requires Provisioned Throughput (hourly commit, 1 to 6 month terms), which is why the economics only work when the behavior repeats at scale. LoRA adapters are a small fraction of the full model size, which makes them cheap to store, version, and swap.</p>
+<p>The master trap of the whole domain: fine-tuning for <strong>knowledge</strong> instead of <strong>behavior</strong>. "Documents updated quarterly" is RAG. "Must cite sources" is RAG. Fine-tuning bakes knowledge into weights that go stale and cannot cite pages. The exam also tests the serving gotcha: a fine-tuned model that is never given Provisioned Throughput (where required) cannot be invoked at all; "the customization job succeeded but calls fail" points at missing throughput, not bad training data. And distillation is the answer to "same narrow task millions of times, cost is the problem," not "we need new knowledge."</p>
 <pre><code>  Customization options on Bedrock:
 
   Need                                    Option
@@ -1561,24 +1594,16 @@ When you see those words, think AppConfig.</p>
 <li>Imported models skip training entirely: validate externally trained weights and serve them through Bedrock.</li>
 <li>LoRA plus the Model Registry is the SageMaker-flavored lifecycle: small adapters, versioned, deployed with rollback.</li>
 <li>If a row is misread (for example, fine-tuning for monthly documents), freshness or citation constraints fail.</li>
-</ol>
-<h3 id="concrete-numbers_2">Concrete numbers</h3>
-<p>Useful fine-tuning typically starts at hundreds to a few thousand high-quality labeled examples; more is better, but quality beats quantity. Training jobs run for hours; you pay for the compute. Serving a custom model usually requires Provisioned Throughput (hourly commit, 1 to 6 month terms), which is why the economics only work when the behavior repeats at scale. LoRA adapters are a small fraction of the full model size, which makes them cheap to store, version, and swap.</p>
-<h3 id="common-misunderstanding_2">Common misunderstanding</h3>
-<p>The master trap of the whole domain: fine-tuning for <strong>knowledge</strong> instead of <strong>behavior</strong>. "Documents updated quarterly" is RAG. "Must cite sources" is RAG. Fine-tuning bakes knowledge into weights that go stale and cannot cite pages. The exam also tests the serving gotcha: a fine-tuned model that is never given Provisioned Throughput (where required) cannot be invoked at all; "the customization job succeeded but calls fail" points at missing throughput, not bad training data. And distillation is the answer to "same narrow task millions of times, cost is the problem," not "we need new knowledge."</p>
-<p>Exam trap</p>
-<p>Any scenario with "updated quarterly/monthly" plus "fine-tune" in an option is testing whether you reject fine-tuning in favor of RAG with a sync schedule. Any scenario with "millions of repetitions, cost is the problem" plus "RAG" in an option is testing whether you pick distillation or prompt caching instead.</p>
-<p>How AWS asks this</p>
-<p>"Failed fine-tuned deployment must roll back automatically" points to the SageMaker Model Registry plus a deployment pipeline with rollback. "Consistent brand voice across 50M responses a month, currently enforced with a giant system prompt" points to fine-tuning or distillation to cut the per-call token cost. "Model must answer from documents that change monthly" points away from all of these, to RAG.</p>
+</ol><p><strong>Exam trap.</strong> Any scenario with "updated quarterly/monthly" plus "fine-tune" in an option is testing whether you reject fine-tuning in favor of RAG with a sync schedule. Any scenario with "millions of repetitions, cost is the problem" plus "RAG" in an option is testing whether you pick distillation or prompt caching instead.</p>
+<p><strong>How AWS asks this.</strong> "Failed fine-tuned deployment must roll back automatically" points to the SageMaker Model Registry plus a deployment pipeline with rollback. "Consistent brand voice across 50M responses a month, currently enforced with a giant system prompt" points to fine-tuning or distillation to cut the per-call token cost. "Model must answer from documents that change monthly" points away from all of these, to RAG.</p>
 <h2 id="9-data-pipelines-for-fms-validation-processing-extraction">9. Data pipelines for FMs: validation, processing, extraction</h2>
-<p>Models are only as good as the data you feed them. This chapter is the ingestion machinery: validate, normalize, extract, format.</p>
-<h3 id="what-it-is_2">What it is</h3>
-<p>Data pipelines for FM consumption do four jobs. <strong>Validation</strong> checks that incoming data is complete and sane before it reaches a model or a knowledge base: <strong>AWS Glue Data Quality</strong> runs automated data-quality rules and monitoring, <strong>SageMaker Data Wrangler</strong> gives a visual interface for data preparation, and custom <strong>Lambda</strong> functions handle validation and normalization logic. <strong>Extraction</strong> pulls text and structure out of messy files: <strong>Bedrock Data Automation</strong> (BDA) processes documents, images, video, and audio into structured output using standard output or custom blueprints; <strong>Amazon Transcribe</strong> converts audio to text. <strong>Enhancement</strong> enriches text: <strong>Amazon Comprehend</strong> extracts entities and detects language or PII, Bedrock itself can reformat text, Lambda normalizes fields. <strong>Formatting</strong> shapes the final input per model: the Converse API's unified <code>messages</code> format versus InvokeModel's provider-specific bodies, plus JSON schemas for structured output.</p>
-<h3 id="why-it-exists_2">Why it exists</h3>
+<figure><img src="assets/img/mermaid/59-data-pipeline.svg" alt="Data pipeline for foundation models: raw data in S3, clean and dedupe, filter quality, tokenize, split, train, evaluate, deploy" loading="lazy"><figcaption>Data pipeline for foundation models: raw data in S3, clean and dedupe, filter quality, tokenize, split, train, evaluate, deploy</figcaption><figcaption class="credit"><em>Data pipeline for foundation models: raw data in S3, clean and dedupe, filter quality, tokenize, split, train, evaluate, deploy</em></figcaption></figure><p>Models are only as good as the data you feed them. This topic is the ingestion machinery: validate, normalize, extract, format.</p>
+<p>Data pipelines for FM consumption do four jobs. <strong>Validation</strong> checks that incoming data is complete and sane before it reaches a model or a knowledge base: AWS Glue Data Quality runs automated data-quality rules and monitoring, SageMaker Data Wrangler gives a visual interface for data preparation, and custom Lambda functions handle validation and normalization logic. <strong>Extraction</strong> pulls text and structure out of messy files: Bedrock Data Automation (BDA) processes documents, images, video, and audio into structured output using standard output or custom blueprints; Amazon Transcribe converts audio to text. <strong>Enhancement</strong> enriches text: Amazon Comprehend extracts entities and detects language or PII, Bedrock itself can reformat text, Lambda normalizes fields. <strong>Formatting</strong> shapes the final input per model: the Converse API's unified messages format versus InvokeModel's provider-specific bodies, plus JSON schemas for structured output.</p>
 <p>Raw enterprise data is hostile to models: scanned PDFs, slide decks, meeting recordings, inconsistent field names, missing values. Feeding that raw into a knowledge base produces a RAG system that retrieves garbage and a model that answers from garbage. Validation exists so bad data is caught at the door with alerts instead of silently poisoning answers. Extraction exists because models read text, not pixels or waveforms; someone must turn the PDF and the call recording into text. Formatting exists because each provider's API expects its own body shape, and a malformed body fails before the model ever sees it.</p>
-<h3 id="how-it-works-under-the-hood_2">How it works under the hood</h3>
-<p>A typical ingestion pipeline: files land in S3 (with versioning, so you can trace which version of a document produced an answer). An S3 event triggers processing: BDA runs async over documents, images, video, and audio and writes structured results back to S3; Transcribe handles long audio with speaker labels; Lambda validates and normalizes the extracted fields; Comprehend adds entities or flags PII; Glue Data Quality monitors the pipeline's outputs with rules and publishes <strong>CloudWatch metrics</strong> for observability. The cleaned records then feed a knowledge base sync or a fine-tuning dataset. BDA offers <strong>standard output</strong> (predefined schemas per modality) versus <strong>custom blueprints</strong> (you define the fields to extract); async jobs write results to S3 when done.</p>
-<figure><img src="DATA_URI" alt="AWS solutions architecture diagram for data ingestion and exploration" loading="lazy"><figcaption>AWS solutions architecture diagram for data ingestion and exploration</figcaption><figcaption class="credit"><em>AWS solutions architecture diagram for data ingestion and exploration</em></figcaption></figure>
+<p>A typical ingestion pipeline: files land in S3 (with versioning, so you can trace which version of a document produced an answer). An S3 event triggers processing: BDA runs async over documents, images, video, and audio and writes structured results back to S3; Transcribe handles long audio with speaker labels; Lambda validates and normalizes the extracted fields; Comprehend adds entities or flags PII; Glue Data Quality monitors the pipeline's outputs with rules and publishes CloudWatch metrics for observability. The cleaned records then feed a knowledge base sync or a fine-tuning dataset. BDA offers <strong>standard output</strong> (predefined schemas per modality) versus <strong>custom blueprints</strong> (you define the fields to extract); async jobs write results to S3 when done.</p>
+<p>BDA handles four modalities (documents, images, video, audio) in one service and runs asynchronously. Large video files take minutes to process. Knowledge base data sources have documented file size limits (on the order of tens of MB per file; verify current docs at build time). Transcribe supports speaker diarization and custom vocabularies for domain terms. The exam cares about which service does which job, not the exact limits.</p>
+<p>Two big traps. First, Bedrock Guardrails do not extract content: Guardrails are safety filters, and the exam offers them as a distractor for extraction tasks. Extraction is BDA, Transcribe, or Comprehend. Second, Amazon Kendra is not a knowledge base: Kendra is enterprise search (it finds documents), while Bedrock Knowledge Bases do RAG (retrieve plus generate with citations). The exam swaps them: "we need generated answers with citations" is Knowledge Bases, not Kendra.</p>
+<figure><img src="assets/img/mermaid/12-data-ingestion-exploration.svg" alt="AWS solutions architecture diagram for data ingestion and exploration" loading="lazy"><figcaption>AWS solutions architecture diagram for data ingestion and exploration</figcaption><figcaption class="credit"><em>AWS solutions architecture diagram for data ingestion and exploration</em></figcaption></figure>
 <h4 id="how-to-read-this-diagram">How to read this diagram</h4>
 <ol>
 <li>Trace the left edge: raw data sources feed into the ingestion layer; S3 is the durable landing zone.</li>
@@ -1586,27 +1611,16 @@ When you see those words, think AppConfig.</p>
 <li>Note the storage layer in the middle: versioned, queryable stores that downstream GenAI services read from.</li>
 <li>Trace right: consumers (agents, knowledge bases, analytics) read the processed data, never the raw files.</li>
 <li>If a component fails: no versioning means you cannot trace which document version produced an answer; no validation means bad data flows silently into retrieval.</li>
-</ol>
-<h3 id="concrete-numbers">Concrete numbers</h3>
-<p>BDA handles four modalities (documents, images, video, audio) in one service and runs asynchronously.
-Large video files take minutes to process. Knowledge base data sources have documented file size limits (on the order of tens of MB per file.
-Verify current docs at build time). Transcribe supports speaker diarization and custom vocabularies for domain terms. The exam cares about which service does which job, not the exact limits.</p>
-<h3 id="common-misunderstanding">Common misunderstanding</h3>
-<p>Two big traps. First, <strong>Bedrock Guardrails do not extract content</strong>: Guardrails are safety filters, and the exam offers them as a distractor for extraction tasks. Extraction is BDA, Transcribe, or Comprehend. Second, <strong>Amazon Kendra is not a knowledge base</strong>: Kendra is enterprise search (it finds documents), while Bedrock Knowledge Bases do RAG (retrieve plus generate with citations). The exam swaps them: "we need generated answers with citations" is Knowledge Bases, not Kendra.</p>
-<p>Exam trap</p>
-<p>"Ingest 10,000 mixed files a day (PDF, PPT, video) and extract key concepts into structured summaries." The answer chains Bedrock Data Automation (blueprints, standard versus custom output) plus S3 versioning. Distractors use Guardrails for extraction (wrong tool) or Neptune for the extracted text (Neptune is a graph store for GraphRAG relationships, not a document store).</p>
-<p>How AWS asks this</p>
-<p>Multimodal ingestion scenarios always resolve to BDA for extraction, Lambda for validation and normalization, Glue Data Quality plus CloudWatch for monitoring. If the scenario mentions audio specifically, Transcribe appears in the correct chain. Formatting questions test Converse (unified messages) versus InvokeModel (provider bodies) and JSON schema for structured output.</p>
+</ol><p><strong>Exam trap.</strong> "Ingest 10,000 mixed files a day (PDF, PPT, video) and extract key concepts into structured summaries." The answer chains Bedrock Data Automation (blueprints, standard versus custom output) plus S3 versioning. Distractors use Guardrails for extraction (wrong tool) or Neptune for the extracted text (Neptune is a graph store for GraphRAG relationships, not a document store).</p>
+<p><strong>How AWS asks this.</strong> Multimodal ingestion scenarios always resolve to BDA for extraction, Lambda for validation and normalization, Glue Data Quality plus CloudWatch for monitoring. If the scenario mentions audio specifically, Transcribe appears in the correct chain. Formatting questions test Converse (unified messages) versus InvokeModel (provider bodies) and JSON schema for structured output.</p>
 <h2 id="10-knowledge-bases-the-managed-rag-service">10. Knowledge Bases: the managed RAG service</h2>
-<figure class="fig-light"><img src="assets/img/internet/img-07.png" alt="Bedrock Knowledge Bases end to end: documents in S3, embeddings generated, stored and indexed in OpenSearch Serverless, then RetrieveAndGenerate for end users." loading="lazy"><figcaption>Bedrock Knowledge Bases end to end: documents in S3, embeddings generated, stored and indexed in OpenSearch Serverless, then RetrieveAndGenerate for end users.</figcaption><figcaption class="credit">Source: AWS Machine Learning blog, via image search Sept 2026.</figcaption></figure>
-<p>Bedrock Knowledge Bases turn your documents into a queryable RAG backend with almost no code. This is the service behind half the exam's RAG questions.</p>
-<h3 id="what-it-is">What it is</h3>
-<p><strong>Amazon Bedrock Knowledge Bases</strong> is the fully managed RAG service. You connect <strong>data sources</strong>: S3 buckets, a web crawler, Confluence, SharePoint, Salesforce. The service ingests the documents, chunks them (chapter 13), embeds them (chapter 14), and stores the vectors in your chosen vector store (chapter 11). You set <strong>sync schedules</strong> so new and changed documents are picked up automatically. At query time you call <code>Retrieve</code> (get the relevant chunks) or <code>RetrieveAndGenerate</code> (get chunks plus a model-generated answer with source citations) through the <code>bedrock-agent-runtime</code> endpoint. You can also attach a knowledge base to a Bedrock Agent for grounding.</p>
-<h3 id="why-it-exists">Why it exists</h3>
+<figure class="fig-light"><img src="assets/img/internet/img-07.png" alt="Bedrock Knowledge Bases end to end: documents in S3, embeddings generated, stored and indexed in OpenSearch Serverless, then RetrieveAndGenerate for end users." loading="lazy"><figcaption>Bedrock Knowledge Bases end to end: documents in S3, embeddings generated, stored and indexed in OpenSearch Serverless, then RetrieveAndGenerate for end users.</figcaption><figcaption class="credit">Source: AWS Machine Learning blog, via image search Sept 2026.</figcaption></figure><p>Bedrock Knowledge Bases turn your documents into a queryable RAG backend with almost no code. This is the service behind half the exam's RAG questions.</p>
+<p><strong>Amazon Bedrock Knowledge Bases</strong> is the fully managed RAG service. You connect <strong>data sources</strong>: S3 buckets, a web crawler, Confluence, SharePoint, Salesforce. The service ingests the documents, chunks them (topic 13), embeds them (topic 14), and stores the vectors in your chosen vector store (topic 11). You set <strong>sync schedules</strong> so new and changed documents are picked up automatically. At query time you call <strong>Retrieve</strong> (get the relevant chunks) or <strong>RetrieveAndGenerate</strong> (get chunks plus a model-generated answer with source citations) through the bedrock-agent-runtime endpoint. You can also attach a knowledge base to a Bedrock Agent for grounding.</p>
 <p>Building RAG by hand means writing the chunker, the embedder, the vector store client, the sync scheduler, the retrieval logic, and the citation plumbing, then operating all of it. Knowledge Bases collapse that into a managed resource: you point at documents and get APIs. For the exam, this is the default answer to any "private documents plus citations" scenario; hand-rolled RAG is a distractor unless the scenario needs something the managed service cannot do (like a custom retrieval algorithm).</p>
-<h3 id="how-it-works-under-the-hood">How it works under the hood</h3>
-<p>Ingestion: each data source has a sync configuration (one-time, scheduled, or on-demand). On sync, the service parses documents (with an optional advanced parsing step for complex layouts and tables), applies the data source's <strong>chunking strategy</strong> (set at creation; changing it requires recreating the data source), embeds each chunk with the configured embedding model, and upserts vectors plus metadata into the vector store. Retrieval: your query is embedded with the same model, the vector store returns the nearest chunks (optionally with hybrid search and reranking, chapter 15), and <code>RetrieveAndGenerate</code> passes those chunks as context to the generation model with an instruction to cite sources. Metadata (S3 object metadata, custom attributes, tags) enables filtered retrieval, for example "only documents tagged region=EU."</p>
-<figure><img src="DATA_URI" alt="Knowledge base data sources converging into retrieval" loading="lazy"><figcaption>Knowledge base data sources converging into retrieval</figcaption><figcaption class="credit"><em>Knowledge base data sources converging into retrieval</em></figcaption></figure>
+<p>Ingestion: each data source has a sync configuration (one-time, scheduled, or on-demand). On sync, the service parses documents (with an optional advanced parsing step for complex layouts and tables), applies the data source's chunking strategy (set at creation; changing it requires recreating the data source), embeds each chunk with the configured embedding model, and upserts vectors plus metadata into the vector store. Retrieval: your query is embedded with the same model, the vector store returns the nearest chunks (optionally with hybrid search and reranking, topic 15), and RetrieveAndGenerate passes those chunks as context to the generation model with an instruction to cite sources. Metadata (S3 object metadata, custom attributes, tags) enables filtered retrieval, for example "only documents tagged region=EU."</p>
+<p>The default chunking strategy produces chunks of roughly 300 tokens, which is fine for prototyping and often wrong for production. Chunking is set per data source at creation time. Changing it means recreating the data source and re-ingesting. Sync schedules can be hourly, daily, or custom. "Documents updated quarterly" in a scenario is a direct pointer to configuring a sync schedule rather than doing one-time loads.</p>
+<p>The multi-tenant trap: one shared knowledge base for tenants with different access controls is wrong. The exam wants isolation: separate knowledge bases per tenant (or per account) with IAM-scoped access, not one KB plus prompt instructions like "only answer about your own hotel." Prompt-level filtering is not a security boundary. Also: Retrieve versus RetrieveAndGenerate matters; if the scenario needs citations in a generated answer, you need the latter (or you generate yourself from retrieved chunks).</p>
+<figure><img src="assets/img/mermaid/13-kb-sources-retrieval.svg" alt="Knowledge base data sources converging into retrieval" loading="lazy"><figcaption>Knowledge base data sources converging into retrieval</figcaption><figcaption class="credit"><em>Knowledge base data sources converging into retrieval</em></figcaption></figure>
 <h4 id="how-to-read-this-diagram">How to read this diagram</h4>
 <ol>
 <li>Left column: the supported data source types; each can have its own sync schedule.</li>
@@ -1614,28 +1628,13 @@ Verify current docs at build time). Transcribe supports speaker diarization and 
 <li>Right: the vector store holds the embeddings and the retriever serves queries.</li>
 <li>The arrows are one-way for ingestion (documents flow in on sync) and the retriever answers queries against what was ingested.</li>
 <li>If a component fails: no sync schedule means answers go stale as documents change; the wrong chunking strategy at creation means rebuilding the data source to fix retrieval.</li>
-</ol>
-<h3 id="concrete-numbers">Concrete numbers</h3>
-<p>The default chunking strategy produces chunks of roughly 300 tokens, which is fine for prototyping and often wrong for production. Chunking is set per data source at creation time.
-Changing it means recreating the data source and re-ingesting. Sync schedules can be hourly, daily, or custom.
-"documents updated quarterly" in a scenario is a direct pointer to configuring a sync schedule rather than doing one-time loads.</p>
-<h3 id="common-misunderstanding">Common misunderstanding</h3>
-<p>The multi-tenant trap: <strong>one shared knowledge base for tenants with different access controls is wrong</strong>. The exam wants isolation: separate knowledge bases per tenant (or per account) with IAM-scoped access, not one KB plus prompt instructions like "only answer about your own hotel." Prompt-level filtering is not a security boundary. Also: <code>Retrieve</code> versus <code>RetrieveAndGenerate</code> matters; if the scenario needs citations in a generated answer, you need the latter (or you generate yourself from retrieved chunks).</p>
-<p>Exam trap</p>
-<p>"Each hotel needs separate access controls and near-real-time availability data." The answer is one KB per tenant with IAM boundaries plus direct ingestion for the real-time feed. The distractor is a single shared KB with "the model is instructed to respect tenant boundaries." Instructions are not access control.</p>
-<p>How AWS asks this</p>
-<p>"Documents updated quarterly, answers must cite sources, minimal operational overhead." The chain is: Knowledge Bases with S3 data source, scheduled sync, RetrieveAndGenerate. The exam will offer Kendra (search, not RAG), hand-rolled OpenSearch pipelines (operational overhead), and fine-tuning (stale, no citations) as distractors.</p>
+</ol><p><strong>Exam trap.</strong> "Each hotel needs separate access controls and near-real-time availability data." The answer is one KB per tenant with IAM boundaries plus direct ingestion for the real-time feed. The distractor is a single shared KB with "the model is instructed to respect tenant boundaries." Instructions are not access control.</p>
+<p><strong>How AWS asks this.</strong> "Documents updated quarterly, answers must cite sources, minimal operational overhead." The chain is: Knowledge Bases with S3 data source, scheduled sync, RetrieveAndGenerate. The exam will offer Kendra (search, not RAG), hand-rolled OpenSearch pipelines (operational overhead), and fine-tuning (stale, no citations) as distractors.</p>
 <h2 id="11-vector-stores-compared">11. Vector stores compared</h2>
-<p>Knowledge Bases need somewhere to put the vectors. Each store has a personality; the exam tests the match.</p>
-<h3 id="what-it-is">What it is</h3>
+<figure><img src="assets/img/mermaid/103-vector-stores.svg" alt="Vector store choice for a Bedrock Knowledge Base: OpenSearch Serverless for managed AWS-native, Aurora pgvector for Postgres shops, S3 Vectors for cheap S3-native, Pinecone for external SaaS" loading="lazy"><figcaption>Vector store choice for a Bedrock Knowledge Base: OpenSearch Serverless for managed AWS-native, Aurora pgvector for Postgres shops, S3 Vectors for cheap S3-native, Pinecone for external SaaS</figcaption><figcaption class="credit"><em>Vector store choice for a Bedrock Knowledge Base: OpenSearch Serverless for managed AWS-native, Aurora pgvector for Postgres shops, S3 Vectors for cheap S3-native, Pinecone for external SaaS</em></figcaption></figure><p>Knowledge Bases need somewhere to put the vectors. Each store has a personality; the exam tests the match.</p>
 <p>A <strong>vector store</strong> (also called a vector database) stores embeddings and finds the nearest ones to a query embedding fast. Bedrock Knowledge Bases supports several. <strong>Amazon OpenSearch Serverless</strong> with vector collections is the managed, scalable default. <strong>Amazon Aurora PostgreSQL with pgvector</strong> stores vectors alongside relational data, so one database holds both your tables and your embeddings. <strong>Amazon Neptune</strong> is a graph database; with Knowledge Bases it powers <strong>GraphRAG</strong>, retrieval over entities and relationships, not just text similarity. <strong>Amazon S3 Vectors</strong> is the low-cost option for smaller-scale vector workloads and dev/test. Third-party options (Pinecone, MongoDB Atlas, Redis) connect through connectors for teams already invested in them.</p>
-<h3 id="why-it-exists">Why it exists</h3>
 <p>Different workloads need different trade-offs. A search over 100M product embeddings needs a scaled vector engine (OpenSearch). An application that already lives in Postgres and needs "find similar support tickets for this customer" wants vectors next to its relational rows (Aurora pgvector) rather than a second database to operate. A fraud or knowledge-graph workload needs to traverse relationships ("which suppliers connect to this part through two hops"), which similarity search cannot do (Neptune). A prototype or small workload should not pay for a scaled cluster (S3 Vectors). The exam frames each store by its best fit, and scenarios are written to match exactly one.</p>
-<h3 id="how-it-works-under-the-hood">How it works under the hood</h3>
-<p>All of them do approximate nearest-neighbor search: given a query vector, return the K closest stored vectors by a distance metric (cosine similarity is typical). OpenSearch Serverless manages sharding and scaling for you.
-You can run multi-index setups per domain for performance isolation. Aurora pgvector adds a vector column and an index type (IVFFlat or HNSW) to Postgres.
-Queries combine SQL filters ("customer = X") with vector similarity in one statement, which is its superpower. Neptune stores a knowledge graph (entities as nodes, relationships as edges).
-GraphRAG traverses the graph to gather connected context, then the model reasons over it. S3 Vectors stores vectors as S3 objects with an index, trading query performance for very low cost and zero cluster management.</p>
+<p>All of them do <strong>approximate nearest-neighbor search</strong>: given a query vector, return the K closest stored vectors by a distance metric (cosine similarity is typical). OpenSearch Serverless manages sharding and scaling for you. You can run multi-index setups per domain for performance isolation. Aurora pgvector adds a vector column and an index type (IVFFlat or HNSW) to Postgres. Queries combine SQL filters ("customer = X") with vector similarity in one statement, which is its superpower. Neptune stores a knowledge graph (entities as nodes, relationships as edges). GraphRAG traverses the graph to gather connected context, then the model reasons over it. S3 Vectors stores vectors as S3 objects with an index, trading query performance for very low cost and zero cluster management.</p>
 <div class="table-wrap"><table>
 <thead>
 <tr>
@@ -1699,30 +1698,16 @@ GraphRAG traverses the graph to gather connected context, then the model reasons
 <li>Existing third-party investments are respected through connectors rather than migrations.</li>
 <li>Scale and budget decide between OpenSearch Serverless and S3 Vectors.</li>
 <li>The bottom line is the trap list: ElastiCache and DynamoDB are never the durable vector home, no matter how plausible they sound.</li>
-</ol>
-<h3 id="concrete-numbers_1">Concrete numbers</h3>
-<p>Embedding dimensions drive storage and cost: Titan Text Embeddings v2 supports 1024, 512, or 256 dimensions (chapter 14).
-Smaller dimensions mean proportionally smaller indexes and faster search at some accuracy cost. OpenSearch Serverless scales compute automatically.
-Aurora pgvector index choice (HNSW for recall and speed, IVFFlat for build simplicity) is a documented tuning knob. Treat specific scale numbers as illustrative; the exam tests fit, not capacity math.</p>
-<h3 id="common-misunderstanding_1">Common misunderstanding</h3>
-<p>Three traps. <strong>ElastiCache for durable vectors</strong>: ElastiCache is a cache.
-It is ephemeral by design, so vectors live in a real store and ElastiCache holds hot results. <strong>DynamoDB as the vector store</strong>: DynamoDB is for metadata and session state, not vector similarity search.
-The exam offers it because "it is fast and serverless," which is true and irrelevant. <strong>Neptune for plain document RAG</strong>: Neptune earns its place only when the scenario mentions relationships or graph traversal.
-For plain similarity search it is the expensive wrong answer.</p>
-<p>Exam trap</p>
-<p>"The application already runs on Aurora PostgreSQL and needs similar-ticket search filtered by customer." The answer is Aurora pgvector: one database, SQL filter plus vector search in one query. Distractors propose a new OpenSearch cluster (extra operational overhead for no reason) or DynamoDB (not a vector store).</p>
-<p>How AWS asks this</p>
-<p>Scenarios name the workload shape and expect the store: "millions of product embeddings, fully managed" is OpenSearch Serverless; "fraud rings, multi-hop relationships" is Neptune with GraphRAG.
-"prototype on a budget" is S3 Vectors. The wrong answers are always a plausible store with the wrong personality.</p>
+</ol><p>Embedding dimensions drive storage and cost: Titan Text Embeddings v2 supports 1024, 512, or 256 dimensions (topic 14). Smaller dimensions mean proportionally smaller indexes and faster search at some accuracy cost. OpenSearch Serverless scales compute automatically. Aurora pgvector index choice (HNSW for recall and speed, IVFFlat for build simplicity) is a documented tuning knob. Treat specific scale numbers as illustrative; the exam tests fit, not capacity math.</p>
+<p>Three traps. <strong>ElastiCache for durable vectors</strong>: ElastiCache is a cache. It is ephemeral by design, so vectors live in a real store and ElastiCache holds hot results. <strong>DynamoDB as the vector store</strong>: DynamoDB is for metadata and session state, not vector similarity search. The exam offers it because "it is fast and serverless," which is true and irrelevant. <strong>Neptune for plain document RAG</strong>: Neptune earns its place only when the scenario mentions relationships or graph traversal. For plain similarity search it is the expensive wrong answer.</p>
+<p><strong>Exam trap.</strong> "The application already runs on Aurora PostgreSQL and needs similar-ticket search filtered by customer." The answer is Aurora pgvector: one database, SQL filter plus vector search in one query. Distractors propose a new OpenSearch cluster (extra operational overhead for no reason) or DynamoDB (not a vector store).</p>
+<p><strong>How AWS asks this.</strong> Scenarios name the workload shape and expect the store: "millions of product embeddings, fully managed" is OpenSearch Serverless; "fraud rings, multi-hop relationships" is Neptune with GraphRAG. "Prototype on a budget" is S3 Vectors. The wrong answers are always a plausible store with the wrong personality.</p>
 <h2 id="12-rag-end-to-end">12. RAG end to end</h2>
-<figure><img src="assets/img/mermaid/01-rag-pipeline.svg" alt="RAG pipeline: documents are chunked and embedded offline into a vector store." loading="lazy"><figcaption>RAG pipeline: documents are chunked and embedded offline into a vector store.</figcaption><figcaption class="credit">At query time the question is embedded, top-k chunks are retrieved, the prompt is augmented with citations, and the Converse API produces a grounded answer. <em>Generated diagram for this guide.</em></figcaption></figure>
-<p>The full retrieval-augmented generation loop, traced from document to cited answer. This is the architecture behind the most questions in Domain 1.</p>
-<h3 id="what-it-is_1">What it is</h3>
-<p><strong>RAG</strong> (Retrieval-Augmented Generation) is the pattern where the model does not answer from its training weights alone: at query time, the system retrieves relevant passages from your documents and stuffs them into the prompt as context, then the model answers from that context and cites it. The loop has five stages: <strong>ingest</strong> (documents in), <strong>chunk and embed</strong> (split text, turn chunks into vectors), <strong>store</strong> (vectors plus metadata in a vector store), <strong>retrieve</strong> (embed the query, find nearest chunks), <strong>generate</strong> (model answers from the retrieved context with citations). Bedrock Knowledge Bases with <code>RetrieveAndGenerate</code> runs the whole loop managed.</p>
-<h3 id="why-it-exists_1">Why it exists</h3>
+<figure class="fig-light"><img src="assets/img/internet/img-03.png" alt="RAG basic structure: documents are chunked and embedded into a vector database, the retriever feeds chunk context into the prompt, and the LLM generates the answer" loading="lazy"><figcaption>RAG basic structure: documents are chunked and embedded into a vector database, the retriever feeds chunk context into the prompt, and the LLM generates the answer</figcaption><figcaption class="credit">Source: web image search, saved locally Sept 2026.</figcaption></figure>
+<figure><img src="assets/img/mermaid/01-rag-pipeline.svg" alt="RAG pipeline: documents are chunked and embedded offline into a vector store." loading="lazy"><figcaption>RAG pipeline: documents are chunked and embedded offline into a vector store.</figcaption><figcaption class="credit">At query time the question is embedded, top-k chunks are retrieved, the prompt is augmented with citations, and the Converse API produces a grounded answer. <em>Generated diagram for this guide.</em></figcaption></figure><p>The full retrieval-augmented generation loop, traced from document to cited answer. This is the architecture behind the most questions in Domain 1.</p>
+<p><strong>RAG (Retrieval-Augmented Generation)</strong> is the pattern where the model does not answer from its training weights alone: at query time, the system retrieves relevant passages from your documents and stuffs them into the prompt as context, then the model answers from that context and cites it. The loop has five stages: <strong>ingest</strong> (documents in), <strong>chunk and embed</strong> (split text, turn chunks into vectors), <strong>store</strong> (vectors plus metadata in a vector store), <strong>retrieve</strong> (embed the query, find nearest chunks), <strong>generate</strong> (model answers from the retrieved context with citations). Bedrock Knowledge Bases with RetrieveAndGenerate runs the whole loop managed.</p>
 <p>Foundation models have a knowledge cutoff and no access to your private data; they also hallucinate confidently when they do not know something. RAG fixes both without retraining: new documents are searchable the moment they are ingested, and the model is instructed to answer only from the retrieved passages, which it can cite. That is why "documents updated quarterly" and "must cite sources" are RAG signals: fine-tuning cannot do either, and prompt engineering has no new knowledge to work with.</p>
-<h3 id="how-it-works-under-the-hood_1">How it works under the hood</h3>
-<p>Trace one question, "What is our refund window?", through the loop. Ingest: the returns policy PDF is already synced into the knowledge base. Chunk and embed happened at sync time: the PDF was split into chunks and each chunk became a vector. Retrieve: your question is embedded with the same embedding model; the vector store returns the top-K nearest chunks (say, 5 chunks about refunds and returns). Generate: <code>RetrieveAndGenerate</code> builds a prompt containing your question plus those chunks, with a system instruction like "answer only from the provided sources and cite them"; the model produces "30 days (source: returns-policy.pdf, page 4)." <strong>Freshness</strong> comes from the sync schedule: changed documents are re-chunked and re-embedded automatically. <strong>Metadata filtering</strong> narrows retrieval before similarity search ("only policies tagged region=US").</p>
+<p>Trace one question, "What is our refund window?", through the loop. Ingest: the returns policy PDF is already synced into the knowledge base. Chunk and embed happened at sync time: the PDF was split into chunks and each chunk became a vector. Retrieve: your question is embedded with the same embedding model; the vector store returns the top-K nearest chunks (say, 5 chunks about refunds and returns). Generate: RetrieveAndGenerate builds a prompt containing your question plus those chunks, with a system instruction like "answer only from the provided sources and cite them"; the model produces "30 days (source: returns-policy.pdf, page 4)." Freshness comes from the sync schedule: changed documents are re-chunked and re-embedded automatically. Metadata filtering narrows retrieval before similarity search ("only policies tagged region=US").</p>
 <p>Walkthrough: the code below runs the whole RAG loop managed in one boto3 call. It pairs with the pipeline diagram above. Read it in three steps. Build the agent-runtime client. Call <code>retrieve_and_generate</code> with the question, the knowledge base ID, the answering model, and how many chunks to retrieve. Then print the answer and walk the citations.</p>
 <pre><code>import boto3
 
@@ -1773,7 +1758,7 @@ for citation in response.get(&quot;citations&quot;, []):
     for ref in citation[&quot;retrievedReferences&quot;]:
         print(&quot;-&quot;, ref[&quot;location&quot;][&quot;s3Location&quot;][&quot;uri&quot;])
 </code></pre>
-<figure><img src="DATA_URI" alt="RAG pipeline: documents to embeddings to vector store to retriever to language model to cited answer" loading="lazy"><figcaption>RAG pipeline: documents to embeddings to vector store to retriever to language model to cited answer</figcaption><figcaption class="credit"><em>RAG pipeline: documents to embeddings to vector store to retriever to language model to cited answer</em></figcaption></figure>
+<figure><img src="assets/img/mermaid/01-rag-pipeline.svg" alt="RAG pipeline: documents to embeddings to vector store to retriever to language model to cited answer" loading="lazy"><figcaption>RAG pipeline: documents to embeddings to vector store to retriever to language model to cited answer</figcaption><figcaption class="credit"><em>RAG pipeline: documents to embeddings to vector store to retriever to language model to cited answer</em></figcaption></figure>
 <h4 id="how-to-read-this-diagram">How to read this diagram</h4>
 <ol>
 <li>Stage 1, Documents: your private files; they enter through a sync schedule, not a training job.</li>
@@ -1783,29 +1768,16 @@ for citation in response.get(&quot;citations&quot;, []):
 <li>Stage 5, Language Model plus Answer: the model receives question plus chunks and answers with citations.</li>
 <li>If a stage fails: bad chunking (stage 2) splits answers across chunks and retrieval misses; stale sync (stage 1) serves old policy.
    The model ignoring context (stage 5) is a grounding failure, fixed with instructions and grounding checks, not a bigger model.</li>
-</ol>
-<h3 id="concrete-numbers">Concrete numbers</h3>
-<p>A typical</p>
-<p>RetrieveAndGenerate</p>
-<p>call retrieves the top 5 to 10 chunks; more chunks mean more context tokens and higher cost per answer, so K is a cost lever. Default chunking is roughly 300 tokens per chunk, so 5 chunks add about 1,500 tokens of context to every answer. End-to-end RAG latency is the sum of embedding time plus vector search plus generation; the generation step dominates.</p>
-<h3 id="common-misunderstanding">Common misunderstanding</h3>
-<p>The trap is debugging RAG failures at the wrong stage. "RAG returns confident but wrong answers, and the retrieved chunks look relevant" is a <strong>generation/grounding</strong> problem (the model is not using the context), not a retrieval problem; the fix is instructions, grounding checks, or structured output, not a new embedding model. "Retrieved chunks are irrelevant" is a <strong>retrieval</strong> problem (chunking, embeddings, hybrid search, rerank: chapter 15). Switching the generation model when retrieval is broken is the exam's favorite wrong fix.</p>
-<p>Exam trap</p>
-<p>"Tables in our manuals get split across chunks and answers miss the numbers." The answer is advanced parsing plus hierarchical chunking (chapter 13), which keeps table context together. The distractor is "switch to a larger generation model," which changes nothing about how tables were split at ingestion.</p>
-<p>How AWS asks this</p>
-<p>"Customer support answers must cite the policy document and stay current as policies change monthly." The chain is Knowledge Bases with S3 source, monthly sync schedule,</p>
-<p>RetrieveAndGenerate</p>
-<p>. The exam offers fine-tuning (stale, no citations), Kendra alone (search without generation), and a bigger model (does not add knowledge) as distractors.</p>
+</ol><p>A typical <code>RetrieveAndGenerate</code> call retrieves the top 5 to 10 chunks; more chunks mean more context tokens and higher cost per answer, so K is a cost lever. Default chunking is roughly 300 tokens per chunk, so 5 chunks add about 1,500 tokens of context to every answer. End-to-end RAG latency is the sum of embedding time plus vector search plus generation; the generation step dominates.</p>
+<p>The trap is debugging RAG failures at the wrong stage. "RAG returns confident but wrong answers, and the retrieved chunks look relevant" is a generation/grounding problem (the model is not using the context), not a retrieval problem; the fix is instructions, grounding checks, or structured output, not a new embedding model. "Retrieved chunks are irrelevant" is a retrieval problem (chunking, embeddings, hybrid search, rerank: topic 15). Switching the generation model when retrieval is broken is the exam's favorite wrong fix.</p>
+<p><strong>Exam trap.</strong> "Tables in our manuals get split across chunks and answers miss the numbers." The answer is advanced parsing plus hierarchical chunking (topic 13), which keeps table context together. The distractor is "switch to a larger generation model," which changes nothing about how tables were split at ingestion.</p>
+<p><strong>How AWS asks this.</strong> "Customer support answers must cite the policy document and stay current as policies change monthly." The chain is Knowledge Bases with S3 source, monthly sync schedule, <code>RetrieveAndGenerate</code>. The exam offers fine-tuning (stale, no citations), Kendra alone (search without generation), and a bigger model (does not add knowledge) as distractors.</p>
 <h2 id="13-chunking-strategies">13. Chunking strategies</h2>
-<figure class="fig-light"><img src="assets/img/internet/img-25.jpeg" alt="A real hierarchical/semantic chunking pipeline: extract text, number lines, let an LLM find the document hierarchy, then split oversized chunks semantically before uploading embeddings to the vector store." loading="lazy"><figcaption>A real hierarchical/semantic chunking pipeline: extract text, number lines, let an LLM find the document hierarchy, then split oversized chunks semantically before uploading embeddings to the vector store.</figcaption><figcaption class="credit">Source: OpenAI developer forum, via image search Sept 2026.</figcaption></figure>
-<p>How you cut documents decides what retrieval can find. This is the most technical corner of Domain 1 and a rich source of scenario questions.</p>
-<h3 id="what-it-is">What it is</h3>
-<p><strong>Chunking</strong> is splitting documents into pieces before embedding, because embedding models take limited input and retrieval works best on focused passages. Bedrock Knowledge Bases offers strategies set per data source <strong>at creation time</strong> (changing later means recreating the data source). <strong>Default</strong> chunking splits into roughly 300-token pieces and is meant for prototyping. <strong>Fixed-size</strong> chunking splits every N tokens with an overlap percentage, which is predictable. <strong>Hierarchical</strong> chunking creates two levels: small <strong>child</strong> chunks for precise matching and larger <strong>parent</strong> chunks that supply surrounding context at generation time. <strong>Semantic</strong> chunking splits at meaning boundaries (sentences and topics), which gives the best retrieval quality at higher ingestion cost. <strong>None</strong> means your documents arrive pre-chunked and the service stores them as-is. <strong>Custom</strong> chunking uses a Lambda function you write for exotic formats.</p>
-<h3 id="why-it-exists">Why it exists</h3>
+<figure class="fig-light"><img src="assets/img/internet/img-25.jpeg" alt="A real hierarchical/semantic chunking pipeline: extract text, number lines, let an LLM find the document hierarchy, then split oversized chunks semantically before uploading embeddings to the vector store." loading="lazy"><figcaption>A real hierarchical/semantic chunking pipeline: extract text, number lines, let an LLM find the document hierarchy, then split oversized chunks semantically before uploading embeddings to the vector store.</figcaption><figcaption class="credit">Source: OpenAI developer forum, via image search Sept 2026.</figcaption></figure><p>How you cut documents decides what retrieval can find. This is the most technical corner of Domain 1 and a rich source of scenario questions.</p>
+<p><strong>Chunking</strong> is splitting documents into pieces before embedding, because embedding models take limited input and retrieval works best on focused passages. Bedrock Knowledge Bases offers strategies set per data source at creation time (changing later means recreating the data source). <strong>Default chunking</strong> splits into roughly 300-token pieces and is meant for prototyping. <strong>Fixed-size chunking</strong> splits every N tokens with an overlap percentage, which is predictable. <strong>Hierarchical chunking</strong> creates two levels: small child chunks for precise matching and larger parent chunks that supply surrounding context at generation time. <strong>Semantic chunking</strong> splits at meaning boundaries (sentences and topics), which gives the best retrieval quality at higher ingestion cost. <strong>None</strong> means your documents arrive pre-chunked and the service stores them as-is. <strong>Custom chunking</strong> uses a Lambda function you write for exotic formats.</p>
 <p>Chunking is the lever between two failures. Chunks too large dilute the embedding: a 5,000-token chunk about ten topics matches vaguely on all of them and precisely on none. Chunks too small shatter context: the sentence "the window is 30 days" is useless without knowing it refers to refunds, which lived two chunks away. Overlap exists so a sentence split at a boundary still appears whole in a neighbor. Hierarchical chunking exists for structured documents (manuals, legal contracts, docs with headings): match precisely on the child, then hand the model the parent so it sees the section the sentence came from.</p>
-<h3 id="how-it-works-under-the-hood">How it works under the hood</h3>
 <p>At ingestion, the parser walks each document and applies the strategy. Fixed-size: cut every N tokens, keep the last X percent as overlap into the next chunk. Hierarchical: first cut parents (for example, by section or large token windows), then cut children inside each parent and record the parent-child link; at retrieval, the child matches the query, then the parent's text is what gets passed to the model as context. Semantic: the service analyzes sentence and topic boundaries and cuts where meaning shifts, which costs more compute at ingestion because it runs a model over the text. The strategy plus its parameters are stored on the data source; re-ingestion after a strategy change rebuilds every vector, which is why the choice is sticky.</p>
-<figure><img src="DATA_URI" alt="Three chunking strategies: fixed size, hierarchical, semantic" loading="lazy"><figcaption>Three chunking strategies: fixed size, hierarchical, semantic</figcaption><figcaption class="credit"><em>Three chunking strategies: fixed size, hierarchical, semantic</em></figcaption></figure>
+<figure><img src="assets/img/mermaid/14-chunking-strategies.svg" alt="Three chunking strategies: fixed size, hierarchical, semantic" loading="lazy"><figcaption>Three chunking strategies: fixed size, hierarchical, semantic</figcaption><figcaption class="credit"><em>Three chunking strategies: fixed size, hierarchical, semantic</em></figcaption></figure>
 <h4 id="how-to-read-this-diagram">How to read this diagram</h4>
 <ol>
 <li>Top row, fixed-size: equal blocks with small overlaps; predictable, cheap, blind to document structure.</li>
@@ -1824,25 +1796,18 @@ for citation in response.get(&quot;citations&quot;, []):
   Best quality, cost is secondary    semantic (slower, pricier ingestion)
   Already split upstream             none
   Exotic format (CAD, custom XML)    custom via Lambda
-</code></pre>
-<h3 id="concrete-numbers">Concrete numbers</h3>
-<p>Default chunking is about 300 tokens per chunk. A common fixed-size setup is 500 to 1,000 tokens with 10 to 20 percent overlap; overlap below 10 percent risks losing boundary sentences, above 20 percent wastes storage on duplicated text. Hierarchical setups often use children of 200 to 400 tokens under parents of 1,000 to 2,000 tokens. Semantic chunking can cost several times more at ingestion than fixed-size because it runs analysis over the text; the exam frames this as "best quality, slower and more expensive ingestion."</p>
-<h3 id="common-misunderstanding">Common misunderstanding</h3>
-<p>The trap is "semantic is always best." It is the best <strong>quality</strong>, but the exam punishes over-engineering: for FAQs and short uniform docs, fixed-size is fine and cheaper, and the "most correct" answer picks the simpler strategy. The opposite trap is fixed-size for structured documents: splitting a contract's clause across chunks breaks retrieval in ways no embedding model can fix, and the exam's preferred answer for manuals and legal text is hierarchical. Also: chunking is set at data-source creation, so "just change the chunking" is never a quick fix; the scenario expects you to know it requires recreating the data source.</p>
-<p>Exam trap</p>
-<p>"Retrieval misses answers that span section boundaries in our product manuals." The answer is hierarchical chunking. The distractors are "increase the embedding dimensions" (does not fix split context), "switch the generation model" (retrieval problem, not generation), and "use semantic chunking because it is the best" (plausible, but hierarchical is the exam's preferred answer for structured docs).</p>
-<p>How AWS asks this</p>
-<p>Scenarios name the document type and the failure symptom, and the strategy follows: tables broken across chunks, answers needing section context, FAQs with simple passages. The wrong answers always fix the wrong stage or over-engineer the strategy.</p>
+</code></pre><p>Default chunking is about 300 tokens per chunk. A common fixed-size setup is 500 to 1,000 tokens with 10 to 20 percent overlap; overlap below 10 percent risks losing boundary sentences, above 20 percent wastes storage on duplicated text. Hierarchical setups often use children of 200 to 400 tokens under parents of 1,000 to 2,000 tokens. Semantic chunking can cost several times more at ingestion than fixed-size because it runs analysis over the text; the exam frames this as "best quality, slower and more expensive ingestion."</p>
+<p>The trap is "semantic is always best." It is the best quality, but the exam punishes over-engineering: for FAQs and short uniform docs, fixed-size is fine and cheaper, and the "most correct" answer picks the simpler strategy. The opposite trap is fixed-size for structured documents: splitting a contract's clause across chunks breaks retrieval in ways no embedding model can fix, and the exam's preferred answer for manuals and legal text is hierarchical. Also: chunking is set at data-source creation, so "just change the chunking" is never a quick fix; the scenario expects you to know it requires recreating the data source.</p>
+<p><strong>Exam trap.</strong> "Retrieval misses answers that span section boundaries in our product manuals." The answer is hierarchical chunking. The distractors are "increase the embedding dimensions" (does not fix split context), "switch the generation model" (retrieval problem, not generation), and "use semantic chunking because it is the best" (plausible, but hierarchical is the exam's preferred answer for structured docs).</p>
+<p><strong>How AWS asks this.</strong> Scenarios name the document type and the failure symptom, and the strategy follows: tables broken across chunks, answers needing section context, FAQs with simple passages. The wrong answers always fix the wrong stage or over-engineer the strategy.</p>
 <h2 id="14-embeddings-titan-embeddings-and-cohere-embed">14. Embeddings: Titan Embeddings and Cohere Embed</h2>
-<figure class="fig-light"><img src="assets/img/internet/img-06.png" alt="OpenSearch Ingestion feeding Amazon OpenSearch Service as a vector store, connected to Amazon Bedrock." loading="lazy"><figcaption>OpenSearch Ingestion feeding Amazon OpenSearch Service as a vector store, connected to Amazon Bedrock.</figcaption><figcaption class="credit">Source: AWS Big Data blog, via image search Sept 2026.</figcaption></figure>
-<p>Embeddings turn text into numbers so "similar meaning" becomes "short distance." Two models dominate the exam.</p>
-<h3 id="what-it-is">What it is</h3>
-<p>An <strong>embedding</strong> is a list of numbers (a vector) that represents a piece of text; texts with similar meaning get vectors that sit close together in space. An <strong>embedding model</strong> does the conversion. On Bedrock, the two exam-relevant choices are <strong>Amazon Titan Text Embeddings v2</strong>, the cheap default with configurable dimensions (1024, 512, or 256), and <strong>Cohere Embed</strong>, which is strong for multilingual content and takes an <code>input_type</code> parameter distinguishing <code>search_query</code> from <code>search_document</code> so queries and documents are embedded appropriately. You call embedding models with <strong>InvokeModel</strong>, never Converse, because Converse is text-generation only. The <strong>dimension</strong> count is the length of the vector: more dimensions capture more nuance but cost more storage and slower search.</p>
-<h3 id="why-it-exists">Why it exists</h3>
+<figure class="fig-light"><img src="assets/img/internet/img-21.png" alt="Cosine similarity: the angle between two embedding vectors; a smaller angle means closer meaning" loading="lazy"><figcaption>Cosine similarity: the angle between two embedding vectors; a smaller angle means closer meaning</figcaption><figcaption class="credit">Source: web image search, saved locally Sept 2026.</figcaption></figure>
+<figure class="fig-light"><img src="assets/img/internet/img-23.png" alt="Vector similarity metrics explained: cosine similarity, dot product, and Euclidean distance, and when to use each" loading="lazy"><figcaption>Vector similarity metrics explained: cosine similarity, dot product, and Euclidean distance, and when to use each</figcaption><figcaption class="credit">Source: web image search, saved locally Sept 2026.</figcaption></figure>
+<figure class="fig-light"><img src="assets/img/internet/img-06.png" alt="OpenSearch Ingestion feeding Amazon OpenSearch Service as a vector store, connected to Amazon Bedrock." loading="lazy"><figcaption>OpenSearch Ingestion feeding Amazon OpenSearch Service as a vector store, connected to Amazon Bedrock.</figcaption><figcaption class="credit">Source: AWS Big Data blog, via image search Sept 2026.</figcaption></figure><p>Embeddings turn text into numbers so "similar meaning" becomes "short distance." Two models dominate the exam.</p>
+<p>An <strong>embedding</strong> is a list of numbers (a vector) that represents a piece of text; texts with similar meaning get vectors that sit close together in space. An <strong>embedding model</strong> does the conversion. On Bedrock, the two exam-relevant choices are <strong>Amazon Titan Text Embeddings v2</strong>, the cheap default with configurable dimensions (1024, 512, or 256), and <strong>Cohere Embed</strong>, which is strong for multilingual content and takes an <code>input_type</code> parameter distinguishing <code>search_query</code> from <code>search_document</code> so queries and documents are embedded appropriately. You call embedding models with InvokeModel, never Converse, because Converse is text-generation only. The <strong>dimension count</strong> is the length of the vector: more dimensions capture more nuance but cost more storage and slower search.</p>
 <p>Keyword search cannot match "refund window" to "returns period," because the words differ while the meaning matches. Embeddings exist so retrieval works on meaning: the query and every chunk become vectors, and the nearest vectors win regardless of exact words. The dimension choice exists because it is a direct cost lever: halving dimensions roughly halves vector storage and speeds up search, at some accuracy cost that a golden dataset can measure.</p>
-<h3 id="how-it-works-under-the-hood">How it works under the hood</h3>
 <p>At ingestion, each chunk is sent to the embedding model and the returned vector is stored alongside the chunk text and metadata. At query time, the user's question is embedded with the <strong>same model and same dimensions</strong>; mixing models or dimensions between ingestion and query silently breaks retrieval because the vector spaces do not align. The vector store computes a distance (cosine similarity is typical) between the query vector and stored vectors and returns the nearest K. Cohere's <code>input_type</code> matters because it embeds queries and documents with different prefixes optimized for each role; using the wrong type degrades match quality. Titan v2's configurable dimensions let you pick 256 for cheap large-scale search or 1024 when nuance matters, without changing models.</p>
-<figure><img src="DATA_URI" alt="Text converted to points in vector space, with similar texts clustered together" loading="lazy"><figcaption>Text converted to points in vector space, with similar texts clustered together</figcaption><figcaption class="credit"><em>Text converted to points in vector space, with similar texts clustered together</em></figcaption></figure>
+<figure><img src="assets/img/mermaid/15-vector-space.svg" alt="Text converted to points in vector space, with similar texts clustered together" loading="lazy"><figcaption>Text converted to points in vector space, with similar texts clustered together</figcaption><figcaption class="credit"><em>Text converted to points in vector space, with similar texts clustered together</em></figcaption></figure>
 <h4 id="how-to-read-this-diagram">How to read this diagram</h4>
 <ol>
 <li>Left side: short texts enter the embedding model and come out as points (vectors).</li>
@@ -1850,25 +1815,15 @@ for citation in response.get(&quot;citations&quot;, []):
 <li>The dashed circles: clusters of related content; a query about one cluster member retrieves its neighbors.</li>
 <li>The arrows: the same conversion must be applied to the query at search time, with the same model and dimensions.</li>
 <li>If a component fails: mismatched models or dimensions between ingestion and query put the query in the wrong space and retrieval returns nonsense.</li>
-</ol>
-<h3 id="concrete-numbers">Concrete numbers</h3>
-<p>Titan Text Embeddings v2 offers 1024, 512, and 256 dimensions; dropping from 1024 to 256 cuts vector storage to a quarter and speeds up search proportionally, with an accuracy trade-off you measure on a golden dataset. Cohere Embed supports 100+ languages, which is why multilingual scenarios point at it. Embedding calls are InvokeModel calls billed per token like any other model input; they are cheap relative to generation, but millions of chunks add up at ingestion.</p>
-<h3 id="common-misunderstanding">Common misunderstanding</h3>
-<p>Three traps. First, calling embeddings through <strong>Converse</strong>: it cannot do it; embeddings are InvokeModel-only, and the exam offers Converse as the distractor. Second, <strong>more dimensions are not automatically better</strong>: beyond the point your golden dataset stops improving, extra dimensions are pure cost. Third, <strong>changing the embedding model after ingestion means re-embedding everything</strong>: the vectors are model-specific, so a model swap is a full re-ingestion, not a config flip.</p>
-<p>Exam trap</p>
-<p>"Support articles in 12 languages need semantic search." The answer is Cohere Embed for its multilingual strength (or Titan v2 as the cheap default if the scenario stresses cost). The distractor is "use Converse with the embedding model" (impossible) or "increase dimensions to fix irrelevant results" (dimensions tune cost/accuracy; irrelevant results are a chunking or query problem first).</p>
-<p>How AWS asks this</p>
-<p>Scenarios pair a requirement with the model: multilingual points to Cohere Embed; cost-sensitive large-scale points to Titan v2 at 256 dimensions; "query and document typed differently" points to Cohere's</p>
-<p>input_type</p>
-<p>. The API question is always InvokeModel versus Converse, and the answer is always InvokeModel.</p>
+</ol><p>Titan Text Embeddings v2 offers 1024, 512, and 256 dimensions; dropping from 1024 to 256 cuts vector storage to a quarter and speeds up search proportionally, with an accuracy trade-off you measure on a golden dataset. Cohere Embed supports 100+ languages, which is why multilingual scenarios point at it. Embedding calls are InvokeModel calls billed per token like any other model input; they are cheap relative to generation, but millions of chunks add up at ingestion.</p>
+<p>Three traps. First, calling embeddings through Converse: it cannot do it; embeddings are InvokeModel-only, and the exam offers Converse as the distractor. Second, more dimensions are not automatically better: beyond the point your golden dataset stops improving, extra dimensions are pure cost. Third, changing the embedding model after ingestion means re-embedding everything: the vectors are model-specific, so a model swap is a full re-ingestion, not a config flip.</p>
+<p><strong>Exam trap.</strong> "Support articles in 12 languages need semantic search." The answer is Cohere Embed for its multilingual strength (or Titan v2 as the cheap default if the scenario stresses cost). The distractor is "use Converse with the embedding model" (impossible) or "increase dimensions to fix irrelevant results" (dimensions tune cost/accuracy; irrelevant results are a chunking or query problem first).</p>
+<p><strong>How AWS asks this.</strong> Scenarios pair a requirement with the model: multilingual points to Cohere Embed; cost-sensitive large-scale points to Titan v2 at 256 dimensions; "query and document typed differently" points to Cohere's <code>input_type</code>. The API question is always InvokeModel versus Converse, and the answer is always InvokeModel.</p>
 <h2 id="15-retrieval-quality-hybrid-search-rerank-query-handling-debugging">15. Retrieval quality: hybrid search, rerank, query handling, debugging</h2>
-<p>When RAG retrieves the wrong passages, these are the fixes, in the order the exam expects you to try them.</p>
-<h3 id="what-it-is">What it is</h3>
-<p>Four quality levers sit between the query and the retrieved chunks. <strong>Hybrid search</strong> combines vector (meaning) search with keyword (BM25-style lexical) search, so exact terms like product codes and names are not lost to pure semantic matching. <strong>Reranking</strong> takes the top candidates from the first pass (say, 50 chunks) and runs a dedicated rerank model over them with the query to produce a better-ordered top-K (say, 5); Bedrock offers rerank models for this. <strong>Query handling</strong> rewrites the user's question before retrieval: <strong>query expansion</strong> adds synonyms and related terms, <strong>query decomposition</strong> splits a complex question into sub-questions (often via Lambda), and <strong>query transformation</strong> (sometimes orchestrated with Step Functions) restates the question for better matching. <strong>MCP clients</strong> and function-calling interfaces give agents a standardized way to reach these retrieval tools.</p>
-<h3 id="why-it-exists">Why it exists</h3>
+<figure><img src="assets/img/mermaid/104-hybrid-rerank.svg" alt="Hybrid search with rerank: vector plus keyword retrieval run in parallel, the candidate pool goes to a reranker model, and only the top chunks reach the prompt" loading="lazy"><figcaption>Hybrid search with rerank: vector plus keyword retrieval run in parallel, the candidate pool goes to a reranker model, and only the top chunks reach the prompt</figcaption><figcaption class="credit"><em>Hybrid search with rerank: vector plus keyword retrieval run in parallel, the candidate pool goes to a reranker model, and only the top chunks reach the prompt</em></figcaption></figure><p>When RAG retrieves the wrong passages, these are the fixes, in the order the exam expects you to try them.</p>
+<p>Four quality levers sit between the query and the retrieved chunks. <strong>Hybrid search</strong> combines vector (meaning) search with keyword (lexical) search, so exact terms like product codes and names are not lost to pure semantic matching. (BM25 is the classic keyword-scoring algorithm behind the lexical side.) <strong>Reranking</strong> takes the top candidates from the first pass (say, 50 chunks) and runs a dedicated rerank model over them with the query to produce a better-ordered top-K (say, 5); Bedrock offers rerank models for this. <strong>Query handling</strong> rewrites the user's question before retrieval: <strong>query expansion</strong> adds synonyms and related terms, <strong>query decomposition</strong> splits a complex question into sub-questions (often via Lambda), and <strong>query transformation</strong> (sometimes orchestrated with Step Functions) restates the question for better matching. MCP clients and function-calling interfaces give agents a standardized way to reach these retrieval tools.</p>
 <p>Pure vector search has a blind spot: it is great at meaning and bad at exact strings. A query for "invoice INV-2024-8841" needs the literal token, not its vibe. Hybrid search exists to cover both. Reranking exists because first-pass retrieval optimizes for recall (get everything plausible) while generation needs precision (the best 5); a second, more expensive scoring pass on a small candidate set is the economical way to get both. Query handling exists because users write bad queries: vague, multi-part, or phrased nothing like the documents. Decomposition exists because "compare our refund policy to our competitor's" is really two retrievals plus a comparison.</p>
-<h3 id="how-it-works-under-the-hood">How it works under the hood</h3>
-<p>A quality retrieval pipeline: the raw query goes through handling (expansion, decomposition) producing one or more search queries. Each is embedded and run as hybrid search: the vector index returns semantic candidates, the keyword index returns lexical candidates, and the scores are fused (reciprocal rank fusion is a common method). The fused list, typically tens of candidates, goes to the rerank model, which scores each candidate against the original query and returns the final top-K. Those chunks, plus metadata filters applied before or after, become the context for generation. The debug order when answers are wrong: first check <strong>retrieval relevance</strong> (are the right chunks even retrieved?), then <strong>chunking</strong> (is the answer split across chunks?), then <strong>embeddings</strong> (does the model capture the domain nuance?), then <strong>grounding</strong> (is the model using the context it got?). Fix the earliest failing stage; do not touch the generation model when retrieval is broken.</p>
+<p>A quality retrieval pipeline: the raw query goes through handling (expansion, decomposition) producing one or more search queries. Each is embedded and run as hybrid search: the vector index returns semantic candidates, the keyword index returns lexical candidates, and the scores are fused (reciprocal rank fusion is a common method). The fused list, typically tens of candidates, goes to the rerank model, which scores each candidate against the original query and returns the final top-K. Those chunks, plus metadata filters applied before or after, become the context for generation. The debug order when answers are wrong: first check retrieval relevance (are the right chunks even retrieved?), then chunking (is the answer split across chunks?), then embeddings (does the model capture the domain nuance?), then grounding (is the model using the context it got?). Fix the earliest failing stage; do not touch the generation model when retrieval is broken.</p>
 <pre><code>  Retrieval quality pipeline (and debug order):
 
   Query ──▶ handling ──▶ hybrid search ──▶ rerank ──▶ top-K chunks
@@ -1890,27 +1845,15 @@ for citation in response.get(&quot;citations&quot;, []):
 <li>Hybrid search fuses vector and keyword candidates so neither exact SKUs nor meaning matches are lost.</li>
 <li>Reranking spends the expensive scoring budget on tens of candidates to pick the final few for generation.</li>
 <li>Bottom: the debug order runs the pipeline in reverse priority: retrieval, chunking, embeddings, grounding. Fix the earliest failing stage; never fix stages 1 to 3 by changing the generation model.</li>
-</ol>
-<h3 id="concrete-numbers_1">Concrete numbers</h3>
-<p>A common setup retrieves 50 candidates in the first pass and reranks down to 5 for generation.
-Reranking 50 short passages costs far less than generating from 50 chunks of context. Hybrid search typically blends both signals rather than picking one. Query decomposition turns one user question into 2 to 4 sub-queries, each a separate retrieval.
-The cost multiplies, so it is reserved for genuinely multi-part questions.</p>
-<h3 id="common-misunderstanding_1">Common misunderstanding</h3>
-<p>The master trap, repeated: fixing bad retrieval by switching the <strong>generation model</strong>. If the chunks are wrong, a smarter model still answers from wrong chunks.
-If the chunks are right and the answer is wrong, the problem is grounding, and the fix is instructions, grounding checks, or structured output. The second trap: reranking as a substitute for good chunking. Rerank can only order what retrieval found.
-It cannot reassemble a table that was split across chunks at ingestion.</p>
-<p>Exam trap</p>
-<p>"RAG returns confident but wrong answers; the retrieved chunks look relevant." Debug chain: retrieval first (chunks look relevant, so retrieval is probably fine), then grounding (the model is not using the context). The answer is grounding fixes: stronger instructions, contextual grounding checks, JSON schema output. Distractors change the embedding model or the generation model.</p>
-<p>How AWS asks this</p>
-<p>"Queries contain exact product SKUs and retrieval misses them" points to hybrid search. "First-pass retrieval returns 50 plausible chunks but the top 5 are often wrong" points to reranking. "Users ask vague multi-part questions" points to query expansion and decomposition. Each scenario verb maps to one lever.</p>
+</ol><p>A common setup retrieves 50 candidates in the first pass and reranks down to 5 for generation. Reranking 50 short passages costs far less than generating from 50 chunks of context. Hybrid search typically blends both signals rather than picking one. Query decomposition turns one user question into 2 to 4 sub-queries, each a separate retrieval. The cost multiplies, so it is reserved for genuinely multi-part questions.</p>
+<p>The master trap, repeated: fixing bad retrieval by switching the generation model. If the chunks are wrong, a smarter model still answers from wrong chunks. If the chunks are right and the answer is wrong, the problem is grounding, and the fix is instructions, grounding checks, or structured output. The second trap: reranking as a substitute for good chunking. Rerank can only order what retrieval found. It cannot reassemble a table that was split across chunks at ingestion.</p>
+<p><strong>Exam trap.</strong> "RAG returns confident but wrong answers; the retrieved chunks look relevant." Debug chain: retrieval first (chunks look relevant, so retrieval is probably fine), then grounding (the model is not using the context). The answer is grounding fixes: stronger instructions, contextual grounding checks, JSON schema output. Distractors change the embedding model or the generation model.</p>
+<p><strong>How AWS asks this.</strong> "Queries contain exact product SKUs and retrieval misses them" points to hybrid search. "First-pass retrieval returns 50 plausible chunks but the top 5 are often wrong" points to reranking. "Users ask vague multi-part questions" points to query expansion and decomposition. Each scenario verb maps to one lever.</p>
 <h2 id="16-prompt-management-prompt-flows-and-prompt-governance">16. Prompt Management, Prompt Flows, and prompt governance</h2>
-<figure class="fig-light"><img src="assets/img/internet/img-12.png" alt="Anatomy of a prompt system: identity, tone and style, safety rules, output format, tools and actions, and special cases." loading="lazy"><figcaption>Anatomy of a prompt system: identity, tone and style, safety rules, output format, tools and actions, and special cases.</figcaption><figcaption class="credit">Source: Third-party prompt engineering guide, via image search Sept 2026.</figcaption></figure>
-<p>Prompts are production assets. Bedrock gives you versioning, A/B testing, visual chaining, and audit trails for them.</p>
-<h3 id="what-it-is_1">What it is</h3>
-<p><strong>Bedrock Prompt Management</strong> treats prompts as managed resources instead of strings buried in code. A prompt has <code>{{variable}}</code> placeholders filled at runtime, <strong>versions</strong> (immutable snapshots: you edit a draft, then publish a version), and <strong>variants</strong> (alternative versions of the same prompt for A/B testing). There is no extra charge: you pay only for the model tokens the prompt consumes. <strong>Prompt Flows</strong> (called Flows) is the visual, no-code builder for multi-step GenAI workflows: nodes for prompts, agents, knowledge bases, Lambda functions, and conditions, with conditional branching and a test panel. <strong>Governance</strong> wraps both: approval workflows before a prompt version goes live, <strong>CloudTrail</strong> logging every prompt management API call for audit, CloudWatch Logs for access logging, and S3 as the template repository.</p>
-<h3 id="why-it-exists_1">Why it exists</h3>
+<figure><img src="assets/img/mermaid/60-prompt-flows.svg" alt="Bedrock Prompt Flows: a visual builder that chains prompt nodes with branches, RAG steps, and guardrails into one traceable flow" loading="lazy"><figcaption>Bedrock Prompt Flows: a visual builder that chains prompt nodes with branches, RAG steps, and guardrails into one traceable flow</figcaption><figcaption class="credit"><em>Bedrock Prompt Flows: a visual builder that chains prompt nodes with branches, RAG steps, and guardrails into one traceable flow</em></figcaption></figure>
+<figure class="fig-light"><img src="assets/img/internet/img-12.png" alt="Anatomy of a prompt system: identity, tone and style, safety rules, output format, tools and actions, and special cases." loading="lazy"><figcaption>Anatomy of a prompt system: identity, tone and style, safety rules, output format, tools and actions, and special cases.</figcaption><figcaption class="credit">Source: Third-party prompt engineering guide, via image search Sept 2026.</figcaption></figure><p>Prompts are production assets. Bedrock gives you versioning, A/B testing, visual chaining, and audit trails for them.</p>
+<p><strong>Bedrock Prompt Management</strong> treats prompts as managed resources instead of strings buried in code. A prompt has <code>{{variable}}</code> placeholders filled at runtime, <strong>versions</strong> (immutable snapshots: you edit a draft, then publish a version), and <strong>variants</strong> (alternative versions of the same prompt for A/B testing). There is no extra charge: you pay only for the model tokens the prompt consumes. <strong>Prompt Flows</strong> (called Flows) is the visual, no-code builder for multi-step GenAI workflows: nodes for prompts, agents, knowledge bases, Lambda functions, and conditions, with conditional branching and a test panel. <strong>Governance</strong> wraps both: approval workflows before a prompt version goes live, CloudTrail logging every prompt management API call for audit, CloudWatch Logs for access logging, and S3 as the template repository.</p>
 <p>Prompts change constantly: marketing rewrites tone, legal adds disclaimers, a new model version needs different instructions. Hardcoded prompts turn every wording tweak into a code deployment with full regression risk. Managed prompts turn it into publishing a new version with a rollback path. Variants exist because prompt changes are hypotheses: variant A versus variant B on real traffic tells you which wording actually performs. Flows exist because multi-step prompt chains (classify, then extract, then summarize, with a branch on confidence) are painful to wire by hand and worse to debug; a visual builder with a test panel makes the chain inspectable.</p>
-<h3 id="how-it-works-under-the-hood_1">How it works under the hood</h3>
 <p>A managed prompt stores the template text with <code>{{variables}}</code>, a default model, and inference settings. At runtime your code calls the prompt by name and version, passes variable values, and Bedrock renders the final prompt and runs it. Versions are immutable: version 7 always renders identically, so rollbacks are exact. Variants let you run two versions against live traffic and compare with evaluation metrics. A Flow wires nodes: a prompt node renders a template, a KB node retrieves, a Lambda node transforms, a condition node branches on the output; the test panel runs the flow step by step so you can inspect each node's input and output. Governance: publishing a version can require an approval step; CloudTrail records who created, published, or invoked which prompt version and when; prompt QA uses Lambda to verify outputs and Step Functions to test edge cases, with CloudWatch watching for regressions.</p>
 <pre><code>  Managed prompt lifecycle:
 
@@ -1933,25 +1876,16 @@ It cannot reassemble a table that was split across chunks at ingestion.</p>
 <li>Bottom: a Prompt Flow wires nodes in order: prompt, knowledge base retrieval, a condition that branches, then Lambda or prompt nodes producing output.</li>
 <li>The test panel lets you run the flow step by step and inspect each node's input and output.</li>
 <li>If the shapes are confused: a fixed chain with branching is Flows; add human approvals and timeouts and it becomes Step Functions; dynamic tool-using reasoning is agents.</li>
-</ol>
-<h3 id="concrete-numbers_2">Concrete numbers</h3>
-<p>Prompt Management adds no charge beyond model tokens, which makes "it costs extra" a distractor. A/B variants typically split traffic 50/50 until the metrics separate, then the winner is promoted to default. Approval workflows add a human gate measured in hours, so they belong on customer-facing or regulated prompts, not on every internal draft.</p>
-<h3 id="common-misunderstanding_2">Common misunderstanding</h3>
-<p>Three traps. <strong>Variants versus versions</strong>: variants are for A/B comparison, versions are immutable releases; the exam swaps the terms. <strong>Prompt Flows versus Bedrock Agents</strong>: Flows run fixed, deterministic multi-step chains.
-Agents do dynamic tool-using reasoning. A fixed three-stage chain is Flows (or Step Functions if it needs human approvals and timeouts), never an agent. <strong>Hardcoding prompts</strong> when the scenario says non-engineers change wording frequently: the answer is always managed prompts with versioning.</p>
-<p>Exam trap</p>
-<p>"15 prompts across features, marketing keeps changing tone, no redeploys allowed." The answer is Prompt Management with versions and variants. The distractor is Bedrock Agents ("for a fixed prompt chain") or hardcoded strings with a CI pipeline ("still a deployment per wording change").</p>
-<p>How AWS asks this</p>
-<p>"Three-stage prompt chain with branching on confidence, built by non-engineers" points to Prompt Flows. "Same chain but with a human approval step and timeouts" points to Step Functions. "Prove which marketing prompt variant converts better" points to variants plus evaluation metrics. "Who changed the production prompt last Tuesday" points to CloudTrail.</p>
+</ol><p>Prompt Management adds no charge beyond model tokens, which makes "it costs extra" a distractor. A/B variants typically split traffic 50/50 until the metrics separate, then the winner is promoted to default. Approval workflows add a human gate measured in hours, so they belong on customer-facing or regulated prompts, not on every internal draft.</p>
+<p>Three traps. <strong>Variants versus versions</strong>: variants are for A/B comparison, versions are immutable releases; the exam swaps the terms. <strong>Prompt Flows versus Bedrock Agents</strong>: Flows run fixed, deterministic multi-step chains. Agents do dynamic tool-using reasoning. A fixed three-stage chain is Flows (or Step Functions if it needs human approvals and timeouts), never an agent. <strong>Hardcoding prompts</strong> when the scenario says non-engineers change wording frequently: the answer is always managed prompts with versioning.</p>
+<p><strong>Exam trap.</strong> "15 prompts across features, marketing keeps changing tone, no redeploys allowed." The answer is Prompt Management with versions and variants. The distractor is Bedrock Agents ("for a fixed prompt chain") or hardcoded strings with a CI pipeline ("still a deployment per wording change").</p>
+<p><strong>How AWS asks this.</strong> "Three-stage prompt chain with branching on confidence, built by non-engineers" points to Prompt Flows. "Same chain but with a human approval step and timeouts" points to Step Functions. "Prove which marketing prompt variant converts better" points to variants plus evaluation metrics. "Who changed the production prompt last Tuesday" points to CloudTrail.</p>
 <h2 id="17-data-privacy-and-compliance-in-bedrock">17. Data privacy and compliance in Bedrock</h2>
-<p>Keeping data private in transit, at rest, and inside the model's context window. The exam tests the full PII pipeline.</p>
-<h3 id="what-it-is_2">What it is</h3>
-<p>Privacy on Bedrock is layered. <strong>VPC endpoints</strong> (PrivateLink) for <code>bedrock</code>, <code>bedrock-runtime</code>, <code>bedrock-agent</code>, and <code>bedrock-agent-runtime</code> keep API traffic off the public internet with no NAT gateway needed. <strong>IAM</strong> policies scope who can invoke which models, knowledge bases, and agents. <strong>KMS</strong> encrypts data at rest; TLS encrypts it in transit. The <strong>PII pipeline</strong> is three services: <strong>Amazon Macie</strong> discovers PII at scale in S3 (it scans buckets and flags sensitive data), <strong>Amazon Comprehend</strong> detects PII entities in text in real time (30+ entity types like names, SSNs, account numbers), and <strong>Bedrock Guardrails</strong> sensitive-information filters block or mask PII at inference time. <strong>Model invocation logging</strong> can route request and response data to S3 or CloudWatch, optionally KMS-encrypted; in compliance-heavy environments you disable or restrict it because logs can contain PII.</p>
-<h3 id="why-it-exists_2">Why it exists</h3>
+<figure><img src="assets/img/mermaid/61-privacy-controls.svg" alt="Bedrock privacy controls: no training on your prompts, KMS encryption at rest, TLS in transit, regional endpoints, VPC endpoints" loading="lazy"><figcaption>Bedrock privacy controls: no training on your prompts, KMS encryption at rest, TLS in transit, regional endpoints, VPC endpoints</figcaption><figcaption class="credit"><em>Bedrock privacy controls: no training on your prompts, KMS encryption at rest, TLS in transit, regional endpoints, VPC endpoints</em></figcaption></figure><p>Keeping data private in transit, at rest, and inside the model's context window. The exam tests the full PII pipeline.</p>
+<p>Privacy on Bedrock is layered. <strong>VPC endpoints (PrivateLink)</strong> for <code>bedrock</code>, <code>bedrock-runtime</code>, <code>bedrock-agent</code>, and <code>bedrock-agent-runtime</code> keep API traffic off the public internet with no NAT gateway needed. <strong>IAM policies</strong> scope who can invoke which models, knowledge bases, and agents. <strong>KMS</strong> encrypts data at rest; <strong>TLS</strong> encrypts it in transit. The <strong>PII pipeline</strong> is three services: <strong>Amazon Macie</strong> discovers PII at scale in S3 (it scans buckets and flags sensitive data), <strong>Amazon Comprehend</strong> detects PII entities in text in real time (30+ entity types like names, SSNs, account numbers), and <strong>Bedrock Guardrails</strong> sensitive-information filters block or mask PII at inference time. <strong>Model invocation logging</strong> can route request and response data to S3 or CloudWatch, optionally KMS-encrypted; in compliance-heavy environments you disable or restrict it because logs can contain PII.</p>
 <p>GenAI applications are PII funnels: customer messages contain names, account numbers, and health details, and every one of those can end up in a prompt, a log, or a training-adjacent store. Each layer covers a different stage: Macie finds the PII sitting in your lake before it ever reaches a model; Comprehend catches it in live text; Guardrails catch it at the model boundary in both directions; VPC endpoints make sure none of it crosses the public internet; KMS and log controls make sure stored copies are encrypted or absent. Remove any layer and you have a gap the exam will probe.</p>
-<h3 id="how-it-works-under-the-hood_2">How it works under the hood</h3>
 <p>Trace a customer message: it arrives at your API, and a Lambda calls Comprehend to detect PII entities; flagged spans are masked or the request is rejected before the prompt is built. The prompt goes to Bedrock through a VPC interface endpoint, so packets never leave the AWS network. IAM allows only the application's role to call the specific model ARN. The Converse call carries a <code>guardrailConfig</code> whose sensitive-information filters mask any PII the model might echo in its output. Model invocation logging writes the exchange to an S3 bucket encrypted with a customer-managed KMS key, with a lifecycle policy deleting logs after the retention period; in a healthcare scenario the exam expects you to question whether logging should exist at all. Macie runs separately on a schedule over the S3 buckets, finding PII in documents before they are ingested into knowledge bases.</p>
-<figure><img src="DATA_URI" alt="Reference architecture for responsible AI controls on Amazon Bedrock" loading="lazy"><figcaption>Reference architecture for responsible AI controls on Amazon Bedrock</figcaption><figcaption class="credit"><em>Reference architecture for responsible AI controls on Amazon Bedrock</em></figcaption></figure>
+<figure><img src="assets/img/mermaid/16-responsible-ai-bedrock.svg" alt="Reference architecture for responsible AI controls on Amazon Bedrock" loading="lazy"><figcaption>Reference architecture for responsible AI controls on Amazon Bedrock</figcaption><figcaption class="credit"><em>Reference architecture for responsible AI controls on Amazon Bedrock</em></figcaption></figure>
 <h4 id="how-to-read-this-diagram">How to read this diagram</h4>
 <ol>
 <li>Find the application layer on the left: user input enters here, which is where pre-filtering (Comprehend PII detection) belongs.</li>
@@ -1959,25 +1893,15 @@ Agents do dynamic tool-using reasoning. A fixed three-stage chain is Flows (or S
 <li>Note the data plane around it: VPC endpoints, IAM scoping, and KMS encryption form the network and access envelope.</li>
 <li>Find the logging and monitoring outputs: invocation logs, CloudTrail audit entries, and metrics flow to storage with encryption and retention.</li>
 <li>If a layer is missing: no VPC endpoint means traffic crosses the public internet; unencrypted invocation logs mean PII sits in plaintext; no pre-filter means PII reaches the prompt.</li>
-</ol>
-<h3 id="concrete-numbers">Concrete numbers</h3>
-<p>Comprehend detects 30+ PII entity types out of the box plus custom entity recognition. Macie scans S3 at bucket scale and reports findings to Security Hub. S3 Lifecycle policies can expire invocation logs after a defined retention window (illustrative: 90 days for support forensics, shorter under strict regimes). VPC interface endpoints remove the need for NAT gateways for Bedrock traffic, which is both a security and a cost point.</p>
-<h3 id="common-misunderstanding">Common misunderstanding</h3>
-<p>Three traps. <strong>Amazon Translate for PII obfuscation</strong>: translation preserves meaning, so it protects nothing.
-The exam offers it because "the text looks different," which is not protection. <strong>Amazon Rekognition for text PII</strong>: Rekognition is a vision service.
-Comprehend is the text answer. <strong>Logging invocations to CloudWatch without encryption</strong> in a healthcare or finance scenario: the exam wants KMS encryption or disabled logging, because the logs contain the very PII you are protecting.</p>
-<p>Exam trap</p>
-<p>"Protect PII in customer-service GenAI conversations with minimal custom work." The select-three answer is Macie plus Comprehend plus Guardrails. Distractors swap in Translate ("preserves meaning"), Rekognition ("vision, not text"), or a hand-rolled regex Lambda ("custom work" when managed services exist).</p>
-<p>How AWS asks this</p>
-<p>"Keep Bedrock traffic off the public internet" is always VPC interface endpoints. "Discover PII across 500 S3 buckets" is Macie. "Detect and mask SSNs in live chat before the model sees them" is Comprehend plus Guardrails sensitive-information filters. "Regulator asks who accessed what" is CloudTrail, not CloudWatch Logs.</p>
+</ol><p>Comprehend detects 30+ PII entity types out of the box plus custom entity recognition. Macie scans S3 at bucket scale and reports findings to Security Hub. S3 Lifecycle policies can expire invocation logs after a defined retention window (illustrative: 90 days for support forensics, shorter under strict regimes). VPC interface endpoints remove the need for NAT gateways for Bedrock traffic, which is both a security and a cost point.</p>
+<p>Three traps. <strong>Amazon Translate for PII obfuscation</strong>: translation preserves meaning, so it protects nothing. The exam offers it because "the text looks different," which is not protection. <strong>Amazon Rekognition for text PII</strong>: Rekognition is a vision service. Comprehend is the text answer. <strong>Logging invocations to CloudWatch without encryption</strong> in a healthcare or finance scenario: the exam wants KMS encryption or disabled logging, because the logs contain the very PII you are protecting.</p>
+<p><strong>Exam trap.</strong> "Protect PII in customer-service GenAI conversations with minimal custom work." The select-three answer is Macie plus Comprehend plus Guardrails. Distractors swap in Translate ("preserves meaning"), Rekognition ("vision, not text"), or a hand-rolled regex Lambda ("custom work" when managed services exist).</p>
+<p><strong>How AWS asks this.</strong> "Keep Bedrock traffic off the public internet" is always VPC interface endpoints. "Discover PII across 500 S3 buckets" is Macie. "Detect and mask SSNs in live chat before the model sees them" is Comprehend plus Guardrails sensitive-information filters. "Regulator asks who accessed what" is CloudTrail, not CloudWatch Logs.</p>
 <h2 id="18-model-evaluation-basics">18. Model evaluation basics</h2>
-<p>How you prove a model is good enough before it serves users. The exam's evaluation matrix, in the Domain 1 framing.</p>
-<h3 id="what-it-is">What it is</h3>
-<p><strong>Model evaluation</strong> is measuring a model's outputs against expected quality before and after deployment. Bedrock Evaluations offers three methods. <strong>Programmatic (automatic) evaluation</strong> uses built-in or custom datasets with computed metrics like accuracy, stability, and toxicity; it is objective and repeatable. <strong>LLM-as-a-judge</strong> uses a model to grade another model's outputs on metrics like correctness, completeness, faithfulness (did it hallucinate?), harmfulness, refusal quality, and style or tone, with custom metrics definable; it gives human-like judgment at scale. <strong>Human evaluation</strong> uses your own employees or an AWS-managed team for subjective judgment: relevance, style, brand voice. <strong>Bring-your-own-inference</strong> lets you evaluate any model or full application response, even outside Bedrock. <strong>RAG evaluation</strong> specifically measures retrieval relevance plus generation faithfulness, powered by LLM-as-a-judge.</p>
-<h3 id="why-it-exists">Why it exists</h3>
+<figure><img src="assets/img/mermaid/105-eval-basics.svg" alt="Model evaluation basics: programmatic metrics like exact match, LLM-as-a-judge scoring, or human raters, all runnable as a Bedrock model evaluation job" loading="lazy"><figcaption>Model evaluation basics: programmatic metrics like exact match, LLM-as-a-judge scoring, or human raters, all runnable as a Bedrock model evaluation job</figcaption><figcaption class="credit"><em>Model evaluation basics: programmatic metrics like exact match, LLM-as-a-judge scoring, or human raters, all runnable as a Bedrock model evaluation job</em></figcaption></figure><p>How you prove a model is good enough before it serves users. The exam's evaluation matrix, in the Domain 1 framing.</p>
+<p><strong>Model evaluation</strong> is measuring a model's outputs against expected quality before and after deployment. <strong>Bedrock Evaluations</strong> offers three methods. <strong>Programmatic (automatic) evaluation</strong> uses built-in or custom datasets with computed metrics like accuracy, stability, and toxicity; it is objective and repeatable. <strong>LLM-as-a-judge</strong> uses a model to grade another model's outputs on metrics like correctness, completeness, faithfulness (did it hallucinate?), harmfulness, refusal quality, and style or tone, with custom metrics definable; it gives human-like judgment at scale. <strong>Human evaluation</strong> uses your own employees or an AWS-managed team for subjective judgment: relevance, style, brand voice. <strong>Bring-your-own-inference</strong> lets you evaluate any model or full application response, even outside Bedrock. <strong>RAG evaluation</strong> specifically measures retrieval relevance plus generation faithfulness, powered by LLM-as-a-judge.</p>
 <p>"The demo looked good" is not a release criterion. Models regress on prompt changes, new model versions behave differently, and RAG systems rot as documents change. Evaluation exists to make quality a gate: no prompt version, model swap, or KB re-ingestion ships until it passes. Programmatic eval exists for cheap repeatable benchmarks; LLM-as-a-judge exists because human review does not scale to thousands of comparisons; human eval exists because some judgments (brand voice, taste) are irreducibly subjective.</p>
-<h3 id="how-it-works-under-the-hood">How it works under the hood</h3>
-<p>An evaluation job takes a dataset of prompts (with reference answers where the metric needs them), runs them through the model under test, and scores the outputs. Programmatic: compare outputs to references with string or classifier metrics. LLM-as-a-judge: a judge model receives the prompt, the output, and a rubric, and returns scores per metric; for RAG eval it also receives the retrieved chunks and scores faithfulness (is every claim supported by the chunks?) separately from retrieval relevance (were the right chunks retrieved?). Human: raters follow your guidelines and score subjective dimensions. The quality gates around this: <strong>continuous evaluation</strong> on a schedule, <strong>regression testing</strong> on every prompt or model change, <strong>canary testing</strong> (new version serves a slice of traffic), and <strong>golden datasets</strong> for hallucination detection (fixed question-answer pairs that must keep passing).</p>
+<p>An evaluation job takes a dataset of prompts (with reference answers where the metric needs them), runs them through the model under test, and scores the outputs. Programmatic: compare outputs to references with string or classifier metrics. LLM-as-a-judge: a judge model receives the prompt, the output, and a rubric, and returns scores per metric; for RAG eval it also receives the retrieved chunks and scores <strong>faithfulness</strong> (is every claim supported by the chunks?) separately from <strong>retrieval relevance</strong> (were the right chunks retrieved?). Human: raters follow your guidelines and score subjective dimensions. The quality gates around this: <strong>continuous evaluation</strong> on a schedule, <strong>regression testing</strong> on every prompt or model change, <strong>canary testing</strong> (new version serves a slice of traffic), and <strong>golden datasets</strong> for hallucination detection (fixed question-answer pairs that must keep passing).</p>
 <div class="table-wrap"><table>
 <thead>
 <tr>
@@ -2036,16 +1960,10 @@ Comprehend is the text answer. <strong>Logging invocations to CloudWatch without
 <li>Bring-your-own-inference is orthogonal: it lets any of the three methods score non-Bedrock models or full application responses.</li>
 <li>The bottom row is the gating discipline: golden datasets plus regression plus canary, applied no matter which method you picked.</li>
 <li>If a method is misread (for example, programmatic eval for brand voice), the metric cannot measure what the scenario asks about.</li>
-</ol>
-<h3 id="concrete-numbers_1">Concrete numbers</h3>
-<p>Golden datasets for regression typically hold tens to a few hundred pairs: enough to catch regressions, cheap enough to run on every change. LLM-as-a-judge costs a judge-model call per graded output, so grading 10,000 outputs costs 10,000 judge calls.
-That is still far cheaper than human rating at scale. Canary deployments commonly start at 1 to 5 percent of traffic before full rollout.</p>
-<h3 id="common-misunderstanding_1">Common misunderstanding</h3>
+</ol><p>Golden datasets for regression typically hold tens to a few hundred pairs: enough to catch regressions, cheap enough to run on every change. LLM-as-a-judge costs a judge-model call per graded output, so grading 10,000 outputs costs 10,000 judge calls. That is still far cheaper than human rating at scale. Canary deployments commonly start at 1 to 5 percent of traffic before full rollout.</p>
 <p>Two traps. <strong>Programmatic evaluation for style or brand voice</strong>: those are subjective, so the answer is human eval or LLM-as-a-judge, not string matching. <strong>Human evaluation as the only gate at scale</strong>: humans are the most expensive and slowest option, so the exam wants automated gates (programmatic plus LLM-as-a-judge) with human spot-checks, not "have the team read 10,000 outputs."</p>
-<p>Exam trap</p>
-<p>"Compare two models for summarization quality including brand voice, at scale, before launch." The answer is LLM-as-a-judge for scale plus human evaluation for brand voice. Distractors use programmatic eval alone ("cannot judge voice") or human eval alone ("does not scale"). "Validate a new prompt version before rollout" is regression testing plus canary.</p>
-<p>How AWS asks this</p>
-<p>"Prove the RAG system does not hallucinate" points to RAG evaluation: retrieval relevance plus generation faithfulness, LLM-as-a-judge powered. "Detect quality drift in production with minimal custom work" points to scheduled Bedrock evaluation jobs plus CloudWatch anomaly detection on token metrics, not a hand-built Glue and Athena pipeline.</p>
+<p><strong>Exam trap.</strong> "Compare two models for summarization quality including brand voice, at scale, before launch." The answer is LLM-as-a-judge for scale plus human evaluation for brand voice. Distractors use programmatic eval alone ("cannot judge voice") or human eval alone ("does not scale"). "Validate a new prompt version before rollout" is regression testing plus canary.</p>
+<p><strong>How AWS asks this.</strong> "Prove the RAG system does not hallucinate" points to RAG evaluation: retrieval relevance plus generation faithfulness, LLM-as-a-judge powered. "Detect quality drift in production with minimal custom work" points to scheduled Bedrock evaluation jobs plus CloudWatch anomaly detection on token metrics, not a hand-built Glue and Athena pipeline.</p>
 <h2 id="exam-drill-questions-per-topic">Exam drill: questions per topic</h2>
 <p>Every topic gets six questions: easy, medium, and hard, in both multiple-choice (one answer) and multiple-response (select all that apply) formats. Answers are hidden until you open them. Each explanation covers why the right answer is right and why every distractor is wrong.</p>
 <h3 id="topic-1-the-approach-ladder">Topic 1: The approach ladder</h3>
@@ -3111,6 +3029,7 @@ Compression and response caps (C) cut tokens per call. All three preserve UX whi
 <p>D is wrong: Converse cannot do embeddings, and there is no such discount mechanism.</p>
 <p>E is wrong: a vector store without vectors cannot do similarity search.</p>
 <h3 id="topic-15-retrieval-quality-hybrid-rerank-debug">Topic 15: Retrieval quality: hybrid, rerank, debug</h3>
+
 <h4 id="q1501">Easy Multiple choice The SKU problem</h4>
 <p>Users search for exact product SKUs like "INV-2024-8841" and pure vector retrieval misses them. What is the MOST correct fix?</p>
 <ol>
@@ -3187,6 +3106,7 @@ Compression and response caps (C) cut tokens per call. All three preserve UX whi
 <p>D is wrong: MCP is an access protocol; the vectors still live in a store.</p>
 <p>E is wrong: retrieval still needs chunked, embedded content regardless of how the agent calls it.</p>
 <h3 id="topic-16-prompt-management-and-prompt-flows">Topic 16: Prompt Management and Prompt Flows</h3>
+
 <h4 id="q1601">Easy Multiple choice Marketing keeps changing tone</h4>
 <p>Fifteen prompts serve different features. Marketing changes tone wording weekly, and no redeploys are allowed. What is the MOST correct solution?</p>
 <ol>
@@ -3420,6 +3340,9 @@ window.DS_TRACK = "aipc01";
 window.DS_TRACK_TITLE = "AIP-C01 Study Guide";
 window.DS_MANIFEST = [
   { file: "index.html", label: "Start · Exam Overview & Study Map" },
+  { file: "prereq-aif-c01.html", label: "Prereq · AIF-C01 AI Practitioner Crash Course" },
+  { file: "prereq-aws-cloud-foundations.html", label: "Prereq · AWS Cloud Foundations" },
+  { file: "prereq-ml-specialty.html", label: "Prereq · ML Specialty Essentials" },
   { file: "volume-d1-foundation-models.html", label: "D1 · Foundation Models, Data & Compliance (31%)" },
   { file: "volume-d2-implementation-integration.html", label: "D2 · Implementation & Integration (26%)" },
   { file: "volume-d3-safety-security-governance.html", label: "D3 · Safety, Security & Governance (20%)" },
@@ -3430,7 +3353,7 @@ window.DS_MANIFEST = [
   { file: "volume-question-patterns.html", label: "Question Patterns · How AWS Asks" },
   { file: "volume-system-design.html", label: "System Design Guide" },
   { file: "volume-crash-course.html", label: "Crash Course · One-Volume Sprint" },
-  { file: "volume-appendix-gaps.html", label: "Appendix · Coverage Gaps" }
+  { file: "volume-appendix-gaps.html", label: "Appendix · Coverage Gaps" },
 ];
 </script>
 <script>
@@ -3995,6 +3918,151 @@ window.DS_MANIFEST = [
         tel.scrollIntoView({ behavior: "smooth", block: "start" });
         if (tel.focus) tel.focus({ preventScroll: true });
       }
+    }
+  });
+})();
+
+</script>
+<script>
+/* ==== Experience layer behavior — additive ====
+ * Calm, GPU-friendly page motion for study volumes. No-JS safe: every hidden
+ * state in experience.css is gated on `html.xp-js`, which only this script
+ * adds — without it the page is fully readable. Respects
+ * prefers-reduced-motion (exits early; CSS keeps everything static).
+ *
+ * Three jobs:
+ *  1. Hero parallax — detects the volume hero (.banner/.hero, else wraps the
+ *     h1 + lede block in .xp-hero) and drifts it gently as the reader
+ *     scrolls on. Transform/opacity only, rAF-throttled, passive listener.
+ *  2. Scroll reveals — one IntersectionObserver fades+rises figures, key
+ *     callouts and knowledge checks exactly once. Elements already in view
+ *     on load appear immediately (no load flash).
+ *  3. Nothing else: progress bar, scroll-spy, sidebar, quiz toggles are
+ *     owned by ds.js and are left untouched.
+ *
+ * (In the assembly snippet the closing element tags are written literally;
+ * inside this file they are escaped as <\/style> / <\/script> so the file
+ * pastes verbatim without early-terminating its own element.)
+ */
+(function () {
+  'use strict';
+
+  var root = document.documentElement;
+
+  var reduceMotion = false;
+  try {
+    reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  } catch (e) { /* matchMedia unavailable: assume motion is fine */ }
+  if (reduceMotion) { return; } /* leave no footprint: no xp-js, CSS stays static */
+
+  /* From here on the reader is fine with calm motion: mark the document so
+     the CSS reveal/parallax states may apply. Without this class (no-JS or
+     reduced-motion) every hidden state stays off and the page is fully
+     readable. */
+  root.classList.add('xp-js');
+
+  /* ---------------- 1. Hero detection + gentle parallax ---------------- */
+  var hero = document.querySelector('.banner, .hero');
+  if (!hero) {
+    /* No banner hero: wrap the volume title (h1) plus its lede paragraphs
+       in a layout-neutral div. Never touches headings ds.js needs. */
+    var main = document.querySelector('main');
+    var h1 = main ? main.querySelector('h1') : null;
+    if (h1 && h1.parentNode) {
+      var wrap = document.createElement('div');
+      wrap.className = 'xp-hero';
+      h1.parentNode.insertBefore(wrap, h1);
+      var node = h1, moved = 0, paras = 0;
+      while (node && moved < 8) {
+        var next = node.nextSibling;
+        if (node.nodeType === 3) { node = next; continue; } /* skip whitespace text nodes */
+        var isPara = node.nodeType === 1 && node.tagName === 'P';
+        if (node !== h1 && !isPara) { break; }
+        wrap.appendChild(node);
+        moved += 1;
+        if (isPara) {
+          paras += 1;
+          if (paras >= 3) { break; }
+        }
+        node = next;
+      }
+      hero = wrap;
+    }
+  }
+
+  var heroH = 0, ticking = false, pxOn = false;
+  function measure() { heroH = hero ? hero.offsetHeight : 0; }
+  function render() {
+    ticking = false;
+    if (!hero || !heroH) { return; }
+    var y = window.pageYOffset || root.scrollTop || 0;
+    if (y <= 0) {
+      if (pxOn) { hero.style.transform = ''; hero.style.opacity = ''; pxOn = false; }
+      return;
+    }
+    var range = heroH * 1.4;
+    if (y < range) {
+      /* Drift up slightly slower than the scroll and fade a whisper —
+         the title recedes calmly instead of snapping away. */
+      var k = Math.min(y / range, 1);
+      hero.style.transform = 'translate3d(0,' + (-y * 0.06).toFixed(1) + 'px,0)';
+      hero.style.opacity = (1 - k * 0.22).toFixed(3);
+      pxOn = true;
+    } else if (pxOn) {
+      hero.style.transform = '';
+      hero.style.opacity = '';
+      pxOn = false;
+    }
+  }
+  function requestRender() {
+    if (!ticking) { ticking = true; window.requestAnimationFrame(render); }
+  }
+  if (hero) {
+    measure();
+    render();
+    window.addEventListener('scroll', requestRender, { passive: true });
+    window.addEventListener('resize', function () { measure(); requestRender(); });
+  }
+
+  /* ---------------- 2. Scroll-triggered reveals ---------------- */
+  var SELECTOR = [
+    'figure',
+    '.takeaway', '.exam-ask', '.trapbox', '.trap', '.board',
+    '.diagram-walkthrough', '.walkthrough', '.warn', '.callout',
+    '.ob-board', '.nums', '.watch-card', '.lab', '.pq', '.go-deeper-note'
+  ].join(', ');
+
+  var targets = [];
+  Array.prototype.forEach.call(document.querySelectorAll(SELECTOR), function (el) {
+    if (hero && hero.contains(el)) { return; } /* hero has its own motion */
+    targets.push(el);
+  });
+
+  function showAll(list) {
+    list.forEach(function (el) { el.classList.add('xp-reveal', 'xp-in'); });
+  }
+
+  if (!targets.length) { return; }
+
+  if (!('IntersectionObserver' in window)) { showAll(targets); return; }
+
+  var io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (en) {
+      if (en.isIntersecting) {
+        en.target.classList.add('xp-in');
+        io.unobserve(en.target);
+      }
+    });
+  }, { rootMargin: '0px 0px -6% 0px', threshold: 0.06 });
+
+  var vh = window.innerHeight || 800;
+  targets.forEach(function (el) {
+    el.classList.add('xp-reveal');
+    var r = el.getBoundingClientRect();
+    if (r.top < vh && r.bottom > 0) {
+      el.classList.add('xp-in'); /* in view on load: appear, no animation */
+    } else {
+      io.observe(el);
     }
   });
 })();
