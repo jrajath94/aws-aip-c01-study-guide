@@ -1159,6 +1159,128 @@ footer p{text-align:left}
   #ds-content .ds-site-footer,
   .ds-side-volumes { display: none !important; }
 }
+</style>
+<style>
+/* Hallmark · pre-emit critique: P5 H4 E5 S4 R5 V5
+ * ==========================================================================
+ * Experience layer for study volumes — ADDITIVE ONLY.
+ * Never edits content markup or DS chrome; references DS tokens only
+ * (--accent, --border). No new colors, no gradients, no decorative filler.
+ *
+ * Motion stance: calm delight. Opacity/translate only (GPU-friendly),
+ * one IntersectionObserver, one rAF-throttled scroll listener, zero layout
+ * shift, prefers-reduced-motion respected, fully usable with JS disabled
+ * (every hidden state is gated on html.xp-js, which only this layer's
+ * companion script adds).
+ *
+ * Wiring (final assembly, per volume — same model as ds.css/ds.js):
+ *   1. In <head>, AFTER the DS style block, add:
+ *        <style>
+ *        /* ==== Experience layer — additive, do not edit per-file ==== */
+ *        …this file verbatim…
+ *        [close the style element]
+ *   2. Immediately before the document's LAST closing body tag (the real
+ *      one at the end of the file — some volumes mention a literal closing
+ *      body tag inside their docs prose; ignore those), AFTER the ds.js
+ *      script block, add:
+ *        <script>
+ *        /* ==== Experience layer behavior — additive ==== */
+ *        …experience.js verbatim…
+ *        [close the script element]
+ * (Closing tags are written out in the assembly snippet, not here, so this
+ * file can be pasted verbatim without early-terminating its own element.)
+ * ========================================================================== */
+
+/* ---------- 1. Smooth anchor scrolling (motion-safe readers only) ---------- */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+/* ---------- 2. Scroll-triggered reveals ----------
+   Hidden state exists ONLY under html.xp-js. No-JS readers, print, and
+   reduced-motion users always see full content. Uses the independent
+   `translate` property (not `transform`) so hover feedback below composes
+   without specificity fights. Opacity + translate only: zero layout shift. */
+html.xp-js .xp-reveal {
+  opacity: 0;
+  translate: 0 14px;
+}
+html.xp-js .xp-reveal.xp-in {
+  opacity: 1;
+  translate: 0 0;
+  transition:
+    opacity 0.55s ease,
+    translate 0.55s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+/* ---------- 3. Hero ---------- */
+/* Layout-neutral wrapper the script may add around a volume's title block.
+   Parallax itself is applied inline by the script (transform only). */
+.xp-hero {
+  position: relative;
+}
+
+/* ---------- 4. Calm hover feedback: cards + knowledge checks only ----------
+   translateY(-1px) + accent border. transform composes with the reveal's
+   independent `translate` property — no conflicts. */
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .pq,
+  .watch-card,
+  .ob-board,
+  .lab {
+    transition: transform 0.18s ease, border-color 0.18s ease;
+  }
+  .pq:hover,
+  .watch-card:hover,
+  .ob-board:hover,
+  .lab:hover {
+    transform: translateY(-1px);
+    border-color: var(--accent);
+  }
+  .pq:focus-within,
+  .watch-card:focus-within,
+  .ob-board:focus-within,
+  .lab:focus-within {
+    border-color: var(--accent);
+  }
+}
+
+/* ---------- 5. Reduced motion: everything static and visible ---------- */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  html.xp-js .xp-reveal {
+    opacity: 1;
+    translate: 0 0;
+    transition: none;
+  }
+  .xp-hero {
+    transform: none !important;
+    opacity: 1 !important;
+  }
+  .pq,
+  .watch-card,
+  .ob-board,
+  .lab {
+    transition: none;
+  }
+}
+
+/* ---------- 6. Print: never hide content ---------- */
+@media print {
+  html.xp-js .xp-reveal {
+    opacity: 1 !important;
+    translate: 0 0 !important;
+    transition: none;
+  }
+  .xp-hero {
+    transform: none !important;
+    opacity: 1 !important;
+  }
+}
 
 </style>
 </head>
@@ -1204,17 +1326,13 @@ footer p{text-align:left}
 </table></div>
 <p>Last verified against the official AWS exam guide and independent 2026 candidate sources: September 2026.</p></div>
 <p>Complete study guide: zero-to-one volumes for all five exam domains, a 200-question bank with a 75-question mock exam, a one-volume crash course, and an end-to-end system design guide. Built for a visual learner studying 4+ hours a day. Every volume is self-contained and opens offline.</p>
-<p>75</p>
-<p>questions (65 scored + 10 unscored)</p>
-<p>180</p>
-<p>minutes</p>
-<p>750/1000</p>
-<p>passing score</p>
-<p>$300</p>
-<p>exam fee</p>
-<p>MC + MR</p>
-<p>multiple choice + multiple response</p>
+<h2 id="prerequisites">Prerequisites: start here if AWS feels rusty</h2>
+<p>If you have not touched AWS in a while, read these three first. They teach every prerequisite the professional exam assumes, from zero, with visuals at every step. Skip any you already know cold.</p>
+<a class="vol" href="prereq-aif-c01.html"><span class="row"><h3>AIF-C01: AWS Certified AI Practitioner crash course</h3><span class="w">Prereq</span></span><p>AI and ML fundamentals, generative AI basics, foundation-model applications, and responsible AI: the vocabulary and concepts AIP-C01 builds on.</p></a>
+<a class="vol" href="prereq-aws-cloud-foundations.html"><span class="row"><h3>AWS cloud foundations</h3><span class="w">Prereq</span></span><p>IAM, S3, EC2, VPC, RDS and Aurora and DynamoDB, Lambda, CloudWatch, and CloudTrail: the core AWS services every AIP-C01 scenario touches.</p></a>
+<a class="vol" href="prereq-ml-specialty.html"><span class="row"><h3>ML Specialty essentials</h3><span class="w">Prereq</span></span><p>Deeper machine learning for the pro exam: data and feature engineering, training and tuning, evaluation metrics, SageMaker workflows, and MLOps.</p></a>
 <h2 id="study-volumes-read-in-order">Study volumes (read in order)</h2>
+<figure><img src="assets/img/mermaid/101-exam-overview.svg" alt="The AIP-C01 exam at a glance: 75 questions in 180 minutes, pass at 750 out of 1000, with domains weighted D1 31, D2 26, D3 20, D4 12, D5 11 percent" loading="lazy"><figcaption>The AIP-C01 exam at a glance: 75 questions in 180 minutes, pass at 750 out of 1000, with domains weighted D1 31, D2 26, D3 20, D4 12, D5 11 percent</figcaption><figcaption class="credit"><em>The AIP-C01 exam at a glance: 75 questions in 180 minutes, pass at 750 out of 1000, with domains weighted D1 31, D2 26, D3 20, D4 12, D5 11 percent</em></figcaption></figure>
 <a class="vol" href="volume-d1-foundation-models.html"><span class="row"><h3>Foundation Model Integration, Data Management, and Compliance</h3><span class="w">D1 · 31%</span></span><p>The biggest domain. Foundation model catalog on Bedrock, model selection, InvokeModel vs Converse API, inference profiles, prompt routers, Provisioned Throughput, custom models (fine-tuning, continued pre-training, distillation, imports), Knowledge Bases, chunking strategies, embeddings, vector store comparison, RAG end to end, data pipelines, data privacy and compliance.</p>
 <p>18 topics · 8 diagrams + 10 ASCII figures · 108 exam-style questions (easy/medium/hard, MC + multiple response)</p></a>
 <a class="vol" href="volume-d2-implementation-integration.html"><span class="row"><h3>Implementation and Integration</h3><span class="w">D2 · 26%</span></span><p>Bedrock Agents (anatomy, action groups, multi-agent collaboration), Lambda sync/async/streaming patterns, API Gateway in front of Bedrock, Step Functions orchestration, S3 + EventBridge pipelines, Converse tool-use loops, async and batch inference, deployment strategies, enterprise integration, prompt management, SDKs and reliability.</p>
@@ -1246,20 +1364,19 @@ footer p{text-align:left}
 <p>Compiled Sept 2026 from ~5 detailed pass writeups (Medium, dev.to), r/AWSCertifications threads, the community awscertificationswiki, and KodeKloud's study guide. The exam is new (GA 2026), so the evidence pool is thin.
 Where a claim rests on one voice, it is marked.</p>
 <ol>
-<li><strong>Hands-on lab time in a real AWS account (strongest signal, repeated by everyone).</strong> Every detailed writeup says the same thing: you cannot pass on videos alone. Build a Knowledge Base against real documents, try all four chunking strategies against the same corpus, stand up OpenSearch Serverless AND Aurora pgvector to feel the latency/cost difference, build a Bedrock Agent with action groups, probe Guardrails with adversarial prompts. The exam rewards people who ran the services, not people who watched videos.</li>
-<li><strong>A breadth course for the mental model</strong> (Frank Kane + Stephane Maarek Udemy course is the most cited: 22 hours, one 75-question practice exam.
-   Kane stays close to AWS source material, Maarek teaches the exam frame and how to read a 400-word scenario without losing the driving constraint). Then go deep on the AWS docs for the topics the exam weights most.</li>
-<li><strong>Practice exams used as gap-finders, not graders.</strong> Every miss becomes a research target, then a lab session the same day. Aim for 85% on practice exams before booking (the pass bar is 750, not 700). Honest caveat: real questions were "different from any practice set," but the structure was identical, multi-paragraph scenario, four long plausible answers, three failing different constraints.</li>
-<li><strong>Read the official exam guide first.</strong> Skill statements describe architecture problems, not definitions. The domains are not silos; safety language threads through every domain.</li>
+<li><strong>Hands-on lab time in a real AWS account (strongest signal, repeated by everyone).</strong> Every detailed writeup says the same thing: you cannot pass on videos alone. Build a Knowledge Base against real documents. Try all four chunking strategies (fixed, hierarchical, semantic, custom Lambda) against the same corpus and compare retrieval quality. Stand up OpenSearch Serverless AND Aurora pgvector to feel the latency/cost difference. Build a Bedrock Agent with action groups. Probe Guardrails with adversarial prompts.</li>
+<li><strong>A breadth course for the mental model</strong> (Frank Kane + Stephane Maarek Udemy course is the most cited: 22 hours, one 75-question practice exam. Kane stays close to AWS source material, Maarek teaches the exam frame and how to read a 400-word scenario without losing the driving constraint). Then go deep on the AWS docs for the topics the exam weights most.</li>
+<li><strong>Practice exams used as gap-finders, not graders.</strong> Every miss becomes a research target, then a lab session the same day. Aim for 85% on practice exams before booking (the pass bar is 750, not 700). Honest caveat: real questions were "different from any practice set," but the structure was identical: multi-paragraph scenario, four long plausible answers, three failing different constraints.</li>
+<li><strong>Read the official exam guide first.</strong> Skill statements describe architecture problems, not definitions.</li>
 <li><strong>The AI breakdown drill.</strong> Paste practice questions into an AI and ask "Why is this option wrong? What specific AWS limitation eliminates it?" This builds the internalized patterns you need under time pressure.</li>
 <li><strong>Optional warm-up:</strong> AIF-C01 (AI Practitioner) first for exam-structure familiarity, but it does not reach professional depth, so treat it as a warm-up, not prep.</li>
 </ol>
 <h2 id="top-pitfalls">Top pitfalls candidates report</h2>
 <ol>
-<li><strong>Time pressure is the real enemy.</strong> 75 long scenario questions in 180 minutes (~2.4 min each). Read for shape, read again for the constraint, eliminate two fast, decide between the last two.
+<li><strong>Time pressure is the real enemy.</strong> Read for shape, read again for the constraint, eliminate two fast, decide between the last two.
    If undecided at ~2.5 minutes, flag and move. Do not count on review time.</li>
 <li><strong>"Least operational overhead" is the most repeated phrase.</strong> Read it as "fewest services you manage yourself." Managed and serverless beats clusters and custom Lambda glue.</li>
-<li><strong>Multi-response questions need coherent pairs.</strong> Each chosen option solves a different part of the problem; the pair must form a coherent design. All-or-nothing scoring.</li>
+<li><strong>Multi-response questions need coherent pairs.</strong> Each chosen option solves a different part of the problem; the pair must form a coherent design.</li>
 <li><strong>Proactive vs reactive.</strong> If the requirement says "proactively," eliminate every option that only detects or reacts after failure.</li>
 <li><strong>Fabricated features in wrong answers.</strong> Candidates found "S3 action nodes in Bedrock Flows," "Guardrails with token quota policies," "cross-region guardrail replication." If an option sounds slightly off, the feature may not exist.</li>
 <li><strong>Know what services cannot do.</strong> Guardrails cannot enforce IAM access; Macie scans S3, not CloudWatch Logs; AppSync is synchronous. Negative facts eliminate wrong answers faster than positive facts select right ones.</li>
@@ -1270,7 +1387,7 @@ Where a claim rests on one voice, it is marked.</p>
 </ol>
 <h2 id="practice-resources">Practice resources, with honest assessments</h2>
 <ul>
-<li><strong>This guide's question bank + mock exam</strong>: your main bank. 200 questions, 75-question mock, every miss should become a lab session the same day.</li>
+<li><strong>This guide's question bank + mock exam</strong>: your main bank. 200 questions plus a 75-question mock exam.</li>
 <li><strong>Tutorials Dojo AIP-C01 practice exams</strong>: the traditional gold standard for AWS certs, but their AIP-C01 set is newer than their SAP sets and no candidate credited it with matching this exam's difficulty. Start with their free 30-question sampler.</li>
 <li><strong>Maarek + Abhishek Singh standalone practice exams</strong> (100 questions, 2 progressively difficult tests), endorsed by one detailed writer as human-crafted with authentic trap patterns. Single-source endorsement.</li>
 <li><strong>AWS Skill Builder official practice</strong>: useful for question-style familiarity; two Sept 2026 Reddit voices said it prepared them "for a completely different exam." Use for format, not as your main bank.</li>
@@ -1320,20 +1437,18 @@ Where a claim rests on one voice, it is marked.</p>
 </tr>
 </tbody>
 </table></div>
-<p>How AWS asks (the trap pattern to carry through everything):</p>
-<p>scenario-based "choose the MOST correct answer" questions where two options are defensible and only one satisfies all constraints (cost, latency, compliance, scale). Multiple-response questions are all-or-nothing. When stuck, prefer the managed Bedrock-native service over building it yourself, and re-read the constraint the scenario emphasized.</p>
+<p>How AWS asks (the trap pattern to carry through everything): scenario-based "choose the MOST correct answer" questions where two options are defensible and only one satisfies all constraints (cost, latency, compliance, scale). When stuck, prefer the managed Bedrock-native service over building it yourself, and re-read the constraint the scenario emphasized.</p>
 <h2 id="4-week-plan">Alternative: 4-week lab-heavy plan (115-125 hours)</h2>
 <p>For candidates who can give 4+ hours a day over four weeks and want the lab-first path the passers recommend. Roughly 2 hours lab, 1.5 hours course/video, 30-60 minutes practice questions and docs per day. Set up a personal AWS account with billing alarms on day one.</p>
 <p><strong>Days 1-2: Foundation.</strong> Read the official exam guide end to end. Skim the Well-Architected GenAI Lens overview. Take one untimed practice set cold to find your baseline.</p>
-<p><strong>Week 1: D1, RAG core (31%).</strong> Build a Bedrock Knowledge Base against real documents. Try all four chunking strategies (fixed, hierarchical, semantic, custom Lambda) against the same corpus and compare retrieval quality. Stand up both OpenSearch Serverless and Aurora pgvector and feel the latency and cost difference. Practice the decision the exam tests most: OpenSearch vs Aurora pgvector vs MemoryDB vs S3-with-metadata, driven by scale, latency, and operational overhead. Agents + Knowledge Bases + Guardrails is the "holy trinity", expect 8-10 questions touching some combination.</p>
-<p><strong>Week 2: D2, implementation and agents (26%).</strong> Build a Bedrock Agent with Action Groups backed by Lambda. Build a multi-step workflow with Prompt Flows. Compare orchestration: Step Functions Standard vs Express (Express caps at 5 minutes, no Wait for Callback). Compare delivery: API Gateway response streaming vs WebSockets. Practice the right-tool-for-data rule: Knowledge Bases for unstructured documents, text-to-SQL for RDS, never embed relational tables into a vector store.</p>
-<p><strong>Week 3: D3 safety and governance (20%) + D4 cost and performance (12%).</strong> Configure Guardrails end to end: content filters, denied topics, PII redaction, contextual grounding, detect-only vs block modes. Probe them with adversarial prompts. Study SCP vs IAM Permissions Boundary for multi-account Bedrock governance, KMS/TLS/PrivateLink. For D4: on-demand vs provisioned throughput, prompt caching, smaller-model routing, CloudWatch Bedrock metrics, X-Ray tracing for agent workflows.</p>
-<p><strong>Week 4: D5 evaluation and troubleshooting (11%), then timed practice.</strong> Learn Bedrock model evaluation, LLM-as-judge patterns, retrieval precision/recall debugging, hallucination detection via grounding checks, the common failure list (context overflow, token limits, embedding mismatch, prompt injection bypass, throttling). Then full-length exams under real time pressure. Every miss becomes a lab session that day. Target 85% before booking.</p>
+<p><strong>Week 1: D1, RAG core (31%).</strong> Run the hands-on set from "What actually helped" #1 above (Knowledge Base, all four chunking strategies, both vector stores, an agent with action groups, guardrail probing). Then drill the decision the exam tests most: OpenSearch vs Aurora pgvector vs MemoryDB vs S3-with-metadata, driven by scale, latency, and operational overhead. Agents + Knowledge Bases + Guardrails is the "holy trinity", expect 8-10 questions touching some combination.</p>
+<p><strong>Week 2: D2, implementation and agents (26%).</strong> Build a Bedrock Agent with Action Groups backed by Lambda. Build a multi-step workflow with Prompt Flows (Bedrock's visual no-code workflow builder). Compare orchestration: Step Functions Standard vs Express (Express caps at 5 minutes, no Wait for Callback). Compare delivery: API Gateway response streaming vs WebSockets. Practice the right-tool-for-data rule: Knowledge Bases for unstructured documents, text-to-SQL for RDS, never embed relational tables into a vector store.</p>
+<p><strong>Week 3: D3 safety and governance (20%) + D4 cost and performance (12%).</strong> Configure Guardrails end to end: content filters, denied topics, PII redaction, contextual grounding, detect-only vs block modes. Probe them with adversarial prompts. Study SCPs (org-level permission ceilings) vs IAM permissions boundaries (per-role limits) for multi-account Bedrock governance, KMS/TLS/PrivateLink. For D4: on-demand vs provisioned throughput, prompt caching, smaller-model routing, CloudWatch Bedrock metrics, X-Ray tracing for agent workflows.</p>
+<p><strong>Week 4: D5 evaluation and troubleshooting (11%), then timed practice.</strong> Learn Bedrock model evaluation, LLM-as-judge patterns, retrieval precision/recall debugging, hallucination detection via grounding checks, the common failure list (context overflow, token limits, embedding mismatch, prompt injection bypass, throttling). Then full-length exams under real time pressure, targeting the 85% booking bar.</p>
 <p><strong>ADHD-friendly structure:</strong> labs before videos (build first, then learn the name for what you built); one question card at a time with the "why is this option wrong" drill; 25-minute timers per scenario set.
 End each day by writing the one decision rule you learned in your own words.</p>
 <h2 id="notes-on-currency">Notes on currency</h2>
-<p>Exam format facts (75 questions, 180 minutes, $300, 750/1000 pass, Pearson VUE, MC + multiple response) and domain weights (31/26/20/12/11) are from the official exam guide. Bedrock pricing figures and some service defaults are labeled <strong>illustrative</strong> throughout the volumes where volatile.
-The principles behind them are what the exam tests. If a number looks stale, check the AWS docs for the current value, but answer exam questions with the principle.</p>
+<p>Exam format facts and domain weights are from the official exam guide (see the verified table at the top of this page). Bedrock pricing figures and some service defaults are labeled <strong>illustrative</strong> throughout the volumes where volatile. The principles behind them are what the exam tests. If a number looks stale, check the AWS docs for the current value, but answer exam questions with the principle.</p>
 <p>Built Sept 28, 2026. All files are self-contained HTML with embedded diagrams; no internet connection needed to study. Generic learning content only.</p>
 </div></main>
 <script>
@@ -1341,6 +1456,9 @@ window.DS_TRACK = "aipc01";
 window.DS_TRACK_TITLE = "AIP-C01 Study Guide";
 window.DS_MANIFEST = [
   { file: "index.html", label: "Start · Exam Overview & Study Map" },
+  { file: "prereq-aif-c01.html", label: "Prereq · AIF-C01 AI Practitioner Crash Course" },
+  { file: "prereq-aws-cloud-foundations.html", label: "Prereq · AWS Cloud Foundations" },
+  { file: "prereq-ml-specialty.html", label: "Prereq · ML Specialty Essentials" },
   { file: "volume-d1-foundation-models.html", label: "D1 · Foundation Models, Data & Compliance (31%)" },
   { file: "volume-d2-implementation-integration.html", label: "D2 · Implementation & Integration (26%)" },
   { file: "volume-d3-safety-security-governance.html", label: "D3 · Safety, Security & Governance (20%)" },
@@ -1351,7 +1469,7 @@ window.DS_MANIFEST = [
   { file: "volume-question-patterns.html", label: "Question Patterns · How AWS Asks" },
   { file: "volume-system-design.html", label: "System Design Guide" },
   { file: "volume-crash-course.html", label: "Crash Course · One-Volume Sprint" },
-  { file: "volume-appendix-gaps.html", label: "Appendix · Coverage Gaps" }
+  { file: "volume-appendix-gaps.html", label: "Appendix · Coverage Gaps" },
 ];
 </script>
 <script>
@@ -1916,6 +2034,151 @@ window.DS_MANIFEST = [
         tel.scrollIntoView({ behavior: "smooth", block: "start" });
         if (tel.focus) tel.focus({ preventScroll: true });
       }
+    }
+  });
+})();
+
+</script>
+<script>
+/* ==== Experience layer behavior — additive ====
+ * Calm, GPU-friendly page motion for study volumes. No-JS safe: every hidden
+ * state in experience.css is gated on `html.xp-js`, which only this script
+ * adds — without it the page is fully readable. Respects
+ * prefers-reduced-motion (exits early; CSS keeps everything static).
+ *
+ * Three jobs:
+ *  1. Hero parallax — detects the volume hero (.banner/.hero, else wraps the
+ *     h1 + lede block in .xp-hero) and drifts it gently as the reader
+ *     scrolls on. Transform/opacity only, rAF-throttled, passive listener.
+ *  2. Scroll reveals — one IntersectionObserver fades+rises figures, key
+ *     callouts and knowledge checks exactly once. Elements already in view
+ *     on load appear immediately (no load flash).
+ *  3. Nothing else: progress bar, scroll-spy, sidebar, quiz toggles are
+ *     owned by ds.js and are left untouched.
+ *
+ * (In the assembly snippet the closing element tags are written literally;
+ * inside this file they are escaped as <\/style> / <\/script> so the file
+ * pastes verbatim without early-terminating its own element.)
+ */
+(function () {
+  'use strict';
+
+  var root = document.documentElement;
+
+  var reduceMotion = false;
+  try {
+    reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  } catch (e) { /* matchMedia unavailable: assume motion is fine */ }
+  if (reduceMotion) { return; } /* leave no footprint: no xp-js, CSS stays static */
+
+  /* From here on the reader is fine with calm motion: mark the document so
+     the CSS reveal/parallax states may apply. Without this class (no-JS or
+     reduced-motion) every hidden state stays off and the page is fully
+     readable. */
+  root.classList.add('xp-js');
+
+  /* ---------------- 1. Hero detection + gentle parallax ---------------- */
+  var hero = document.querySelector('.banner, .hero');
+  if (!hero) {
+    /* No banner hero: wrap the volume title (h1) plus its lede paragraphs
+       in a layout-neutral div. Never touches headings ds.js needs. */
+    var main = document.querySelector('main');
+    var h1 = main ? main.querySelector('h1') : null;
+    if (h1 && h1.parentNode) {
+      var wrap = document.createElement('div');
+      wrap.className = 'xp-hero';
+      h1.parentNode.insertBefore(wrap, h1);
+      var node = h1, moved = 0, paras = 0;
+      while (node && moved < 8) {
+        var next = node.nextSibling;
+        if (node.nodeType === 3) { node = next; continue; } /* skip whitespace text nodes */
+        var isPara = node.nodeType === 1 && node.tagName === 'P';
+        if (node !== h1 && !isPara) { break; }
+        wrap.appendChild(node);
+        moved += 1;
+        if (isPara) {
+          paras += 1;
+          if (paras >= 3) { break; }
+        }
+        node = next;
+      }
+      hero = wrap;
+    }
+  }
+
+  var heroH = 0, ticking = false, pxOn = false;
+  function measure() { heroH = hero ? hero.offsetHeight : 0; }
+  function render() {
+    ticking = false;
+    if (!hero || !heroH) { return; }
+    var y = window.pageYOffset || root.scrollTop || 0;
+    if (y <= 0) {
+      if (pxOn) { hero.style.transform = ''; hero.style.opacity = ''; pxOn = false; }
+      return;
+    }
+    var range = heroH * 1.4;
+    if (y < range) {
+      /* Drift up slightly slower than the scroll and fade a whisper —
+         the title recedes calmly instead of snapping away. */
+      var k = Math.min(y / range, 1);
+      hero.style.transform = 'translate3d(0,' + (-y * 0.06).toFixed(1) + 'px,0)';
+      hero.style.opacity = (1 - k * 0.22).toFixed(3);
+      pxOn = true;
+    } else if (pxOn) {
+      hero.style.transform = '';
+      hero.style.opacity = '';
+      pxOn = false;
+    }
+  }
+  function requestRender() {
+    if (!ticking) { ticking = true; window.requestAnimationFrame(render); }
+  }
+  if (hero) {
+    measure();
+    render();
+    window.addEventListener('scroll', requestRender, { passive: true });
+    window.addEventListener('resize', function () { measure(); requestRender(); });
+  }
+
+  /* ---------------- 2. Scroll-triggered reveals ---------------- */
+  var SELECTOR = [
+    'figure',
+    '.takeaway', '.exam-ask', '.trapbox', '.trap', '.board',
+    '.diagram-walkthrough', '.walkthrough', '.warn', '.callout',
+    '.ob-board', '.nums', '.watch-card', '.lab', '.pq', '.go-deeper-note'
+  ].join(', ');
+
+  var targets = [];
+  Array.prototype.forEach.call(document.querySelectorAll(SELECTOR), function (el) {
+    if (hero && hero.contains(el)) { return; } /* hero has its own motion */
+    targets.push(el);
+  });
+
+  function showAll(list) {
+    list.forEach(function (el) { el.classList.add('xp-reveal', 'xp-in'); });
+  }
+
+  if (!targets.length) { return; }
+
+  if (!('IntersectionObserver' in window)) { showAll(targets); return; }
+
+  var io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (en) {
+      if (en.isIntersecting) {
+        en.target.classList.add('xp-in');
+        io.unobserve(en.target);
+      }
+    });
+  }, { rootMargin: '0px 0px -6% 0px', threshold: 0.06 });
+
+  var vh = window.innerHeight || 800;
+  targets.forEach(function (el) {
+    el.classList.add('xp-reveal');
+    var r = el.getBoundingClientRect();
+    if (r.top < vh && r.bottom > 0) {
+      el.classList.add('xp-in'); /* in view on load: appear, no animation */
+    } else {
+      io.observe(el);
     }
   });
 })();
