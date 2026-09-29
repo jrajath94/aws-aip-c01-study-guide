@@ -1,0 +1,2873 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>AWS Cloud Foundations: the AWS underneath AIP-C01</title>
+<style>
+/* ==== DS canonical design system — do not edit per-file (build.py inlines) ==== */
+/* ==========================================================================
+   DS — Canonical Design System (shared across all study-guide tracks)
+   Pitch-black dark mode. Charis SIL primary reading font (OFL, bundled
+   offline in assets/fonts/). Nav chrome uses a clean system sans.
+   No gradients, no decorative filler. Inlined verbatim into <head>.
+   ========================================================================== */
+
+:root {
+  --bg: #000000;
+  --surface: #0d0d0d;
+  --border: #262626;
+  --text: #ececec;
+  --muted: #a8a8a8;
+  --accent: #f0b429;   /* warm amber — key highlights, active states, takeaways */
+  --link: #6cb2ff;
+  --code-bg: #111111;
+  --font-sans: "Charis SIL", "Atkinson Hyperlegible", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-chrome: -apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+/* ---------- Offline fonts (shipped in assets/fonts/, zero webfont dependency) ---------- */
+
+@font-face {
+  font-family: "Atkinson Hyperlegible";
+  src: url("assets/fonts/AtkinsonHyperlegible-Regular.ttf") format("truetype");
+  font-weight: 400; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: "Atkinson Hyperlegible";
+  src: url("assets/fonts/AtkinsonHyperlegible-Italic.ttf") format("truetype");
+  font-weight: 400; font-style: italic; font-display: swap;
+}
+@font-face {
+  font-family: "Atkinson Hyperlegible";
+  src: url("assets/fonts/AtkinsonHyperlegible-Bold.ttf") format("truetype");
+  font-weight: 700; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: "Atkinson Hyperlegible";
+  src: url("assets/fonts/AtkinsonHyperlegible-BoldItalic.ttf") format("truetype");
+  font-weight: 700; font-style: italic; font-display: swap;
+}
+@font-face {
+  font-family: "Inter";
+  src: url("assets/fonts/Inter-var.ttf") format("truetype");
+  font-weight: 100 900; font-style: normal; font-display: swap;
+}
+/* ---------- Charis SIL (OFL, SIL International) — primary reading font ----------
+   woff2 latin + latin-ext subsets, bundled in assets/fonts/, zero CDN. */
+@font-face {
+  font-family: "Charis SIL";
+  src: url("assets/fonts/CharisSIL-latin-normal-400.woff2") format("woff2");
+  font-weight: 400; font-style: normal; font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Charis SIL";
+  src: url("assets/fonts/CharisSIL-latin-ext-normal-400.woff2") format("woff2");
+  font-weight: 400; font-style: normal; font-display: swap;
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: "Charis SIL";
+  src: url("assets/fonts/CharisSIL-latin-italic-400.woff2") format("woff2");
+  font-weight: 400; font-style: italic; font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Charis SIL";
+  src: url("assets/fonts/CharisSIL-latin-ext-italic-400.woff2") format("woff2");
+  font-weight: 400; font-style: italic; font-display: swap;
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: "Charis SIL";
+  src: url("assets/fonts/CharisSIL-latin-normal-700.woff2") format("woff2");
+  font-weight: 700; font-style: normal; font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Charis SIL";
+  src: url("assets/fonts/CharisSIL-latin-ext-normal-700.woff2") format("woff2");
+  font-weight: 700; font-style: normal; font-display: swap;
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: "Charis SIL";
+  src: url("assets/fonts/CharisSIL-latin-italic-700.woff2") format("woff2");
+  font-weight: 700; font-style: italic; font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Charis SIL";
+  src: url("assets/fonts/CharisSIL-latin-ext-italic-700.woff2") format("woff2");
+  font-weight: 700; font-style: italic; font-display: swap;
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+
+/* ---------- Base ---------- */
+
+* { box-sizing: border-box; }
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 1rem;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: 17px;
+  line-height: 1.75;
+  overflow-x: clip;          /* no horizontal scroll at any width; clip keeps sticky working */
+}
+
+a { color: var(--link); }
+a:hover { text-decoration-thickness: 2px; }
+
+/* Visible focus for keyboard users — never remove without replacement. */
+:focus-visible {
+  outline: 2px solid var(--link);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+.ds-visually-hidden {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Skip link: hidden until focused. */
+.ds-skip {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 200;
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.6rem 1rem;
+  text-decoration: none;
+  font-weight: 600;
+}
+.ds-skip:focus { left: 0.75rem; top: 0.75rem; }
+
+/* ---------- Typography ---------- */
+
+h1, h2, h3, h4 {
+  font-style: normal;        /* headings always roman, never italic */
+  line-height: 1.35;
+  margin: 2.2rem 0 1rem;
+  color: var(--text);
+}
+h1 { font-size: 2rem;    font-weight: 700; }
+h2 { font-size: 1.5rem;  font-weight: 700; border-bottom: 1px solid var(--border); padding-bottom: 0.4rem; }
+h3 { font-size: 1.25rem; font-weight: 600; }
+h4 { font-size: 1.1rem;  font-weight: 600; }
+
+p { text-align: justify; margin: 1rem 0; overflow-wrap: break-word; }
+li { overflow-wrap: break-word; }
+ul, ol { padding-left: 1.6rem; }
+li { margin: 0.35rem 0; }
+
+blockquote {
+  margin: 1.5rem 0;
+  padding: 0.5rem 1.25rem;
+  border-left: 2px solid var(--border);
+  color: var(--muted);
+}
+blockquote p { text-align: left; }
+
+hr { border: 0; border-top: 1px solid var(--border); margin: 2.5rem 0; }
+
+code, kbd, samp {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+}
+p code, li code, td code, th code, figcaption code {
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.1em 0.35em;
+  overflow-wrap: anywhere;   /* long tokens (ARNs, model IDs) break rather than overflow the column */
+}
+
+/* ---------- Reading progress bar ---------- */
+
+#ds-progress {
+  position: fixed;
+  top: 0; left: 0;
+  height: 3px;
+  width: 0%;
+  background: var(--accent);
+  z-index: 100;
+  pointer-events: none;
+}
+
+/* ---------- Sidebar ---------- */
+
+#ds-sidebar-root {
+  flex: 0 0 300px;
+  width: 300px;
+  height: 100vh;
+  position: sticky;
+  top: 0;
+  overflow-y: auto;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  z-index: 60;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+.ds-side-inner {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  padding-bottom: 2rem;
+}
+
+.ds-side-search {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--surface);
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid var(--border);
+}
+.ds-side-search input {
+  width: 100%;
+  font-family: inherit;
+  font-size: 0.9rem;
+  color: var(--text);
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+}
+.ds-side-search input::placeholder { color: var(--muted); }
+
+.ds-nav {
+  list-style: none;
+  margin: 0;
+  padding: 0.5rem 0;
+}
+
+.ds-nav-row {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding-right: 0.6rem;
+}
+
+.ds-nav-toggle {
+  flex: 0 0 auto;
+  background: none;
+  border: 0;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 0.7rem;
+  line-height: 1;
+  padding: 0.55rem 0.3rem 0.55rem 1rem;
+  font-family: inherit;
+}
+.ds-nav-toggle:hover { color: var(--accent); }
+
+.ds-nav-link {
+  flex: 1 1 auto;
+  display: block;
+  min-width: 0;
+  padding: 0.45rem 0.25rem 0.45rem 0.4rem;
+  padding-left: 1.25rem;
+  margin-left: -0.55rem;      /* align text under toggle glyph */
+  color: var(--text);
+  text-decoration: none;
+  font-size: 0.92rem;
+  line-height: 1.45;
+  border-left: 2px solid transparent;
+}
+.ds-nav-link:hover { color: #ffffff; background: rgba(255, 255, 255, 0.04); }
+.ds-nav-link.active {
+  color: var(--accent);
+  border-left-color: var(--accent);
+  font-weight: 600;
+}
+
+.ds-nav-sub { list-style: none; margin: 0; padding: 0; }
+.ds-nav-subrow .ds-nav-link {
+  padding-left: 2.6rem;
+  margin-left: 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+.ds-nav-subrow .ds-nav-link:hover { color: var(--text); }
+.ds-nav-subrow .ds-nav-link.active { color: var(--accent); }
+
+.ds-done-wrap { flex: 0 0 auto; display: inline-flex; align-items: center; }
+.ds-done {
+  width: 1rem; height: 1rem;
+  margin: 0;
+  cursor: pointer;
+  accent-color: var(--accent);
+}
+.ds-nav-row.done .ds-nav-link {
+  color: var(--muted);
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+}
+
+/* ---------- Main content ---------- */
+
+#ds-content {
+  flex: 1 1 auto;
+  min-width: 0;               /* lets flex child shrink; prevents overflow */
+  overflow-wrap: break-word;   /* long unbroken strings (ARNs, URLs) break instead of spilling */
+  padding: 2.5rem 2rem 4rem;
+}
+.ds-content-inner {
+  max-width: 72ch;
+  margin: 0 auto;
+}
+
+/* ---------- Hamburger / drawer (mobile) ---------- */
+
+#ds-hamburger {
+  display: none;
+  position: fixed;
+  top: 0.75rem; left: 0.75rem;
+  z-index: 90;
+  width: 2.75rem; height: 2.75rem;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+}
+#ds-hamburger span {
+  display: block;
+  width: 1.25rem; height: 2px;
+  background: var(--text);
+}
+
+#ds-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  background: rgba(0, 0, 0, 0.6);
+}
+
+@media (max-width: 900px) {
+  body { display: block; }
+
+  #ds-hamburger { display: inline-flex; }
+
+  #ds-sidebar-root {
+    position: fixed;
+    left: 0; top: 0;
+    flex: none;
+    width: min(320px, 85vw);
+    transform: translateX(-105%);
+    transition: transform 0.25s ease;
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.6);
+  }
+  body.ds-drawer-open #ds-sidebar-root { transform: translateX(0); }
+  body.ds-drawer-open #ds-overlay { display: block; }
+
+  #ds-content { padding: 4.25rem 1.25rem 3rem; }
+}
+
+/* ---------- Learning components ---------- */
+
+/* "How the exam asks" callout */
+.exam-ask {
+  background: var(--surface);
+  border-left: 3px solid var(--accent);
+  border-radius: 0 6px 6px 0;
+  padding: 1rem 1.25rem;
+  margin: 1.5rem 0;
+}
+.exam-ask::before {
+  content: "HOW THE EXAM ASKS";
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--accent);
+  margin-bottom: 0.5rem;
+}
+.exam-ask p:first-of-type { margin-top: 0; }
+.exam-ask p:last-child { margin-bottom: 0; }
+
+/* Key-takeaway box */
+.takeaway {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: 6px;
+  padding: 1rem 1.25rem;
+  margin: 1.5rem 0;
+}
+.takeaway::before {
+  content: "KEY TAKEAWAY";
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--accent);
+  margin-bottom: 0.5rem;
+}
+.takeaway p:first-of-type { margin-top: 0; }
+.takeaway p:last-child { margin-bottom: 0; }
+
+/* Practice-question widget (click-to-reveal) */
+.pq {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  padding: 1.25rem;
+  margin: 1.5rem 0;
+}
+.pq-question { font-weight: 600; margin-top: 0; text-align: left; }
+.pq-reveal {
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  background: transparent;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  border-radius: 6px;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+}
+.pq-reveal:hover { background: rgba(240, 180, 41, 0.1); }
+/* Answer hidden only when JS is present — no-JS readers see the answer. */
+html.ds-js .pq-answer { display: none; }
+html.ds-js .pq-answer.open { display: block; }
+.pq-answer {
+  margin-top: 1rem;
+  border-top: 1px solid var(--border);
+  padding-top: 1rem;
+}
+.pq-answer p { text-align: left; }
+.pq-options { list-style: none; padding-left: 0; }
+.pq-option { padding: 0.4rem 0 0.4rem 0.85rem; margin: 0.5rem 0; }
+.pq-option.correct { border-left: 2px solid var(--accent); font-weight: 600; }
+.pq-option.wrong { border-left: 2px solid var(--border); color: var(--muted); }
+.pq-option .pq-note { display: block; font-weight: 400; color: var(--muted); font-size: 0.9rem; }
+.pq-answer .correct { color: var(--accent); font-weight: 700; }
+.pq-answer .wrong { color: var(--text); font-weight: 600; }
+.pq-meta { margin: 0 0 0.5rem; display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center; }
+.pq-ref { color: var(--muted); font-size: 0.82rem; font-weight: 400; }
+
+/* details/summary Q&A left functional, styled to match .pq */
+details {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  padding: 1rem 1.25rem;
+  margin: 1.5rem 0;
+}
+details > summary {
+  cursor: pointer;
+  font-weight: 600;
+  text-align: left;
+}
+details > summary::marker { color: var(--accent); }
+details.pq { padding: 1.25rem; }
+details.pq > summary {
+  display: inline-block;
+  font-size: 0.9rem;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  border-radius: 6px;
+  padding: 0.5rem 1rem;
+  list-style: none;
+}
+details.pq > summary::-webkit-details-marker { display: none; }
+details.pq > summary:hover { background: rgba(240, 180, 41, 0.1); }
+details.pq > .pq-answer {
+  display: block;             /* native disclosure, always functional */
+  margin-top: 1rem;
+  border-top: 1px solid var(--border);
+  padding-top: 1rem;
+}
+
+/* Copy button injected into code blocks */
+pre {
+  position: relative;
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 1rem;
+  overflow-x: auto;
+  font-family: var(--font-mono);
+  font-size: 0.88rem;
+  line-height: 1.6;
+  margin: 1.5rem 0;
+}
+pre code { background: none; border: 0; padding: 0; white-space: pre; }
+.ds-copy-btn {
+  position: absolute;
+  top: 0.5rem; right: 0.5rem;
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--muted);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 0.3rem 0.65rem;
+  cursor: pointer;
+}
+.ds-copy-btn:hover { color: var(--text); border-color: var(--muted); }
+
+/* Numbered how-to-read diagram walkthrough */
+.diagram-walkthrough ol {
+  list-style: none;
+  counter-reset: dw;
+  padding: 0;
+  margin: 1.25rem 0;
+}
+.diagram-walkthrough ol > li {
+  counter-increment: dw;
+  position: relative;
+  padding-left: 2.6rem;
+  margin-bottom: 0.85rem;
+  text-align: left;
+}
+.diagram-walkthrough ol > li::before {
+  content: counter(dw);
+  position: absolute;
+  left: 0; top: 0.15rem;
+  width: 1.8rem; height: 1.8rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--accent);
+  border-radius: 50%;
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+/* First-use term styling */
+.def {
+  border-bottom: 1px dotted var(--muted);
+  color: #f5f5f5;
+  cursor: help;
+}
+
+/* Exam-constraint chip */
+.constraint {
+  display: inline-block;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  border-radius: 999px;
+  padding: 0.15rem 0.7rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  margin: 0.15rem 0.25rem 0.15rem 0;
+  white-space: nowrap;
+}
+
+/* Block variant: for long-form constraint boxes (wraps; never clips) */
+.constraint-block {
+  display: block;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: 6px;
+  padding: 0.8rem 1rem;
+  margin: 0.9rem 0;
+  font-size: 0.95rem;
+  color: var(--text);
+}
+.constraint-block strong {
+  color: var(--accent);
+}
+
+/* Tables */
+.table-wrap {
+  overflow-x: auto;
+  margin: 1.5rem 0;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.94rem;
+  line-height: 1.6;
+}
+caption {
+  caption-side: bottom;
+  color: var(--muted);
+  font-size: 0.85rem;
+  padding: 0.6rem;
+  text-align: center;
+}
+th, td {
+  padding: 0.6rem 0.8rem;
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid var(--border);
+}
+thead th {
+  background: var(--surface);
+  font-weight: 700;
+  white-space: nowrap;
+}
+tbody tr:nth-child(odd)  { background: #0d0d0d; }
+tbody tr:nth-child(even) { background: #111111; }
+tbody tr:last-child th,
+tbody tr:last-child td { border-bottom: 0; }
+
+/* Images */
+img {
+  max-width: 100%;
+  height: auto;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+figure { margin: 1.75rem 0; }
+figure.fig-light img { background: #ffffff; padding: 1.1rem; border-radius: 12px; }
+figcaption {
+  color: var(--muted);
+  font-size: 0.85rem;
+  line-height: 1.6;
+  margin-top: 0.6rem;
+  text-align: center;
+}
+
+/* Prev / next volume footer */
+.ds-prevnext {
+  display: flex;
+  justify-content: space-between;
+  align-items: stretch;
+  gap: 1rem;
+  margin: 3.5rem 0 1rem;
+  border-top: 1px solid var(--border);
+  padding-top: 1.75rem;
+}
+.ds-prevnext a {
+  display: block;
+  flex: 1 1 0;
+  min-width: 0;               /* flex item must shrink below label width on narrow screens */
+  max-width: 48%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.9rem 1.2rem;
+  color: var(--text);
+  text-decoration: none;
+}
+.ds-prevnext a:hover { border-color: var(--accent); }
+.ds-prevnext .ds-next { text-align: right; }
+.ds-prev-empty { flex: 1 1 0; min-width: 0; max-width: 48%; }
+.ds-pn-kicker {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 0.25rem;
+}
+.ds-pn-label { font-weight: 600; line-height: 1.5; }
+
+/* ---------- Decision ladder (GenAI decision frameworks) ---------- */
+.ladder {
+  margin: 1.5rem 0;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.rung {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  padding: 0.9rem 1.1rem;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+}
+.rung:last-child { border-bottom: 0; }
+.rung-n {
+  flex: 0 0 auto;
+  width: 1.9rem; height: 1.9rem;
+  display: flex; align-items: center; justify-content: center;
+  border: 1px solid var(--accent);
+  border-radius: 50%;
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+.rung > div { min-width: 0; }
+.rung b { display: block; color: var(--text); }
+.rung span:not(.rung-n) { color: var(--muted); font-size: 0.92rem; }
+
+/* ---------- Print ---------- */
+
+@media print {
+  :root {
+    --bg: #ffffff;
+    --surface: #f5f5f5;
+    --border: #cccccc;
+    --text: #000000;
+    --muted: #444444;
+    --accent: #8a5a00;
+    --link: #0000ee;
+    --code-bg: #f5f5f5;
+  }
+  body {
+    display: block;
+    background: #ffffff;
+    color: #000000;
+    font-size: 12pt;
+    line-height: 1.6;
+  }
+  #ds-sidebar-root,
+  #ds-progress,
+  #ds-hamburger,
+  #ds-overlay,
+  .ds-side-search,
+  .ds-copy-btn,
+  .ds-done-wrap,
+  .ds-skip { display: none !important; }
+  #ds-content { padding: 0; }
+  .ds-content-inner { max-width: none; }
+  p, .pq-question, .pq-answer p, details > summary { text-align: left; }
+
+  /* Expand everything for paper. */
+  details:not([open]) > :not(summary) { display: block !important; }
+  html.ds-js .pq-answer { display: block !important; }
+  .ds-nav-sub { display: block !important; }
+
+  figure, pre, table, .pq, .exam-ask, .takeaway { break-inside: avoid; }
+  h1, h2, h3, h4 { break-after: avoid; }
+
+  pre { white-space: pre-wrap; word-wrap: break-word; }
+  .table-wrap { overflow: visible; border: 0; }
+
+  /* Print-friendly link URLs: external links only. */
+  a[href^="http"]::after {
+    content: " (" attr(href) ")";
+    font-size: 0.85em;
+    color: var(--muted);
+    word-break: break-all;
+  }
+  a { text-decoration: none; }
+}
+
+/* ==========================================================================
+   PART 2 — Content components (sanctioned adapters, shared by all tracks)
+   Added 2026-09-28 during the CCAR-P remediation: every bespoke class that
+   survived the first theming pass is defined here ONCE, in dark-mode tokens,
+   so all volumes render identically. Pitch-black discipline holds: no
+   gradients, no decorative filler, system fonts only.
+   ========================================================================== */
+
+/* ---- Page lede / kicker / eyebrow ---- */
+.lede{color:var(--muted);font-size:1.05rem;margin:0 0 1.5rem;text-align:left}
+.kicker{color:var(--muted);font-size:.94rem;margin:0 0 1.6rem;text-align:left}
+.eyebrow{font:600 .75rem/1.4 var(--font-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin:0 0 .5rem}
+
+/* ---- Top banner / hero card (dark; the navy 03 banner was a defect) ---- */
+.banner{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.625rem 1.75rem;margin:0 0 1.875rem}
+.banner h1{margin-top:0}
+.banner .kicker{font-size:.85rem;color:var(--muted);margin-bottom:6px}
+.banner p{color:var(--muted);text-align:left}
+.hero{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:2rem 2.2rem;margin:0 0 2.5rem}
+.hero h1{margin-top:0}
+.hero p{color:var(--muted)}
+.hero .facts{margin-top:1rem}
+
+/* ---- Fact chips / fact cards ---- */
+.facts{display:flex;flex-wrap:wrap;gap:10px;margin:1rem 0 2rem}
+.facts span{border:1px solid var(--border);background:var(--code-bg);border-radius:6px;padding:5px 12px;font-size:.85rem}
+.fact{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:.7rem .9rem;flex:1 1 150px;min-width:140px}
+.fact b{display:block;font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600}
+.fact span{font-size:1.02rem;font-weight:600}
+
+/* ---- Unit cards ---- */
+.unit{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.625rem 1.75rem;margin:1.625rem 0}
+.unit>h2:first-of-type{margin-top:0}
+.unit-tag{display:block;font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:.25rem}
+
+/* ---- Callout family (info / trap / fix / warn) ---- */
+.callout{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:.9rem 1.25rem;margin:1.5rem 0}
+.callout .lbl,.callout .cl,.callout-h{font-weight:700;display:block;margin-bottom:.35rem}
+.callout p:last-child{margin-bottom:0}
+.callout.trap{border-left:4px solid #e57373}
+.callout.trap .lbl,.callout.trap .cl,.callout.trap .callout-h{color:#e57373}
+.callout.fix{border-left:4px solid #3fb96b}
+.callout.fix .lbl,.callout.fix .cl,.callout.fix .callout-h{color:#3fb96b}
+.callout.warn{border-left:3px solid #e05656}
+.callout.warn .lbl,.callout.warn .cl,.callout.warn .callout-h{color:#e05656}
+.callout.anti{border-left:3px solid var(--muted)}
+.callout.anti .lbl,.callout.anti .cl{color:var(--muted)}
+.callout.num{border-left:3px solid var(--accent)}
+.callout.num .lbl,.callout.num .cl{color:var(--accent)}
+.callout.math{border-left:3px solid #3fb96b}
+.callout.math .callout-h{color:#3fb96b}
+.callout.fail{border-left:3px solid #e5484d}
+.callout.fail .callout-h{color:#e5484d}
+
+/* Legacy aliases mapped onto the callout family */
+.board{border-left:4px solid var(--link);background:var(--surface);padding:.75rem 1.125rem;border-radius:0 8px 8px 0;margin:1.2em 0}
+.board .lbl{font-weight:700;color:var(--link)}
+.trapbox{border:1px solid var(--accent);background:var(--surface);border-radius:8px;padding:.75rem 1.125rem;margin:1.2em 0}
+.trapbox .lbl{font-weight:700;color:var(--accent)}
+.nums{border-left:4px solid var(--accent);background:var(--surface);padding:.75rem 1.125rem;border-radius:0 8px 8px 0;margin:1.2em 0}
+.nums .lbl{font-weight:700;color:var(--accent)}
+.trap{background:var(--surface);border:1px solid var(--border);border-left:3px solid #e57373;border-radius:6px;padding:1rem 1.25rem;margin:1.5rem 0}
+.trap>.label,.trap .t-title{display:block;font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#e57373;margin-bottom:.5rem}
+.trap .t-title{margin:0 0 .3rem}
+.trap p:first-of-type{margin-top:0}
+.trap p:last-child{margin-bottom:0}
+.warn{background:var(--surface);border-left:3px solid var(--accent);border-radius:0 6px 6px 0;padding:1rem 1.25rem;margin:1.5rem 0}
+.warn h4{margin:0 0 .5rem;color:var(--accent);font-size:1rem}
+.warn p:first-of-type{margin-top:0}
+.warn p:last-child{margin-bottom:0}
+.askbox{background:var(--surface);border:1px solid var(--accent);border-radius:10px;padding:1rem 1.25rem;margin:1.5rem 0}
+.askbox h4{margin:0 0 .5rem;color:var(--accent);font-size:1rem}
+.askbox .shape{font-size:.95rem}
+.askbox .trap{font-size:.95rem;margin-top:.75rem;border-left:3px solid #e57373;padding-left:1rem}
+.askbox .trap b{color:#e57373}
+
+/* ---- Exam strip / onboarding / examline ---- */
+.examstrip,.exam-strip{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--link);border-radius:0 8px 8px 0;padding:1rem 1.25rem;margin:1.5rem 0 2.5rem}
+.examstrip td{padding:.25rem .6rem .25rem 0;vertical-align:top}
+.examstrip td:first-child{color:var(--muted);white-space:nowrap}
+.exam-strip{margin-top:1rem}
+.onboard{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--link);border-radius:0 8px 8px 0;padding:1rem 1.25rem;margin:1.5rem 0}
+.onboard .q{font-weight:700}
+.examline{font-size:.93rem;color:var(--muted);border-top:1px solid var(--border);padding-top:.7rem;margin-top:1.4rem}
+
+/* ---- Pills, tags, badges ---- */
+.volume-tag{display:inline-block;background:var(--surface);border:1px solid var(--accent);color:var(--accent);font-size:.8rem;font-weight:700;letter-spacing:.06em;padding:.25rem .7rem;border-radius:20px;margin-bottom:1rem}
+.tag{display:inline-block;font-size:.75rem;font-weight:700;padding:.2em .7em;border-radius:20px;border:1px solid var(--accent);color:var(--accent);margin-right:.5em;vertical-align:.15em}
+.badges{display:flex;flex-wrap:wrap;gap:.5rem;margin:1rem 0 .5rem}
+.badge{background:var(--surface);border:1px solid var(--border);border-radius:999px;padding:.25rem .9rem;font-size:.85rem;color:var(--text)}
+.badge b{color:var(--accent)}
+
+/* ---- In-content TOC cards ---- */
+.toc-grid{display:grid;grid-template-columns:1fr 1fr;gap:.65rem;margin:1.25rem 0}
+.toc-grid a{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:.75rem .9rem;text-decoration:none;color:var(--text);font-size:.95rem}
+.toc-grid a:hover{border-color:var(--link)}
+.toc-grid a b{display:block;color:var(--link)}
+.toc{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1.2rem 1.5rem;margin:0 0 3rem}
+@media (max-width:640px){.toc-grid{grid-template-columns:1fr}}
+
+/* ---- Section helpers ---- */
+.section{margin-bottom:2.5rem}
+.chapter{margin-bottom:3.5rem}
+.note{font-size:.88rem;color:var(--muted)}
+.small{font-size:.9rem;color:var(--muted)}
+.ht{font-weight:700;font-size:.9rem;letter-spacing:.06em;color:var(--accent);margin:0 0 .5rem;text-align:left}
+
+/* ---- Definition blocks ---- */
+div.def{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:.9rem 1.2rem;margin:1rem 0}
+div.def p{margin:.4rem 0}
+div.def .term,span.def .term{font-weight:700;color:var(--link)}
+div.def .t-title{font-weight:700;margin:0 0 .2rem}
+
+/* ---- Key-value definition lists ---- */
+dl.kv{display:grid;grid-template-columns:170px 1fr;gap:.35rem .9rem;margin:.8rem 0;font-size:.93rem}
+dl.kv dt{font-weight:700}
+dl.kv dd{margin:0}
+@media (max-width:640px){dl.kv{grid-template-columns:1fr}}
+
+/* ---- Custom labels inside canonical callouts: custom text stays the label,
+        the auto ::before label is suppressed to avoid duplication ---- */
+.exam-ask:has(>.label)::before,.takeaway:has(>.label)::before{content:none}
+.exam-ask:has(>h4)::before{content:none}
+.exam-ask>.label,.takeaway>.label{display:block;font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin-bottom:.5rem}
+.exam-ask>h4{font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin:0 0 .5rem}
+.exam-ask .callout-h{color:var(--text)}
+.exam-ask .lbl{font-size:.85rem;color:var(--muted);font-weight:600;margin-bottom:.5rem}
+.exam-ask .cl,.takeaway .cl,.takeaway .lbl{font-weight:700;display:block;margin-bottom:.35rem;color:var(--accent)}
+.diagram-walkthrough .lbl{font-weight:700;margin-bottom:6px}
+.diagram-walkthrough .walkthrough-h{margin:0 0 .6rem;font-size:.85rem;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.06em;text-align:left}
+.diagram-walkthrough>p:first-child{margin:0 0 .75rem;font-size:.82rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);text-align:left}
+.diagram-walkthrough .howread-title{font-weight:700;font-size:1rem;margin:0 0 .3rem}
+.diagram-walkthrough .howread-sub{font-weight:700;font-size:.88rem;margin:.7rem 0 .2rem}
+
+/* ---- Tables: header rows without thead stay distinct; numeric alignment ---- */
+.table-wrap tr:first-child th{background:var(--surface);font-weight:700;white-space:nowrap}
+.table-wrap th{background:var(--surface);font-weight:700}
+table.data.num td,table.data.num th{font-variant-numeric:tabular-nums}
+
+/* ---- Figure credits ---- */
+figcaption .credit{display:block;margin-top:2px}
+figcaption .src{font-size:.8rem}
+
+/* ---- Footer ---- */
+footer,#ds-content footer{color:var(--muted);font-size:.85rem;border-top:1px solid var(--border);padding-top:1.25rem;margin-top:3.5rem}
+footer p{text-align:left}
+
+/* ---- Index page: volume cards, how-to ---- */
+.vol{display:block;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1rem 1.15rem;margin:0 0 .7rem;text-decoration:none;color:inherit}
+.vol:hover{border-color:var(--accent)}
+.vol .row{display:flex;justify-content:space-between;align-items:baseline;gap:1rem}
+.vol .row > *{min-width:0}
+.vol h3{margin:0;font-size:1.05rem}
+.vol .w{flex:none;font:600 .75rem/1 var(--font-mono);color:var(--accent);border:1px solid var(--border);border-radius:20px;padding:.3rem .6rem;white-space:nowrap}
+.vol p{margin:.4rem 0 0;color:var(--muted);font-size:.92rem;text-align:left}
+.howto{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1rem 1.15rem;color:var(--muted);font-size:.93rem}
+.howto ol{margin:.4rem 0 0;padding-left:1.2rem}
+.howto li+li{margin-top:.3rem}
+
+/* ==========================================================================
+   QUESTION BANK components (.qb-*) — scenario questions with per-distractor
+   explanations, Maarek-style. Used by 08-question-bank.html.
+   ========================================================================== */
+.qb-q{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.5rem 1.75rem;margin:2rem 0}
+.qb-q:first-of-type{margin-top:1.5rem}
+.qb-head{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;margin-bottom:1rem}
+.qb-num{font:700 .85rem var(--font-mono);color:var(--accent);letter-spacing:.04em}
+.qb-pill{font-size:.75rem;font-weight:700;padding:.2rem .7rem;border-radius:20px;border:1px solid var(--border);white-space:nowrap}
+.qb-pill.easy{color:#3fb96b;border-color:#3fb96b}
+.qb-pill.med{color:var(--accent);border-color:var(--accent)}
+.qb-pill.hard{color:#e5484d;border-color:#e5484d}
+.qb-scenario{margin:0 0 1rem}
+.qb-ask{font-weight:700;font-size:1.06rem;margin:1.25rem 0 .75rem}
+.qb-opts{margin:.5rem 0 0;padding-left:1.4rem}
+.qb-opts li{margin-bottom:.55rem}
+.qb-opts li::marker{font-weight:700;color:var(--accent)}
+.qb-q details.pq{margin-top:1.25rem;border-top:1px solid var(--border);padding-top:1rem}
+.qb-verdict{display:inline-block;background:var(--accent);color:#000;font-weight:700;padding:.3rem .9rem;border-radius:8px;margin:.25rem 0 1rem;font-size:.95rem}
+.qb-why{border-left:3px solid #3fb96b;padding-left:1rem;margin:0 0 1rem}
+.qb-why strong{color:#3fb96b}
+.qb-distractors{margin:.5rem 0 0;padding-left:1.4rem}
+.qb-distractors li{margin-bottom:.6rem;color:var(--muted)}
+.qb-distractors li::marker{font-weight:700;color:#e57373}
+/* Decision flowcharts inside the question bank */
+.qb-fig{margin:1.5rem 0}
+.qb-flow{display:flex;flex-direction:column;align-items:stretch;gap:.3rem;margin:1rem 0;max-width:640px}
+.qb-node{background:var(--code-bg);border:1px solid var(--border);border-radius:8px;padding:.7rem 1rem;text-align:center;font-size:.95rem}
+.qb-node.decision{border-color:var(--accent);border-style:dashed}
+.qb-node.outcome{border-color:#3fb96b}
+.qb-arrow{text-align:center;color:var(--muted);font-size:1.25rem;line-height:1.1}
+.qb-branch{font-size:.78rem;color:var(--accent);font-weight:700;margin-left:.5rem}
+/* Domain section headers inside the question bank */
+.qb-domain-note{color:var(--muted);margin:-.5rem 0 1.5rem}
+
+/* ---- Print: question bank prints clean on light paper ---- */
+@media print{
+  .qb-q{break-inside:avoid;background:#fff;border:1px solid #ccc}
+  .qb-verdict{background:#eee;color:#000;border:1px solid #999}
+  .qb-node{background:#f5f5f5;border-color:#999}
+}
+
+/* Strategy cards in the question bank */
+.qb-strategy{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.25rem 1.5rem;margin:1.25rem 0}
+.qb-strategy>h3:first-child{margin-top:0}
+.qb-node.result{border-color:#3fb96b}
+
+/* ==========================================================================
+   SITE CHROME — header (track title, breadcrumbs, volume nav, prev/next),
+   footer sitemap. Rendered by ds.js from window.DS_MANIFEST, identical on
+   every page. Nav chrome uses --font-chrome (clean system sans) for contrast
+   with the Charis SIL reading font.
+   ========================================================================== */
+
+#ds-content .ds-site-header {
+  font-family: var(--font-chrome);
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  margin: -2.5rem -2rem 2.25rem;
+  padding: 0.85rem 2rem 0;
+}
+#ds-content .ds-site-header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+#ds-content .ds-track-title {
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  color: var(--text);
+  text-decoration: none;
+  overflow-wrap: break-word;
+}
+#ds-content .ds-track-title:hover { color: var(--accent); }
+#ds-content .ds-hpn { display: flex; gap: 0.5rem; flex: none; }
+#ds-content .ds-hpn a {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--muted);
+  text-decoration: none;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.35rem 0.7rem;
+  white-space: nowrap;
+}
+#ds-content .ds-hpn a:hover { color: var(--accent); border-color: var(--accent); }
+
+#ds-content .ds-crumb { margin: 0.65rem 0 0; }
+#ds-content .ds-crumb ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+#ds-content .ds-crumb li + li::before {
+  content: "/";
+  margin: 0 0.45rem;
+  color: var(--border);
+}
+#ds-content .ds-crumb a { color: var(--link); text-decoration: none; }
+#ds-content .ds-crumb a:hover { text-decoration: underline; }
+#ds-content .ds-crumb [aria-current="page"] { color: var(--text); }
+
+#ds-content .ds-volnav {
+  display: flex;
+  gap: 0.25rem;
+  overflow-x: auto;
+  list-style: none;
+  margin: 0.65rem -2rem 0;
+  padding: 0 2rem 0.7rem;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+#ds-content .ds-volnav a {
+  display: block;
+  white-space: nowrap;
+  font-size: 0.8rem;
+  color: var(--muted);
+  text-decoration: none;
+  padding: 0.45rem 0.8rem;
+  border: 1px solid transparent;
+  border-radius: 6px;
+}
+#ds-content .ds-volnav a:hover { color: var(--text); background: rgba(255, 255, 255, 0.04); }
+#ds-content .ds-volnav a[aria-current="page"] {
+  color: var(--accent);
+  font-weight: 600;
+  border-color: var(--border);
+  background: var(--code-bg);
+}
+
+/* Volumes block at the top of the sidebar (mobile drawer shows this). */
+.ds-side-volumes { padding: 0.85rem 1rem 0.25rem; border-bottom: 1px solid var(--border); }
+.ds-side-volumes h2 {
+  font-family: var(--font-chrome);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0 0 0.35rem;
+  padding: 0;
+  border: 0;
+}
+.ds-side-volumes ul { list-style: none; margin: 0; padding: 0 0 0.6rem; }
+.ds-side-volumes a {
+  display: block;
+  font-family: var(--font-chrome);
+  font-size: 0.85rem;
+  line-height: 1.45;
+  color: var(--muted);
+  text-decoration: none;
+  padding: 0.35rem 0;
+}
+.ds-side-volumes a:hover { color: var(--text); }
+.ds-side-volumes a[aria-current="page"] { color: var(--accent); font-weight: 600; }
+
+/* Footer sitemap: every volume + track home. */
+#ds-content .ds-site-footer {
+  font-family: var(--font-chrome);
+  font-size: 0.85rem;
+  color: var(--muted);
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  margin: 2.5rem -2rem -4rem;
+  padding: 1.5rem 2rem 2.5rem;
+}
+#ds-content .ds-site-footer .ds-footer-kicker {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0 0 0.25rem;
+}
+#ds-content .ds-site-footer .ds-footer-home {
+  font-weight: 700;
+  color: var(--text);
+  text-decoration: none;
+}
+#ds-content .ds-site-footer .ds-footer-home:hover { color: var(--accent); }
+#ds-content .ds-site-footer nav ul {
+  list-style: none;
+  margin: 0.75rem 0 0;
+  padding: 0;
+  columns: 2;
+  column-gap: 2rem;
+}
+#ds-content .ds-site-footer nav li { break-inside: avoid; }
+#ds-content .ds-site-footer nav a {
+  color: var(--muted);
+  text-decoration: none;
+  line-height: 2;
+}
+#ds-content .ds-site-footer nav a:hover { color: var(--accent); }
+#ds-content .ds-site-footer nav a[aria-current="page"] { color: var(--accent); font-weight: 600; }
+
+@media (max-width: 900px) {
+  /* Mobile: the horizontal volume strip hides; the hamburger drawer
+     (sidebar "Volumes" block) is the volume nav. */
+  #ds-content .ds-volnav { display: none; }
+  #ds-content .ds-site-header { margin: -4.25rem -1.25rem 2rem; padding: 0.85rem 1.25rem 0.7rem; }
+  /* Clear the fixed hamburger (left 0.75rem + 2.75rem wide = ends at 3.5rem). */
+  #ds-content .ds-site-header-top { padding-left: 2.75rem; }
+  /* The fixed hamburger floats over the drawer's top-left corner. */
+  .ds-side-volumes { padding-top: 4.25rem; }
+  #ds-content .ds-site-footer { margin: 2.5rem -1.25rem -3rem; padding: 1.5rem 1.25rem 2.5rem; }
+}
+@media (max-width: 640px) {
+  #ds-content .ds-site-footer nav ul { columns: 1; }
+}
+
+@media print {
+  #ds-content .ds-site-header,
+  #ds-content .ds-site-footer,
+  .ds-side-volumes { display: none !important; }
+}
+
+
+/* ==== YouTube click-to-load facades (track-local) ==== */
+.prereq-video iframe.yt-player { width: 100%; aspect-ratio: 16/9; border: 0; border-radius: 8px; }
+.yt-speedbar { display: flex; gap: 6px; align-items: center; margin-top: 8px; flex-wrap: wrap; font-size: 13px; }
+.yt-speedbar-label { font-weight: 600; margin-right: 2px; }
+.yt-speedbar button { padding: 4px 10px; border: 1px solid #c9c9c9; border-radius: 999px; background: #ffffff; cursor: pointer; font-size: 13px; }
+.yt-speedbar button.active { background: #1a1a1a; color: #ffffff; border-color: #1a1a1a; }
+.video-why { font-size: 14px; color: #4a4a4a; }
+.yt-facade { width: 100%; aspect-ratio: 16/9; border: 0; border-radius: 8px; background: #141414; }
+.yt-facade-btn { width: 100%; height: 100%; border: 0; border-radius: 8px; background: #141414; color: #f5f5f5; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; padding: 24px; font: inherit; }
+.yt-facade-play { width: 68px; height: 48px; background: #c00; border-radius: 12px; position: relative; }
+.yt-facade-play::after { content: ""; position: absolute; left: 28px; top: 14px; border-left: 16px solid #fff; border-top: 10px solid transparent; border-bottom: 10px solid transparent; }
+.yt-facade-title { font-weight: 600; font-size: 16px; text-align: center; }
+.yt-facade-note { font-size: 13px; color: #bdbdbd; }
+.prereq-video iframe.yt-player.loaded { width: 100%; aspect-ratio: 16/9; border: 0; border-radius: 8px; }
+/* ==== Experience layer v1 (additive, 2026-09-28) ==== */
+/* Hallmark · pre-emit critique: P5 H4 E5 S4 R5 V5
+ * ==========================================================================
+ * Experience layer for study volumes — ADDITIVE ONLY.
+ * Never edits content markup or DS chrome; references DS tokens only
+ * (--accent, --border). No new colors, no gradients, no decorative filler.
+ *
+ * Motion stance: calm delight. Opacity/translate only (GPU-friendly),
+ * one IntersectionObserver, one rAF-throttled scroll listener, zero layout
+ * shift, prefers-reduced-motion respected, fully usable with JS disabled
+ * (every hidden state is gated on html.xp-js, which only this layer's
+ * companion script adds).
+ *
+ * Wiring (final assembly, per volume — same model as ds.css/ds.js):
+ *   1. In <head>, AFTER the DS style block, add:
+ *        <style>
+ *        /* ==== Experience layer — additive, do not edit per-file ==== */
+ *        …this file verbatim…
+ *        [close the style element]
+ *   2. Before <script>
+/* ==== Experience layer v1 behavior (additive, 2026-09-28) ==== */
+/* ==== Experience layer behavior — additive ====
+ * Calm, GPU-friendly page motion for study volumes. No-JS safe: every hidden
+ * state in experience.css is gated on `html.xp-js`, which only this script
+ * adds — without it the page is fully readable. Respects
+ * prefers-reduced-motion (exits early; CSS keeps everything static).
+ *
+ * Three jobs:
+ *  1. Hero parallax — detects the volume hero (.banner/.hero, else wraps the
+ *     h1 + lede block in .xp-hero) and drifts it gently as the reader
+ *     scrolls on. Transform/opacity only, rAF-throttled, passive listener.
+ *  2. Scroll reveals — one IntersectionObserver fades+rises figures, key
+ *     callouts and knowledge checks exactly once. Elements already in view
+ *     on load appear immediately (no load flash).
+ *  3. Nothing else: progress bar, scroll-spy, sidebar, quiz toggles are
+ *     owned by ds.js and are left untouched.
+ *
+ * (In the assembly snippet the closing element tags are written literally;
+ * inside this file they are escaped as <\/style> / <\/script> so the file
+ * pastes verbatim without early-terminating its own element.)
+ */
+(function () {
+  'use strict';
+
+  var root = document.documentElement;
+  root.classList.add('xp-js');
+
+  var reduceMotion = false;
+  try {
+    reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  } catch (e) { /* matchMedia unavailable: assume motion is fine */ }
+  if (reduceMotion) { return; }
+
+  /* ---------------- 1. Hero detection + gentle parallax ---------------- */
+  var hero = document.querySelector('.banner, .hero');
+  if (!hero) {
+    /* No banner hero: wrap the volume title (h1) plus its lede paragraphs
+       in a layout-neutral div. Never touches headings ds.js needs. */
+    var main = document.querySelector('main');
+    var h1 = main ? main.querySelector('h1') : null;
+    if (h1 && h1.parentNode) {
+      var wrap = document.createElement('div');
+      wrap.className = 'xp-hero';
+      h1.parentNode.insertBefore(wrap, h1);
+      var node = h1, moved = 0, paras = 0;
+      while (node && moved < 8) {
+        var next = node.nextSibling;
+        var isPara = node.nodeType === 1 && node.tagName === 'P';
+        if (node !== h1 && !isPara) { break; }
+        wrap.appendChild(node);
+        moved += 1;
+        if (isPara) {
+          paras += 1;
+          if (paras >= 3) { break; }
+        }
+        node = next;
+      }
+      hero = wrap;
+    }
+  }
+
+  var heroH = 0, ticking = false, pxOn = false;
+  function measure() { heroH = hero ? hero.offsetHeight : 0; }
+  function render() {
+    ticking = false;
+    if (!hero || !heroH) { return; }
+    var y = window.pageYOffset || root.scrollTop || 0;
+    if (y <= 0) {
+      if (pxOn) { hero.style.transform = ''; hero.style.opacity = ''; pxOn = false; }
+      return;
+    }
+    var range = heroH * 1.4;
+    if (y < range) {
+      /* Drift up slightly slower than the scroll and fade a whisper —
+         the title recedes calmly instead of snapping away. */
+      var k = Math.min(y / range, 1);
+      hero.style.transform = 'translate3d(0,' + (-y * 0.06).toFixed(1) + 'px,0)';
+      hero.style.opacity = (1 - k * 0.22).toFixed(3);
+      pxOn = true;
+    } else if (pxOn) {
+      hero.style.transform = '';
+      hero.style.opacity = '';
+      pxOn = false;
+    }
+  }
+  function requestRender() {
+    if (!ticking) { ticking = true; window.requestAnimationFrame(render); }
+  }
+  if (hero) {
+    measure();
+    render();
+    window.addEventListener('scroll', requestRender, { passive: true });
+    window.addEventListener('resize', function () { measure(); requestRender(); });
+  }
+
+  /* ---------------- 2. Scroll-triggered reveals ---------------- */
+  var SELECTOR = [
+    'figure',
+    '.takeaway', '.exam-ask', '.trapbox', '.trap', '.board',
+    '.diagram-walkthrough', '.walkthrough', '.warn', '.callout',
+    '.ob-board', '.nums', '.watch-card', '.lab', '.pq', '.go-deeper-note'
+  ].join(', ');
+
+  var targets = [];
+  Array.prototype.forEach.call(document.querySelectorAll(SELECTOR), function (el) {
+    if (hero && hero.contains(el)) { return; } /* hero has its own motion */
+    targets.push(el);
+  });
+
+  function showAll(list) {
+    list.forEach(function (el) { el.classList.add('xp-reveal', 'xp-in'); });
+  }
+
+  if (!targets.length) { return; }
+
+  if (!('IntersectionObserver' in window)) { showAll(targets); return; }
+
+  var io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (en) {
+      if (en.isIntersecting) {
+        en.target.classList.add('xp-in');
+        io.unobserve(en.target);
+      }
+    });
+  }, { rootMargin: '0px 0px -6% 0px', threshold: 0.06 });
+
+  var vh = window.innerHeight || 800;
+  targets.forEach(function (el) {
+    el.classList.add('xp-reveal');
+    var r = el.getBoundingClientRect();
+    if (r.top < vh && r.bottom > 0) {
+      el.classList.add('xp-in'); /* in view on load: appear, no animation */
+    } else {
+      io.observe(el);
+    }
+  });
+})();
+
+</script>
+</body>, AFTER the ds.js script block, add:
+ *        <script>
+ *        /* ==== Experience layer behavior — additive ==== */
+ *        …experience.js verbatim…
+ *        [close the script element]
+ * (Closing tags are written out in the assembly snippet, not here, so this
+ * file can be pasted verbatim without early-terminating its own element.)
+ * ========================================================================== */
+
+/* ---------- 1. Smooth anchor scrolling (motion-safe readers only) ---------- */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+/* ---------- 2. Scroll-triggered reveals ----------
+   Hidden state exists ONLY under html.xp-js. No-JS readers, print, and
+   reduced-motion users always see full content. Uses the independent
+   `translate` property (not `transform`) so hover feedback below composes
+   without specificity fights. Opacity + translate only: zero layout shift. */
+html.xp-js .xp-reveal {
+  opacity: 0;
+  translate: 0 14px;
+}
+html.xp-js .xp-reveal.xp-in {
+  opacity: 1;
+  translate: 0 0;
+  transition:
+    opacity 0.55s ease,
+    translate 0.55s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+/* ---------- 3. Hero ---------- */
+/* Layout-neutral wrapper the script may add around a volume's title block.
+   Parallax itself is applied inline by the script (transform only). */
+.xp-hero {
+  position: relative;
+}
+
+/* ---------- 4. Calm hover feedback: cards + knowledge checks only ----------
+   translateY(-1px) + accent border. transform composes with the reveal's
+   independent `translate` property — no conflicts. */
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .pq,
+  .watch-card,
+  .ob-board,
+  .lab {
+    transition: transform 0.18s ease, border-color 0.18s ease;
+  }
+  .pq:hover,
+  .watch-card:hover,
+  .ob-board:hover,
+  .lab:hover {
+    transform: translateY(-1px);
+    border-color: var(--accent);
+  }
+  .pq:focus-within,
+  .watch-card:focus-within,
+  .ob-board:focus-within,
+  .lab:focus-within {
+    border-color: var(--accent);
+  }
+}
+
+/* ---------- 5. Reduced motion: everything static and visible ---------- */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  html.xp-js .xp-reveal {
+    opacity: 1;
+    translate: 0 0;
+    transition: none;
+  }
+  .xp-hero {
+    transform: none !important;
+    opacity: 1 !important;
+  }
+  .pq,
+  .watch-card,
+  .ob-board,
+  .lab {
+    transition: none;
+  }
+}
+
+/* ---------- 6. Print: never hide content ---------- */
+@media print {
+  html.xp-js .xp-reveal {
+    opacity: 1 !important;
+    translate: 0 0 !important;
+    transition: none;
+  }
+  .xp-hero {
+    transform: none !important;
+    opacity: 1 !important;
+  }
+}
+
+</style>
+</head>
+<body>
+<div id="ds-sidebar-root"></div>
+<main id="ds-content"><div class="ds-content-inner">
+<h1 id="aws-cloud-foundations">AWS Cloud Foundations</h1>
+<p>The AWS that AIP-C01 assumes you already know. Regions, IAM, S3, EC2, VPC, databases, Lambda, and the glue in between. One clean pass, small ideas first, then the full picture at the end.</p>
+<style>
+.vwrap{border:1px solid var(--line,#2a2a2a);border-radius:12px;overflow:hidden;margin:1rem 0;background:#000}
+.vwrap .vtitle{padding:.55rem .9rem;font-weight:600;font-size:.92rem;background:var(--card,#141414);border-bottom:1px solid var(--line,#2a2a2a)}
+.vwrap .vframe{position:relative;padding-bottom:56.25%;height:0}
+.vwrap .vframe iframe{position:absolute;top:0;left:0;width:100%;height:100%;border:0}
+.speedbar{display:flex;flex-wrap:wrap;gap:.35rem;align-items:center;padding:.55rem .9rem;background:var(--card,#141414);border-top:1px solid var(--line,#2a2a2a)}
+.speedbar .slabel{font-size:.8rem;opacity:.75;margin-right:.25rem}
+.speedbar button{border:1px solid var(--line,#2a2a2a);background:transparent;color:inherit;border-radius:999px;padding:.2rem .65rem;font-size:.8rem;cursor:pointer}
+.speedbar button.on{background:var(--accent,#4da3ff);border-color:var(--accent,#4da3ff);color:#06121f;font-weight:700}
+details.kc{border:1px solid var(--line,#2a2a2a);border-radius:8px;padding:.6rem .9rem;margin:.5rem 0;background:var(--card,#141414)}
+details.kc summary{cursor:pointer;font-weight:600;list-style:none}
+details.kc summary::-webkit-details-marker{display:none}
+details.kc summary::before{content:"+ ";color:var(--accent,#4da3ff)}
+details.kc[open] summary::before{content:"\2212 "}
+</style>
+
+<h2 id="how-to-use-this-volume">How to use this volume</h2>
+<p>You forgot the basics. That is normal and fixable. This volume rebuilds them in the order AWS itself is built: the world map first, then identity, then storage, compute, network, data, and the services that glue them together.</p>
+<p>Read it straight through once. Each section ends with a tap-to-reveal check. The last two sections wire everything into a real GenAI architecture, which is exactly how AIP-C01 tests this material: never as trivia, always inside a scenario.</p>
+<div class="exam-ask"><p>AIP-C01 never asks "what is S3?" It asks: "A team fine-tunes a model weekly, keeps 7 years of training data for audits, and reads last month's data often. Cheapest compliant design?" The answer needs S3 storage classes, lifecycle rules, and KMS. That is why this volume exists.</p></div>
+<h2 id="watch-first">Watch first: the full foundations course</h2>
+<p>One free course covers nearly everything in this volume. Andrew Brown teaches the Cloud Practitioner syllabus on freeCodeCamp. It is long (about 14 hours), so treat it as a companion: watch a chapter when a section below feels thin, at 1.5x or 2x.</p>
+<div class="vwrap">
+<div class="vtitle">AWS Certified Cloud Practitioner (CLF-C02): freeCodeCamp / Andrew Brown</div>
+<div class="vframe"><div class="yt-facade" data-vid="NhDYbskXRgc" data-title="AWS Certified Cloud Practitioner full course" data-ytid="ytv-0"><button type="button" class="yt-facade-btn" aria-label="Play video: AWS Certified Cloud Practitioner full course"><span class="yt-facade-play" aria-hidden="true"></span><span class="yt-facade-title">AWS Certified Cloud Practitioner full course</span><span class="yt-facade-note">Click to load this video from YouTube</span></button></div>
+<div class="yt-speedbar" data-for="ytv-0">
+<span class="yt-speedbar-label">Speed:</span>
+<button type="button" data-rate="0.5">0.5x</button><button type="button" data-rate="0.75">0.75x</button><button type="button" data-rate="1" class="active">1x</button><button type="button" data-rate="1.25">1.25x</button><button type="button" data-rate="1.5">1.5x</button><button type="button" data-rate="1.75">1.75x</button><button type="button" data-rate="2">2x</button>
+</div></div>
+<div class="speedbar" data-yt="yt-foundations"><span class="slabel">Speed:</span><button data-rate="0.5">0.5x</button><button data-rate="0.75">0.75x</button><button data-rate="1" class="on">1x</button><button data-rate="1.25">1.25x</button><button data-rate="1.5">1.5x</button><button data-rate="1.75">1.75x</button><button data-rate="2">2x</button></div>
+</div>
+
+<p>Why this one: it is the 2024 CLF-C02 refresh (not the older CLF-C01 cut), it walks shared responsibility, IAM, S3 storage classes, EC2 pricing, and Aurora with exam phrasing, and it ships with a free practice exam. Chapters are timestamped, so you can jump straight to VPC or KMS.</p>
+
+
+<h2 id="the-world-map">1. The world map: regions, AZs, edge locations</h2>
+<p>AWS is not one computer. It is data centers spread across the planet, grouped in three layers. Every exam scenario with the words "low latency", "disaster recovery", or "compliance" is testing whether you know these layers.</p>
+<pre><code>  +---------------- region: us-east-1 (N. Virginia) ----------------+
+  |                                                                 |
+  |   +---- AZ a ----+    +---- AZ b ----+    +---- AZ c ----+      |
+  |   | data center  |    | data center  |    | data center  |      |
+  |   | (or several) |    | (or several) |    | (or several) |      |
+  |   +--------------+    +--------------+    +--------------+      |
+  |        \________ low-latency links ________/                   |
+  +-----------------------------------------------------------------+
+
+  +---------------- region: eu-west-1 (Ireland) ---------------------+
+  |   +---- AZ a ----+    +---- AZ b ----+    +---- AZ c ----+      |
+  |   ...same pattern, fully isolated from us-east-1...            |
+  +-----------------------------------------------------------------+
+
+        .  .  .  600+ edge locations worldwide (CloudFront, Route 53)
+</code></pre>
+<p>A <strong>Region</strong> is a geographic area, like us-east-1 (N. Virginia) or eu-west-1 (Ireland). Each Region is fully independent. AWS does not copy your data between Regions unless you ask it to. Pick a Region for four reasons: closeness to your users (latency), law (some data must stay in a country), price (same service can cost different amounts per Region), and availability (new services land in big Regions first).</p>
+<p>An <strong>Availability Zone (AZ)</strong> is one or more discrete data centers inside a Region, with its own power, cooling, and network. The name is the Region code plus a letter: us-east-1a, us-east-1b. AZs in a Region sit close together and connect over fast private fiber. The exam's favorite sentence is "deploy across multiple AZs". That is how you survive a data center fire.</p>
+<p><strong>Edge locations</strong> are the third layer: small points of presence in hundreds of cities. They do not run your app. They cache content (CloudFront) and answer DNS (Route 53) close to users.</p>
+<div class="takeaway"><p>Region = where in the world. AZ = which buildings in that place (use two or more). Edge = cache near the user. "High availability" on the exam almost always means multi-AZ.</p></div>
+
+<div class="pq" id="foundations-map-check">
+<p class="pq-meta"><span class="constraint">Foundations</span><span class="constraint">knowledge check</span></p>
+<p class="pq-question">A startup serves users in Berlin and must keep all customer data inside the EU. Their app runs on one EC2 instance in us-east-1a. What is the smallest set of changes that fixes both the latency and the compliance problem?</p>
+<ul class="pq-options">
+<li class="pq-option wrong"><strong>A) </strong>Add a second instance in us-east-1b and enable CloudFront.</li>
+<li class="pq-option correct"><strong>B) </strong>Move the workload to the eu-central-1 Region and run instances in at least two AZs.</li>
+<li class="pq-option wrong"><strong>C) </strong>Add edge locations in Berlin and encrypt the instance with KMS.</li>
+<li class="pq-option wrong"><strong>D) </strong>Copy the data to S3 in eu-west-1 and keep the instance where it is.</li>
+</ul>
+<button class="pq-reveal" type="button">Reveal answer</button>
+<div class="pq-answer">
+<p><span class="correct">Correct: B.</span> Data must live in the EU, so the Region has to change; us-east-1 is Virginia. Two AZs give availability, and eu-central-1 (Frankfurt) is close to Berlin.</p>
+<p><span class="wrong">A is wrong:</span> more AZs in Virginia do not move data to the EU. C is wrong: you cannot "add" edge locations, and caching does not move the data store. D is wrong: the data would sit in two places, still including the US.</p>
+</div>
+</div>
+<h2 id="shared-responsibility">2. The deal you sign: shared responsibility</h2>
+<p>AWS and you split security down the middle. AWS handles security <strong>of</strong> the cloud. You handle security <strong>in</strong> the cloud.</p>
+<pre><code>  AWS takes care of                        You take care of
+  -----------------                        ------------------
+  physical buildings                       your data (classify it, encrypt it)
+  hardware, servers                        who can touch it (IAM)
+  network cables                           the guest OS on your EC2 (patch it)
+  virtualization layer                     your app code and its config
+  managed service platforms                firewall rules (security groups)
+</code></pre>
+<p>The line moves with the service. On EC2 (rented raw computers), you patch the operating system yourself. On RDS (managed database), AWS patches the OS and you still control the data, passwords, and network access. On S3 or Bedrock (fully managed), AWS runs everything under the API and you control the data, encryption settings, and IAM permissions.</p>
+<div class="exam-ask"><p>"Who patches the OS?" is a classic. EC2: you. RDS: AWS. Lambda: AWS. If the service name contains "managed" or "serverless", AWS owns the OS. If you got a virtual machine, you own it.</p></div>
+
+<div class="pq" id="shared-responsibility-check">
+<p class="pq-meta"><span class="constraint">Foundations</span><span class="constraint">knowledge check</span></p>
+<p class="pq-question">A company runs its model-serving API on EC2 and stores training data in S3. After a security review, two tasks appear: (1) patch the OS on the servers, (2) make sure only the training job role can read the training bucket. Who owns each task?</p>
+<ul class="pq-options">
+<li class="pq-option wrong"><strong>A) </strong>AWS owns both; the customer only pays the bill.</li>
+<li class="pq-option correct"><strong>B) </strong>The customer owns both.</li>
+<li class="pq-option wrong"><strong>C) </strong>AWS owns (1), the customer owns (2).</li>
+<li class="pq-option wrong"><strong>D) </strong>The customer owns (1), AWS owns (2).</li>
+</ul>
+<button class="pq-reveal" type="button">Reveal answer</button>
+<div class="pq-answer">
+<p><span class="correct">Correct: B.</span> EC2 is your virtual machine, so OS patching is yours. S3 bucket access is data-level access control, always yours.</p>
+<p><span class="wrong">A is wrong:</span> AWS never manages your data access or your EC2 guest OS. C is wrong: AWS does not patch your EC2 instances. D is wrong: bucket permissions are the customer's job, not AWS's.</p>
+</div>
+</div>
+<h2 id="iam">3. IAM: the bouncer at every door</h2>
+<p>Every single AWS request passes through IAM first. Your Lambda calling Bedrock, your laptop listing an S3 bucket, an EC2 instance reading a file. IAM answers two questions: who are you (authentication), and what may you do (authorization).</p>
+<p>Three characters do the work. A <strong>user</strong> is a permanent identity, usually a person. A <strong>group</strong> is a bundle of users that share permissions. A <strong>role</strong> is a temporary badge anyone trusted can pick up, use, and put back.</p>
+<pre><code>  alice (user) ──┐
+                 ├──&gt; group &quot;developers&quot; ──&gt; policy: read S3, run EC2
+  bob (user) ────┘
+
+  EC2 instance ── assumes ──&gt; role &quot;app-server&quot; ──&gt; policy: read one S3 bucket
+                                    ^
+  Lambda function ── assumes ───────┘   (temporary keys, auto-rotated)
+</code></pre>
+<p>Why roles matter: a user carries long-term keys. If those leak, they work until you revoke them. A role hands out temporary keys that die on their own, usually within hours. So the rule is simple. People sign in with short-lived sessions (IAM Identity Center). Programs and services use roles. Long-term access keys are a last resort.</p>
+<p>The <strong>root user</strong> is the account itself. It can do everything, including closing the account. Lock it down on day one: strong password, MFA, no access keys, and never use it for daily work. A few tasks only root can do, like changing the support plan or closing the account. The exam loves asking which tasks need root.</p>
+<h3 id="policies-the-rule-sheets">Policies: the rule sheets</h3>
+<p>A policy is a JSON document that says allow or deny. Here is one, as a Python dict you could hand to boto3:</p>
+<pre><code class="language-python">policy = {
+    &quot;Version&quot;: &quot;2012-10-17&quot;,          # policy language version; always this value
+    &quot;Statement&quot;: [                    # one or more rules
+        {
+            &quot;Effect&quot;: &quot;Allow&quot;,        # Allow or Deny
+            &quot;Action&quot;: [               # which API calls this rule covers
+                &quot;s3:GetObject&quot;,       # read a file
+                &quot;s3:ListBucket&quot;,      # list a bucket's contents
+            ],
+            &quot;Resource&quot;: [             # which buckets/objects it applies to
+                &quot;arn:aws:s3:::training-data&quot;,
+                &quot;arn:aws:s3:::training-data/*&quot;,
+            ],
+            # &quot;Condition&quot;: {...}      # optional: only when (IP, MFA, time...)
+        }
+    ],
+}
+</code></pre>
+<p>Walkthrough: <code>Effect</code> decides allow or deny. <code>Action</code> names API calls, and the service prefix tells you which service (s3:, ec2:, bedrock:). <code>Resource</code> uses ARNs, Amazon's address format for everything. The <code>/*</code> means "all objects inside the bucket". No Condition here, so the rule always applies.</p>
+<p>Two flavors of policy. <strong>Identity-based</strong> policies attach to users, groups, or roles and say what that identity may do. <strong>Resource-based</strong> policies attach to the thing itself (an S3 bucket policy, a KMS key policy) and say who may touch it. Within one account, an allow from either side is enough. That is the union rule.</p>
+<p>Managed policies are reusable rule sheets. AWS-managed (like <code>ReadOnlyAccess</code>) are maintained by AWS. Customer-managed are yours. Inline policies belong to exactly one identity and die with it.</p>
+<h3 id="how-aws-decides-deny-wins">How AWS decides: deny wins</h3>
+<p>The evaluation order is short enough to memorize:</p>
+<ol>
+<li>Start: everything is denied (implicit deny).</li>
+<li>If any policy has an explicit <strong>Deny</strong> for this request, stop. Denied.</li>
+<li>Otherwise, if any policy has an explicit <strong>Allow</strong>, continue to the boundary checks.</li>
+<li>Boundaries (permission boundary, SCPs, session policy) can only shrink permissions, never grow them.</li>
+<li>If all checks pass, allowed.</li>
+</ol>
+<figure class="fig-light"><img src="assets/img/internet/permissions_policies_effective.png" alt="How identity-based and resource-based policies combine: an allow from either side grants access within one account, but one explicit deny anywhere overrides everything." loading="lazy"><figcaption>How identity-based and resource-based policies combine: an allow from either side grants access within one account, but one explicit deny anywhere overrides everything.</figcaption><figcaption class="credit">Source: AWS IAM User Guide (docs.aws.amazon.com), downloaded Sept 2026.</figcaption></figure>
+<h3 id="permission-boundaries-the-ceiling">Permission boundaries: the ceiling</h3>
+<p>A <strong>permission boundary</strong> is a managed policy that caps what an identity can ever do. The real permissions are the overlap of the identity's policies and the boundary. Admins use it to delegate safely: "you may grant your team anything, but never more than this ceiling."</p>
+<figure class="fig-light"><img src="assets/img/internet/permissions_boundary.png" alt="A permissions boundary intersects with identity-based policies. Removing the boundary can only widen access; adding one can only narrow it." loading="lazy"><figcaption>A permissions boundary intersects with identity-based policies. Removing the boundary can only widen access; adding one can only narrow it.</figcaption><figcaption class="credit">Source: AWS IAM User Guide (docs.aws.amazon.com), downloaded Sept 2026.</figcaption></figure>
+<h3 id="iam-identity-center-sso-for-humans">IAM Identity Center: SSO for humans</h3>
+<p>Real companies do not make an IAM user per employee. They connect their company login (Google Workspace, Okta, Active Directory) to <strong>IAM Identity Center</strong>, and people get short-lived AWS access through permission sets. One login, many accounts, no long-term keys floating around.</p>
+<div class="exam-ask"><p>Four patterns cover nearly every IAM exam question. (1) "An EC2 instance needs to read from S3": give the instance an IAM role (instance profile), never bake access keys into the code. (2) "A developer needs admin for two hours": let them assume a role, not a second user. (3) "Let team leads create users but never touch billing": permission boundary on the team leads. (4) "A partner company needs read access to our bucket": cross-account role, or a bucket policy naming their account.</p>
+<p>Traps: groups cannot contain groups. A policy with only Deny and no Allow grants nothing. Deleting a user does not delete their access keys first is wrong, actually deleting a user deletes everything attached, which can break running apps that used those keys, which is why apps should use roles.</p></div>
+
+<div class="takeaway"><p>Users are for people in small setups, groups bundle them, roles are for everything temporary. Deny beats allow. Boundaries only shrink. Humans get SSO; machines get roles.</p></div>
+
+<div class="pq" id="iam-role-check">
+<p class="pq-meta"><span class="constraint">IAM</span><span class="constraint">knowledge check</span><span class="constraint">exam pattern</span></p>
+<p class="pq-question">A Lambda function resizes images uploaded to an S3 bucket and writes thumbnails to a second bucket. The function currently uses an access key stored in an environment variable, and the security team flags it. What is the correct fix?</p>
+<ul class="pq-options">
+<li class="pq-option wrong"><strong>A) </strong>Rotate the access key every 30 days with a second Lambda function.</li>
+<li class="pq-option correct"><strong>B) </strong>Attach an IAM role to the Lambda function with s3:GetObject on the source bucket and s3:PutObject on the destination bucket.</li>
+<li class="pq-option wrong"><strong>C) </strong>Make both buckets public and remove the access key.</li>
+<li class="pq-option wrong"><strong>D) </strong>Move the access key into AWS Secrets Manager and keep using it.</li>
+</ul>
+<button class="pq-reveal" type="button">Reveal answer</button>
+<div class="pq-answer">
+<p><span class="correct">Correct: B.</span> Lambda assumes an execution role automatically; no keys needed. Scope the policy to exactly the two buckets and the two actions.</p>
+<p><span class="wrong">A is wrong:</span> rotation reduces the window but the design is still wrong; keys should not exist here. C is wrong: public buckets for an internal pipeline is a breach waiting to happen. D is wrong: Secrets Manager protects the key but the function still does not need a key at all.</p>
+</div>
+</div>
+
+<div class="pq" id="iam-boundary-check">
+<p class="pq-meta"><span class="constraint">IAM</span><span class="constraint">knowledge check</span><span class="constraint">exam pattern</span></p>
+<p class="pq-question">A platform team lets product teams create their own IAM users. Leadership wants a guarantee that no product-team user can ever delete production databases, no matter what policies the product teams write. Which control gives that guarantee?</p>
+<ul class="pq-options">
+<li class="pq-option wrong"><strong>A) </strong>An SCP on the organization root.</li>
+<li class="pq-option correct"><strong>B) </strong>A permissions boundary attached to every product-team user and role.</li>
+<li class="pq-option wrong"><strong>C) </strong>A strong password policy with MFA enforced.</li>
+<li class="pq-option wrong"><strong>D) </strong>An identity-based policy with an explicit deny on rds:DeleteDBInstance.</li>
+</ul>
+<button class="pq-reveal" type="button">Reveal answer</button>
+<div class="pq-answer">
+<p><span class="correct">Correct: B.</span> A permissions boundary caps the maximum permissions of the identity it is attached to, so team-written policies cannot exceed it.</p>
+<p><span class="wrong">A is wrong:</span> SCPs apply at the AWS Organizations account level, and this scenario is about identities inside one account. C is wrong: authentication strength does not limit authorization scope. D is wrong: the product team could attach another policy or edit this one; an identity policy does not cap future policies the way a boundary does.</p>
+</div>
+</div>
+<h2 id="s3">4. S3: the infinite hard drive</h2>
+<p>S3 stores objects. An object is a file plus its metadata. Objects live in <strong>buckets</strong>. Bucket names are globally unique (one namespace for all of AWS) but each bucket lives in one Region. You can store unlimited objects; each can be up to 5 TB.</p>
+<p>S3 is built for 99.999999999% (eleven nines) durability: your data is copied across at least three AZs. Reads and writes are strongly consistent since 2020, so a write followed by a read always sees the new data.</p>
+<h3 id="storage-classes-pay-for-how-often-you-touch-it">Storage classes: pay for how often you touch it</h3>
+<p>Pick by access pattern, not by vibes:</p>
+<div class="ladder">
+<div class="rung"><span class="rung-n">1</span><div><b><strong>S3 Standard</strong>: Hot data you read often. Highest storage price, no retrieval fee.</b><span></span></div></div>
+<div class="rung"><span class="rung-n">2</span><div><b><strong>S3 Intelligent-Tiering</strong>: Access pattern unknown or shifting. AWS moves objects between tiers for you for a small monitoring fee.</b><span></span></div></div>
+<div class="rung"><span class="rung-n">3</span><div><b><strong>S3 Standard-IA</strong>: Infrequent access (backups, monthly reports). Cheaper storage, you pay per retrieval, 30-day minimum.</b><span></span></div></div>
+<div class="rung"><span class="rung-n">4</span><div><b><strong>S3 Glacier Instant Retrieval</strong>: Archive you might need in milliseconds, quarterly. 90-day minimum.</b><span></span></div></div>
+<div class="rung"><span class="rung-n">5</span><div><b><strong>S3 Glacier Flexible Retrieval</strong>: Archive with minutes-to-hours retrieval. 90-day minimum.</b><span></span></div></div>
+<div class="rung"><span class="rung-n">6</span><div><b><strong>S3 Glacier Deep Archive</strong>: The cheapest. Retrieval takes 12 to 48 hours. 180-day minimum. Built for 7-to-10-year compliance keeps.</b><span></span></div></div>
+</div>
+<p>The exam traps hide in the minimums. Store a file in Deep Archive and delete it after 60 days, and you still pay for 180. That single fact answers a whole family of "cheapest compliant storage" questions.</p>
+<h3 id="versioning-lifecycle-replication">Versioning, lifecycle, replication</h3>
+<p><strong>Versioning</strong> keeps every version of an object. Overwrite or delete, and the old copy stays. It is the undo button for "someone deleted the training data". MFA Delete can require a hardware code to permanently remove a version.</p>
+<p><strong>Lifecycle rules</strong> move or delete objects on a schedule without you touching them. Classic exam answer: training logs go Standard for 30 days, then Standard-IA, then Glacier Flexible at 90 days, then expire at 7 years.</p>
+<pre><code class="language-python">import boto3
+
+s3 = boto3.client(&quot;s3&quot;)
+
+# Lifecycle: hot for 30 days, cool for 60, archive after 90, delete after 7 years.
+# Walkthrough: each Transition names a storage class and a day count.
+# The Expiration at the end deletes the object (and old versions, via
+# NoncurrentVersionExpiration, which this example skips for clarity).
+s3.put_bucket_lifecycle_configuration(
+    Bucket=&quot;training-data&quot;,
+    LifecycleConfiguration={
+        &quot;Rules&quot;: [
+            {
+                &quot;ID&quot;: &quot;training-logs-retention&quot;,
+                &quot;Status&quot;: &quot;Enabled&quot;,
+                &quot;Filter&quot;: {&quot;Prefix&quot;: &quot;logs/&quot;},   # only objects under logs/
+                &quot;Transitions&quot;: [
+                    {&quot;Days&quot;: 30, &quot;StorageClass&quot;: &quot;STANDARD_IA&quot;},
+                    {&quot;Days&quot;: 90, &quot;StorageClass&quot;: &quot;GLACIER&quot;},
+                ],
+                &quot;Expiration&quot;: {&quot;Days&quot;: 2555},   # ~7 years
+            }
+        ]
+    },
+)
+</code></pre>
+<p><strong>Replication</strong> (CRR across Regions, SRR within one) copies new objects to a second bucket automatically. It needs versioning turned on in both buckets. Exam phrasing: "low-latency access on two continents" or "regulatory copy in a second Region".</p>
+<h3 id="encryption-and-sharing">Encryption and sharing</h3>
+<p>Encryption at rest has three server-side flavors. <strong>SSE-S3</strong>: AWS manages the keys, AES-256, free. <strong>SSE-KMS</strong>: your KMS keys, so every encrypt and decrypt is logged in CloudTrail and you can revoke access by disabling the key. <strong>SSE-C</strong>: you bring the key with each request. Data in flight is TLS, always.</p>
+<p>To share one private file without opening the bucket, hand out a <strong>presigned URL</strong>. It is a signed link that works until it expires (minutes to 7 days). The bucket stays private. This is the answer to every "share a private object temporarily" question.</p>
+<div class="exam-ask"><p>S3 greatest hits. "Users report stale data after overwrite" is outdated: S3 is strongly consistent now. "Bucket must never be public": S3 Block Public Access at the account level. "Ransomware-proof backups": versioning plus Object Lock (WORM: nobody, not even root, can delete until the retention date). "Website hosting": S3 static website hosting plus CloudFront, not EC2 for static files.</p></div>
+
+<div class="takeaway"><p>S3 = buckets of objects, eleven nines, strongly consistent. Match the storage class to touch frequency and respect the minimum days. Versioning is your undo button. Lifecycle rules are your janitor. Presigned URLs share without exposing.</p></div>
+
+<div class="pq" id="s3-lifecycle-check">
+<p class="pq-meta"><span class="constraint">S3</span><span class="constraint">knowledge check</span><span class="constraint">exam pattern</span></p>
+<p class="pq-question">A GenAI team keeps fine-tuning datasets. Last month's data is read daily; older data is read a few times a year for audits and must be kept 7 years. The bill is too high. What is the cheapest design that still meets the audit rule?</p>
+<ul class="pq-options">
+<li class="pq-option wrong"><strong>A) </strong>Keep everything in S3 Standard and enable versioning.</li>
+<li class="pq-option correct"><strong>B) </strong>Lifecycle rule: move objects older than 30 days to S3 Glacier Flexible Retrieval, expire after 7 years.</li>
+<li class="pq-option wrong"><strong>C) </strong>Move everything to S3 Glacier Deep Archive immediately and expire after 1 year.</li>
+<li class="pq-option wrong"><strong>D) </strong>Store datasets in EBS snapshots instead of S3.</li>
+</ul>
+<button class="pq-reveal" type="button">Reveal answer</button>
+<div class="pq-answer">
+<p><span class="correct">Correct: B.</span> Recent data stays hot for 30 days, older data drops to cheap archive, and the 7-year expiry matches the audit rule.</p>
+<p><span class="wrong">A is wrong:</span> Standard for 7 years of rarely read data is the expensive default. C is wrong: Deep Archive retrieval takes up to 48 hours and expiring after 1 year breaks the 7-year rule. D is wrong: EBS snapshots are for block volumes, not a dataset lake, and cost more per GB than S3 archive tiers.</p>
+</div>
+</div>
+
+<div class="pq" id="s3-share-check">
+<p class="pq-meta"><span class="constraint">S3</span><span class="constraint">knowledge check</span><span class="constraint">exam pattern</span></p>
+<p class="pq-question">A customer support agent needs to send one private invoice PDF to a customer. The file must be downloadable for 24 hours and never publicly listable. What do you do?</p>
+<ul class="pq-options">
+<li class="pq-option wrong"><strong>A) </strong>Make the bucket public, send the link, then make it private again.</li>
+<li class="pq-option correct"><strong>B) </strong>Generate a presigned URL for the object with a 24-hour expiry.</li>
+<li class="pq-option wrong"><strong>C) </strong>Create an IAM user for the customer with GetObject on the bucket.</li>
+<li class="pq-option wrong"><strong>D) </strong>Copy the file to a public CloudFront distribution.</li>
+</ul>
+<button class="pq-reveal" type="button">Reveal answer</button>
+<div class="pq-answer">
+<p><span class="correct">Correct: B.</span> A presigned URL grants temporary access to one object; the bucket stays private the whole time.</p>
+<p><span class="wrong">A is wrong:</span> a public window, however short, is how leaks happen. C is wrong: creating IAM identities for external customers is heavy and wrong-shaped. D is wrong: a public distribution exposes the file to everyone, not one customer.</p>
+</div>
+</div>
+<h2 id="ec2">5. EC2: rented computers</h2>
+<p>EC2 rents you virtual machines by the second. Pick a size, pick an operating system image (AMI), launch it in a subnet, and it is yours. Stop paying attention to the hardware; AWS owns that. Everything above the hypervisor is yours, including patching the OS.</p>
+<h3 id="instance-types-the-letter-tells-you-the-strength">Instance types: the letter tells you the strength</h3>
+<p>Types look like <code>m7i.large</code>. The first letter is the family, which tells you what the machine is good at:</p>
+<ul>
+<li><strong>T, M</strong>: general purpose, balanced (web servers, small apps)</li>
+<li><strong>C</strong>: compute heavy (batch jobs, game servers)</li>
+<li><strong>R, X</strong>: memory heavy (databases, caches)</li>
+<li><strong>I, D</strong>: storage heavy, fast local disks (data warehouses)</li>
+<li><strong>P, G</strong>: GPU (training, graphics); <strong>Inf, Trn</strong>: AWS chips for inference and training</li>
+</ul>
+<p>You do not need to memorize every type. The exam gives you the workload ("memory-intensive database") and expects the family ("R").</p>
+<h3 id="pricing-five-ways-to-pay">Pricing: five ways to pay</h3>
+<div class="ladder">
+<div class="rung"><span class="rung-n">1</span><div><b><strong>On-Demand</strong>: No commitment, pay per second. Highest price, total flexibility. Default for spiky or unknown workloads.</b><span></span></div></div>
+<div class="rung"><span class="rung-n">2</span><div><b><strong>Spot</strong>: Bid on spare capacity, up to 90% off. AWS can reclaim the instance with a 2-minute warning. Only for work that survives interruption: batch jobs, CI runners, fault-tolerant training.</b><span></span></div></div>
+<div class="rung"><span class="rung-n">3</span><div><b><strong>Reserved Instances</strong>: Commit 1 or 3 years to a type and Region, save up to 72%. For steady-state servers you know will run.</b><span></span></div></div>
+<div class="rung"><span class="rung-n">4</span><div><b><strong>Savings Plans</strong>: Commit to a dollar-per-hour spend for 1 or 3 years, save up to 72%, with flexibility to change instance types.</b><span></span></div></div>
+<div class="rung"><span class="rung-n">5</span><div><b><strong>Dedicated Hosts</strong>: A whole physical server, for license or compliance rules that demand it. Most expensive.</b><span></span></div></div>
+</div>
+<h3 id="storage-three-very-different-disks">Storage: three very different disks</h3>
+<pre><code>  EBS                    Instance store              EFS
+  network disk           physical disk on            shared file system
+  attached to ONE        the host machine            across AZs and
+  EC2 instance                                     instances (NFS)
+
+  survives stop          dies with stop/             survives everything
+  snapshots to S3        terminate                   scales automatically
+  gp3 SSD default        fastest, free                many writers at once
+</code></pre>
+<p><strong>EBS</strong> is the normal boot disk: network-attached, persists independently of the instance, snapshot it to S3 for backups. <strong>Instance store</strong> is the raw disk inside the physical host: blazing fast and free, but everything on it dies when the instance stops. <strong>EFS</strong> is a shared NFS file system many instances mount at once, even across AZs.</p>
+<div class="exam-ask"><p>EC2 greatest hits. "Shared file system for 20 web servers": EFS, not EBS (EBS attaches to one instance). "Cheapest way to run nightly batch that tolerates interruption": Spot. "Database needs its disk to survive a stop": EBS with delete-on-termination off. "Bootstrap script on first launch": user data (runs once as root at launch). "Distribute load across instances": Auto Scaling group plus a load balancer, which the exam pairs with multi-AZ.</p></div>
+
+<div class="takeaway"><p>EC2 = VMs you fully own above the hypervisor. Letter = family. Pay model = commitment level. EBS persists, instance store evaporates, EFS is shared.</p></div>
+
+<div class="pq" id="ec2-storage-check">
+<p class="pq-meta"><span class="constraint">EC2</span><span class="constraint">knowledge check</span><span class="constraint">exam pattern</span></p>
+<p class="pq-question">A video-processing fleet of 50 EC2 instances needs one shared input folder. Any instance may read or write, across two AZs. Which storage fits?</p>
+<ul class="pq-options">
+<li class="pq-option wrong"><strong>A) </strong>One EBS volume attached to all 50 instances.</li>
+<li class="pq-option wrong"><strong>B) </strong>Instance store on each instance with rsync between them.</li>
+<li class="pq-option correct"><strong>C) </strong>Amazon EFS mounted by all instances.</li>
+<li class="pq-option wrong"><strong>D) </strong>A 5 TB S3 bucket mounted as a local disk on each instance.</li>
+</ul>
+<button class="pq-reveal" type="button">Reveal answer</button>
+<div class="pq-answer">
+<p><span class="correct">Correct: C.</span> EFS is a shared NFS file system built for many writers across AZs.</p>
+<p><span class="wrong">A is wrong:</span> an EBS volume attaches to one instance at a time (multi-attach is a niche case, not this). B is wrong: instance store dies on stop and syncing 50 disks is operational pain. D is wrong: S3 is object storage, not a POSIX file system; mounting hacks are not the exam answer.</p>
+</div>
+</div>
+
+<div class="pq" id="ec2-pricing-check">
+<p class="pq-meta"><span class="constraint">EC2</span><span class="constraint">knowledge check</span><span class="constraint">exam pattern</span></p>
+<p class="pq-question">A company runs a reporting job every night at 2 AM. It takes 3 hours, can be split across machines, and may be retried if a machine disappears. The CFO wants the lowest possible compute price. Which pricing model?</p>
+<ul class="pq-options">
+<li class="pq-option wrong"><strong>A) </strong>On-Demand instances.</li>
+<li class="pq-option correct"><strong>B) </strong>Spot instances.</li>
+<li class="pq-option wrong"><strong>C) </strong>Reserved Instances for 3 years.</li>
+<li class="pq-option wrong"><strong>D) </strong>Dedicated Hosts.</li>
+</ul>
+<button class="pq-reveal" type="button">Reveal answer</button>
+<div class="pq-answer">
+<p><span class="correct">Correct: B.</span> The job tolerates interruption, which is exactly what Spot's 2-minute reclaim warning is built for, at up to 90% off.</p>
+<p><span class="wrong">A is wrong:</span> On-Demand is the flexible but expensive default. C is wrong: a 3-year commitment for a 3-hour nightly job wastes money most of the day. D is wrong: dedicated hardware is for compliance, not cost.</p>
+</div>
+</div>
+<h2 id="vpc">6. VPC: your private network</h2>
+<p>A VPC is your own isolated network inside AWS. You draw the map: the IP range, the subnets, the roads between them, and the gates to the outside. Nothing gets in or out unless you build the road.</p>
+<p>Start with the picture from the AWS docs: one VPC, one subnet per AZ, EC2 instances inside, an internet gateway on the edge.</p>
+<figure class="fig-light"><img src="assets/img/internet/vpc-how-it-works.png" alt="A VPC with subnets spread across three AZs, EC2 instances in each subnet, and an internet gateway connecting the VPC to the internet." loading="lazy"><figcaption>A VPC with subnets spread across three AZs, EC2 instances in each subnet, and an internet gateway connecting the VPC to the internet.</figcaption><figcaption class="credit">Source: AWS VPC User Guide (docs.aws.amazon.com), downloaded Sept 2026.</figcaption></figure>
+<h3 id="the-pieces-one-by-one">The pieces, one by one</h3>
+<p>You create a VPC with a <strong>CIDR block</strong>, your private IP range, like <code>10.0.0.0/16</code> (65,536 addresses). Inside it you carve <strong>subnets</strong>, each pinned to exactly one AZ, like <code>10.0.1.0/24</code> in us-east-1a. AWS reserves 5 addresses per subnet, so a /24 gives you 251 usable.</p>
+<p>A <strong>route table</strong> is the road map: rows that say "traffic for this destination goes to that target". A subnet is <strong>public</strong> when its route table sends <code>0.0.0.0/0</code> (everything) to an <strong>internet gateway</strong>. No IGW route means <strong>private</strong>.</p>
+<p>The <strong>internet gateway (IGW)</strong> is the two-way door to the internet. Attach one per VPC. The <strong>NAT gateway</strong> sits in a public subnet and gives private subnets a one-way door: instances inside can reach out (download patches, call APIs) but nobody outside can reach in. NAT gateways cost money per hour plus per GB, which the exam sometimes uses as a cost trap.</p>
+<h3 id="security-groups-vs-nacls-the-exams-favorite-pair">Security groups vs NACLs: the exam's favorite pair</h3>
+<pre><code>  Security group                        Network ACL
+  at the INSTANCE (ENI)                 at the SUBNET
+  stateful: reply traffic               stateless: you must allow
+    auto-allowed                          both directions yourself
+  ALLOW rules only                      ALLOW and DENY rules
+  all rules evaluated (union)           numbered rules, lowest first
+</code></pre>
+<p>A <strong>security group</strong> is a firewall around each instance. It is stateful: allow port 80 in, and the reply goes out automatically. Rules are allow-only and they add up. A <strong>NACL</strong> is a firewall around the whole subnet. It is stateless: allow port 80 in and you must also allow the ephemeral reply ports (1024-65535) out, or responses die. NACLs evaluate numbered rules in order and can explicitly deny, which makes them the tool for "block this one bad IP".</p>
+<p><strong>VPC endpoints</strong> let private subnets reach AWS services without touching the internet at all. Gateway endpoints (S3, DynamoDB) are free and live in the route table. Interface endpoints (most other services, powered by PrivateLink) put a private IP inside your subnet.</p>
+<p>Watch the short explainer below. It covers this whole section in under five minutes: private ranges, public vs private subnets, IGW vs NAT, and stateful vs stateless.</p>
+<div class="vwrap">
+<div class="vtitle">VPC in Plain English (under 5 minutes)</div>
+<div class="vframe"><div class="yt-facade" data-vid="77QM_gPlasw" data-title="VPC in Plain English" data-ytid="ytv-1"><button type="button" class="yt-facade-btn" aria-label="Play video: VPC in Plain English"><span class="yt-facade-play" aria-hidden="true"></span><span class="yt-facade-title">VPC in Plain English</span><span class="yt-facade-note">Click to load this video from YouTube</span></button></div>
+<div class="yt-speedbar" data-for="ytv-1">
+<span class="yt-speedbar-label">Speed:</span>
+<button type="button" data-rate="0.5">0.5x</button><button type="button" data-rate="0.75">0.75x</button><button type="button" data-rate="1" class="active">1x</button><button type="button" data-rate="1.25">1.25x</button><button type="button" data-rate="1.5">1.5x</button><button type="button" data-rate="1.75">1.75x</button><button type="button" data-rate="2">2x</button>
+</div></div>
+<div class="speedbar" data-yt="yt-vpc"><span class="slabel">Speed:</span><button data-rate="0.5">0.5x</button><button data-rate="0.75">0.75x</button><button data-rate="1" class="on">1x</button><button data-rate="1.25">1.25x</button><button data-rate="1.5">1.5x</button><button data-rate="1.75">1.75x</button><button data-rate="2">2x</button></div>
+</div>
+<div class="exam-ask"><p>VPC greatest hits. "Private EC2 needs OS patches but must not be reachable from the internet": NAT gateway in a public subnet, private route table points 0.0.0.0/0 at the NAT. "App server talks to the database": database in a private subnet, its security group allows traffic from the app server's security group (reference the group, not an IP). "Block a single attacking IP quickly": NACL deny rule, because security groups cannot deny. "Reach S3 privately from a private subnet": gateway VPC endpoint, no NAT needed.</p></div>
+
+<div class="takeaway"><p>VPC = your map. Subnets live in one AZ each. IGW is two-way, NAT is one-way-out. Security groups hug instances (stateful, allow-only); NACLs hug subnets (stateless, can deny). Endpoints keep AWS traffic off the internet.</p></div>
+
+<div class="pq" id="vpc-nat-check">
+<p class="pq-meta"><span class="constraint">VPC</span><span class="constraint">knowledge check</span><span class="constraint">exam pattern</span></p>
+<p class="pq-question">A Lambda function in private subnets must call an external payment API over the internet. It currently times out. The subnets have no route to an internet gateway, by design. What fixes it with the least exposure?</p>
+<ul class="pq-options">
+<li class="pq-option wrong"><strong>A) </strong>Add a route from the private subnets to an internet gateway.</li>
+<li class="pq-option correct"><strong>B) </strong>Put a NAT gateway in a public subnet and route 0.0.0.0/0 from the private subnets to it.</li>
+<li class="pq-option wrong"><strong>C) </strong>Move the Lambda function to public subnets with public IPs.</li>
+<li class="pq-option wrong"><strong>D) </strong>Open all outbound ports in the security group.</li>
+</ul>
+<button class="pq-reveal" type="button">Reveal answer</button>
+<div class="pq-answer">
+<p><span class="correct">Correct: B.</span> The NAT gateway gives outbound-only internet: the function can call out, nobody can call in.</p>
+<p><span class="wrong">A is wrong:</span> that makes the subnets public and everything in them internet-reachable. C is wrong: public subnets with public IPs expose the function unnecessarily. D is wrong: security groups already allow all outbound by default; the missing piece is the route, not the firewall.</p>
+</div>
+</div>
+
+<div class="pq" id="vpc-sg-nacl-check">
+<p class="pq-meta"><span class="constraint">VPC</span><span class="constraint">knowledge check</span><span class="constraint">exam pattern</span></p>
+<p class="pq-question">An attacker at 203.0.113.44 is hammering your web servers. You need to block that IP at the subnet edge within minutes, without touching any instance. Which control?</p>
+<ul class="pq-options">
+<li class="pq-option wrong"><strong>A) </strong>A security group rule denying 203.0.113.44.</li>
+<li class="pq-option correct"><strong>B) </strong>A NACL rule denying 203.0.113.44 with a low rule number.</li>
+<li class="pq-option wrong"><strong>C) </strong>A route table entry blackholing 203.0.113.44.</li>
+<li class="pq-option wrong"><strong>D) </strong>A VPC endpoint policy for 203.0.113.44.</li>
+</ul>
+<button class="pq-reveal" type="button">Reveal answer</button>
+<div class="pq-answer">
+<p><span class="correct">Correct: B.</span> NACLs sit at the subnet level and support explicit deny rules evaluated in number order.</p>
+<p><span class="wrong">A is wrong:</span> security groups have no deny rules, only allow. C is wrong: route tables route traffic, they do not filter by source IP. D is wrong: endpoint policies control access to AWS services, not inbound traffic.</p>
+</div>
+</div>
+<h2 id="databases">7. Databases: pick by shape of data</h2>
+<p>AWS has a database for every shape. The exam tests the pick, not the internals. Three cover almost everything.</p>
+<p><strong>RDS</strong> is managed relational: MySQL, Postgres, MariaDB, Oracle, SQL Server. AWS handles patching, backups, and failover; you handle the schema, queries, and access. <strong>Multi-AZ</strong> keeps a hot standby in another AZ for failover. <strong>Read replicas</strong> are async copies (up to 5, cross-Region allowed) that take read load.</p>
+<p><strong>Aurora</strong> is AWS's own relational engine, speaking MySQL and Postgres wire protocols. Storage auto-grows to 128 TB, is copied 6 ways across 3 AZs, and fails over in under 30 seconds with up to 15 read replicas. Pick it when a relational database must scale hard with minimal babysitting. Aurora Serverless v2 scales capacity up and down automatically.</p>
+<p><strong>DynamoDB</strong> is serverless NoSQL: key-value and document, single-digit millisecond latency at any scale. No servers, no patching. Pay per request (on-demand) or per provisioned throughput. Features the exam names: DAX (in-memory cache), Global Tables (multi-Region active-active), Streams (change feed), TTL (auto-expire items).</p>
+<pre><code>  Need SQL tables? ── yes ──&gt; Must scale past one box with near-zero ops?
+  │                                   │ yes            │ no
+  │                              Aurora          RDS
+  │
+  └── no ──&gt; Key-value / document, huge scale, ms latency? ──&gt; DynamoDB
+             Time-series, graph, cache, warehouse? ──&gt; Timestream, Neptune,
+                                                       ElastiCache, Redshift
+</code></pre>
+<p>One-liners for the rest: <strong>ElastiCache</strong> (Redis/Memcached) sits in front of a database to absorb reads. <strong>Redshift</strong> is the data warehouse for analytics over petabytes. <strong>Neptune</strong> is for graph data (relationships first). The exam mentions them to test whether you reach past the big three.</p>
+<div class="exam-ask"><p>"Relational, needs cross-Region reads": RDS read replica or Aurora Global Database. "Session store for a million users, sub-10ms": DynamoDB or ElastiCache, not RDS. "Zero database administration": Aurora Serverless or DynamoDB on-demand. "Lift-and-shift Oracle with minimal changes": RDS for Oracle.</p></div>
+
+<div class="takeaway"><p>SQL + control = RDS. SQL + scale = Aurora. Key-value + serverless = DynamoDB. Cache in front when reads hurt.</p></div>
+
+<div class="pq" id="db-pick-check">
+<p class="pq-meta"><span class="constraint">Databases</span><span class="constraint">knowledge check</span><span class="constraint">exam pattern</span></p>
+<p class="pq-question">A mobile game's leaderboard needs 5 ms reads and writes at 100,000 requests per second, with data in three Regions. The team has no database admins. Which service?</p>
+<ul class="pq-options">
+<li class="pq-option wrong"><strong>A) </strong>RDS for MySQL with Multi-AZ.</li>
+<li class="pq-option wrong"><strong>B) </strong>Aurora Global Database.</li>
+<li class="pq-option correct"><strong>C) </strong>DynamoDB with Global Tables, on-demand capacity.</li>
+<li class="pq-option wrong"><strong>D) </strong>Redshift cluster.</li>
+</ul>
+<button class="pq-reveal" type="button">Reveal answer</button>
+<div class="pq-answer">
+<p><span class="correct">Correct: C.</span> DynamoDB is serverless key-value at single-digit ms, and Global Tables replicate active-active across Regions with no servers to run.</p>
+<p><span class="wrong">A is wrong:</span> one relational box cannot do 100k rps at 5 ms. B is wrong: Aurora is relational and heavier than this workload needs. D is wrong: Redshift is an analytics warehouse, not a live leaderboard.</p>
+</div>
+</div>
+<h2 id="lambda">8. Lambda: code with no servers</h2>
+<p>Lambda runs your function when something happens, then disappears. No provisioning, no patching, no idle bill. You upload code (or a container image), pick memory (128 MB to 10 GB) and a timeout (max 15 minutes), and AWS runs it per event, billed per millisecond.</p>
+<pre><code>  S3 upload ──┐
+  SQS message ─┼──&gt; Lambda runs ──&gt; writes to DynamoDB
+  API call ────┘         ^
+  schedule ──────────────┘   (EventBridge cron)
+</code></pre>
+<p>Triggers are the vocabulary: S3 events, SQS queues, DynamoDB Streams, API Gateway requests, EventBridge schedules and events. <strong>Concurrency</strong> is how many copies run at once; reserve some for critical functions so a noisy neighbor cannot starve them. <strong>Provisioned concurrency</strong> keeps copies warm to kill cold starts for latency-sensitive APIs.</p>
+<pre><code class="language-python">import json
+import boto3
+
+s3 = boto3.client(&quot;s3&quot;)
+
+def handler(event, context):
+    # Triggered by an S3 ObjectCreated event. event[&quot;Records&quot;] holds
+    # one entry per uploaded file; we handle the first.
+    record = event[&quot;Records&quot;][0]
+    bucket = record[&quot;s3&quot;][&quot;bucket&quot;][&quot;name&quot;]
+    key = record[&quot;s3&quot;][&quot;object&quot;][&quot;key&quot;]
+
+    # Copy the upload into a &quot;processed/&quot; prefix as a placeholder
+    # for real work (thumbnail, embedding, validation...).
+    s3.copy_object(
+        Bucket=bucket,
+        Key=&quot;processed/&quot; + key,
+        CopySource={&quot;Bucket&quot;: bucket, &quot;Key&quot;: key},
+    )
+    return {&quot;statusCode&quot;: 200, &quot;body&quot;: json.dumps({&quot;copied&quot;: key})}
+</code></pre>
+<p>Walkthrough: Lambda hands your function an <code>event</code> dict describing what happened. For S3, that means bucket and key. <code>context</code> carries runtime info (time left, request id). The function does its work with boto3 and returns. Keep it short: anything over 15 minutes does not belong here.</p>
+<div class="exam-ask"><p>"Run code when a file lands in S3": Lambda trigger, not a polling EC2. "Job takes 45 minutes": not Lambda; use Fargate, EC2, or Batch. "API with spiky traffic and zero idle cost": API Gateway plus Lambda. "Cold starts hurting p99": provisioned concurrency. "Function needs a VPC resource": attach it to private subnets (then it needs a NAT or endpoint for the internet).</p></div>
+
+<div class="takeaway"><p>Lambda = event in, code runs, bill per millisecond. Fifteen minutes max. Triggers are the whole game.</p></div>
+
+<div class="pq" id="lambda-trigger-check">
+<p class="pq-meta"><span class="constraint">Lambda</span><span class="constraint">knowledge check</span><span class="constraint">exam pattern</span></p>
+<p class="pq-question">Every night a 2 GB CSV lands in S3. A job must validate it and load rows into DynamoDB within 10 minutes. Cheapest correct design?</p>
+<ul class="pq-options">
+<li class="pq-option wrong"><strong>A) </strong>An EC2 instance running 24/7 polling the bucket.</li>
+<li class="pq-option correct"><strong>B) </strong>A Lambda function triggered by the S3 upload event.</li>
+<li class="pq-option wrong"><strong>C) </strong>A Lambda function on an EventBridge schedule every minute polling S3.</li>
+<li class="pq-option wrong"><strong>D) </strong>An RDS stored procedure reading from S3.</li>
+</ul>
+<button class="pq-reveal" type="button">Reveal answer</button>
+<div class="pq-answer">
+<p><span class="correct">Correct: B.</span> The upload event triggers exactly one run; you pay for seconds of compute, nothing idle.</p>
+<p><span class="wrong">A is wrong:</span> a full-time server for a nightly 10-minute job. C is wrong: polling every minute burns invocations for no reason when the trigger exists. D is wrong: RDS cannot reach into S3 like that, and it is the wrong tool.</p>
+</div>
+</div>
+<h2 id="observability">9. The watchmen: CloudWatch, CloudTrail, Config</h2>
+<p>Three services, three questions. <strong>CloudWatch</strong> asks "how healthy is it right now?" Metrics, alarms, logs, dashboards. <strong>CloudTrail</strong> asks "who did what, when?" Every API call in the account, logged to S3. <strong>Config</strong> asks "is it still configured correctly?" Records resource settings over time and flags drift with rules.</p>
+<pre><code>  CloudWatch:  CPU &gt; 80% for 5 min ──&gt; alarm ──&gt; page the on-call
+  CloudTrail:  &quot;who deleted the bucket?&quot; ──&gt; alice, 02:14, from 198.51.100.7
+  Config:      &quot;are all EBS volumes encrypted?&quot; ──&gt; rule: no ──&gt; flag it
+</code></pre>
+<p>The exam confuses them on purpose. "Alert me before the disk fills": CloudWatch alarm on a metric. "Prove to auditors that MFA was enabled all quarter": CloudTrail history plus Config timeline. "Auto-remediate unencrypted buckets": Config rule triggering a Lambda.</p>
+<div class="takeaway"><p>CloudWatch watches health. CloudTrail audits actions. Config audits configuration. Who/what/when = Trail; is-it-right = Config.</p></div>
+
+<div class="pq" id="observability-check">
+<p class="pq-meta"><span class="constraint">Observability</span><span class="constraint">knowledge check</span><span class="constraint">exam pattern</span></p>
+<p class="pq-question">After an incident, the team must answer: which IAM principal modified the production security group yesterday at 3 PM? Which service answers this directly?</p>
+<ul class="pq-options">
+<li class="pq-option wrong"><strong>A) </strong>CloudWatch Logs Insights.</li>
+<li class="pq-option correct"><strong>B) </strong>AWS CloudTrail.</li>
+<li class="pq-option wrong"><strong>C) </strong>AWS Config.</li>
+<li class="pq-option wrong"><strong>D) </strong>VPC Flow Logs.</li>
+</ul>
+<button class="pq-reveal" type="button">Reveal answer</button>
+<div class="pq-answer">
+<p><span class="correct">Correct: B.</span> CloudTrail records every API call with the caller identity and timestamp; AuthorizeSecurityGroupIngress is an API call.</p>
+<p><span class="wrong">A is wrong:</span> CloudWatch holds metrics and app logs, not the API audit trail. C is wrong: Config would show the group changed, not who changed it. D is wrong: flow logs show network packets, not API calls.</p>
+</div>
+</div>
+<h2 id="messaging">10. Messengers: SQS, SNS, EventBridge</h2>
+<p>Services talk through messages so none of them waits on another. Three messengers, three shapes.</p>
+<p><strong>SQS</strong> is a queue: senders drop messages in, receivers pull them out. It decouples and buffers. Two flavors: Standard (huge scale, at-least-once delivery, order best-effort) and FIFO (exactly-once, strict order, lower throughput, name ends in <code>.fifo</code>). If processing fails, the message returns after the visibility timeout; after enough failures it moves to a <strong>dead-letter queue (DLQ)</strong> for inspection.</p>
+<p><strong>SNS</strong> is pub/sub: publish once to a topic, and every subscriber gets a push (email, SMS, Lambda, SQS, HTTP). It is fan-out: one event, many consumers.</p>
+<p><strong>EventBridge</strong> is the event bus: rules match events (AWS service events, your app's events, SaaS partners, cron schedules) and route them to targets. It is the answer to "when X happens, do Y" and to scheduled tasks.</p>
+<pre><code>  one event, many consumers ──&gt; SNS topic ──&gt; Lambda + SQS + email
+  work buffer between services ──&gt; SQS queue ──&gt; workers pull at their pace
+  &quot;every night at 2am&quot; or &quot;on EC2 state change&quot; ──&gt; EventBridge rule
+</code></pre>
+<pre><code class="language-python">import boto3
+
+sqs = boto3.client(&quot;sqs&quot;)
+
+# Send one message. The queue URL comes from create_queue or the console.
+# Walkthrough: MessageBody is the payload (keep under 256 KB).
+# DelaySeconds postpones visibility; MessageGroupId would make this FIFO.
+resp = sqs.send_message(
+    QueueUrl=&quot;https://sqs.us-east-1.amazonaws.com/123456789012/orders&quot;,
+    MessageBody='{&quot;order_id&quot;: 42, &quot;total&quot;: 19.99}',
+)
+print(resp[&quot;MessageId&quot;])  # unique id; use it to trace the message
+</code></pre>
+<div class="exam-ask"><p>"Two services must not call each other directly": SQS between them. "Notify five systems when an order ships": SNS fan-out, often SNS to SQS queues per consumer. "Run a Lambda every hour and also when a file lands": EventBridge schedule plus S3 trigger. "Messages must not be lost and order matters": SQS FIFO plus DLQ.</p></div>
+
+<div class="takeaway"><p>SQS = queue, pull, buffer. SNS = broadcast, push, fan-out. EventBridge = rules over events, plus cron. DLQ catches the poison messages.</p></div>
+
+<div class="pq" id="messaging-check">
+<p class="pq-meta"><span class="constraint">Messaging</span><span class="constraint">knowledge check</span><span class="constraint">exam pattern</span></p>
+<p class="pq-question">An order service must notify the warehouse system, the email service, and the analytics pipeline when an order is placed. Each consumer scales independently and one slow consumer must not block the others. Which design?</p>
+<ul class="pq-options">
+<li class="pq-option wrong"><strong>A) </strong>The order service calls each consumer's HTTP endpoint in sequence.</li>
+<li class="pq-option correct"><strong>B) </strong>The order service publishes to one SNS topic; each consumer subscribes (via SQS or Lambda).</li>
+<li class="pq-option wrong"><strong>C) </strong>The order service writes to one SQS standard queue read by all three.</li>
+<li class="pq-option wrong"><strong>D) </strong>The order service writes directly to each consumer's database.</li>
+</ul>
+<button class="pq-reveal" type="button">Reveal answer</button>
+<div class="pq-answer">
+<p><span class="correct">Correct: B.</span> SNS fan-out decouples the publisher from every consumer; each scales and fails on its own.</p>
+<p><span class="wrong">A is wrong:</span> sequential calls couple availability and latency of all four systems. C is wrong: one queue means one consumer eats each message; the other two never see it. D is wrong: cross-service database writes are the tightest coupling there is.</p>
+</div>
+</div>
+<h2 id="api-gateway">11. API Gateway: the front door</h2>
+<p>API Gateway puts a managed front door in front of your backends. Clients hit one HTTPS endpoint; the gateway handles throttling, authentication, request validation, caching, and routing to Lambda, EC2, or any HTTP service.</p>
+<p>Three flavors: <strong>HTTP APIs</strong> (cheap, fast, for Lambda and HTTP backends), <strong>REST APIs</strong> (full features: usage plans, API keys, request/response mapping, WAF), <strong>WebSocket APIs</strong> (two-way, for chat and live feeds). Deploy in <strong>stages</strong> (dev, prod), each with its own URL. Protect backends with auth: IAM, Cognito user pools, or a Lambda authorizer.</p>
+<pre><code>  client ──&gt; API Gateway ──&gt; Lambda (or EC2 / HTTP)
+                ├── throttle: 1000 req/s, burst 2000
+                ├── auth: Cognito token required
+                └── cache: GET /products for 60s
+</code></pre>
+<div class="exam-ask"><p>"REST API in front of Lambda with rate limiting": API Gateway. "Millions of requests, lowest cost, Lambda backend": HTTP API, not REST. "Real-time chat": WebSocket API. "Same API, safe rollout": canary deployments shift a percent of traffic to the new stage.</p></div>
+
+<div class="takeaway"><p>API Gateway = managed front door. HTTP API for cheap and simple, REST API for full control, WebSocket for two-way.</p></div>
+
+<div class="pq" id="apigw-check">
+<p class="pq-meta"><span class="constraint">API Gateway</span><span class="constraint">knowledge check</span><span class="constraint">exam pattern</span></p>
+<p class="pq-question">A startup's public API runs on Lambda. They need per-customer rate limits, API keys for billing tiers, and caching of popular GET responses. Which option fits?</p>
+<ul class="pq-options">
+<li class="pq-option wrong"><strong>A) </strong>HTTP API with default settings.</li>
+<li class="pq-option correct"><strong>B) </strong>REST API with usage plans, API keys, and caching enabled.</li>
+<li class="pq-option wrong"><strong>C) </strong>WebSocket API.</li>
+<li class="pq-option wrong"><strong>D) </strong>An Application Load Balancer in front of Lambda.</li>
+</ul>
+<button class="pq-reveal" type="button">Reveal answer</button>
+<div class="pq-answer">
+<p><span class="correct">Correct: B.</span> Usage plans plus API keys give per-customer throttling and quotas; REST APIs support response caching.</p>
+<p><span class="wrong">A is wrong:</span> HTTP APIs lack usage plans and API keys. C is wrong: WebSocket is for two-way messaging, not REST billing tiers. D is wrong: an ALB does not do API keys, usage plans, or response caching.</p>
+</div>
+</div>
+<h2 id="kms">12. KMS: the key keeper</h2>
+<p>KMS creates and guards encryption keys. You never see the raw key material; you ask KMS to encrypt and decrypt for you, and every use is written to CloudTrail.</p>
+<p>The trick is <strong>envelope encryption</strong>: KMS makes a data key, the data key encrypts your file (fast, local), then KMS encrypts the data key itself with your master key. To read the file, you ask KMS to unwrap the data key.</p>
+<pre><code>  your file ──encrypt with data key──&gt; ciphertext
+  data key ──encrypt with KMS key──&gt; stored alongside the file
+
+  read: KMS unwraps data key (logged) ──&gt; data key decrypts file
+</code></pre>
+<p>Key types: <strong>AWS-managed</strong> (free-ish, one per service), <strong>customer-managed</strong> (your policies, your rotation, your disable switch), <strong>CloudHSM</strong> (dedicated hardware, for compliance that demands it). A <strong>key policy</strong> (resource-based) says which IAM principals may use the key. Disable the key and everything encrypted under it becomes unreadable instantly, which is both the safety switch and the footgun.</p>
+<div class="exam-ask"><p>"Audit every decryption of patient records": SSE-KMS, because each use lands in CloudTrail; SSE-S3 has no per-use log. "Instantly revoke access to archived data": disable the KMS key. "Encrypt an EBS volume": one checkbox, AWS-managed key by default. "Who can use this key": the key policy, not just IAM policies.</p></div>
+
+<div class="takeaway"><p>KMS holds the keys, you hold the policies. Envelope encryption keeps it fast. Every use is logged. Disabling a key revokes everything under it.</p></div>
+
+<div class="pq" id="kms-check">
+<p class="pq-meta"><span class="constraint">KMS</span><span class="constraint">knowledge check</span><span class="constraint">exam pattern</span></p>
+<p class="pq-question">A healthcare app stores patient scans in S3. Auditors require a log entry for every single decryption, and the ability to revoke all access within minutes during an incident. Which encryption choice?</p>
+<ul class="pq-options">
+<li class="pq-option wrong"><strong>A) </strong>SSE-S3 with default settings.</li>
+<li class="pq-option correct"><strong>B) </strong>SSE-KMS with a customer-managed key.</li>
+<li class="pq-option wrong"><strong>C) </strong>SSE-C with keys emailed to admins.</li>
+<li class="pq-option wrong"><strong>D) </strong>Client-side encryption with hardcoded keys.</li>
+</ul>
+<button class="pq-reveal" type="button">Reveal answer</button>
+<div class="pq-answer">
+<p><span class="correct">Correct: B.</span> KMS logs every decrypt to CloudTrail, and disabling the customer-managed key revokes access to everything encrypted under it.</p>
+<p><span class="wrong">A is wrong:</span> SSE-S3 has no per-decryption audit log. C is wrong: emailing keys is never the answer, and SSE-C has no central revoke. D is wrong: hardcoded keys are un-auditable and un-revocable.</p>
+</div>
+</div>
+<h2 id="cloudformation">13. CloudFormation: infrastructure as code</h2>
+<p>CloudFormation turns your architecture into a text file. You write a <strong>template</strong> (YAML or JSON) describing every resource; CloudFormation creates them together as a <strong>stack</strong>. Re-run the same template and you get the same environment, in any Region.</p>
+<pre><code class="language-python"># You do not write CloudFormation in boto3 day to day; you write the
+# template. This is the smallest honest example: one S3 bucket.
+#
+# AWSTemplateFormatVersion: &quot;2010-09-09&quot;
+# Description: Minimal stack - one versioned bucket
+# Resources:
+#   TrainingBucket:
+#     Type: AWS::S3::Bucket
+#     Properties:
+#       BucketName: training-data-2026
+#       VersioningConfiguration:
+#         Status: Enabled
+#
+# Walkthrough: Resources is the inventory. Each entry names a type
+# (AWS::S3::Bucket) and its properties. CloudFormation figures out
+# the order, creates everything, and rolls back if anything fails.
+</code></pre>
+<p><strong>Change sets</strong> preview what an update will do before it runs. <strong>Drift detection</strong> tells you when someone hand-edited a resource outside the template. <strong>StackSets</strong> deploy one template across many accounts and Regions. The CDK lets you write the same idea in Python or TypeScript instead of YAML; Terraform is the popular third-party alternative.</p>
+<div class="exam-ask"><p>"Deploy identical environments for dev, staging, prod": CloudFormation or CDK, not click-ops. "See what an update will change first": change sets. "One template, fifty accounts": StackSets. "Someone changed a security group by hand": drift detection.</p></div>
+
+<div class="takeaway"><p>Template in, stack out. Same file, same environment, every time. Preview with change sets, catch hand edits with drift detection.</p></div>
+
+<div class="pq" id="cfn-check">
+<p class="pq-meta"><span class="constraint">CloudFormation</span><span class="constraint">knowledge check</span><span class="constraint">exam pattern</span></p>
+<p class="pq-question">A team deploys its GenAI stack by clicking through the console. Prod and staging have drifted apart and nobody knows the differences. What fixes this permanently?</p>
+<ul class="pq-options">
+<li class="pq-option wrong"><strong>A) </strong>Take screenshots of every console page for documentation.</li>
+<li class="pq-option correct"><strong>B) </strong>Define the stack in CloudFormation templates, deploy per environment, and run drift detection.</li>
+<li class="pq-option wrong"><strong>C) </strong>Give only one person console access.</li>
+<li class="pq-option wrong"><strong>D) </strong>Copy the production resources with S3 replication.</li>
+</ul>
+<button class="pq-reveal" type="button">Reveal answer</button>
+<div class="pq-answer">
+<p><span class="correct">Correct: B.</span> Templates make environments reproducible; drift detection catches hand edits.</p>
+<p><span class="wrong">A is wrong:</span> screenshots document nothing enforceable. C is wrong: fewer clickers does not make clicks reproducible. D is wrong: S3 replication copies objects, not infrastructure.</p>
+</div>
+</div>
+<h2 id="billing">14. Billing: how AWS charges you</h2>
+<p>AWS bills pay-as-you-go: per second of EC2, per GB-month of S3, per million Lambda invocations. No upfront cost unless you choose a commitment for a discount.</p>
+<p>The tools: <strong>Cost Explorer</strong> shows where money went. <strong>Budgets</strong> alert (and can act) when spend crosses a line you set. <strong>Cost Anomaly Detection</strong> pings you on weird spikes. <strong>Cost allocation tags</strong> split the bill by team or project. <strong>Consolidated billing</strong> (via Organizations) merges many accounts into one bill with volume discounts.</p>
+<p>The <strong>Free Tier</strong> has three kinds: 12 months free for new accounts (750 EC2 hours a month), always-free amounts (1M Lambda invocations a month, forever), and short trials. <strong>Support plans</strong> step up from Basic (free) to Developer, Business, and Enterprise; the exam sometimes asks which plan gives a 15-minute response or a TAM (Business and up for fast response; Enterprise for the TAM).</p>
+<div class="exam-ask"><p>"Finance needs each department billed separately": cost allocation tags plus consolidated billing. "Alert at 80% of the monthly budget": AWS Budgets. "Cheapest support with fast incident response": Business. "Estimate a new architecture's cost": the AWS Pricing Calculator.</p></div>
+
+<div class="takeaway"><p>Pay as you go, tag everything, budget everything. Free Tier is real but limited. Consolidated billing merges accounts and discounts.</p></div>
+
+<div class="pq" id="billing-check">
+<p class="pq-meta"><span class="constraint">Billing</span><span class="constraint">knowledge check</span><span class="constraint">exam pattern</span></p>
+<p class="pq-question">A company has 12 AWS accounts, one per team. Finance wants one bill, volume discounts, and per-team cost breakdowns. Which combination?</p>
+<ul class="pq-options">
+<li class="pq-option wrong"><strong>A) </strong>One IAM user per team with billing alerts.</li>
+<li class="pq-option correct"><strong>B) </strong>AWS Organizations with consolidated billing and cost allocation tags per team.</li>
+<li class="pq-option wrong"><strong>C) </strong>Twelve separate credit cards and a spreadsheet.</li>
+<li class="pq-option wrong"><strong>D) </strong>A single shared account for all teams.</li>
+</ul>
+<button class="pq-reveal" type="button">Reveal answer</button>
+<div class="pq-answer">
+<p><span class="correct">Correct: B.</span> Organizations merges billing for discounts; tags attribute spend per team.</p>
+<p><span class="wrong">A is wrong:</span> IAM users do not merge bills across accounts. C is wrong: manual and discount-free. D is wrong: one account destroys isolation and per-team tracking.</p>
+</div>
+</div>
+<h2 id="genai-architecture">15. Putting it together: a GenAI app on AWS</h2>
+<p>Everything above wires into one picture. Here is a RAG chatbot, the architecture AIP-C01 scenarios are built from:</p>
+<pre><code>  user
+   │
+   ▼
+ CloudFront (edge cache, HTTPS)
+   │
+   ▼
+ API Gateway (auth, throttle) ── public subnets
+   │
+   ▼
+ Lambda &quot;chat-api&quot; ── private subnets (no public IPs)
+   │      │
+   │      ├── IAM role: bedrock:InvokeModel, s3:GetObject (docs bucket)
+   │      │
+   │      ├── S3 &quot;docs&quot; ──&gt; embeddings in OpenSearch Serverless
+   │      │     (versioned, SSE-KMS, lifecycle to Glacier)
+   │      │
+   │      └── Bedrock (via VPC endpoint, traffic never hits the internet)
+   │             └── Guardrails on the way out
+   │
+   └── CloudWatch Logs + CloudTrail audit + Config rules
+</code></pre>
+<p>Read it bottom to top, the way the exam does. The user never touches your compute directly: CloudFront and API Gateway stand in front. Lambda runs the logic in <strong>private subnets</strong> with no public IP, reaching the internet only through a NAT gateway if it must. It reads documents from <strong>S3</strong> (versioned so a bad upload is reversible, KMS-encrypted so auditors are happy). It calls <strong>Bedrock</strong> through a <strong>VPC endpoint</strong>, so prompts never cross the public internet. The function's <strong>IAM role</strong> allows exactly two things: invoke the model and read that one bucket. Every call is logged by <strong>CloudTrail</strong>; every error surfaces in <strong>CloudWatch</strong>; <strong>Config</strong> flags any bucket that drifts from encryption.</p>
+<p>Swap pieces and the exam scenario changes shape. Batch embeddings overnight? The S3 upload event triggers a Lambda, or EventBridge cron starts a Fargate task for long runs. Multi-Region users? Replicate the docs bucket (CRR) and deploy the stack with CloudFormation StackSets. Cost alarm? Budgets on the Bedrock and Lambda spend.</p>
+<div class="exam-ask"><p>When a scenario says "secure GenAI application", check four things in order: (1) network, private subnets plus endpoints; (2) identity, least-privilege roles, no keys; (3) data, KMS encryption and versioning; (4) audit, CloudTrail and CloudWatch. Miss one and an option will punish you for it.</p></div>
+<h2 id="exam-decision-trees">16. Exam decision trees</h2>
+<p>Tear-out-and-keep rules. When the scenario gives you the constraint on the left, reach for the answer on the right.</p>
+<div class="ladder">
+<div class="rung"><span class="rung-n">1</span><div><b><strong>Cheapest storage, rarely read, keep for years</strong>: S3 Glacier Deep Archive plus a lifecycle rule. Watch the 180-day minimum.</b><span></span></div></div>
+<div class="rung"><span class="rung-n">2</span><div><b><strong>Share one private file briefly</strong>: Presigned URL, not a public bucket.</b><span></span></div></div>
+<div class="rung"><span class="rung-n">3</span><div><b><strong>EC2 needs AWS access</strong>: IAM role (instance profile), never access keys.</b><span></span></div></div>
+<div class="rung"><span class="rung-n">4</span><div><b><strong>Human needs temporary admin</strong>: Assume a role, not a second user.</b><span></span></div></div>
+<div class="rung"><span class="rung-n">5</span><div><b><strong>Cap what a team can ever do</strong>: Permissions boundary.</b><span></span></div></div>
+<div class="rung"><span class="rung-n">6</span><div><b><strong>Private subnet needs patches</strong>: NAT gateway in a public subnet.</b><span></span></div></div>
+<div class="rung"><span class="rung-n">7</span><div><b><strong>Block one IP fast</strong>: NACL deny rule (security groups cannot deny).</b><span></span></div></div>
+<div class="rung"><span class="rung-n">8</span><div><b><strong>Reach S3/DynamoDB privately</strong>: Gateway VPC endpoint, free.</b><span></span></div></div>
+<div class="rung"><span class="rung-n">9</span><div><b><strong>Shared files, many writers, multi-AZ</strong>: EFS.</b><span></span></div></div>
+<div class="rung"><span class="rung-n">10</span><div><b><strong>Disk must survive instance stop</strong>: EBS.</b><span></span></div></div>
+<div class="rung"><span class="rung-n">11</span><div><b><strong>Tolerates interruption, cheapest compute</strong>: Spot.</b><span></span></div></div>
+<div class="rung"><span class="rung-n">12</span><div><b><strong>SQL that must scale itself</strong>: Aurora; key-value at any scale: DynamoDB.</b><span></span></div></div>
+<div class="rung"><span class="rung-n">13</span><div><b><strong>Run code on an event, seconds to minutes</strong>: Lambda; longer than 15 minutes: not Lambda.</b><span></span></div></div>
+<div class="rung"><span class="rung-n">14</span><div><b><strong>Who did what</strong>: CloudTrail; <strong>is it healthy</strong>: CloudWatch; <strong>is it configured right</strong>: Config.</b><span></span></div></div>
+<div class="rung"><span class="rung-n">15</span><div><b><strong>Fan-out to many consumers</strong>: SNS; <strong>buffer between services</strong>: SQS.</b><span></span></div></div>
+<div class="rung"><span class="rung-n">16</span><div><b><strong>Every decryption must be logged</strong>: SSE-KMS with a customer-managed key.</b><span></span></div></div>
+<div class="rung"><span class="rung-n">17</span><div><b><strong>Identical environments, no click-ops</strong>: CloudFormation.</b><span></span></div></div>
+</div>
+<h2 id="final-rapid-fire">Final rapid-fire</h2>
+<div class="pq" id="final-01">
+<p class="pq-meta"><span class="constraint">Rapid-fire</span><span class="constraint">mixed</span></p>
+<p class="pq-question">A Lambda function in a private subnet times out calling DynamoDB. The security group allows all outbound. What is the most likely missing piece, and the cheapest fix?</p>
+<ul class="pq-options">
+<li class="pq-option wrong"><strong>A) </strong>The function needs a public IP; move it to a public subnet.</li>
+<li class="pq-option correct"><strong>B) </strong>There is no route to DynamoDB; add a gateway VPC endpoint for DynamoDB.</li>
+<li class="pq-option wrong"><strong>C) </strong>DynamoDB needs a NAT gateway; add one to the private subnet.</li>
+<li class="pq-option wrong"><strong>D) </strong>The IAM role needs dynamodb:* on all resources.</li>
+</ul>
+<button class="pq-reveal" type="button">Reveal answer</button>
+<div class="pq-answer">
+<p><span class="correct">Correct: B.</span> Private subnets have no internet route; a gateway endpoint gives private, free access to DynamoDB.</p>
+<p><span class="wrong">A is wrong:</span> public subnets expose the function for no benefit. C is wrong: a NAT gateway works but costs money per hour and per GB; the endpoint is free. D is wrong: this is a network timeout, not an access-denied error.</p>
+</div>
+</div>
+
+<div class="pq" id="final-02">
+<p class="pq-meta"><span class="constraint">Rapid-fire</span><span class="constraint">mixed</span></p>
+<p class="pq-question">Which two statements about security groups and NACLs are true? (Select two.)</p>
+<ul class="pq-options">
+<li class="pq-option correct"><strong>A) </strong>Security groups are stateful; return traffic is automatically allowed.</li>
+<li class="pq-option correct"><strong>B) </strong>NACLs support explicit deny rules evaluated in rule-number order.</li>
+<li class="pq-option wrong"><strong>C) </strong>Security groups attach to subnets and NACLs attach to instances.</li>
+<li class="pq-option wrong"><strong>D) </strong>NACLs are stateful and security groups are stateless.</li>
+</ul>
+<button class="pq-reveal" type="button">Reveal answer</button>
+<div class="pq-answer">
+<p><span class="correct">Correct: A and B.</span> Security groups hug the instance and remember connections; NACLs hug the subnet, check both directions, and can deny.</p>
+<p><span class="wrong">C is wrong:</span> it swaps the attachment points. D is wrong: it swaps statefulness.</p>
+</div>
+</div>
+
+<div class="pq" id="final-03">
+<p class="pq-meta"><span class="constraint">Rapid-fire</span><span class="constraint">mixed</span></p>
+<p class="pq-question">Training data must be kept 7 years, is read heavily for 30 days after creation, then almost never. Deletes before 90 days must be impossible for compliance. Which design?</p>
+<ul class="pq-options">
+<li class="pq-option correct"><strong>A) </strong>S3 Standard with a lifecycle rule to Glacier Flexible Retrieval after 30 days, plus S3 Object Lock in compliance mode.</li>
+<li class="pq-option wrong"><strong>B) </strong>S3 Standard-IA with versioning only.</li>
+<li class="pq-option wrong"><strong>C) </strong>EBS volumes snapshotted nightly.</li>
+<li class="pq-option wrong"><strong>D) </strong>S3 Glacier Deep Archive from day one with MFA Delete.</li>
+</ul>
+<button class="pq-reveal" type="button">Reveal answer</button>
+<div class="pq-answer">
+<p><span class="correct">Correct: A.</span> Hot for 30 days, cheap archive after, Object Lock makes early deletion impossible even for root.</p>
+<p><span class="wrong">B is wrong:</span> no archive tier and no deletion protection. C is wrong: EBS snapshots are not a 7-year data lake. D is wrong: Deep Archive from day one punishes the heavy first-30-days reads with retrieval fees and delays.</p>
+</div>
+</div>
+
+<div class="pq" id="final-04">
+<p class="pq-meta"><span class="constraint">Rapid-fire</span><span class="constraint">mixed</span></p>
+<p class="pq-question">A company wants developers to log in once with the company identity provider and get short-lived access to three AWS accounts, with no long-term access keys anywhere. Which service?</p>
+<ul class="pq-options">
+<li class="pq-option wrong"><strong>A) </strong>IAM users with cross-account roles.</li>
+<li class="pq-option correct"><strong>B) </strong>IAM Identity Center.</li>
+<li class="pq-option wrong"><strong>C) </strong>Cognito user pools.</li>
+<li class="pq-option wrong"><strong>D) </strong>AWS Directory Service alone.</li>
+</ul>
+<button class="pq-reveal" type="button">Reveal answer</button>
+<div class="pq-answer">
+<p><span class="correct">Correct: B.</span> Identity Center is the SSO front door for workforce access across accounts, replacing IAM users for humans.</p>
+<p><span class="wrong">A is wrong:</span> cross-account roles help but still leave long-term IAM users behind. C is wrong: Cognito is for your app's end users, not your workforce. D is wrong: a directory alone does not federate into AWS accounts.</p>
+</div>
+</div>
+
+<div class="pq" id="final-05">
+<p class="pq-meta"><span class="constraint">Rapid-fire</span><span class="constraint">mixed</span></p>
+<p class="pq-question">An SQS queue feeds image-processing workers. Some messages fail repeatedly and block the queue. What is the standard fix?</p>
+<ul class="pq-options">
+<li class="pq-option wrong"><strong>A) </strong>Delete the queue and recreate it daily.</li>
+<li class="pq-option wrong"><strong>B) </strong>Increase the visibility timeout to 12 hours.</li>
+<li class="pq-option correct"><strong>C) </strong>Attach a dead-letter queue and set a max receive count.</li>
+<li class="pq-option wrong"><strong>D) </strong>Switch the queue to SNS.</li>
+</ul>
+<button class="pq-reveal" type="button">Reveal answer</button>
+<div class="pq-answer">
+<p><span class="correct">Correct: C.</span> After N failed receives, the poison message moves to the DLQ for inspection instead of clogging workers.</p>
+<p><span class="wrong">A is wrong:</span> destroying the queue loses messages. B is wrong: a longer timeout just delays the same failure. D is wrong: SNS is push fan-out, not a work buffer with retries.</p>
+</div>
+</div>
+<h2 id="go-deeper">Go deeper</h2>
+<p>Two links worth your time. The <a href="https://github.com/awscertifications/awscertificationswiki/blob/HEAD/docs/foundational/cloud-practitioner.md">AWS certification wiki's Cloud Practitioner page</a> keeps a maintained minimum-viable path: one video course plus practice exams, with honest notes on what each resource covers. On Reddit, r/AWSCertifications has years of "I passed CLF-C02" posts naming the exact trap questions people hit; search it for any service in this volume before exam day.</p>
+<p>You now know the ground AIP-C01 stands on. Regions place you, IAM guards you, S3 keeps everything, EC2 and Lambda compute it, VPC networks it, KMS seals it, and CloudFormation rebuilds it anywhere. The main volumes build GenAI on top of exactly this.</p>
+</div></main>
+<script>
+window.DS_TRACK = "aipc01";
+window.DS_TRACK_TITLE = "AIP-C01 Study Guide";
+window.DS_MANIFEST = [
+  { file: "index.html", label: "Start · Exam Overview & Study Map" },
+  { file: "prereq-aif-c01.html", label: "Prereq · AIF-C01 AI Practitioner Crash Course" },
+  { file: "prereq-aws-cloud-foundations.html", label: "Prereq · AWS Cloud Foundations" },
+  { file: "prereq-ml-specialty.html", label: "Prereq · ML Specialty Essentials" },
+  { file: "volume-d1-foundation-models.html", label: "D1 · Foundation Models, Data & Compliance (31%)" },
+  { file: "volume-d2-implementation-integration.html", label: "D2 · Implementation & Integration (26%)" },
+  { file: "volume-d3-safety-security-governance.html", label: "D3 · Safety, Security & Governance (20%)" },
+  { file: "volume-d4-optimization.html", label: "D4 · Optimization (12%)" },
+  { file: "volume-d5-testing-validation.html", label: "D5 · Testing & Validation (11%)" },
+  { file: "volume-maarek-labs.html", label: "Hands-On Labs" },
+  { file: "volume-question-bank.html", label: "Question Bank" },
+  { file: "volume-question-patterns.html", label: "Question Patterns · How AWS Asks" },
+  { file: "volume-system-design.html", label: "System Design Guide" },
+  { file: "volume-crash-course.html", label: "Crash Course · One-Volume Sprint" },
+  { file: "volume-appendix-gaps.html", label: "Appendix · Coverage Gaps" },
+];
+</script>
+<script>
+/* ==== DS runtime — do not edit per-file (build.py inlines) ==== */
+/* ==========================================================================
+   DS — Canonical Design System behavior (shared across study-guide tracks)
+   Inlined verbatim into a single <script> before </body> in each volume.
+   Zero per-page config except an optional manifest override:
+     <script>window.DS_TRACK = "aipc01";
+             window.DS_MANIFEST = [{file:"index.html",label:"…"}, …];<\/script>
+   must appear BEFORE this script to take effect.
+   Auto-builds: sidebar nav (from the page's own h2/h3), scroll-spy, search
+   filter, completion checkmarks (localStorage), reading progress bar,
+   prev/next footer, copy buttons, .pq reveal toggles, keyboard shortcuts,
+   mobile drawer. Leaves <details>/<summary> fully native.
+   ========================================================================== */
+(function () {
+  "use strict";
+
+  var TRACK = window.DS_TRACK || "ccarp";
+
+  var TRACK_TITLE = window.DS_TRACK_TITLE ||
+    (TRACK === "aipc01" ? "AIP-C01 Study Guide" : "CCAR-P Study Guide");
+
+  /* Official CCAR-P volume order (hardcoded). Each entry: filename + short
+     human label shown in the prev/next footer. */
+  var MANIFEST = window.DS_MANIFEST || [
+    { file: "index.html",                                label: "Start · Exam Overview & Study Map" },
+    { file: "01-solution-design-architecture.html",      label: "D1 · Solution Design & Architecture (17%)" },
+    { file: "02-models-prompting-context.html",          label: "D2 · Models, Prompting & Context (13%)" },
+    { file: "03-integration.html",                       label: "D3 · Integration (19%)" },
+    { file: "04-evaluation-testing-optimization.html",   label: "D4 · Evaluation, Testing & Optimization (16%)" },
+    { file: "05-governance-safety-risk.html",             label: "D5 · Governance, Safety & Risk (14%)" },
+    { file: "06-stakeholder-communication-lifecycle.html", label: "D6 · Stakeholder Communication & Lifecycle (14%)" },
+    { file: "07-developer-productivity-enablement.html", label: "D7 · Developer Productivity & Enablement (7%)" },
+    { file: "08-question-bank.html",                     label: "Question Bank" },
+    { file: "09-system-design-guide.html",               label: "System Design Guide" }
+  ];
+
+  document.documentElement.classList.add("ds-js");
+
+  var main = document.getElementById("ds-content");
+  if (!main) return; // minimal DOM contract not met — bail quietly
+
+  var sidebarRoot = document.getElementById("ds-sidebar-root");
+
+  /* ---------- helpers ---------- */
+
+  function slugify(s) {
+    var out = String(s).toLowerCase().trim()
+      .replace(/[^a-z0-9\u00c0-\u024f]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .replace(/-+/g, "-");
+    return out || "section";
+  }
+
+  function storeGet(k) { try { return window.localStorage.getItem(k); } catch (e) { return null; } }
+  function storeSet(k, v) { try { window.localStorage.setItem(k, v); } catch (e) { /* private mode */ } }
+  function storeDel(k) { try { window.localStorage.removeItem(k); } catch (e) { /* private mode */ } }
+
+  var pageFile = (window.location.pathname.split("/").pop() || "index.html")
+    .split("?")[0].split("#")[0] || "index.html";
+
+  /* ---------- 1. Ensure every h2/h3 has a unique slugified id ---------- */
+
+  var usedIds = {};
+  var headings = Array.prototype.slice.call(main.querySelectorAll("h2, h3"));
+  headings.forEach(function (h) {
+    var base = (h.id && h.id.trim()) ? h.id.trim() : slugify(h.textContent);
+    var id = base, n = 1;
+    while (usedIds[id]) { n += 1; id = base + "-" + n; }
+    usedIds[id] = true;
+    h.id = id;
+    if (h.tagName === "H2") h.setAttribute("tabindex", "-1"); // focus target for Alt+Arrow jumps
+  });
+
+  /* ---------- 2. Wrap main content at 72ch ---------- */
+
+  var inner = document.createElement("div");
+  inner.className = "ds-content-inner";
+  while (main.firstChild) inner.appendChild(main.firstChild);
+  main.appendChild(inner);
+
+  /* ---------- 2b. Site chrome: header (track title, breadcrumbs, volume
+     nav, prev/next) + footer sitemap. Built from window.DS_MANIFEST so
+     every page gets identical chrome; regenerates on every build. ---------- */
+
+  function manifestIndex() {
+    for (var i = 0; i < MANIFEST.length; i++) {
+      if (MANIFEST[i].file === pageFile) return i;
+    }
+    return -1;
+  }
+  var mi = manifestIndex();
+
+  function volLink(entry, text, cls, title) {
+    var a = document.createElement("a");
+    if (cls) a.className = cls;
+    a.href = entry.file;
+    a.textContent = text;
+    if (title) a.setAttribute("title", title);
+    return a;
+  }
+
+  var headerEl = document.createElement("header");
+  headerEl.className = "ds-site-header";
+
+  var topRow = document.createElement("div");
+  topRow.className = "ds-site-header-top";
+  var trackLink = document.createElement("a");
+  trackLink.className = "ds-track-title";
+  trackLink.href = "index.html";
+  trackLink.textContent = TRACK_TITLE;
+  topRow.appendChild(trackLink);
+
+  var hpn = document.createElement("nav");
+  hpn.className = "ds-hpn";
+  hpn.setAttribute("aria-label", "Previous and next volume");
+  if (mi > 0) hpn.appendChild(volLink(MANIFEST[mi - 1], "\u2190 Prev", null, "Previous: " + MANIFEST[mi - 1].label));
+  if (mi !== -1 && mi < MANIFEST.length - 1) hpn.appendChild(volLink(MANIFEST[mi + 1], "Next \u2192", null, "Next: " + MANIFEST[mi + 1].label));
+  if (hpn.firstChild) topRow.appendChild(hpn);
+  headerEl.appendChild(topRow);
+
+  var crumb = document.createElement("nav");
+  crumb.className = "ds-crumb";
+  crumb.setAttribute("aria-label", "Breadcrumb");
+  var ol = document.createElement("ol");
+  var homeLi = document.createElement("li");
+  if (mi === 0) {
+    var homeCur = document.createElement("span");
+    homeCur.setAttribute("aria-current", "page");
+    homeCur.textContent = "Home";
+    homeLi.appendChild(homeCur);
+  } else {
+    homeLi.appendChild(volLink({ file: "index.html", label: "Home" }, "Home", null, "Track home"));
+  }
+  ol.appendChild(homeLi);
+  if (mi > 0) {
+    var curLi = document.createElement("li");
+    var curSpan = document.createElement("span");
+    curSpan.setAttribute("aria-current", "page");
+    curSpan.textContent = MANIFEST[mi].label;
+    curLi.appendChild(curSpan);
+    ol.appendChild(curLi);
+  }
+  crumb.appendChild(ol);
+  headerEl.appendChild(crumb);
+
+  var volNav = document.createElement("nav");
+  volNav.setAttribute("aria-label", "All volumes");
+  var volUl = document.createElement("ul");
+  volUl.className = "ds-volnav";
+  MANIFEST.forEach(function (entry, i) {
+    var li = document.createElement("li");
+    var a = volLink(entry, entry.label);
+    if (i === mi) a.setAttribute("aria-current", "page");
+    li.appendChild(a);
+    volUl.appendChild(li);
+  });
+  volNav.appendChild(volUl);
+  headerEl.appendChild(volNav);
+  main.insertBefore(headerEl, inner);
+
+  var footerEl = document.createElement("footer");
+  footerEl.className = "ds-site-footer";
+  var fKicker = document.createElement("p");
+  fKicker.className = "ds-footer-kicker";
+  fKicker.textContent = "Sitemap";
+  footerEl.appendChild(fKicker);
+  footerEl.appendChild(volLink({ file: "index.html", label: "Track home" }, "Track home", "ds-footer-home", "Back to the study guide home"));
+  var fNav = document.createElement("nav");
+  fNav.setAttribute("aria-label", "Sitemap");
+  var fUl = document.createElement("ul");
+  MANIFEST.forEach(function (entry, i) {
+    var li = document.createElement("li");
+    var a = volLink(entry, entry.label);
+    if (i === mi) a.setAttribute("aria-current", "page");
+    li.appendChild(a);
+    fUl.appendChild(li);
+  });
+  fNav.appendChild(fUl);
+  footerEl.appendChild(fNav);
+  main.appendChild(footerEl);
+
+  /* ---------- 3. Global chrome: skip link, progress bar, hamburger, overlay ---------- */
+
+  var skip = document.createElement("a");
+  skip.href = "#ds-content";
+  skip.className = "ds-skip";
+  skip.textContent = "Skip to content";
+  document.body.insertBefore(skip, document.body.firstChild);
+
+  var progress = document.createElement("div");
+  progress.id = "ds-progress";
+  progress.setAttribute("aria-hidden", "true");
+  document.body.appendChild(progress);
+
+  var burger = document.createElement("button");
+  burger.id = "ds-hamburger";
+  burger.type = "button";
+  burger.setAttribute("aria-label", "Open navigation menu");
+  burger.setAttribute("aria-expanded", "false");
+  burger.setAttribute("aria-controls", "ds-sidebar-root");
+  burger.innerHTML = "<span></span><span></span><span></span>";
+  document.body.appendChild(burger);
+
+  var overlay = document.createElement("div");
+  overlay.id = "ds-overlay";
+  overlay.setAttribute("aria-hidden", "true");
+  document.body.appendChild(overlay);
+
+  function drawerOpen() {
+    document.body.classList.add("ds-drawer-open");
+    burger.setAttribute("aria-expanded", "true");
+    burger.setAttribute("aria-label", "Close navigation menu");
+  }
+  function drawerClose() {
+    document.body.classList.remove("ds-drawer-open");
+    burger.setAttribute("aria-expanded", "false");
+    burger.setAttribute("aria-label", "Open navigation menu");
+  }
+  burger.addEventListener("click", function () {
+    if (document.body.classList.contains("ds-drawer-open")) drawerClose();
+    else drawerOpen();
+  });
+  overlay.addEventListener("click", drawerClose);
+
+  /* ---------- 4. Build the sidebar from h2/h3 ---------- */
+
+  var linkById = {};
+  var sectionIds = []; // h2 ids in order (for Alt+Arrow jumps)
+  var searchInput = null;
+
+  if (sidebarRoot) {
+    sidebarRoot.setAttribute("role", "navigation");
+    sidebarRoot.setAttribute("aria-label", "Study guide sections");
+
+    var sideInner = document.createElement("div");
+    sideInner.className = "ds-side-inner";
+
+    var volBlock = document.createElement("div");
+    volBlock.className = "ds-side-volumes";
+    var volH = document.createElement("h2");
+    volH.textContent = "Volumes";
+    volBlock.appendChild(volH);
+    var volList = document.createElement("ul");
+    MANIFEST.forEach(function (entry, i) {
+      var li = document.createElement("li");
+      var a = document.createElement("a");
+      a.href = entry.file;
+      a.textContent = entry.label;
+      if (i === manifestIndex()) a.setAttribute("aria-current", "page");
+      li.appendChild(a);
+      volList.appendChild(li);
+    });
+    volBlock.appendChild(volList);
+    sideInner.appendChild(volBlock);
+
+    var searchWrap = document.createElement("div");
+    searchWrap.className = "ds-side-search";
+    var searchLabel = document.createElement("label");
+    searchLabel.className = "ds-visually-hidden";
+    searchLabel.setAttribute("for", "ds-nav-search");
+    searchLabel.textContent = "Filter sections";
+    searchInput = document.createElement("input");
+    searchInput.id = "ds-nav-search";
+    searchInput.type = "search";
+    searchInput.setAttribute("placeholder", "Filter sections…  ( / )");
+    searchInput.setAttribute("aria-label", "Filter sections");
+    searchWrap.appendChild(searchLabel);
+    searchWrap.appendChild(searchInput);
+    sideInner.appendChild(searchWrap);
+
+    var nav = document.createElement("ul");
+    nav.className = "ds-nav";
+    sideInner.appendChild(nav);
+    sidebarRoot.appendChild(sideInner);
+
+    function makeDone(title, id) {
+      var key = TRACK + ":" + pageFile + ":done:" + id;
+      var wrap = document.createElement("span");
+      wrap.className = "ds-done-wrap";
+      var cb = document.createElement("input");
+      cb.type = "checkbox";
+      cb.className = "ds-done";
+      cb.setAttribute("aria-label", "Mark section complete: " + title);
+      cb.checked = storeGet(key) === "1";
+      cb.addEventListener("change", function () {
+        if (cb.checked) storeSet(key, "1"); else storeDel(key);
+        var row = cb.closest(".ds-nav-row");
+        if (row) row.classList.toggle("done", cb.checked);
+      });
+      wrap.appendChild(cb);
+      if (cb.checked) {
+        // row class applied after row exists (see below via queue)
+        setTimeout(function () {
+          var row = cb.closest(".ds-nav-row");
+          if (row) row.classList.add("done");
+        }, 0);
+      }
+      return wrap;
+    }
+
+    var subCounter = 0;
+    var currentSub = null;
+
+    headings.forEach(function (h) {
+      var title = h.textContent.trim();
+      if (h.tagName === "H2") {
+        sectionIds.push(h.id);
+        subCounter += 1;
+        var subId = "ds-sub-" + subCounter;
+
+        var chapterLi = document.createElement("li");
+        chapterLi.className = "ds-nav-chapter";
+
+        var row = document.createElement("div");
+        row.className = "ds-nav-row";
+
+        var toggle = document.createElement("button");
+        toggle.type = "button";
+        toggle.className = "ds-nav-toggle";
+        toggle.textContent = "▾";
+        toggle.setAttribute("aria-expanded", "true");
+        toggle.setAttribute("aria-controls", subId);
+        toggle.setAttribute("aria-label", "Collapse section: " + title);
+
+        var sub = document.createElement("ul");
+        sub.className = "ds-nav-sub";
+        sub.id = subId;
+
+        toggle.addEventListener("click", function () {
+          var open = toggle.getAttribute("aria-expanded") === "true";
+          toggle.setAttribute("aria-expanded", String(!open));
+          toggle.setAttribute("aria-label", (open ? "Expand" : "Collapse") + " section: " + title);
+          toggle.textContent = open ? "▸" : "▾";
+          sub.hidden = open;
+        });
+
+        var a = document.createElement("a");
+        a.className = "ds-nav-link";
+        a.href = "#" + h.id;
+        a.textContent = title;
+        a.setAttribute("data-target", h.id);
+
+        row.appendChild(toggle);
+        row.appendChild(a);
+        row.appendChild(makeDone(title, h.id));
+        chapterLi.appendChild(row);
+        chapterLi.appendChild(sub);
+        nav.appendChild(chapterLi);
+        currentSub = sub;
+        linkById[h.id] = a;
+      } else if (currentSub) { // h3 → subsection of the current chapter
+        var sli = document.createElement("li");
+        sli.className = "ds-nav-row ds-nav-subrow";
+        var sa = document.createElement("a");
+        sa.className = "ds-nav-link";
+        sa.href = "#" + h.id;
+        sa.textContent = title;
+        sa.setAttribute("data-target", h.id);
+        sli.appendChild(sa);
+        sli.appendChild(makeDone(title, h.id));
+        currentSub.appendChild(sli);
+        linkById[h.id] = sa;
+      }
+    });
+
+    // Live filter
+    searchInput.addEventListener("input", function () {
+      var q = searchInput.value.trim().toLowerCase();
+      Array.prototype.forEach.call(nav.querySelectorAll(".ds-nav-chapter"), function (ch) {
+        var chapterLink = ch.querySelector(".ds-nav-row > .ds-nav-link");
+        var chapterText = chapterLink ? chapterLink.textContent.toLowerCase() : "";
+        var subMatch = false;
+        Array.prototype.forEach.call(ch.querySelectorAll(".ds-nav-subrow"), function (sr) {
+          var m = !q || sr.textContent.toLowerCase().indexOf(q) !== -1;
+          sr.style.display = m ? "" : "none";
+          if (m) subMatch = true;
+        });
+        ch.style.display = (!q || chapterText.indexOf(q) !== -1 || subMatch) ? "" : "none";
+      });
+    });
+
+    // Close the mobile drawer when a nav link is tapped
+    nav.addEventListener("click", function (e) {
+      var a = e.target && e.target.closest ? e.target.closest("a.ds-nav-link") : null;
+      if (a && window.innerWidth <= 900) drawerClose();
+    });
+
+    /* ---------- 5. Scroll-spy ---------- */
+
+    var spyLinks = headings
+      .map(function (h) { return linkById[h.id]; })
+      .filter(function (a) { return !!a; });
+
+    function setActive(id) {
+      spyLinks.forEach(function (a) {
+        a.classList.toggle("active", a.getAttribute("data-target") === id);
+      });
+    }
+
+    if ("IntersectionObserver" in window && headings.length) {
+      var spy = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) setActive(entry.target.id);
+        });
+      }, { rootMargin: "-30% 0px -60% 0px", threshold: 0 });
+      headings.forEach(function (h) { spy.observe(h); });
+    }
+  }
+
+  /* ---------- 6. Reading progress bar ---------- */
+
+  var ticking = false;
+  function updateProgress() {
+    var el = document.documentElement;
+    var max = el.scrollHeight - el.clientHeight;
+    var pct = max > 0 ? (el.scrollTop / max) * 100 : 0;
+    progress.style.width = pct.toFixed(2) + "%";
+    ticking = false;
+  }
+  window.addEventListener("scroll", function () {
+    if (!ticking) { ticking = true; window.requestAnimationFrame(updateProgress); }
+  }, { passive: true });
+  window.addEventListener("resize", updateProgress);
+  updateProgress();
+
+  /* ---------- 7. Prev / next volume footer (from manifest) ---------- */
+
+  if (mi !== -1) {
+    var pn = document.createElement("nav");
+    pn.className = "ds-prevnext";
+    pn.setAttribute("aria-label", "Previous and next volume");
+
+    function pnLink(entry, cls, kicker) {
+      var a = document.createElement("a");
+      a.className = cls;
+      a.href = entry.file;
+      var k = document.createElement("span");
+      k.className = "ds-pn-kicker";
+      k.textContent = kicker;
+      var lab = document.createElement("span");
+      lab.className = "ds-pn-label";
+      lab.textContent = entry.label;
+      a.appendChild(k);
+      a.appendChild(lab);
+      return a;
+    }
+
+    if (mi > 0) pn.appendChild(pnLink(MANIFEST[mi - 1], "ds-prev", "Previous"));
+    else {
+      var spacer = document.createElement("span");
+      spacer.className = "ds-prev-empty";
+      spacer.setAttribute("aria-hidden", "true");
+      pn.appendChild(spacer);
+    }
+    if (mi < MANIFEST.length - 1) pn.appendChild(pnLink(MANIFEST[mi + 1], "ds-next", "Next"));
+
+    inner.appendChild(pn);
+  }
+  // If the current page is not in the manifest, no prev/next is rendered.
+
+  /* ---------- 8. Copy buttons on every <pre> ---------- */
+
+  Array.prototype.forEach.call(inner.querySelectorAll("pre"), function (pre) {
+    if (pre.querySelector(".ds-copy-btn")) return; // don't double-inject
+    var btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "ds-copy-btn";
+    btn.textContent = "Copy";
+    btn.setAttribute("aria-label", "Copy code block");
+    btn.addEventListener("click", function () {
+      var code = pre.querySelector("code");
+      var text = code ? code.innerText : pre.innerText;
+      function feedback(ok) {
+        btn.textContent = ok ? "Copied" : "Failed";
+        window.setTimeout(function () { btn.textContent = "Copy"; }, 1500);
+      }
+      function legacyCopy() {
+        var ta = document.createElement("textarea");
+        ta.value = text;
+        ta.style.position = "fixed";
+        ta.style.opacity = "0";
+        document.body.appendChild(ta);
+        ta.select();
+        var ok = false;
+        try { ok = document.execCommand("copy"); } catch (e) { /* ignore */ }
+        document.body.removeChild(ta);
+        feedback(ok);
+      }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(
+          function () { feedback(true); },
+          function () { legacyCopy(); }
+        );
+      } else {
+        legacyCopy();
+      }
+    });
+    pre.appendChild(btn);
+  });
+
+  /* ---------- 9. .pq reveal toggles (details/summary left native) ---------- */
+
+  Array.prototype.forEach.call(inner.querySelectorAll(".pq"), function (pq) {
+    if (pq.tagName === "DETAILS") return; // native disclosure — do not touch
+    var btn = pq.querySelector(".pq-reveal");
+    var ans = pq.querySelector(".pq-answer");
+    if (!btn || !ans || btn.tagName !== "BUTTON") return;
+    btn.setAttribute("aria-expanded", "false");
+    btn.setAttribute("aria-controls", ans.id || "");
+    btn.addEventListener("click", function () {
+      var open = ans.classList.toggle("open");
+      btn.setAttribute("aria-expanded", String(open));
+      btn.textContent = open ? "Hide answer" : "Reveal answer";
+    });
+  });
+
+  /* ---------- 10. Keyboard shortcuts ---------- */
+
+  document.addEventListener("keydown", function (e) {
+    var active = document.activeElement;
+    var inField = active && /^(INPUT|TEXTAREA|SELECT)$/.test(active.tagName);
+
+    // "/" focuses the sidebar search (when not typing somewhere)
+    if (e.key === "/" && !inField && !e.ctrlKey && !e.metaKey && !e.altKey && searchInput) {
+      e.preventDefault();
+      if (window.innerWidth <= 900 && !document.body.classList.contains("ds-drawer-open")) drawerOpen();
+      searchInput.focus();
+      return;
+    }
+
+    // Esc closes the mobile drawer; otherwise clears the search
+    if (e.key === "Escape") {
+      if (document.body.classList.contains("ds-drawer-open")) {
+        drawerClose();
+        burger.focus();
+      } else if (active === searchInput) {
+        searchInput.value = "";
+        searchInput.dispatchEvent(new Event("input", { bubbles: true }));
+        searchInput.blur();
+      }
+      return;
+    }
+
+    // Alt+ArrowDown / Alt+ArrowUp jump to next/previous h2 section
+    if (e.altKey && (e.key === "ArrowDown" || e.key === "ArrowUp") && sectionIds.length) {
+      e.preventDefault();
+      var dir = e.key === "ArrowDown" ? 1 : -1;
+      var y = window.scrollY + 120;
+      var idx = -1;
+      sectionIds.forEach(function (id, i) {
+        var el = document.getElementById(id);
+        if (el && el.getBoundingClientRect().top + window.scrollY <= y) idx = i;
+      });
+      var target = idx + dir;
+      if (target < 0) target = 0;
+      if (target >= sectionIds.length) target = sectionIds.length - 1;
+      var tel = document.getElementById(sectionIds[target]);
+      if (tel) {
+        tel.scrollIntoView({ behavior: "smooth", block: "start" });
+        if (tel.focus) tel.focus({ preventScroll: true });
+      }
+    }
+  });
+})();
+
+</script>
+<script>
+(function(){
+  if (window.__aipYtWired) return; window.__aipYtWired = true;
+  var players = {};
+  var apiLoaded = false;
+  function loadApi(){
+    if (apiLoaded || window.YT) return; apiLoaded = true;
+    var t = document.createElement('script'); t.src = 'https://www.youtube.com/iframe_api';
+    document.head.appendChild(t);
+  }
+  function wireBar(bar, id){
+    if (!bar || !(window.YT && YT.Player)) return;
+    if (!players[id]) { try { players[id] = new YT.Player(id); } catch (e) { return; } }
+    if (bar.__wired) return; bar.__wired = true;
+    bar.addEventListener('click', function(ev){
+      var b = ev.target && ev.target.closest ? ev.target.closest('button[data-rate]') : null;
+      if (!b) return;
+      var p = players[id];
+      if (p && p.setPlaybackRate) { try { p.setPlaybackRate(parseFloat(b.getAttribute('data-rate'))); } catch (e) {} }
+      bar.querySelectorAll('button').forEach(function(x){ x.classList.remove('active'); });
+      b.classList.add('active');
+    });
+  }
+  document.querySelectorAll('.yt-facade').forEach(function(fac){
+    fac.querySelector('.yt-facade-btn').addEventListener('click', function(){
+      var vid = fac.getAttribute('data-vid');
+      var ytid = fac.getAttribute('data-ytid');
+      var title = fac.getAttribute('data-title');
+      var fr = document.createElement('iframe');
+      fr.className = 'yt-player loaded';
+      fr.id = ytid;
+      fr.title = title;
+      fr.src = 'https://www.youtube-nocookie.com/embed/' + vid + '?enablejsapi=1&rel=0&autoplay=1';
+      fr.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+      fr.allowFullscreen = true;
+      fac.replaceWith(fr);
+      loadApi();
+      var bar = document.querySelector('.yt-speedbar[data-for="' + ytid + '"]');
+      var n = 0; var iv = setInterval(function(){
+        wireBar(bar, ytid);
+        if ((window.YT && YT.Player) || ++n > 40) clearInterval(iv);
+      }, 500);
+    });
+  });
+})();
+</script>
+</body>
+</html>
