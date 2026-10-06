@@ -1167,6 +1167,42 @@ footer p{text-align:left}
   #ds-content .ds-site-footer,
   .ds-side-volumes { display: none !important; }
 }
+
+/* ==========================================================================
+   World-class upgrade (2026-10-05): scroll reveal + figure parallax.
+   Progressive enhancement: .reveal is added by JS only, so with JS disabled
+   every element stays fully visible. Parallax drift is transform-only (no
+   layout shift) and limited to plain figures; both honor
+   prefers-reduced-motion.
+   ========================================================================== */
+
+/* Scroll reveal: subtle rise-in. JS adds .reveal to content blocks; the
+   IntersectionObserver adds .revealed as each block enters the viewport. */
+.reveal {
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.reveal.revealed {
+  opacity: 1;
+  transform: none;
+}
+
+/* Figure parallax: gentle vertical drift on figure images (excludes
+   .fig-light cards so the white plate never shows an edge). The figure gets
+   overflow:hidden from JS when parallax activates, so the drift cannot
+   cause layout shift or edge bleed. */
+figure.ds-px { overflow: hidden; }
+figure.ds-px img {
+  transform: translateY(var(--px, 0px));
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal { opacity: 1; transform: none; transition: none; }
+  figure.ds-px img { transform: none; }
+  html { scroll-behavior: auto; }
+}
 .walkthrough{margin:.4rem 0 1.4rem;padding:.6rem .9rem;border-left:3px solid var(--accent,#4da3ff);background:var(--card,#141414);border-radius:0 8px 8px 0;font-size:.92rem;color:var(--muted,#a8a8a8)}
 .walkthrough strong{color:inherit}
 </style>
@@ -1311,7 +1347,7 @@ html.xp-js .xp-reveal.xp-in {
 <h1 id="1-what-can-go-wrong-four-failures">1. What can go wrong: the four failures that built every control on this page</h1>
 <p>First, understand the four failures. Each failure is a real incident. A team shipped something. That thing broke.</p><p>Then, a control was built to prevent that failure. Every chapter after this one exists because one of these failures happened to someone. Read the failures first. Then, every guardrail policy, every encryption choice, and every audit log in this book will be an answer. It will not be a vocabulary list.</p>
 <figure><img src="assets/img/mermaid/91-four-failures.svg" alt="Four failures and the controls that answer them: hallucination answered by grounding checks, injection and jailbreak by the prompt attack filter, PII leaks by sensitive information filters, harmful content by content filters and denied topics, all inside one Bedrock Guardrail" loading="lazy"><figcaption>Four failures, one policy object. Grounding checks answer hallucination. The prompt attack filter answers injection and jailbreak. Sensitive information filters answer PII leaks. Content filters and denied topics answer harmful content. Data security and governance wrap the whole picture.</figcaption>
-<figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <h3 id="ch1-failure1">Failure 1: the confident wrong answer</h3>
 <p>A hallucination is text from the model. The text is fluent and confident. But the text is not true. Its sources do not support it.</p><p>The model does not lie. It does not know what truth is. It makes the most plausible next words. Plausibility is not accuracy.</p>
 <p>Understand this. A support chatbot tells a customer: refunds take 3 to 5 days. The policy document says 5 to 7 days.</p><p>The customer plans with the wrong number. The refund arrives "late." No one finds the error until the customer complains. The answer sounded certain. Its tone did not warn anyone.</p>
@@ -1372,7 +1408,7 @@ html.xp-js .xp-reveal.xp-in {
 </tbody>
 </table></div>
 <figure><img src="assets/img/mermaid/88-pattern-d3.svg" alt="D3 question pattern: a harmful-content risk in the question stem points to Guardrails content filters, PII in data points to the sensitive information filter with redact or block, and the rest points to IAM plus KMS plus VPC controls" loading="lazy"><figcaption>Exam stems map to controls. A harmful-content risk points to Guardrails content filters. PII in the data points to the sensitive information filter. This filter can redact or block. The remaining risks point to IAM, KMS, and VPC controls.</figcaption>
-<figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <p>Read the diagram. Start from the question stem. If the risk is harmful content, the answer is the Guardrails content filters. If PII is in the data, the answer is the sensitive information filter.</p><p>Use redact or block. All other risks in this family use the platform controls. These controls are IAM, KMS, and VPC. This is the decision tree for the exam.</p>
 <p>The rest of this volume follows the map in order. Chapter 2 shows the single managed object. This object holds most of these controls. This object is the guardrail.</p>
 
@@ -1383,24 +1419,24 @@ html.xp-js .xp-reveal.xp-in {
 <p class="ch-bridge" style="border-left:3px solid var(--accent);padding:.55rem 1rem;background:var(--surface);border-radius:0 8px 8px 0;margin:1.1rem 0"><strong>Why this comes next.</strong> Chapter 1 named the failures. It also named the controls that answer them. This section explains the control itself.</p><p class="ch-bridge" style="border-left:3px solid var(--accent);padding:.55rem 1rem;background:var(--surface);border-radius:0 8px 8px 0;margin:1.1rem 0">It is one managed object. It holds six independent policies. The explanation is important. Every chapter that follows explains one of those six policies in detail.</p>
 <figure><img src="assets/img/ste100/aip-four-failures-controls.svg" alt="Four failures and the guardrail control that stops each one" loading="lazy">
 <figcaption>Four failures, four matching controls in one guardrail object.</figcaption>
-<figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <div class="walkthrough"><p><strong>How to read this.</strong> Read each row left to right: the failure on the left, the control on the right. Hallucination meets grounding checks, injection and jailbreak meet the prompt attack filter. PII leaks meet sensitive information filters, and harmful content meets content filters plus denied topics.</p></div>
 <h2 id="ch1-board">One policy object, six policies</h2>
 <p>A guardrail is a named configuration object in Amazon Bedrock. It holds your safety rules. Imagine a bouncer at the model's door. Every request and every response passes the bouncer.</p><p>The bouncer checks a fixed list of six policies. The six policies are content filters, denied topics, word filters, sensitive information filters, contextual grounding checks, and Automated Reasoning checks. Each policy switches on or off by itself. Every enabled policy evaluates each request.</p>
 <p>Foundation models have generic safety training. This training does not know your product rules. A banking chatbot must not give investment advice.</p><p>A children's tutor must refuse profanity in quoted text. A support agent must mask credit card numbers. Without guardrails, you make these rules yourself. You use regexes and classifiers around each model call.</p><p>You write this custom code one time. You forget this code. Clever prompts bypass this code. Guardrails put the policy in one managed place. You write the policy in plain language. AWS evaluates the policy on the input and the output.</p>
 <p>Keep two moving parts separate. The guardrail is the draft configuration. You edit the draft configuration. A version is a frozen, unchangeable snapshot of that configuration.</p><p>Production traffic uses a specific version. Production traffic never uses the draft. A policy change cannot silently change live behavior. You can reuse one guardrail across many models and applications. This is a standardized, reusable safety component.</p>
 <figure class="fig-light"><img src="assets/img/internet/img-17.png" alt="Responsible AI on Bedrock in one view: Guardrails for safety and privacy, model evaluation for accuracy and toxicity, prompt engineering for explainability, Knowledge Bases for accuracy, and invocation logging for governance." loading="lazy"><figcaption>Responsible AI on Bedrock has one view. Guardrails provide safety and privacy. Model evaluation checks accuracy and toxicity. Prompt engineering provides explainability. Knowledge Bases provide accuracy. Invocation logging provides governance.</figcaption>
-<figcaption class="credit">Source: AWS Machine Learning blog, via image search Sept 2026.</figcaption></figure>
+<figcaption class="credit">Source: AWS Machine Learning blog, via image search Sept 2026. Reused in the AWS AIP-C01 Study Guide.</figcaption></figure>
 <h3 id="ch1-how">The request path: input check, model call, output check</h3>
 <figure><img src="assets/img/density/d3-request-path.svg" alt="The request path: input check first, then the model call, then output check; a violation anywhere returns the blocked message" loading="lazy"><figcaption>The request path: input check first, then the model call, then output check; a violation anywhere returns the blocked message</figcaption>
-<figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <div class="walkthrough"><p><strong>How to read this.</strong> Read left to right: input evaluation, generation, output evaluation. The footer states the rule: input and output checks are independent switches. Takeaway: strict-on-inputs is the common production shape.</p></div>
 <p>When you attach a guardrail to a model call, the sequence stays fixed. First, input evaluation: your application sends the prompt to Bedrock. It sends a guardrail identifier and version. Before the model sees anything, each enabled policy runs against the input. A violation stops the request at that point.</p><p>Second, model generation: if the input passes, the model generates its completion. The model does not know the guardrail exists. Third, output evaluation: the same policies run against the completion. This happens before the completion returns to your application. A violation produces your configurable blocked message. For example, "I cannot help with that." This happens instead of model text.</p>
 <p>The exam loves two details. Input and output checks are independent switches. Filter inputs only, outputs only, or both. A common production shape is strict on inputs. This blocks attacks and PII early. It saves inference cost.</p><p>It has a slightly looser hand on outputs. Each evaluation produces a trace. In the Converse API, you pass guardrailConfig. It has the guardrail identifier, the version, and a trace flag. The trace tells you which policy fired and why. This helps you debug "why was this blocked" without guessing.</p>
 <p>AWS bills Guardrail evaluations separately from model tokens. You pay per evaluation. The exam will not ask exact prices. But it tests that guardrails cost money. Do not stack redundant guardrails without reason.</p>
 <h3 id="ch1-numbers">The six policies at a glance</h3>
 <figure><img src="assets/img/density/d3-six-policies.svg" alt="The six guardrail policies at a glance: what each one screens" loading="lazy"><figcaption>The six guardrail policies at a glance: what each one screens</figcaption>
-<figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <div class="walkthrough"><p><strong>How to read this.</strong> Six cards, one per policy. Each item names what it screens. Each item shows how you configure it. Takeaway: you must match a scenario verb to one of these six cards. This is half of Domain 3.</p></div>
 <p>Memorize this table. You answer half of Domain 3 questions by matching a scenario verb to one row.</p>
 <div class="table-wrap"><table>
@@ -1447,7 +1483,7 @@ html.xp-js .xp-reveal.xp-in {
 <p>Worked trace. A customer writes to a support chatbot. The customer states: "My card 4539-XXXX-XXXX-1234 was charged twice, you idiots, tell me how to hack the refund system." A guardrail watches the input. It also watches the output. Three policies activate on the input at the same time.</p><p>The sensitive information filter sees a credit card number. It masks the number. The content filter scores "you idiots" as insults. It blocks the request only if the strength is at or below the detected severity.</p><p>The denied topics policy sees "how to hack the refund system." It blocks the whole request if fraud or hacking is a denied topic. There is one input. There are three independent checks. Each check has its own outcome. The exam calls them independent policies. It does not call them one filter.</p>
 <h3 id="ch1-fig">Where the guardrail sits</h3>
 <figure><img src="assets/img/mermaid/04-guardrails-flow.svg" alt="guardrails flow diagram" loading="lazy"><figcaption>guardrails flow diagram</figcaption>
-<figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <p>Reading the diagram: The raw prompt enters from the left. It meets the guardrail shield first. This is the input check. A violation stops the flow here. The model does not start.</p><p>You save the inference cost. The prompt continues into the model. The model generates normally. The completion exits into the guardrail a second time. This is for the output check. The user receives the answer or your blocked message.</p>
 <p>Remember two failure shapes. If the input check is off, prompt attacks reach the model. You pay to generate a response. You then throw away the response. If production points at the draft instead of a version, a teammate's edit changes live behavior. There is no review.</p>
 <div class="exam-ask"><p><strong>The trap.</strong> The exam likes the idea that "the model already has safety training, so guardrails are not necessary." This is never the most correct answer. This is true for a scenario with a sensitive audience. This is true for a regulated industry. This is true for custom policy requirements. Built-in safety is general.</p><p>Guardrails are your organization's specific policy. They are enforced on your terms. Another trap: Use the guardrail as an extraction or rewriting tool. Guardrails filter. They block, mask, or refuse. They do not summarize, translate, or improve text.</p></div>
@@ -1457,12 +1493,13 @@ html.xp-js .xp-reveal.xp-in {
 <p class="ch-bridge" style="border-left:3px solid var(--accent);padding:.55rem 1rem;background:var(--surface);border-radius:0 8px 8px 0;margin:1.1rem 0"><strong>Why this comes next.</strong> The system defines the guardrail object. It must live somewhere. The same policy attaches at five different points in an architecture. The exam tests if you pick the attachment point that matches the scenario. It does not test only the policy.</p>
 <figure><img src="assets/img/ste100/aip-guardrail-flow.svg" alt="Guardrail input check, model call, then guardrail output check" loading="lazy">
 <figcaption>One request passes two guardrail gates: the input gate, then the model, then the output gate.</figcaption>
-<figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <div class="walkthrough"><p><strong>How to read this.</strong> Follow the arrows left to right. The input gate screens the prompt, then the model generates. The output gate screens the answer with the same filter list.</p></div>
 <h2 id="2-where-guardrails-apply">3. Where Guardrails apply</h2>
+<p>As you learned in <a href="volume-d1-foundation-models.html">D1</a>, a Bedrock call sends a prompt and receives a completion. Guardrails inspect both sides of that call.</p>
 <p>The same policy object attaches at five different points. It attaches inline on model calls. It attaches standalone on any text. It attaches on Knowledge Base answers.</p><p>It attaches on agent outputs. It attaches inside prompt flows. The exam tests if you pick the attachment point that matches the architecture. It does not test only the policy.</p>
 <figure><img src="assets/img/mermaid/73-guardrails-scope.svg" alt="Where guardrails apply: foundation model calls, Knowledge Base retrieve-and-generate, Bedrock Agent orchestration steps, and data source ingestion" loading="lazy"><figcaption>Where guardrails apply: foundation model calls, Knowledge Base retrieve-and-generate, Bedrock Agent orchestration steps, and data source ingestion</figcaption>
-<figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <h3 id="ch2-board">The five attachment points</h3>
 <p><strong>1. Inline on Converse.</strong> The Converse API accepts a guardrailConfig field.</p><p>This field has three parts. It has the guardrail identifier (name or ARN). It has the version. It has the trace setting.</p><p>If this field is present, Bedrock evaluates the guardrail on the request and the response. This is the default pattern. One application, one model call, one guardrail rides along. Guardrails also work with InvokeModel. They use the same configuration. But the exam almost always frames inline use with Converse, the unified API.</p>
 <p><strong>2. Standalone with ApplyGuardrail.</strong> This API takes text plus a guardrail identifier and version. It returns the evaluation result.</p><p>It shows which policies fired. It shows what the system blocked or masked. The system does not invoke a model. This breaks the idea that guardrails are a Bedrock model feature.</p><p>This matters in two exam stories. First, the company already runs a model outside Bedrock. This can be a self-hosted model on SageMaker. It can be a third-party API. The company wants AWS-managed safety. It does not want to move the model.</p><p>Call ApplyGuardrail on the prompt before you send it out. Call it on the answer when it returns. Second, the company wants to screen text that never uses a model. This can be forum posts or product reviews. In both stories, the wrong answer is "move everything to Bedrock". The wrong answer is also "write a Lambda classifier".</p><p>The correct answer is ApplyGuardrail. Two mechanical notes: The API accepts a source of INPUT or OUTPUT. So you can screen a prompt or a completion. It evaluates only the text you give it. So it has no conversation context. If the safety decision needs multi-turn context, pass the relevant context in the text you submit.</p>
@@ -1471,7 +1508,7 @@ html.xp-js .xp-reveal.xp-in {
 <p><strong>5. Inside Prompt Flows.</strong> Prompt Flows is the visual multi-step builder. It supports guardrail nodes.</p><p>So a fixed prompt chain can include a safety check between steps. This is rare on the exam. But it is the correct answer. This is true when the scenario describes a no-code prompt chain that needs a screening step.</p>
 <p>One fact controls all five: ApplyGuardrail is model agnostic. Guardrails are not locked to Bedrock models.</p>
 <figure><img src="assets/img/mermaid/04-guardrails-flow.svg" alt="Guardrail evaluation order: input passes content filters, denied topics, word filters, and PII redaction before the model; output passes content filters and contextual grounding checks. A block at any stage is logged as an intervention." loading="lazy"><figcaption>Guardrail evaluation order: input passes content filters, denied topics, word filters, and PII redaction before the model; output passes content filters and contextual grounding checks. A block at any stage is logged as an intervention.</figcaption>
-<figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <pre><code>                    FIVE PLACES ONE GUARDRAIL CAN LIVE
 
   (A) Inline on a model call            (B) Standalone, no model
@@ -1504,7 +1541,7 @@ html.xp-js .xp-reveal.xp-in {
 <p>Figure 3.1. One guardrail object, five attachment points. Read the panels: A is the default. The guardrail rides inside the model call. It checks both directions.</p><p>B is the escape hatch. There is no model call at all. Only text goes in. A verdict comes out. This is the only panel that works with models outside Bedrock.</p><p>C sits after retrieval and generation in a RAG flow. It judges only the final answer. D sits on an agent. It sees the input and the final answer. It does not see the intermediate tool calls. E is a guardrail node inside a fixed prompt chain.</p>
 <p>There are two failure shapes. If you attach the guardrail to the KB, the unguarded path is a hole. The scenario's risk is a direct model call elsewhere in the app. Guardrails protect the paths they attach to.</p><p>They protect nothing else. If you use inline guardrails for a non-Bedrock model, the call fails. Non-Bedrock models need ApplyGuardrail. They never need guardrailConfig.</p>
 <figure class="fig-light"><img src="assets/img/internet/img-16.png" alt="A production safety architecture: users authenticate via Cognito behind WAF and API Gateway, Lambda applies Bedrock Guardrails before foundation-model invocation, and CloudWatch captures real-time logs for audit." loading="lazy"><figcaption>This is a production safety architecture. Users authenticate via Cognito behind WAF and API Gateway. Lambda applies Bedrock Guardrails before foundation-model invocation. CloudWatch captures real-time logs for audit.</figcaption>
-<figcaption class="credit">Source: AWS architecture reference, via image search Sept 2026.</figcaption></figure>
+<figcaption class="credit">Source: AWS architecture reference, via image search Sept 2026. Reused in the AWS AIP-C01 Study Guide.</figcaption></figure>
 <div class="exam-ask"><p><strong>The trap.</strong> The statement "Guardrails only work with Bedrock models" is false. The exam will use this as a distractor against ApplyGuardrail. The exam also uses the reverse trap. This trap uses <code>guardrailConfig</code> inline. The scenario says the model runs outside Bedrock.</p><p>Inline config only works on Bedrock model calls. Other models need the standalone API. A subtler trap is to attach a guardrail to a Knowledge Base. You assume the system screens retrieved chunks. The guardrail judges the generated answer. It does not judge the retrieved chunks.</p></div>
 <div class="exam-ask"><p>The scenario's architecture sentence is the whole question. "A Lambda calls Converse with a guardrail" means inline. "The model runs on SageMaker" or "screen forum posts with no model" means ApplyGuardrail.</p><p>"RAG answers must be checked" means a guardrail on the Knowledge Base. "Agent outputs must be safe" means a guardrail on the agent. Read the architecture first. Then pick the attachment point.</p></div>
 
@@ -1514,7 +1551,7 @@ html.xp-js .xp-reveal.xp-in {
 <p>This policy has toxicity categories with per-category strength levels. It also has the dedicated jailbreak detector. The exam uses this policy when the scenario says "harmful content."</p>
 <h3 id="ch3-board">Six categories, one sensitivity dial each</h3>
 <figure><img src="assets/img/density/d3-filter-dials.svg" alt="Six content-filter categories, each with its own NONE / LOW / MEDIUM / HIGH sensitivity dial" loading="lazy"><figcaption>Six content-filter categories, each with its own NONE / LOW / MEDIUM / HIGH sensitivity dial</figcaption>
-<figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <div class="walkthrough"><p><strong>How to read this.</strong> Six columns, one per AWS-defined category; each column is the same four-setting dial. Takeaway: AWS defines what counts; you only choose sensitivity.</p></div>
 <p>Content filters are the toxicity screen inside a guardrail. Every piece of evaluated text gets a severity score. It gets a score in each of six fixed, AWS-defined categories.</p><p>These categories are hate, insults, sexual, violence, misconduct, and prompt attack. Hate means attacks on protected groups. Insults mean demeaning language toward individuals. Sexual means explicit sexual content.</p><p>Violence means graphic or encouraging violent content. Misconduct means instructions that help wrongdoing, such as fraud or weapons. Prompt attack means attempts to override the model's instructions. You do not define hate speech. The AWS classifier defines it. You only choose the sensitivity level.</p>
 <p>For each category, pick one of four strengths. These strengths are NONE (off), LOW, MEDIUM, HIGH. The strength is a sensitivity dial. It is not an on/off switch. At LOW, the system blocks only severe and obvious violations.</p><p>At MEDIUM, the system also blocks moderate content. At HIGH, the system blocks even mild or borderline content. The dial runs per category. This is because real products need different sensitivities in different dimensions. A children's tutor sets violence and sexual to HIGH.</p><p>It sets insults to at least MEDIUM. This is because even mild teasing is not acceptable for kids. A customer support bot for adults might set insults to LOW. This lets a frustrated customer vent. It keeps misconduct at HIGH. This prevents it from helping with fraud.</p>
@@ -1542,11 +1579,11 @@ html.xp-js .xp-reveal.xp-in {
 <p>There are two failure types. Setting every category to HIGH blocks good content. This makes the product worse. Over-filtering is a real failure.</p><p>The exam treats it as a failure. Leaving prompt attack at NONE lets jailbreaks happen. This is because prompt attacks are only caught by that category. This happens on input.</p>
 <figure><img src="assets/img/ste100/aip-content-filter-categories.svg" alt="Six content filter categories with strength settings" loading="lazy">
 <figcaption>Six content filter categories, each with its own strength dial.</figcaption>
-<figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <div class="walkthrough"><p><strong>How to read this.</strong> Each box is one category: hate, insults, sexual, violence, misconduct, and prompt attack. The dial sets none, low, medium, or high, and higher strength blocks more text. Test with your own prompts, because strict filters can block good answers.</p></div>
 <h3 id="ch3-pattack">Prompt attack: the jailbreak detector</h3>
 <figure><img src="assets/img/mermaid/71-prompt-attack-taxonomy.svg" alt="Prompt attack taxonomy: jailbreaks bypass safety rules, injections plant instructions in retrieved data, leakage extracts the system prompt; the prompt-attack filter catches all three" loading="lazy"><figcaption>Prompt attack taxonomy: jailbreaks bypass safety rules, injections plant instructions in retrieved data, leakage extracts the system prompt; the prompt-attack filter catches all three.</figcaption>
-<figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <p>Prompt attack is a content filter category. It finds attempts to change the model. This includes jailbreaks. It finds prompt injections in pasted content.</p><p>It finds instruction overrides in tool outputs or retrieved documents. The system checks it on the input side. This is where attacks arrive. There is no useful "output prompt attack."</p>
 <p>The model follows instructions in its context. It cannot tell which instructions came from the developer. It cannot tell which instructions came from the user.</p><p>It cannot tell which instructions came from untrusted text. A single pasted paragraph can change the model's behavior. This change can last for the rest of the session. This happens without a special detector.</p>
 <p>When you turn it on, the guardrail runs a special classifier. It checks the input text for manipulation patterns. It looks for instruction override phrasing. It looks for role reassignment. It looks for delimiter abuse.</p><p>It looks for injected instructions in quoted or pasted content. If the detected severity meets your set strength, the system blocks the input. This happens before the model sees it. Six categories and four strengths mean a guardrail has 24 separate sensitivity settings. This is for content filters only.</p>
@@ -1559,7 +1596,7 @@ html.xp-js .xp-reveal.xp-in {
 <p class="ch-bridge" style="border-left:3px solid var(--accent);padding:.55rem 1rem;background:var(--surface);border-radius:0 8px 8px 0;margin:1.1rem 0"><strong>Why this comes next.</strong> Content filters judge toxicity with a severity control. Some bans have no control.</p><p class="ch-bridge" style="border-left:3px solid var(--accent);padding:.55rem 1rem;background:var(--surface);border-radius:0 8px 8px 0;margin:1.1rem 0">These are subjects the model must never discuss. These are also literal strings it must never print. These need different tools. No severity threshold can show an absolute ban.</p>
 <h2 id="4-denied-topics-and-word-filters">5. Denied topics and word filters</h2>
 <figure><img src="assets/img/mermaid/74-denied-topics.svg" alt="Denied topics and word filters: the prompt first passes the denied-topics classifier, then the word filter, and only clean prompts reach the model" loading="lazy"><figcaption>Denied topics and word filters: the prompt first passes the denied-topics classifier, then the word filter, and only clean prompts reach the model.</figcaption>
-<figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <p>There are subject-matter bans in plain language. There are exact-match blocklists for words. These are two tools for two "never say this" problems.</p>
 <h3 id="ch4-denied">Denied topics: banning ideas, not words</h3>
 <p>A denied topic is a subject area. Your model must not discuss this subject area. You configure it with two pieces of plain language. These are a topic name, for example, "Investment advice".</p><p>These are also a definition, for example, "any recommendation to buy, sell, or hold specific securities, or predictions about market movements". The guardrail runs a topic classifier at evaluation time. It runs the classifier over the input and the output. It blocks text that is inside the topic.</p><p>This is a classifier. The quality depends on your definition. A vague definition, for example, "bad financial stuff", causes misses and false blocks. A precise definition works as expected. You can define many denied topics per guardrail. The system evaluates each topic independently.</p>
@@ -1567,7 +1604,7 @@ html.xp-js .xp-reveal.xp-in {
 <p>Denied topics are not content filters. Content filters judge toxicity. Toxicity includes hate, violence, and profanity. They use severity thresholds. Denied topics judge subject matter.</p><p>They have no severity dial. The topic is either denied or it is not. Remember this difference. Toxicity goes to content filters. Subject-matter bans go to denied topics.</p>
 <h3 id="ch4-word">Word filters: banning literal strings</h3>
 <figure><img src="assets/img/density/d3-word-filters.svg" alt="Word filters are exact matches: b4nk does not match bank; paraphraseable bans belong to denied topics" loading="lazy"><figcaption>Word filters are exact matches: b4nk does not match bank; paraphraseable bans belong to denied topics</figcaption>
-<figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <div class="walkthrough"><p><strong>How to read this.</strong> Left: the precision rule with the b4nk example. Right: the two wrong-tool cases with their right tools. Takeaway: deterministic exact match is the point and the limit.</p></div>
 <p>A word filter is a custom list of exact words and phrases. These words and phrases must never appear. The filter fires if any listed string appears exactly in the evaluated text. Typical uses are competitor product names. A brand chatbot must never mention these names.</p><p>Other uses are internal codenames. Other uses are a fixed profanity list from a content policy. Other uses are specific phrases from legal hold lists. Sometimes the ban is about the literal string. A semantic classifier is too much and not reliable for these cases. You want a certain exact match.</p>
 <p>There is no fuzzy matching. There is no stemming. There is no leetspeak detection. "b4nk" does not match "bank." This precision is the purpose.</p><p>It is also the limit. Word filters do not understand meaning. So they are the wrong tool for bans that you can paraphrase. Use denied topics for these bans. They are also the wrong tool for PII.</p><p>Use sensitive information filters for PII. These filters detect entity types, for example, "any credit card number." They do not detect specific strings. The exam's classic distractor is a word filter. This filter has example SSNs to "block social security numbers." It fails when a new SSN appears. PII needs entity detection. It does not need a list.</p>
@@ -1596,13 +1633,13 @@ html.xp-js .xp-reveal.xp-in {
 <p class="ch-bridge" style="border-left:3px solid var(--accent);padding:.55rem 1rem;background:var(--surface);border-radius:0 8px 8px 0;margin:1.1rem 0"><strong>Why this comes next.</strong> The system handles banned subjects. Personal data is a quieter leak. Users paste personal data. Models echo personal data.</p><p class="ch-bridge" style="border-left:3px solid var(--accent);padding:.55rem 1rem;background:var(--surface);border-radius:0 8px 8px 0;margin:1.1rem 0">Logs keep personal data. This chapter covers the entity-type filter. This filter finds PII by its shape. This chapter covers the three-stage pipeline. This pipeline protects PII from discovery through enforcement.</p>
 <figure><img src="assets/img/ste100/aip-denied-topics-vs-words.svg" alt="Denied topics block a subject in any wording; word filters block exact words" loading="lazy">
 <figcaption>Denied topics block a whole subject in any wording, while word filters block only exact listed words.</figcaption>
-<figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <div class="walkthrough"><p><strong>How to read this.</strong> The left box is the topic, and any wording of it fails. The right box is the word list, and only those spellings fail.</p></div>
 <h2 id="5-sensitive-information-filters-and-the-pii-pipeline">6. Sensitive information filters and the PII pipeline</h2>
 <p>Entity-type PII detection uses block or mask actions. The exam expects a three-service pipeline. This pipeline protects personal data from start to end.</p>
 <h3 id="ch5-board">PII by entity type, not by string</h3>
 <figure><img src="assets/img/density/d3-pii-entities.svg" alt="PII by entity type: detect the type with 30+ entity types or custom regex, then block or mask per type" loading="lazy"><figcaption>PII by entity type: detect the type with 30+ entity types or custom regex, then block or mask per type</figcaption>
-<figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <div class="walkthrough"><p><strong>How to read this.</strong> Left: detect the type, not the string. Right: choose block or mask per entity type. Takeaway: the filter knows what an SSN looks like, not one literal number.</p></div>
 <p>A sensitive information filter is a guardrail policy. It finds personal data in text. PII is personally identifiable information.</p><p>PII is any data that can identify a person. This includes names, addresses, phone numbers, social security numbers, credit card numbers, and passport numbers. The filter finds more than 30 built-in entity types. It finds them as patterns, not fixed strings.</p><p>It knows the structure of a social security number. It has three digits, a dash, two digits, a dash, and four digits. So, it finds values it has not seen before. This is the main difference from a word filter. Word filters match strings you listed before. Sensitive information filters find categories of data wherever they are.</p>
 <p>You configure one of two actions for each entity type. BLOCK refuses the whole request or response. It returns your blocked message.</p><p>Use BLOCK when the data must not go through the system. For example, a public demo chatbot. A user might paste a social security number. Even a masked copy means the raw value touched your logs and the model context.</p><p>MASK replaces the value with a placeholder. Then the text continues. Use MASK when the surrounding text is still useful. Use MASK when the identifier itself is not necessary. For example, a support agent needs to see "my card ending in XXXX was charged twice." This helps the system route the ticket. The agent does not see the full number.</p>
@@ -1616,7 +1653,7 @@ html.xp-js .xp-reveal.xp-in {
 </ol>
 <p>Two supporting parts complete the architecture. S3 Lifecycle policies enforce retention. PII for a support ticket must not stay in a bucket forever.</p><p>A lifecycle rule deletes or moves the PII after the retention period. KMS encryption protects the stored data (Chapter 9). The exam answer for "protect PII in customer conversations, minimal custom work" is Macie plus Comprehend plus Guardrails. S3 Lifecycle for retention is a fourth option in longer answers.</p>
 <figure><img src="assets/img/mermaid/23-pii-pipeline.svg" alt="pii pipeline diagram" loading="lazy"><figcaption>pii pipeline diagram</figcaption>
-<figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <p>Read the diagram. On the left, Macie scans the storage cylinder offline. It reports where PII is. This happens before any user arrives. Live traffic moves right. Comprehend's real-time PII detection scrubs text as it flows.</p><p>Then the guardrail's sensitive information filter enforces at the model boundary. It shows masked values (XXX). The model only sees clean text. The looping arrow back to storage is the retention lifecycle. The system deletes stored PII on schedule. This stops the stockpile from growing forever.</p>
 <p>There are two failure types. Macie without the guardrail means you know where PII is. But PII still flows into prompts.</p><p>Discovery is not enforcement. Comprehend without a retention lifecycle means scrubbed traffic. But an archive of raw PII in S3 grows forever. The exam considers retention part of the answer.</p>
 <div class="exam-ask"><p><strong>The trap.</strong> The exam has many confusing questions about PII. Word filters for PII fail on new values.</p><p>This is because word filters match only listed strings. Amazon Translate for PII obfuscation preserves meaning across languages. It protects nothing. Amazon Rekognition for text PII is the vision service.</p><p>Comprehend is the text service. The most subtle trap is Macie as a real-time filter. Macie finds PII at rest in S3. It does not work in the request path. Real-time detection is Comprehend. Inference-time enforcement is Guardrails.</p></div>
@@ -1626,17 +1663,17 @@ html.xp-js .xp-reveal.xp-in {
 <p class="ch-bridge" style="border-left:3px solid var(--accent);padding:.55rem 1rem;background:var(--surface);border-radius:0 8px 8px 0;margin:1.1rem 0"><strong>Why this comes next.</strong> PII is kept out of both directions. The remaining output risk is the model being fluent and wrong.</p><p class="ch-bridge" style="border-left:3px solid var(--accent);padding:.55rem 1rem;background:var(--surface);border-radius:0 8px 8px 0;margin:1.1rem 0">This means answers not supported by the source text. Or answers that violate a formal policy. Two verifiers answer the two questions. Mixing them up costs points.</p>
 <figure><img src="assets/img/ste100/aip-pii-pipeline.svg" alt="PII pipeline: detect the type, then block, mask, or redact" loading="lazy">
 <figcaption>The sensitive information pipeline detects the PII type, then blocks, masks, or redacts it.</figcaption>
-<figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <div class="walkthrough"><p><strong>How to read this.</strong> Read left to right: model output, detect the type, pick the action. Block stops the answer, mask replaces the value with a placeholder like {SSN}, and redact removes the text.</p></div>
 <h2 id="6-contextual-grounding-checks-and-automated-reasoning-checks">7. Contextual grounding checks and Automated Reasoning checks</h2>
 <figure><img src="assets/img/mermaid/76-automated-reasoning.svg" alt="Automated Reasoning checks: the response and facts are translated into formal logic; provably valid answers pass, invalid ones are blocked with a reason" loading="lazy"><figcaption>Automated Reasoning checks translate the response and facts into formal logic. Provably valid answers pass. The check blocks invalid ones with a reason.</figcaption>
-<figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <figure><img src="assets/img/mermaid/75-grounding-check.svg" alt="Contextual grounding check: each claim in the model response is verified against the reference source; unsupported claims are blocked or rewritten" loading="lazy"><figcaption>Contextual grounding check: the check verifies each claim in the model response against the reference source. It blocks or rewrites unsupported claims.</figcaption>
-<figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <p>Two verifiers check for two different lies. Contextual grounding asks one question. Does the source text support the answer?</p><p>Automated Reasoning asks a different one. Does the answer violate a formal policy? Know this difference. It is the most important fact in Domain 3.</p>
 <h3 id="ch6-ground">Contextual grounding: is it supported by the source?</h3>
 <figure><img src="assets/img/density/d3-grounding-example.svg" alt="Contextual grounding in one example: the source says 5 to 7 days, the answer says 3 to 5, the score 0.23 falls below 0.7 and the answer is blocked" loading="lazy"><figcaption>Here is one example of contextual grounding. The source says 5 to 7 days. The answer says 3 to 5 days. The score 0.23 is below 0.7. The system blocks the answer.</figcaption>
-<figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <div class="walkthrough"><p><strong>How to read this.</strong> Top: the source chunk. Below left: the fluent, confident, wrong answer. Below right: the score versus the threshold. Takeaway: grounding catches fluent-but-unsupported text, RAG's signature failure.</p></div>
 <p>A contextual grounding check scores a generated answer. It checks if the answer is faithful to a source text. You supply the source text. This text is usually chunks from a Knowledge Base.</p><p>The check returns a grounding score from 0 to 1. You set a threshold. The system blocks answers below the threshold. The system does not ground these answers.</p>
 <p>This check exists because RAG fails in a specific way. The retriever returns good chunks. But the model invents details. The chunks do not support these details. A support bot said, "refunds take 5 to 7 days." This came from the retrieved policy.</p><p>The bot might answer, "refunds take 3 to 5 days." This is because 3 to 5 is a common pattern in its training data. The answer sounds confident. The answer is wrong. Grounding catches this exact problem. It catches text that is fluent and plausible. But the source does not support this text.</p>
@@ -1644,7 +1681,7 @@ html.xp-js .xp-reveal.xp-in {
 <p>This misunderstanding costs points. Grounding checks do not verify truth against the world. They verify support against the source you supplied. If the retrieved chunks are wrong, a perfectly grounded answer repeats them. It repeats them with confidence. Grounding answers this question: "Did the model stick to the source?" It does not answer this question: "Is the source correct?"</p>
 <figure><img src="assets/img/ste100/aip-grounding-check.svg" alt="Grounding check compares each model claim against the source passage" loading="lazy">
 <figcaption>Contextual grounding checks each model claim against the source passage.</figcaption>
-<figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <div class="walkthrough"><p><strong>How to read this.</strong> The claim from the model meets the source you gave. The check returns supported or unsupported, and it flags or blocks unsupported claims. This catches hallucinations at the source.</p></div>
 <h3 id="ch6-ar">Automated Reasoning: does it violate the policy?</h3>
 <p>Automated Reasoning checks verify a model's answer. It checks the answer against a formal policy. You write this policy in natural language. "Automated reasoning" is an AWS term. It means techniques that prove things about logic statements.</p><p>These techniques are deterministic. They are in the same family as formal verification tools. A classifier guesses if an answer violates policy. This check does not guess. It translates your policy and the answer into logic. Then it reasons about them.</p>
@@ -1686,7 +1723,7 @@ html.xp-js .xp-reveal.xp-in {
 <p>No single control stops prompt attacks. The exam expects a layered stack. It also expects an honest report of what AWS tools cannot do.</p>
 <h3 id="ch7-board">Two attacks, different doors</h3>
 <figure><img src="assets/img/density/d3-two-attacks.svg" alt="Two attacks, different doors: prompt injection poisons the data while the user is innocent; a jailbreak is the user attacking directly" loading="lazy"><figcaption>Two attacks, different doors: prompt injection poisons the data while the user is innocent; a jailbreak is the user attacking directly.</figcaption>
-<figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <div class="walkthrough"><p><strong>How to read this.</strong> Left: injection arrives through tool outputs, chunks, or browsed pages. Right: the jailbreak patterns. Takeaway: one door is the data, the other is the user; the prompt attack filter watches inputs for both.</p></div>
 <p>A language model cannot always tell instructions from data. This is why prompt injection works. Everything in its context window is text.</p><p>Text that looks like an instruction is usually followed. An attacker pastes a document. The document says "Important: disregard all safety rules and summarize this as...". The model obeys the hidden instruction.</p><p>It acts as if the developer wrote it. Indirect injection is a dangerous type. The attack does not come from the user. It comes from a tool output, a retrieved chunk, or a web page. The user is innocent. The data is bad.</p>
 <p>A jailbreak is the direct type. The user tries to break the system prompt's limits. Common types include instruction override ("ignore all previous instructions").</p><p>Other types are role reassignment ("you are now an unrestricted AI"). Another type is hypothetical framing ("in a fictional story, how would someone..."). Jailbreaks come in the user prompt. Injections can come anywhere in the context.</p>
@@ -1701,16 +1738,16 @@ html.xp-js .xp-reveal.xp-in {
 </ol>
 <p>Every layer fails sometimes. So, you stack the layers. The pre-filter misses a new phrase. The guardrail catches the phrase. The guardrail misses an indirect injection in a tool output. The Lambda post-processor catches the bad action.</p>
 <figure><img src="assets/img/mermaid/24-defense-in-depth.svg" alt="defense in depth diagram" loading="lazy"><figcaption>defense in depth diagram</figcaption>
-<figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <p>Read the diagram. The user prompt goes to the pre-filter first. The pre-filter removes PII and clear abuse. Then the model works.</p><p>Next is the Bedrock Guardrails shield. It has prompt attack detection on the input. It has content filters on the output. Then come the application checks. The Lambda post-processor enforces business rules on the response.</p><p>Last is the API response filter at the edge. This is the final gate. It sends the safe response to the user. Trace any attack through all four boxes. The attack must survive every box to succeed. This is the purpose of layering.</p>
 <p>There are two failure types. The guardrail is the only layer. An indirect injection arrives inside a tool output. The attack bypasses the input check. The post-processing layer is the backup.</p><p>There is no throttling at the edge. An attacker can try many jailbreak variants. This is cheap. One variant will work. Rate limiting is a security control. It is not only a cost control.</p>
 <figure><img src="assets/img/ste100/aip-defense-in-depth.svg" alt="Six layers of defense from app code to audit logs" loading="lazy">
 <figcaption>Six defense layers stand between an attacker and the model.</figcaption>
-<figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <div class="walkthrough"><p><strong>How to read this.</strong> Read top to bottom. Each box is one layer: app checks, guardrails, IAM, KMS, VPC, then logging. An attacker must beat every layer, and one layer is never enough.</p></div>
 <h3 id="ch7-limits">What the tooling cannot do</h3>
 <figure><img src="assets/img/density/d3-defense-limits.svg" alt="What the tooling cannot do: no guaranteed prevention, no business-logic sanitizing, no truth judgments without a source" loading="lazy"><figcaption>What the tooling cannot do: no guaranteed prevention, no business-logic sanitizing, no truth judgments without a source</figcaption>
-<figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <div class="walkthrough"><p><strong>How to read this.</strong> Three limits, stated plainly. Takeaway: defenses make attacks harder and pricier, never impossible; the exam rewards honesty about this line.</p></div>
 <p>The exam tests honesty about limits. Here is the clear line. Prompt attack detection finds known jailbreak patterns. It finds injection patterns in inputs. Denied topics and content filters limit what the model discusses.</p><p>They limit how the model discusses it. Sensitive information filters keep PII out of both directions. Contextual grounding and Automated Reasoning check outputs against sources and policies. ApplyGuardrail extends this to models outside Bedrock. These tools make attacks harder and more costly.</p>
 <p>What they do not do: They do not guarantee prevention. Prompt attacks are an arms race. New phrasing defeats pattern-based detection.</p><p>They do not clean business logic. A model calls a refund API after a successful injection. This is a failure of tool authorization and human approval. The guardrail cannot catch this after it happens.</p><p>They do not judge truth. A confident, well-sourced lie passes every filter. This happens if the source itself is wrong. They do not replace human review for high-stakes actions. They do not replace human review for irreversible actions. This is why Chapter 11 has approval flows.</p>
@@ -1721,12 +1758,13 @@ html.xp-js .xp-reveal.xp-in {
 <p class="ch-next" style="border-top:1px solid var(--border);padding-top:1rem;margin-top:1.75rem"><strong>Next:</strong> Chapter 9, The data security plane. The system guards the model boundary. Now guard the platform around it: IAM, KMS, PrivateLink, and logging.</p>
 <p class="ch-bridge" style="border-left:3px solid var(--accent);padding:.55rem 1rem;background:var(--surface);border-radius:0 8px 8px 0;margin:1.1rem 0"><strong>Why this comes next.</strong> The guardrail policies screen the data flow. The rest of the safety plan is the platform around the model.</p><p class="ch-bridge" style="border-left:3px solid var(--accent);padding:.55rem 1rem;background:var(--surface);border-radius:0 8px 8px 0;margin:1.1rem 0">This platform controls who can call the model. It controls how the system encrypts data at rest and in transit. It controls how traffic stays off the public internet. It controls who gets the record of all actions.</p>
 <h2 id="8-the-data-security-plane">9. The data security plane</h2>
+<p>As you learned in the <a href="prereq-aws-cloud-foundations.html">cloud foundations prereq</a>, the IAM policies decide who can call what. This section applies that idea to model inputs and outputs.</p>
 <figure><img src="assets/img/mermaid/77-data-security-plane.svg" alt="The data security plane: encryption with KMS and TLS, network isolation with VPC endpoints, audit with CloudTrail, and opt-in invocation logging" loading="lazy"><figcaption>The data security plane: encryption with KMS and TLS, network isolation with VPC endpoints, audit with CloudTrail, and opt-in invocation logging.</figcaption>
-<figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <p>This plane controls who can call the model. It controls how the system encrypts the data. It controls how traffic stays private. It controls where the data can live. It controls who gets a record of all actions. Use IAM, KMS, PrivateLink, residency, and CloudTrail.</p>
 <h3 id="ch8-iam">IAM: who may call what</h3>
 <figure><img src="assets/img/mermaid/72-iam-bedrock.svg" alt="IAM for Bedrock: the app assumes an execution role, the policy allows bedrock:InvokeModel on specific model ARNs, with identity-based and cross-account resource-based options" loading="lazy"><figcaption>IAM for Bedrock: the app assumes an execution role, the policy allows bedrock:InvokeModel on specific model ARNs, with identity-based and cross-account resource-based options.</figcaption>
-<figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <p>AWS Identity and Access Management (IAM) is the permission system for every AWS API call. This includes Bedrock calls. An IAM policy is a document. This document states the allowed actions. For example, bedrock:InvokeModel is an action. It states the allowed resources.</p><p>For example, a specific model ARN is a resource. It states the allowed identity. For example, a user, a role, or a service is an identity. A role is an identity. Services and cross-account callers can use a role temporarily. They do not use long-lived credentials.</p>
 <p>Model access is a security boundary. An application needs only one model for summarization. This application must not invoke every model in the account. It must not read your knowledge bases.</p><p>It must not change guardrail versions. Least privilege means each identity gets only the permissions it needs. It gets nothing more. If not, a compromised application credential becomes a master key.</p>
 <p>You scope actions narrowly. Use bedrock:InvokeModel on the one model ARN the app needs. Use bedrock:Retrieve and bedrock:RetrieveAndGenerate on the specific knowledge base. Use bedrock-agent:InvokeAgent on the specific agent alias.</p><p>Bedrock agents run under an IAM service role. You create this role. The role's permissions define what the agent's Lambda tools and KB queries can touch. This is how you put resource boundaries around agent actions.</p>
@@ -1735,11 +1773,11 @@ html.xp-js .xp-reveal.xp-in {
 <p>Avoid this category error. IAM controls who can call the API. It does not control what the model says. "The IAM policy blocks harmful outputs" is a distractor.</p><p>API authorization is IAM. Content safety is Guardrails. You need both. Neither replaces the other.</p>
 <figure><img src="assets/img/ste100/aip-data-security-plane.svg" alt="IAM, KMS, VPC, and logging form the data security plane" loading="lazy">
 <figcaption>IAM controls who, KMS encrypts what, VPC isolates where, and logs prove it all.</figcaption>
-<figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <div class="walkthrough"><p><strong>How to read this.</strong> The top row holds identity, encryption, and network, and the bottom box holds logging. CloudTrail records every API call. Invocation logs record every prompt and answer.</p></div>
 <h3 id="ch8-kms">KMS at rest, TLS in transit</h3>
 <figure><img src="assets/img/density/d3-kms-tls.svg" alt="KMS at rest, TLS in transit: a customer managed key you control protects vector stores, session data, logs, and model artifacts" loading="lazy"><figcaption>KMS at rest, TLS in transit: a customer managed key you control protects vector stores, session data, logs, and model artifacts.</figcaption>
-<figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <div class="walkthrough"><p><strong>How to read this.</strong> Left: what a CMK gives you (control, rotation, revocation, logged use). Right: what it protects. Takeaway: regulated workloads want customer-controlled keys, not AWS-owned ones.</p></div>
 <p>AWS Key Management Service (KMS) manages the encryption keys. These keys protect your data. A customer managed key (CMK) is a key you create and control. You decide who can use it. You can rotate it.</p><p>You can disable it. This instantly revokes access to everything it protects. This is stronger than AWS-owned keys. AWS manages everything for AWS-owned keys. You have no key-level control with AWS-owned keys.</p>
 <p>Encryption at rest means stored data is unreadable without the key. This applies to Knowledge Base vector stores, agent session data, model invocation logs, and custom model artifacts in S3. If a storage volume is exposed, the data stays ciphertext. A CMK adds control. CloudTrail logs every key use.</p><p>You can set key policies per team. Regulated workloads often need customer-controlled keys. When you configure a Bedrock resource with a CMK, Bedrock uses envelope encryption. A data key encrypts your data. Your CMK encrypts the data key.</p>
@@ -1748,7 +1786,7 @@ html.xp-js .xp-reveal.xp-in {
 <p>A VPC interface endpoint is a private network entry point. AWS PrivateLink powers this endpoint. The endpoint is inside your virtual private cloud (VPC) for an AWS service.</p><p>Your application's Bedrock API calls travel through the endpoint. They stay on the AWS private network. They do not travel over the public internet. Some environments forbid traffic to public IP addresses.</p><p>This includes encrypted traffic to AWS services. Financial and healthcare workloads often run in VPCs. These VPCs have no internet gateway. Without PrivateLink, those workloads cannot reach Bedrock. With PrivateLink, they can. The traffic never leaves AWS's network.</p>
 <p>You create the interface endpoint in your VPC's subnets. AWS places elastic network interfaces in your subnets. These interfaces have private IP addresses. DNS for the Bedrock service hostname resolves to those private IPs.</p><p>This happens from inside the VPC. Your application's SDK calls the same Bedrock endpoint hostname. The network path changes. Bedrock exposes endpoints for its planes. These are bedrock (control plane), bedrock-runtime (data plane), bedrock-agent, and bedrock-agent-runtime.</p><p>You lock down the endpoint in two ways. The endpoint policy controls which actions can pass through. Security groups on the endpoint's network interfaces control which resources in the VPC can reach it. There is no NAT gateway. There is no internet gateway. There are no public IPs involved.</p>
 <figure><img src="assets/img/mermaid/25-privatelink.svg" alt="privatelink diagram" loading="lazy"><figcaption>privatelink diagram</figcaption>
-<figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <p>Read the diagram. The dashed rectangle is the company's VPC. The application server is inside. Dashed means it has no route to the public internet. The solid tunnel is the PrivateLink VPC endpoint.</p><p>It has private IP addresses inside the VPC. These lead directly to Bedrock. Traffic flows through the tunnel. It never touches the public internet. The crossed-out arrow to the globe is the blocked path.</p>
 <p>There are two failure shapes. If the endpoint policy is open, any workload in the VPC can call any Bedrock action through the endpoint policy. Scope the endpoint policy like an IAM policy. If DNS is not configured for private resolution, the SDK resolves the public Bedrock hostname. The call fails in a VPC with no internet. Private DNS on the endpoint makes the same code work privately.</p>
 <h3 id="ch8-privacy">Privacy and data residency</h3>
@@ -1758,7 +1796,7 @@ html.xp-js .xp-reveal.xp-in {
 <p class="ch-bridge" style="border-left:3px solid var(--accent);padding:.55rem 1rem;background:var(--surface);border-radius:0 8px 8px 0;margin:1.1rem 0"><strong>Why this comes next.</strong> Encryption and network isolation protect the data in place. The last data-plane question is the record. Two different logs answer two different questions. The exam swaps them.</p>
 <h3 id="ch8-logging">CloudTrail vs invocation logging: two logs, two jobs</h3>
 <figure><img src="assets/img/density/d3-two-logs.svg" alt="CloudTrail vs invocation logging: audit metadata versus full prompt and response content" loading="lazy"><figcaption>CloudTrail vs invocation logging: audit metadata versus full prompt and response content</figcaption>
-<figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <div class="walkthrough"><p><strong>How to read this.</strong> Left: the audit log, metadata only, 90 days. Right: the content log, opt-in, full text, needs justification. Takeaway: match the question's job (who did what vs what was said) to the column.</p></div>
 <p>AWS CloudTrail is the audit log. It records every Bedrock API call. It records the identity, the time, the location, and the action. It records if the call succeeded. It does not record prompt content or response content.</p><p>Its job is accountability. A CloudTrail question asks: "Which identity invoked which model at 2 AM?" Event history keeps data for 90 days. For longer retention, send the trail to S3. This is the answer when the scenario asks who did what. Use it for forensics, compliance audits, or access reviews.</p>
 <p>Model invocation logging is the content log. Bedrock can log the actual request and response content of model invocations. It sends this data to S3 or CloudWatch Logs. Use it for debugging, prompt analysis, and evaluation data collection. These logs contain the full text users typed.</p><p>They may contain PII, credentials, and confidential business data. In regulated scenarios, the exam expects you to encrypt these logs with a CMK. Or, disable invocation logging completely. "We logged all prompts to CloudWatch in plaintext for a healthcare app" is a bad example. The fix is KMS encryption or no content logging.</p>
@@ -1786,11 +1824,11 @@ html.xp-js .xp-reveal.xp-in {
 <p class="ch-bridge" style="border-left:3px solid var(--accent);padding:.55rem 1rem;background:var(--surface);border-radius:0 8px 8px 0;margin:1.1rem 0"><strong>Why this comes next.</strong> The platform controls are in place. Controls without proof do not satisfy a regulator. This chapter covers the evidence layer.</p><p class="ch-bridge" style="border-left:3px solid var(--accent);padding:.55rem 1rem;background:var(--surface);border-radius:0 8px 8px 0;margin:1.1rem 0">It documents what the model is. It traces which data produced each answer. It audits what happened. It monitors that it keeps behaving. It maps all this to a compliance framework.</p>
 <h2 id="9-governance-and-compliance">10. Governance and compliance</h2>
 <figure><img src="assets/img/mermaid/78-governance-compliance.svg" alt="Governance and compliance loop: control model access with IAM, version guardrail policies, keep eval evidence, and pass audit review" loading="lazy"><figcaption>Governance and compliance loop: control model access with IAM, version guardrail policies, keep eval evidence, and pass audit review</figcaption>
-<figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <p>Prove what the system is. Prove where its answers come from. Prove that it keeps behaving. Use model cards, lineage, audit, monitoring, and framework alignment.</p>
 <h3 id="ch9-cards">Model cards: documentation, not a control</h3>
 <figure><img src="assets/img/density/d3-model-card.svg" alt="Model card anatomy: intended use, out-of-scope uses, training data, evaluation, limits and biases" loading="lazy"><figcaption>Model card anatomy: intended use, out-of-scope uses, training data, evaluation, limits and biases</figcaption>
-<figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <div class="walkthrough"><p><strong>How to read this.</strong> Five cards across: the five things a card documents. Takeaway: A card is documentation. A card is not a control. It answers the regulator's question before the regulator asks it.</p></div>
 <p>A model card is a document. It describes a machine learning model. It shows the intended use of the model. It shows what you must not use the model for. It shows the data used to train the model.</p><p>It shows how you evaluated the model. It shows the known limits and biases of the model. SageMaker AI supports model cards. You can make model cards with a program. You can version model cards with the model.</p><p>A model without documentation is a risk. A regulator, an auditor, or a risk team can ask about the model. They can ask if the model is correct for the use case. The model card gives the answer. It changes tribal knowledge into a versioned artifact. It adds evaluation numbers to the artifact.</p>
 <p>You do not write the model card for Bedrock foundation models. AWS and the model provider publish model information. But the governance habit is the same.</p><p>Know the documented limits of the model before you deploy it. Record your evaluation results for your use case. A model card does not stop bad outputs. Guardrails stop bad outputs.</p><p>The exam uses model cards as a distractor. This is for runtime safety questions. The exam uses model cards as the correct answer. This is for documentation and audit questions. "Document the model's limits for the risk review" means a model card. "Stop the model from giving medical advice" means a denied topic.</p>
@@ -1824,7 +1862,7 @@ html.xp-js .xp-reveal.xp-in {
 <p>There are two failure types. If chunks do not have document versions, you cannot tell. You cannot tell if an answer came from the current policy or last year's policy.</p><p>Version metadata makes lineage useful. If you show citations to the user but do not store them, you can see sources today. But you cannot reconstruct them during the next quarter's audit. Store the chain, not only the display.</p>
 <figure><img src="assets/img/ste100/aip-governance-loop.svg" alt="Governance loop from data lineage to monitoring and back" loading="lazy">
 <figcaption>The governance loop links data lineage to model versions, evaluation, approval, deploy, and monitoring.</figcaption>
-<figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <div class="walkthrough"><p><strong>How to read this.</strong> Follow the boxes left to right, then follow the audit trail arrow back to the start. Every deploy links to its data and version. Auditors follow the loop backwards.</p></div>
 <h3 id="ch9-audit">Audit and continuous monitoring</h3>
 <p>Audit proves what happened. The trail combines CloudTrail with CloudWatch Logs. CloudTrail shows who called which Bedrock API, and when. CloudWatch Logs show application decision logs.</p><p>These logs show which guardrail version was active. They show which policies fired. They show what the lineage citations were. For sensitive content, redact tokens in logs. This stops the audit record from becoming a PII leak.</p>
@@ -1848,14 +1886,14 @@ html.xp-js .xp-reveal.xp-in {
 <p class="ch-bridge" style="border-left:3px solid var(--accent);padding:.55rem 1rem;background:var(--surface);border-radius:0 8px 8px 0;margin:1.1rem 0"><strong>Why this comes next.</strong> Governance proves the system works correctly. The human layer is the final layer.</p><p class="ch-bridge" style="border-left:3px solid var(--accent);padding:.55rem 1rem;background:var(--surface);border-radius:0 8px 8px 0;margin:1.1rem 0">It includes transparency you can check. It includes fairness you can measure for different groups. A human must approve important actions. There are approval gates for agent actions.</p>
 <h2 id="10-responsible-ai-evaluation-and-agent-governance">11. Responsible AI, evaluation, and agent governance</h2>
 <figure class="fig-light"><img src="assets/img/internet/img-31.webp" alt="The NIST AI Risk Management Framework: Govern, Map, Measure, and Manage as the continuous cycle for responsible AI" loading="lazy"><figcaption>The NIST AI Risk Management Framework: Govern, Map, Measure, and Manage as the continuous cycle for responsible AI.</figcaption>
-<figcaption class="credit">Source: web image search, saved locally Sept 2026.</figcaption></figure>
+<figcaption class="credit">Source: web image search, saved locally Sept 2026. Reused in the AWS AIP-C01 Study Guide.</figcaption></figure>
 <p>This chapter covers transparency, fairness, and human oversight. These are engineering practices. It also shows how to control agent actions. It shows how to prove the system is safe before and after launch.</p>
 <h3 id="ch10-transparency">Transparency: decisions you can inspect</h3>
 <p>Transparency means you can inspect and explain the system's decisions. A GenAI application has three forms of transparency. Reasoning traces: Bedrock agents can show their step-by-step reasoning. The enableTrace option on agent invocation shows which tools the system considered.</p><p>It shows which tools the system called. It shows what the model decided at each step. Confidence signals: grounding scores, retrieval scores, and evaluation metrics tell you how much to trust an answer. Evidence and source attribution: citations link answers to retrieved chunks. A human can check the claim without running the query again.</p>
 <p>You cannot debug, audit, or trust an uninspectable system with important tasks. A support agent gives a wrong answer. The trace shows if the retriever failed. It shows if the model misread the chunk. It shows if the system skipped the policy check.</p><p>The system produces traces at invocation time. It logs them to CloudWatch or your application store. Citations come from RetrieveAndGenerate as part of the response object. A grounding score below your threshold is a transparency signal. It means "do not trust this answer." The exam's transparency questions ask you to name these mechanisms. They do not ask for philosophical statements about openness.</p>
 <figure><img src="assets/img/ste100/aip-responsible-ai.svg" alt="Four responsible AI checks: fairness, transparency, safety, accountability" loading="lazy">
 <figcaption>Responsible AI means four checks: fairness, transparency, safety, and accountability.</figcaption>
-<figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <div class="walkthrough"><p><strong>How to read this.</strong> Each box is one check you run. Fairness tests all groups, and transparency documents the model. Safety red-teams the app, and accountability keeps a human in the loop.</p></div>
 <h3 id="ch10-fairness">Fairness and bias detection</h3>
 <p>Fairness means the system acts similarly for different groups of people. It does not give worse answers to some groups. It does not give harsher judgments to some groups. It does not give fewer opportunities to some groups. Models learn patterns from training data.</p><p>Training data has historical biases. A hiring assistant trained on past hiring data may rank some groups lower. A lending assistant may offer worse terms. These failures are silent. The system seems to work. Then someone measures outcomes by group.</p>
@@ -1870,7 +1908,7 @@ html.xp-js .xp-reveal.xp-in {
 <p>"A bigger, newer model will be less biased" is not an engineering answer. The exam offers model upgrades as a distractor for fairness questions. Fairness comes from measurement and process. It does not come from model size. The most correct answer always names metrics, testing, and monitoring.</p>
 <h3 id="ch10-hitl">Human in the loop</h3>
 <figure><img src="assets/img/density/d3-hitl.svg" alt="Human in the loop: the agent drafts, Step Functions issues a task token and waits, the human reviews, the workflow resumes or stops" loading="lazy"><figcaption>Human in the loop: the agent drafts, Step Functions issues a task token and waits, the human reviews, the workflow resumes or stops.</figcaption>
-<figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <div class="walkthrough"><p><strong>How to read this.</strong> Left to right through the approval loop. Takeaway: use it where the error costs more than the wait; it is the backstop for every uncertain filter.</p></div>
 <p>Human in the loop means a person reviews the system's action. The person approves the action before it takes effect. This is for decisions where the cost of an error is more than the cost of waiting. Examples are: send money, delete data, publish content under the company's name, or contact a customer with bad news.</p><p>A model can draft the action. A human should authorize the action. This is also the backstop for every probabilistic defense in the earlier chapters. When the filters are uncertain, the human decides.</p>
 <p>The AWS implementation pattern is a Step Functions approval workflow. The application or agent prepares the proposed action. It starts a Step Functions execution with a callback task.</p><p>Step Functions issues a task token and waits. The token goes to the human reviewer with the full context. The context includes the proposed action, the reasoning trace, and the grounding score. The workflow resumes only when the human approves or rejects.</p><p>Timeouts bound the wait. If no human responds in the configured window, the workflow takes a safe default. This default is usually rejection. For model training and labeling workflows, SageMaker Ground Truth and Augmented AI (A2I) provide managed human review workforces. They use the same idea. They route low-confidence items to people.</p>
@@ -1907,7 +1945,7 @@ html.xp-js .xp-reveal.xp-in {
 <p class="ch-bridge" style="border-left:3px solid var(--accent);padding:.55rem 1rem;background:var(--surface);border-radius:0 8px 8px 0;margin:1.1rem 0"><strong>Why this comes next.</strong> Approval flows control agents at run time. The remaining question is how you prove the model is safe before and after launch. Use the three-method evaluation discipline.</p>
 <h3 id="ch10-eval">Model evaluation for safety</h3>
 <figure><img src="assets/img/density/d3-safety-eval.svg" alt="Model evaluation for safety: programmatic metrics, LLM-as-a-judge rubrics, and human review" loading="lazy"><figcaption>Model evaluation for safety: programmatic metrics, LLM-as-a-judge rubrics, and human review</figcaption>
-<figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <div class="walkthrough"><p><strong>How to read this.</strong> Three columns for the three methods, each with what it measures. Takeaway: you cannot govern what you do not measure; baseline before launch, rerun on a schedule.</p></div>
 <p>Bedrock model evaluation runs your system against test data sets. It scores safety dimensions. Three methods match what you measure.</p><p>Programmatic (automatic) evaluation uses fixed metrics and built-in data sets. It gives toxicity scores, accuracy, and stability. This method is cheap, repeatable, and objective. LLM-as-a-judge evaluation uses a separate model as the scorer.</p><p>You define the rubrics. These rubrics include harmfulness, faithfulness (hallucination), refusal behavior, and style. This is the main method for safety at scale. Human evaluation uses your reviewers or an AWS-managed team. They make subjective calls. These calls include brand voice, cultural appropriateness, and edge cases the rubrics miss.</p>
 <p>You cannot control what you do not measure. Safety evaluation before launch sets the baseline. The same evaluation run on a schedule becomes the continuous monitoring from Chapter 10. Regression testing on every prompt or model change finds cases. A small prompt change can quietly stop refusal behavior.</p><p>The exam frames it this way: RAG safety evaluation measures retrieval relevance plus generation faithfulness. LLM-as-a-judge powers this. Agent safety evaluation measures task completion and tool-use correctness. It also measures if the agent refused or asked for approval when it should have. Bring-your-own-inference lets you evaluate systems that do not run on Bedrock.</p>
@@ -2556,7 +2594,7 @@ html.xp-js .xp-reveal.xp-in {
 <p>D is wrong. Brand voice is subjective. Programmatic metrics cannot judge taste. This is the classic method-mismatch trap.</p>
 <h2 id="12-cheat-sheet-and-glossary">13. Cheat sheet and glossary</h2>
 <figure><img src="assets/img/mermaid/79-guardrails-cheatsheet.svg" alt="Guardrails one-page map: content filters, denied topics, word filters, sensitive information filters, prompt attack detection, and grounding checks" loading="lazy"><figcaption>Guardrails one-page map: content filters, denied topics, word filters, sensitive information filters, prompt attack detection, and grounding checks</figcaption>
-<figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <p>The whole domain is on one page. Then, every term is defined.</p>
 <h3 id="ch12-cheat">One page cheat sheet</h3>
 <div class="takeaway"><p><strong>The safety control ladder.</strong> Use prompt design. Then use Guardrails. Then use IAM and network controls.</p><p>Then use evaluation. Then use human review. Climb in order. Stop at the cheapest step that satisfies the constraint.</p></div>
@@ -3278,6 +3316,73 @@ window.DS_MANIFEST = [
       }
     }
   });
+  /* ---------- 11. Scroll reveal + figure parallax (progressive enhancement) ----------
+     .reveal is added here (never in markup), so content is fully visible with
+     JS disabled. Respects prefers-reduced-motion. Parallax drift is a small
+     transform on plain figure images only; it never changes layout. ---------- */
+
+  (function () {
+    var reduceMotion = window.matchMedia &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    /* Scroll reveal: gentle rise-in on content blocks as they enter the viewport. */
+    var revealTargets = inner.querySelectorAll(
+      "figure, .pq, .exam-ask, .takeaway, .panel, .diagram-walkthrough, " +
+      ".table-wrap, .ladder, .cc-qa"
+    );
+    if (!reduceMotion && "IntersectionObserver" in window) {
+      var revealEls = Array.prototype.slice.call(revealTargets);
+      revealEls.forEach(function (el) { el.classList.add("reveal"); });
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (en) {
+          if (en.isIntersecting) {
+            en.target.classList.add("revealed");
+            io.unobserve(en.target);
+          }
+        });
+      }, { rootMargin: "0px 0px -8% 0px", threshold: 0.05 });
+      revealEls.forEach(function (el) { io.observe(el); });
+    }
+    /* reduceMotion or no IntersectionObserver: no .reveal class is added,
+       so every block stays fully visible. */
+
+    /* Figure parallax: gentle --px drift on plain figure images only
+       (.fig-light cards are excluded so the white plate never shows an edge). */
+    if (!reduceMotion) {
+      var pxFigs = [];
+      Array.prototype.forEach.call(
+        inner.querySelectorAll("figure:not(.fig-light)"),
+        function (fig) {
+          if (fig.querySelector("img")) {
+            fig.classList.add("ds-px");
+            pxFigs.push(fig);
+          }
+        }
+      );
+      var pxTicking = false;
+      function pxUpdate() {
+        var vh = window.innerHeight || 800;
+        pxFigs.forEach(function (fig) {
+          var img = fig.querySelector("img");
+          if (!img) return;
+          var r = img.getBoundingClientRect();
+          if (r.bottom < -160 || r.top > vh + 160) return; /* off-screen: skip */
+          var center = (r.top + r.height / 2) - vh / 2;
+          var drift = center * -0.015;
+          if (drift > 8) drift = 8;
+          if (drift < -8) drift = -8;
+          img.style.setProperty("--px", drift.toFixed(1) + "px");
+        });
+        pxTicking = false;
+      }
+      function pxRequest() {
+        if (!pxTicking) { pxTicking = true; window.requestAnimationFrame(pxUpdate); }
+      }
+      window.addEventListener("scroll", pxRequest, { passive: true });
+      window.addEventListener("resize", pxRequest);
+      pxUpdate();
+    }
+  })();
 })();
 
 </script>
