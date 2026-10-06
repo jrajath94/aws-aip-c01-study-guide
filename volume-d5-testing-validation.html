@@ -1167,6 +1167,42 @@ footer p{text-align:left}
   #ds-content .ds-site-footer,
   .ds-side-volumes { display: none !important; }
 }
+
+/* ==========================================================================
+   World-class upgrade (2026-10-05): scroll reveal + figure parallax.
+   Progressive enhancement: .reveal is added by JS only, so with JS disabled
+   every element stays fully visible. Parallax drift is transform-only (no
+   layout shift) and limited to plain figures; both honor
+   prefers-reduced-motion.
+   ========================================================================== */
+
+/* Scroll reveal: subtle rise-in. JS adds .reveal to content blocks; the
+   IntersectionObserver adds .revealed as each block enters the viewport. */
+.reveal {
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.reveal.revealed {
+  opacity: 1;
+  transform: none;
+}
+
+/* Figure parallax: gentle vertical drift on figure images (excludes
+   .fig-light cards so the white plate never shows an edge). The figure gets
+   overflow:hidden from JS when parallax activates, so the drift cannot
+   cause layout shift or edge bleed. */
+figure.ds-px { overflow: hidden; }
+figure.ds-px img {
+  transform: translateY(var(--px, 0px));
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal { opacity: 1; transform: none; transition: none; }
+  figure.ds-px img { transform: none; }
+  html { scroll-behavior: auto; }
+}
 </style>
 <style>
 /* Phase-2 additions: bridge paragraphs and display math.
@@ -1311,11 +1347,11 @@ html.xp-js .xp-reveal.xp-in {
 <p><strong>Last verified: 2026-09-28 against AWS documentation.</strong> Evaluation features were checked against current AWS documents. These features include automatic metrics, LLM-as-a-judge metric names, human workflows, BYO datasets, and <code>CreateEvaluationJob</code>. The <code>ApplyGuardrail</code> API was checked. CloudWatch and CloudTrail mechanics were checked.</p>
 <h2 id="the-domain-in-one-paragraph">The domain in one paragraph</h2>
 <figure class="fig-light"><img src="assets/img/internet/img-30.png" alt="The GenAI lifecycle: data preparation, experimentation, validation and deployment, then inference and feedback feeding back into data" loading="lazy"><figcaption>The GenAI lifecycle: data preparation, experimentation, validation and deployment, then inference and feedback feeding back into data</figcaption>
-<figcaption class="credit">Source: web image search, saved locally Sept 2026.</figcaption></figure>
+<figcaption class="credit">Source: web image search, saved locally Sept 2026. Reused in the AWS AIP-C01 Study Guide.</figcaption></figure>
 <p>Domain 5 asks one question in many forms. How do you prove a GenAI application works? How do you fix it when it does not work? The proof half is evaluation.</p><p>Use automatic metrics for objective checks. Use LLM-as-a-judge for human-like quality at scale. Use human reviewers for subjective judgment. Use RAG-specific evaluations for retrieval and faithfulness. Use evaluation loops and A/B tests.</p><p>These keep the application honest as prompts and models change. The fix half covers troubleshooting. This includes throttling, guardrail blocks, agent tool failures, knowledge base sync problems, and embedding mismatches. Debug these with CloudWatch and CloudTrail. Use grounding checks, red-teaming, and CI/CD gates. These keep bad changes out of production.</p>
 <h2 id="1-why-testing-generative-ai-is-different">1. Why testing generative AI is different</h2>
 <figure class="fig-light"><img src="assets/img/mermaid/fpr-traditional-vs-genai-testing.svg" alt="Traditional testing asserts one exact output; generative testing scores many valid outputs against a rubric" loading="lazy"><figcaption>Traditional testing asserts one exact output. Generative testing scores many valid outputs against a rubric and ships when the pattern is good enough.</figcaption>
-<figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <p>Start with the test you know. A traditional function is deterministic. The same input always produces the same output. So you test it with assertions.</p><p>A test for a checkout total says the result must equal 42.50. It must be character for character. Any difference is a bug. One input, one correct output. Pass or fail.</p>
 <p>A generative model breaks all three assumptions that the test uses. First, there is no single correct output. Ask ten good writers to summarize the same article. You get ten different summaries.</p><p>All summaries are correct. An exact-match assertion would fail nine of them. Second, the output is nondeterministic. Run the same prompt twice.</p><p>The wording changes. This is because generation samples from probabilities. The temperature setting controls the amount of randomness. Near 0 is focused and repeatable. Higher is more varied. Third, failures do not throw errors.</p><p>A wrong answer arrives as confident, fluent prose. There is no stack trace. There is no exception. There is no red test. The bug and the feature look the same. They look the same until a human reads the words.</p>
 <p>This is the problem that the domain solves. You cannot get quality by only making claims. Testing a generative application is not checking one output against one answer. It measures behavior across many outputs. You must decide if the pattern is good enough to ship.</p>
@@ -1324,7 +1360,7 @@ html.xp-js .xp-reveal.xp-in {
 <p>Look at the diagram. On the left is the traditional test. One input enters a function. One output comes out. The assertion compares it to the single expected value.</p><p>On the right is the generative test. One prompt enters the model. Several different wordings come out. All wordings are valid. A scoring step replaces the assertion.</p><p>The scoring step judges each output. It uses a rubric or a reference. It produces a score. It does not produce a verdict. The exam's main idea starts here. Never use an exact-match test for an open-ended output.</p>
 <h2 id="what-aws-actually-tests-the-evaluation-matrix">What AWS actually tests (the evaluation matrix)</h2>
 <figure><img src="assets/img/custom/d5-eval-matrix.svg" alt="The evaluation matrix: four methods (automatic, LLM-as-a-judge, human, BYOI), what each measures, and when to use it" loading="lazy"><figcaption>The Task 5.1 evaluation matrix. Exam scenarios are this table in costume: name the method, name what it measures, pick the row.</figcaption>
-<figcaption class="credit">Drawn for this volume.</figcaption></figure>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <p>Memorize this table. It is the main part of Task 5.1. Several exam questions are this table. They have a scenario costume.</p>
 <div class="table-wrap"><table>
 <thead>
@@ -1359,16 +1395,17 @@ html.xp-js .xp-reveal.xp-in {
 </table></div>
 <figure><img src="assets/img/ste100/aip-eval-matrix.svg" alt="Evaluation matrix: quality, safety, groundedness times automatic, judge, human" loading="lazy">
 <figcaption>The evaluation matrix tests three metric families in three ways each.</figcaption>
-<figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <div class="walkthrough"><p><strong>How to read this.</strong> The left column names quality, safety, and groundedness with their metrics. The right box names automatic metrics, LLM-as-judge, and human review. Arrows link each family to all three methods, so every family gets a machine test, a judge test, and a human test.</p></div>
 <h2 id="how-aws-asks-this-domain">How AWS asks this domain</h2>
 <figure><img src="assets/img/custom/d5-trap-traditional-fix.svg" alt="Three traditional fixes that do not fix GenAI problems: raising temperature for bad retrieval, a bigger model for broken chunking, Provisioned Throughput for nondeterministic outputs" loading="lazy"><figcaption>The domain trap: traditional fixes applied to GenAI problems. Every troubleshooting question hides one distractor like these.</figcaption>
-<figcaption class="credit">Drawn for this volume.</figcaption></figure>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <p>The questions are always scenario-based. You will see questions like: "A team must compare two models. They need to check summarization quality. They also need to check brand voice." The correct answer uses two methods. It uses LLM-as-a-judge for scale.</p><p>It uses human evaluation for brand voice. Each chapter teaches its method from the start. Remember two terms: A golden dataset is a fixed set of trusted prompts. You run these prompts again after every change. A canary is a release to a small part of traffic first. Chapter 7 teaches both terms fully.</p>
 <div class="exam-ask"><p>The domain-wide trap.</p>
 <p>Debug GenAI like a traditional application. Temperature does not fix bad retrieval. Bigger models do not fix broken chunking. Provisioned Throughput does not fix output randomness. Every troubleshooting question in this domain has one wrong answer. This answer applies a traditional fix to a GenAI problem.</p></div>
 <p class="ch-bridge" style="border-left:3px solid var(--accent);padding:.55rem 1rem;background:var(--surface);border-radius:0 8px 8px 0;margin:1.1rem 0"><strong>Why this comes next.</strong> Chapter 1 showed why GenAI testing is different from traditional testing. Chapter 2 starts the measurement toolkit. It uses automatic evaluation. This is the cheapest and fastest layer.</p>
 <h2 id="1-automatic-programmatic-evaluation-in-bedrock">2. Automatic (programmatic) evaluation in Bedrock</h2>
+<p>As you learned in <a href="volume-d1-foundation-models.html">D1</a>, evaluation starts with the basics. This domain tests whether you can run it in production.</p>
 <p>Bedrock Evaluations is a managed service. It runs model evaluations for you. Automatic evaluation is its cheapest and fastest mode. Code computes the metrics. Humans are not involved. A judge model is not involved.</p>
 <h3>Deterministic scoring against known answers</h3>
 <p>Automatic evaluation is also programmatic evaluation. It compares model outputs to known-correct answers. It uses deterministic code. You provide a prompt dataset.</p><p>Each prompt has a ground truth label. This label is the correct answer you already know. Bedrock runs your prompts through the model. Then it scores each output.</p><p>It uses built-in metrics. The built-in metrics include accuracy. (Did it get the right answer?) They include stability. (Does the answer stay correct after small prompt changes, like typos or rewording?) The Bedrock console calls this metric "robustness." They also include toxicity. (Does the output have harmful content?) You can also use custom datasets. You can define the scoring logic.</p>
@@ -1380,15 +1417,15 @@ html.xp-js .xp-reveal.xp-in {
 <div class="exam-ask"><p>Trap.</p>
 <p>Do not use automatic evaluation for subjective quality. This includes brand voice, style, or "helpfulness." Programmatic scorers compare labels. They cannot tell you if a summary sounds like your brand.</p><p>The exam will offer "run automatic evaluation with the accuracy metric" as a wrong choice. This is for any case that talks about tone, style, or voice. For subjective metrics, use LLM-as-a-judge for scale. Also use human evaluation for the final decision.</p></div>
 <figure><img src="assets/img/mermaid/39-eval-pipeline-metrics.svg" alt="Pipeline diagram: prompt dataset feeds model inference, which feeds built-in metrics (accuracy, toxicity, stability), with a score-vs-expected strip below" loading="lazy"><figcaption>Pipeline diagram: prompt dataset feeds model inference, which feeds built-in metrics (accuracy, toxicity, stability), with a score-vs-expected strip below</figcaption>
-<figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <p>Read the diagram. Your JSONL prompt dataset is in S3 on the left. It has one card for each prompt and its ground truth label. You make this dataset.</p><p>The arrow to model inference shows Bedrock calling your model one time for each prompt. This happens without delay. If this step fails, check IAM permissions on the model. Also check your S3 paths first.</p><p>On the right, scorers compute accuracy, toxicity, and stability. They use code, not a model. The bottom strip compares each output with its ground truth row. It adds them up. The report shows the average and the per-prompt errors. So you can check failures.</p>
 <div class="exam-ask"><p>Exam framing.</p>
 <p>A team needs a repeatable, low-cost way to benchmark three models on a 2,000-question labeled QA set before choosing one for production. Correct: automatic evaluation with accuracy metrics. Distractors: LLM-as-a-judge (it costs more than needed for an objective labeled set).</p><p>Distractors: human evaluation (it is too slow and costly for 2,000 questions). "Have developers read a sample" (it is not repeatable). Look for the word "labeled" in the question. Labeled data and objective scoring is the automatic-evaluation signal.</p></div>
 <figure><img src="assets/img/ste100/aip-automatic-eval.svg" alt="Automatic evaluation compares model output to reference answers with metrics" loading="lazy">
 <figcaption>Automatic evaluation compares model output to reference answers with fixed metrics.</figcaption>
-<figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <div class="walkthrough"><p><strong>How to read this.</strong> Read left to right: the dataset, the model, the metric. Exact match, F1, ROUGE, and BERTScore each compare text to the reference. It is fast and repeatable, but reference answers cost effort to write.</p></div>
-<h2 id="questions">Questions</h2>
+<h2 id="questions-1-automatic-programmatic-evaluation-in-bedrock">Questions</h2>
 <p>MULTIPLE CHOICE</p>
 <p>EASY</p>
 <p>A startup has 3,000 customer questions. Each question has the correct answer category label. They need a cheap, repeatable benchmark. They want to choose between two small models for a classification task. Which approach is MOST correct?</p>
@@ -1432,11 +1469,11 @@ html.xp-js .xp-reveal.xp-in {
 <div class="exam-ask"><p>Trap.</p>
 <p>Use one preferred metric for every task. The exam's preferred distractor is "run automatic evaluation with accuracy." This is for a summarization or open-ended QA scenario. Accuracy needs exact labels.</p><p>Summarization has no single correct string. Match the metric to the task. Classification gets accuracy/F1. Extractive QA gets exact match.</p><p>Summarization gets ROUGE. Anything subjective or open-ended gets a judge model or humans. Here is a second trap: BYOI confused with fine-tuning data. BYOI is evaluation input. It includes prompts and your own generated responses. It trains nothing.</p></div>
 <figure><img src="assets/img/mermaid/42-task-metrics.svg" alt="Diagram: three task cards (summarize, question answer, classify) each arrowing to its matching metric chip (ROUGE-L, exact match, F1 score)" loading="lazy"><figcaption>Diagram: three task cards (summarize, question answer, classify) each arrowing to its matching metric chip (ROUGE-L, exact match, F1 score)</figcaption>
-<figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <p>Read the diagram. The left column shows the three task families. AWS names these families. Your BYO dataset rows have a task tag.</p><p>Each row goes to its metric. The routing rule is this: Summarization goes to ROUGE-L. Question answering goes to exact match or token F1. Classification goes to accuracy or F1. Each right chip shows the metric and its icon.</p><p>Overlap is for ROUGE. Target is for exact match. Grid is for F1. The icon shows what the metric counts. This is what breaks: If a summarization row uses accuracy, good paraphrases get zero. If an imbalanced classification row uses only accuracy, the majority class hides minority-class failures.</p>
 <div class="exam-ask"><p>Exam framing.</p>
 <p>"A team evaluates a fraud classifier. 1 percent of transactions are fraud. Which metric must they use?" Correct: F1 (or precision/recall). Accuracy has too much of the majority class.</p><p>Distractor: accuracy. For summarization: "compare two summarization models" means ROUGE or judge-based correctness/completeness. The distractor is exact match. For BYOI: "evaluate responses from a model hosted outside Bedrock" or "evaluate the full RAG pipeline end to end" means bring-your-own-inference. Bedrock cannot invoke what it does not host.</p></div>
-<h2 id="questions">Questions</h2>
+<h2 id="questions-4-bring-your-own-datasets-and-choosing-metrics">Questions</h2>
 <p>MULTIPLE CHOICE</p>
 <p>EASY</p>
 <p>A team makes a classifier. The classifier sends support tickets to 12 categories. They have 2,000 labeled tickets from production. Which evaluation setup is MOST correct?</p>
@@ -1469,11 +1506,11 @@ html.xp-js .xp-reveal.xp-in {
 <p class="ch-next" style="color:var(--muted);font-size:.95em;margin:1.4rem 0 .4rem"><strong>Next:</strong> LLM-as-a-judge evaluation.</p>
 <h2 id="2-llm-as-a-judge-evaluation">4. LLM-as-a-judge evaluation</h2>
 <figure class="fig-light"><img src="assets/img/internet/img-19.png" alt="LLM-as-a-judge feedback loop: the application output goes to an eval LLM, which scores it; low scores loop back for improvement" loading="lazy"><figcaption>LLM-as-a-judge feedback loop: the application output goes to an eval LLM, which scores it; low scores loop back for improvement.</figcaption>
-<figcaption class="credit">Source: web image search, saved locally Sept 2026.</figcaption></figure>
+<figcaption class="credit">Source: web image search, saved locally Sept 2026. Reused in the AWS AIP-C01 Study Guide.</figcaption></figure>
 <figure><img src="assets/img/mermaid/06-eval-loop.svg" alt="Evaluation loop: a candidate prompt or model runs against a golden dataset, a judge (LLM or deterministic metric) scores accuracy, faithfulness, toxicity, and latency, and the candidate promotes to production only through a CI/CD eval gate." loading="lazy"><figcaption>The evaluation loop runs. A candidate prompt or model runs against a golden dataset. A judge scores accuracy, faithfulness, toxicity, and latency. The candidate promotes to production only through a CI/CD evaluation gate.</figcaption>
-<figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <figure class="fig-light"><img src="assets/img/internet/img-20.png" alt="LLM-as-a-judge evaluation pipeline: in-context learning defines the task (scores, yes/no, pairs, multiple-choice), a judge model is selected, outputs are post-processed (special tokens, logits, selected sentences), and a final evaluation is produced." loading="lazy"><figcaption>The LLM-as-a-judge evaluation pipeline defines the task. In-context learning defines the task. The system selects a judge model. The system post-processes outputs. The system produces a final evaluation.</figcaption>
-<figcaption class="credit">Source: Paper figure via alphaxiv.org, via image search Sept 2026.</figcaption></figure>
+<figcaption class="credit">Source: Paper figure via alphaxiv.org, via image search Sept 2026. Reused in the AWS AIP-C01 Study Guide.</figcaption></figure>
 <p>No ground truth label can show quality. You hire a second model to grade the first. Bedrock runs this as a managed evaluation job. It has built-in and custom judge metrics.</p>
 <h3>A second model grades the first</h3>
 <p>LLM-as-a-judge is an evaluation method. A foundation model scores another model's outputs. It uses a rubric you define. The judge model reads the prompt, the candidate response, and sometimes reference material.</p><p>It does not compare strings to labels. Then it returns scores for metrics. These metrics include correctness, completeness, faithfulness, harmfulness, refusal, and style and tone. Correctness means the answer is right. Completeness means it covers all requests.</p><p>Faithfulness means the source supports every claim. This is the anti-hallucination metric. Harmfulness means the content is unsafe. Refusal means it correctly declined what it should decline. You can also define custom metrics in plain language. For example, "scores 1 to 5 on how well the response matches our brand voice: direct, warm, no jargon."</p>
@@ -1484,15 +1521,15 @@ html.xp-js .xp-reveal.xp-in {
 <div class="exam-ask"><p>Trap.</p>
 <p>Treat judge scores as true data. A judge model has biases. It likes longer answers. It likes its own model family's style.</p><p>It can be fooled by confident hallucinations. The exam tests this with scenarios. For example, a team trusts judge scores completely. The team removes human spot-checks. The correct method is to use a judge for scale.</p><p>Also, use human spot-checks on a sample. This calibrates the judge. There is a second trap. Do not use the same small model as both candidate and judge. A weak judge cannot grade a strong candidate well. This is like a blind person grading a sighted person.</p></div>
 <figure><img src="assets/img/mermaid/40-llm-judge-pairwise.svg" alt="Diagram: answers A and B flow into a judge model, which produces a scorecard with faithfulness and harmfulness bars" loading="lazy"><figcaption>Diagram: answers A and B flow into a judge model, which produces a scorecard with faithfulness and harmfulness bars</figcaption>
-<figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <p>Read the diagram. Answers A and B on the left are outputs. They come from one or two candidate models.</p><p>They use the same prompt. For model comparison, both go to the judge. The presentation order is random. This fights position bias.</p><p>The center judge model is a separate model. It is usually a larger model. It is not the model under test. It gets the prompt, the answer, and the rubric. The scorecard on the right shows scores for each metric. Faithfulness finds hallucinations.</p><p>Harmfulness finds unsafe content. The system stores the reason for each score for audit. What can go wrong? If the judge is too weak, the scores are not good. If the rubric is not clear, the scores are not consistent. First, calibrate with a human-labeled sample.</p>
 <div class="exam-ask"><p>Exam framing.</p>
 <p>A team must evaluate 5,000 RAG answers. They must check faithfulness and completeness. This is before a production rollout. Human review would take weeks.</p><p>Correct: Use Bedrock LLM-as-a-judge evaluation. Use faithfulness and completeness metrics. Distractors: Automatic evaluation is wrong. There is no true data for open-ended answers. The accuracy metric does not measure faithfulness.</p><p>Human-only evaluation is too slow. Spot-check 20 by hand is not statistically meaningful. Also, watch for agent evaluation. Measure task completion and tool-use effectiveness for an agent. This is judge work. No string metric can show multi-step reasoning quality.</p></div>
 <figure><img src="assets/img/ste100/aip-llm-judge.svg" alt="LLM-as-judge scores answers against a fixed rubric" loading="lazy">
 <figcaption>A judge model scores answers against a fixed rubric.</figcaption>
-<figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <div class="walkthrough"><p><strong>How to read this.</strong> The candidate answer enters the judge. The judge applies the rubric, blind to the source, and returns a score with a reason. Randomize answer order, because judges favor first and longest.</p></div>
-<h2 id="questions">Questions</h2>
+<h2 id="questions-2-llm-as-a-judge-evaluation">Questions</h2>
 <p>MULTIPLE CHOICE</p>
 <p>EASY</p>
 <p>A team must score 4,000 chatbot responses. They must check faithfulness to source documents. They must check correct refusal of disallowed requests. There are no true labels. Which Bedrock evaluation method is BEST?</p>
@@ -1542,15 +1579,15 @@ html.xp-js .xp-reveal.xp-in {
 <div class="exam-ask"><p>Trap.</p>
 <p>Human evaluation is the most accurate. It is the least scalable. The exam will offer "have the team review all outputs" as a wrong answer for a large scenario. The correct method is layered.</p><p>Use automatic metrics for the main part. Use LLM-as-a-judge for subjective scale. Use human evaluation for samples. Use human evaluation for calibration. Use human evaluation for final approval on high-risk changes.</p></div>
 <figure><img src="assets/img/mermaid/41-human-review.svg" alt="Diagram: model responses flow to human reviewers at desks, then to a consensus card with checkmarks and an agreement gauge" loading="lazy"><figcaption>Diagram: model responses flow to human reviewers at desks, then to a consensus card with checkmarks and an agreement gauge</figcaption>
-<figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <p>Look at the diagram. Model responses on the left are a small part. They are not the full data.</p><p>The sampling method is important. Include unusual cases and recent failures. Do not only include easy prompts. In the center, human reviewers are your employees.</p><p>They understand domain details. Or, use an AWS-managed team for scale. Multiple reviewers check each response. The right consensus card shows average scores. It also shows the agreement level. High agreement means the rules are clear.</p><p>Low agreement means fix the instructions. Do not blame the model. The bottom strip shows human evaluation's role. It is for calibration in the larger system. Its labels become the true data. This data checks automatic metrics and judge models.</p>
 <div class="exam-ask"><p>Exam framing.</p>
 <p>"Compare two models for summarization quality. Include brand voice." Correct: Use LLM-as-a-judge for scale. Also use human evaluation for brand voice. The exam uses the word "subjective" often.</p><p>If the question says quality is subjective, or mentions brand, tone, or culture, use human evaluation. Pair it with a scalable method. A second idea: "no in-house reviewers available" means use the AWS-managed team. Do not skip human review.</p></div>
 <figure><img src="assets/img/ste100/aip-human-eval.svg" alt="Human evaluation workflow: annotators, guidelines, agreement check" loading="lazy">
 <figcaption>Human evaluation uses trained annotators and checks their agreement.</figcaption>
-<figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <div class="walkthrough"><p><strong>How to read this.</strong> Annotators read the guidelines with examples. Two raters score the same items, and Cohen kappa above 0.6 means solid agreement. Humans are the gold standard and the slowest, so use them to calibrate cheaper methods.</p></div>
-<h2 id="questions">Questions</h2>
+<h2 id="questions-3-human-evaluation-workflows">Questions</h2>
 <p>MULTIPLE CHOICE</p>
 <p>EASY</p>
 <p>A company must choose between two models. The models create marketing text. Matching brand voice is the most important rule. No employees can review the text. What is the BEST evaluation setup?</p>
@@ -1583,7 +1620,7 @@ html.xp-js .xp-reveal.xp-in {
 <p class="ch-next" style="color:var(--muted);font-size:.95em;margin:1.4rem 0 .4rem"><strong>Next:</strong> RAG evaluation, retrieval quality, faithfulness, relevance.</p>
 <h2 id="5-rag-evaluation-retrieval-quality-faithfulness-relevance">6. RAG evaluation: retrieval quality, faithfulness, relevance</h2>
 <figure class="fig-light"><img src="assets/img/internet/img-18.webp" alt="The RAG evaluation triad: answer relevance, context relevance, and groundedness, the three RAGAS-style metrics every RAG eval needs" loading="lazy"><figcaption>The RAG evaluation triad: answer relevance, context relevance, and groundedness, the three RAGAS-style metrics every RAG eval needs.</figcaption>
-<figcaption class="credit">Source: web image search, saved locally Sept 2026.</figcaption></figure>
+<figcaption class="credit">Source: web image search, saved locally Sept 2026. Reused in the AWS AIP-C01 Study Guide.</figcaption></figure>
 <p>A RAG pipeline has two parts. The parts can fail separately. Evaluating only the final answer does not show which part failed. RAG evaluation scores retrieval and generation separately.</p>
 <h3>Score the retriever and the generator apart</h3>
 <p>RAG evaluation measures a retrieval-augmented generation pipeline in two stages. Retrieval quality asks: did the retriever find the correct chunks? Metrics include relevance. This checks if the retrieved chunks are on topic.</p><p>Recall at k checks how many chunks with the answer appear in the top k retrieved chunks. Precision at k is another metric. Generation quality asks: did the model answer well with the retrieved chunks? The key metric is faithfulness.</p><p>This means every factual claim in the answer must come from the retrieved context. Answer relevance is a related metric. This checks if the answer addresses the question. In Bedrock, LLM-as-a-judge powers RAG evaluation with these metrics. It often runs against a dataset of questions. The dataset has documents that should answer the questions.</p>
@@ -1593,15 +1630,15 @@ html.xp-js .xp-reveal.xp-in {
 <div class="exam-ask"><p>Trap.</p>
 <p>Do not fix bad retrieval by changing the generation model. This is the most common Domain 5 trap. If retrieved chunks are not relevant, no model can make a correct answer. A bigger model will make up more fluent answers.</p><p>The exam question gives clues. "Retrieved chunks look relevant but answers are wrong" means a generation or grounding problem. "Answers cite facts not in the documents" means check retrieval first, then faithfulness. Always diagnose retrieval before generation.</p></div>
 <figure><img src="assets/img/mermaid/43-rag-eval-panels.svg" alt="Two-panel diagram: top panel shows retrieval quality with relevant and missed documents; bottom panel shows generation faithfulness with claims linked to source lines and one hallucination marked" loading="lazy"><figcaption>Two-panel diagram: retrieval quality on top, generation faithfulness below.</figcaption>
-<figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <p>Look at the diagram. The top part shows retrieval quality. The query goes into the document stack.</p><p>The system retrieved blue documents. The blue documents are relevant. Gray documents have the answer but were not retrieved. The gauge shows relevance at k. Misses here mean chunking, embedding, or ranking failures.</p><p>The bottom part shows generation faithfulness. It shows the model's answer. Thin lines connect each sentence to a highlighted source line. There is a green check. The red-X sentence has no source line. This is a made-up answer.</p><p>The faithfulness metric finds it. Read the pair. Blue documents plus red-X sentences mean the generator ignores good context. Gray documents plus grounded-but-incomplete answers mean retrieval gives too little information to the generator. What breaks: If you evaluate only the final answer, these signals combine. This points the fix to the wrong part.</p>
 <div class="exam-ask"><p>Exam framing.</p>
 <p>"A RAG application gives confident but wrong answers. The retrieved chunks look relevant." The correct first step is to evaluate faithfulness and grounding of the generation step. This is because retrieval looks good. Another case: "Answers cite facts not in the source documents." This means you must evaluate retrieval quality and faithfulness.</p><p>In both cases, "switch to a larger generation model" is a wrong answer. "Lower the temperature" is wrong too. Also look for agent evaluation that looks like judge evaluation. "Evaluate an agent's task completion and tool-use effectiveness" is LLM-as-a-judge. It uses agent metrics. This is similar to RAG evaluation.</p></div>
 <figure><img src="assets/img/ste100/aip-rag-eval.svg" alt="RAG evaluation splits into retrieval quality and generation faithfulness" loading="lazy">
 <figcaption>RAG evaluation splits into retrieval quality and generation faithfulness.</figcaption>
-<figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <div class="walkthrough"><p><strong>How to read this.</strong> The left box asks: did retrieval find the right chunks in the right order. The right box asks: is every claim in the source, and does the answer match the ask. Test retrieval first, because most bad answers start there.</p></div>
-<h2 id="questions">Questions</h2>
+<h2 id="questions-5-rag-evaluation-retrieval-quality-faithfulness-relevance">Questions</h2>
 <p>MULTIPLE CHOICE</p>
 <p>EASY</p>
 <p>A RAG support assistant gives fluent answers. The answers cite policy details. These details are not in the retrieved documents. Retrieval relevance scores are high. What must the team evaluate and fix first?</p>
@@ -1642,15 +1679,15 @@ html.xp-js .xp-reveal.xp-in {
 <div class="exam-ask"><p>Trap.</p>
 <p>Do not treat the golden dataset as write-once. If the dataset never gets new prompts from production failures, the loop passes an old test. Real quality gets worse.</p><p>The exam tests this indirectly. "The evaluation suite passes but users report new failure modes" means the golden dataset does not have those failure modes. The loop is only as good as the dataset's coverage. So, add prompts from every production incident to the golden set.</p></div>
 <figure><img src="assets/img/mermaid/06-eval-loop.svg" alt="Circular loop diagram: change prompt or model, run eval suite, compare to baseline, gate pass or fail, with a golden dataset database at the center and a stop sign on the gate" loading="lazy"><figcaption>Circular loop diagram: change, eval, compare to baseline, gate, with the golden dataset at the center.</figcaption>
-<figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <p>Read the diagram. The top box (change prompt or model) is the trigger. Any configuration change starts the loop.</p><p>This is like a commit starting CI. The right box (run evaluation suite) shows Bedrock evaluations. They score the new configuration on the golden dataset. This includes automatic, judge, and sampled human metrics.</p><p>The bottom box (compare to baseline) compares metrics. It compares against the last good run. Small differences pass. Drops beyond the threshold fail. The left box (gate pass or fail) is the main point. The red stop sign blocks a failed rollout automatically.</p><p>Passing gates go to canary. The center (golden dataset) is the stable measure. Everything compares against it. Curate it. Version it. Grow it with every incident.</p>
 <div class="exam-ask"><p>Exam framing.</p>
 <p>"A team must validate every prompt change before production with minimal manual effort." Correct: use automated regression testing on a golden dataset. Use evaluation gates in the deployment pipeline.</p><p>Distractors: manual review of each change (this does not scale). Canary without offline evaluation (this shows users unvetted changes). Or "trust the prompt engineer's judgment." "Detect slow quality decay over months" means scheduled semantic drift checks and continuous evaluation. It does not mean one-time testing.</p></div>
 <figure><img src="assets/img/ste100/aip-eval-loops.svg" alt="Eval loop: golden dataset, regression check, canary, monitor, feed failures back" loading="lazy">
 <figcaption>The golden dataset grows with every production failure.</figcaption>
-<figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <div class="walkthrough"><p><strong>How to read this.</strong> Follow the boxes left to right. Each change runs the golden set. Regressions block the deploy, canary watches real traffic, and the red box feeds failures back into the golden set.</p></div>
-<h2 id="questions">Questions</h2>
+<h2 id="questions-6-eval-loops-and-iteration-regression-canary-golden-datasets">Questions</h2>
 <p>MULTIPLE CHOICE</p>
 <p>EASY</p>
 <p>A team edits system prompts weekly. They want an automated check. This check must catch quality problems. It must catch them before each change reaches users. What should they implement?</p>
@@ -1698,15 +1735,15 @@ html.xp-js .xp-reveal.xp-in {
 <div class="exam-ask"><p>Trap.</p>
 <p>Do not confuse prompt variants with prompt versions. Versions are fixed snapshots for release and rollback. Variants are parallel choices for comparison. The exam will change the terms in wrong answers. "Create a new prompt version for each A/B arm" is wrong.</p><p>Versions are sequential releases. They are not parallel experiments. This is a second trap. A/B testing without sticky routing mixes variants. This happens within one user's session. It makes the comparison bad.</p></div>
 <figure><img src="assets/img/mermaid/44-ab-testing.svg" alt="Diagram: user traffic splits into variant A and variant B branches, converging on a comparison dashboard where variant B wins on win rate" loading="lazy"><figcaption>Diagram: user traffic splits into variant A and variant B branches, converging on a comparison dashboard where variant B wins on win rate.</figcaption>
-<figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <p>Read the diagram. One traffic arrow on the left splits into equal branches. The split ratio shows risk. Use 50/50 for speed. Use 90/10 for caution.</p><p>The branches (variants A and B) differ only in the test variable. This is the prompt text or the model. Everything else stays the same. This includes guardrails and retrieval. If not, the comparison is not valid.</p><p>The right dashboard shows win-rate bars for each variant. It shows quality, cost, latency, and safety. The check badge marks the winner. This happens only after statistical significance. It does not happen after the first hundred requests. What breaks: non-sticky routing (users change variants during a session), changing two things at once (prompt and model), or stopping the test at the first good result.</p>
 <div class="exam-ask"><p>Exam framing.</p>
 <p>"A team wants to compare two prompt wordings on live traffic. They want minimal code changes." Correct: Bedrock Prompt Management variants plus traffic splitting. Measure resolution and cost.</p><p>Distractors: deploying two separate applications. Or "pick the one with the better offline score." The question emphasizes real user behavior. Fairness: "verify a new prompt does not produce worse outcomes for any user group." This means A/B testing with segmented metrics. This is the exam's fairness-check pattern.</p></div>
 <figure><img src="assets/img/ste100/aip-ab-test.svg" alt="A/B test: split traffic between current and new prompt, compare one metric" loading="lazy">
 <figcaption>Half the traffic sees the current prompt and half sees the new one, and one metric picks the winner.</figcaption>
-<figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <div class="walkthrough"><p><strong>How to read this.</strong> The two boxes split traffic 50-50 in the same time window. The bottom box compares one metric. Change one thing per test, because two changes hide which one worked.</p></div>
-<h2 id="questions">Questions</h2>
+<h2 id="questions-7-ab-testing-prompts-and-models">Questions</h2>
 <p>MULTIPLE CHOICE</p>
 <p>EASY</p>
 <p>A team has two system prompts. Offline evaluations are similar. The team wants real user traffic to decide. Marketing must change wording later without code deployments. What is the BEST method?</p>
@@ -1739,7 +1776,7 @@ html.xp-js .xp-reveal.xp-in {
 <p class="ch-next" style="color:var(--muted);font-size:.95em;margin:1.4rem 0 .4rem"><strong>Next:</strong> troubleshoot common failures.</p>
 <h2 id="8-troubleshooting-common-failures">9. Troubleshooting common failures</h2>
 <figure><img src="assets/img/mermaid/08-troubleshoot-tree.svg" alt="Bedrock failure triage: throttling gets backoff and quota increases, validation errors mean bad request shape or token limits, guardrail blocks need the firing filter identified in CloudWatch, timeouts need streaming or smaller context." loading="lazy"><figcaption>Bedrock failure triage handles throttling. Throttling gets backoff and quota increases. Validation errors mean bad request shape or token limits. Guardrail blocks need the system to identify the firing filter in CloudWatch. Timeouts need streaming or smaller context.</figcaption>
-<figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <p>Five failure patterns cause most GenAI production incidents. Learn to know each pattern by its error signature. Find the correct fix first.</p>
 <h3>Five signatures, five fixes</h3>
 <p>Generative AI applications fail in ways that traditional applications do not. Each failure has a specific signature. The exam tests these five signatures:</p>
@@ -1762,15 +1799,15 @@ html.xp-js .xp-reveal.xp-in {
 <div class="exam-ask"><p>Trap.</p>
 <p>Do not treat every failure as a capacity problem. Do not treat every failure as a model problem. For a guardrail-block scenario, the exam offers these distractors.</p><p>One is "switch to a larger model". Another is "increase Provisioned Throughput". These options do not change a policy decision. An agent ignores a new tool.</p><p>The distractor is "rewrite the agent instructions." The fix is to run prepare-agent. KB answers are stale. The distractor is "switch the generation model." The fix is to check the sync job. Read the signature. Fix the layer.</p></div>
 <figure><img src="assets/img/mermaid/08-troubleshoot-tree.svg" alt="Decision-tree diagram: a failure warning branches to throttled, guardrail blocked, and agent tool failed, each with its fix icon" loading="lazy"><figcaption>Decision-tree diagram: a failure warning branches to throttled, guardrail blocked, and agent tool failed, each with its fix icon</figcaption>
-<figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <p>Read the diagram. The top (failure) is the user symptom. Classify the symptom before you do anything.</p><p>The left branch (throttled) shows the hourglass. Check if traffic routes to provisioned capacity. Check if quotas cover the burst. Check if clients retry with backoff.</p><p>Clients must not stampede. The middle branch (guardrail blocked) shows the shield. Read the guardrail trace. See which policy fired. Then decide. Fix the input.</p><p>Tune the threshold. Adjust the policy. Do not disable the guardrail. The right branch (agent tool failed) shows the broken gear. Check prepare-agent status. Check Lambda permissions.</p><p>Check schema match. Do this in that order. Each branch ends in green fix icons. Each icon shows the cheapest correct fix for that branch. If the first fix does not work, move to the next layer. Do not move to a different branch.</p>
 <div class="exam-ask"><p>Exam framing.</p>
 <p>"The application bought Provisioned Throughput. The application still gets throttled." "The code calls invoke_model with the base model ID." Correct: route invocations to the provisioned model ARN. Distractor: buy more model units. "The agent ignores the new action group." This points to prepare-agent. The distractor says: "rewrite the instructions."</p><p>"Answers are stale after document updates." This points to the KB sync schedule. This also points to a failed sync job. The distractor says: "change the generation model." "Embedding model changed, ingestion fails." This points to dimension mismatch. This also points to index rebuild.</p></div>
 <figure><img src="assets/img/ste100/aip-troubleshoot-map.svg" alt="Troubleshooting map from symptom to checklist" loading="lazy">
 <figcaption>Name the symptom first, because each symptom has its own checklist.</figcaption>
-<figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <div class="walkthrough"><p><strong>How to read this.</strong> Start at the symptom box. Follow the arrow to your symptom. Each box lists the first checks: wrong answer means check retrieval, 429 means backoff and quota, slow means stream or change region.</p></div>
-<h2 id="questions">Questions</h2>
+<h2 id="questions-8-troubleshooting-common-failures">Questions</h2>
 <p>MULTIPLE CHOICE</p>
 <p>EASY</p>
 <p>You add a new action group to a Bedrock agent. The agent never calls the new tool. The Lambda works when you test it directly. What is the MOST probable cause?</p>
@@ -1812,11 +1849,11 @@ html.xp-js .xp-reveal.xp-in {
 <div class="exam-ask"><p>Trap.</p>
 <p>Do not use CloudTrail for performance monitoring. Do not use CloudWatch for audit. The exam asks "find which user invoked the model". Use CloudTrail for this. The exam asks "detect abnormal token spend in near real time".</p><p>Use CloudWatch metrics with anomaly detection for this. A second trap: building Glue and Athena pipelines for real-time hallucination detection. This is a high-overhead distractor. The managed answer is Bedrock evaluation jobs with judge metrics. Use CloudWatch anomaly detection.</p></div>
 <figure><img src="assets/img/mermaid/45-observability-logs.svg" alt="Diagram: the GenAI app sends what-it-said to CloudWatch Logs and who-called-what to CloudTrail, both feeding a monitoring dashboard with an alert bell" loading="lazy"><figcaption>Diagram: the GenAI app sends what-it-said to CloudWatch Logs and who-called-what to CloudTrail, both feeding a monitoring dashboard with an alert bell.</figcaption>
-<figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <p>Read the diagram: The GenAI app on the left sends two types of evidence. Two arrows leave it. The upper arrow (what it said): Prompts, responses, traces, and metrics go to CloudWatch Logs. You investigate behavior and content here. The lower arrow (who called what): Every API call with identity, time, and parameters goes to CloudTrail. You investigate changes and access here.</p><p>On the right, metrics feed dashboards and anomaly alarms. When the alarm sounds, start at the dashboard. Drill into logs for content. Check the trail for the actor. What breaks: If invocation logging is off, you have no prompt/response forensics. If a trail has no log file validation or restricted access, the audit is not trustworthy.</p>
 <div class="exam-ask"><p>Exam framing.</p>
 <p>"Near-real-time detection of hallucinations plus abnormal token spend with minimal custom work" points to Bedrock evaluation jobs (judge metrics). It also points to CloudWatch anomaly detection on token metrics. "Determine which IAM role changed the guardrail configuration" is pure CloudTrail. "Analyze prompt and response patterns for confusion" is CloudWatch Logs Insights. The exam rewards the managed, low-overhead answer every time.</p></div>
-<h2 id="questions">Questions</h2>
+<h2 id="questions-9-debugging-with-cloudwatch-logs-and-cloudtrail">Questions</h2>
 <p>MULTIPLE CHOICE</p>
 <p>EASY</p>
 <p>An administrator needs to find which IAM principal changed a Bedrock guardrail policy last Tuesday. Which service answers this?</p>
@@ -1857,15 +1894,15 @@ html.xp-js .xp-reveal.xp-in {
 <div class="exam-ask"><p>Trap.</p>
 <p>Do not confuse contextual grounding with Automated Reasoning. The exam asks about this pair directly. "Verify the answer has support from the retrieved documents" is contextual grounding. "Verify the answer obeys the formal refund policy written as logical rules" is Automated Reasoning. Grounding checks evidence.</p><p>Automated Reasoning checks logic. Here is a second trap: Do not think a grounding check replaces RAG evaluation. The check enforces at runtime. The evaluation measures across the dataset. You need both.</p></div>
 <figure><img src="assets/img/mermaid/46-faithfulness-check.svg" alt="Diagram: source documents on the left, a model answer on the right with claims linked to source lines and green checks, one unlinked claim marked as hallucination, with a grounding check magnifier" loading="lazy"><figcaption>Diagram: source documents on the left, the model answer on the right, claims linked to source lines.</figcaption>
-<figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <p>Read the diagram: The source context on the left shows retrieved chunks. Highlighted lines are facts available to the model. The model cannot claim anything not highlighted. The model answer on the right has three sentences. Thin lines connect the first two sentences to their source lines.</p><p>These sentences have a base. The red X sentence has no source line. This is a hallucination. The grounding check flags this hallucination. It blocks it if it is past the threshold. The magnifier is the grounding check itself.</p><p>It is the guardrail policy. It does the verification at runtime. It scores against your threshold. What can break: If retrieval returns wrong documents, the check enforces grounding to wrong sources. Grounding checks verify support, not truth. Retrieval quality is still important.</p>
 <div class="exam-ask"><p>Exam framing.</p>
 <p>"A RAG application must find when responses do not have support from retrieved sources. It must enforce this at runtime." Correct: use contextual grounding checks in Bedrock Guardrails with a threshold. Distractors: Denied topics block subjects, not hallucinations.</p><p>Word filters check exact strings only. "A stronger prompt" is not enforced or measured. The difference between grounding and Automated Reasoning appears as a direct definition question. Match the scenario verb to the control.</p></div>
 <figure><img src="assets/img/ste100/aip-hallucination-control.svg" alt="Hallucination control: split answer into claims, verify each against the source" loading="lazy">
 <figcaption>Split the answer into claims and verify each one against the source.</figcaption>
-<figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <div class="walkthrough"><p><strong>How to read this.</strong> Read left to right: the answer, split into one-fact claims, each checked in the source. Keep and cite the supported ones, and drop or flag the rest. Faithfulness equals supported claims over total claims.</p></div>
-<h2 id="questions">Questions</h2>
+<h2 id="questions-10-validating-grounding-and-hallucination-control">Questions</h2>
 <p>MULTIPLE CHOICE</p>
 <p>EASY</p>
 <p>A customer-facing RAG assistant sometimes invents product details. These details are not in the knowledge base. The team needs runtime enforcement. Responses must stay supported by retrieved sources. What should they use?</p>
@@ -1906,11 +1943,11 @@ html.xp-js .xp-reveal.xp-in {
 <div class="exam-ask"><p>Trap.</p>
 <p>"Our guardrails passed the default tests, so we are safe." Default tests cover default attacks. The exam tests this with scenarios. The app is attacked through the retrieval layer or tool outputs. Guardrails only scan user input.</p><p>Red-teaming must cover every input channel. These are user messages, retrieved documents, tool outputs, and multi-turn conversation history. A second trap: Treat red-teaming as a one-time event. New attack techniques appear constantly. The suite must be re-run on every significant change.</p></div>
 <figure><img src="assets/img/mermaid/47-red-teaming.svg" alt="Diagram: adversarial prompts attack a guardrails shield; blocked attacks bounce off as red X marks, one passes through to a findings report" loading="lazy"><figcaption>Diagram: adversarial prompts attack a guardrails shield; blocked attacks bounce off as red X marks, one passes through to a findings report.</figcaption>
-<figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <p>Read the diagram. The red-team figure on the left starts attack arrows. These attacks are jailbreaks, injections, exfiltration probes, and disguised requests. The center guardrails shield is the defense layer.</p><p>Two arrows bounce off. Red X marks show blocked attacks. The shield must cover all input channels. It must not cover only user messages. The right findings report holds the valuable arrow.</p><p>This arrow passed through. The team documents each successful attack with severity. It becomes a permanent regression test. A shield that scans only user input breaks. Attacks arrive via retrieved documents or tool outputs. Red-team every channel that the model reads.</p>
 <div class="exam-ask"><p>Exam framing.</p>
 <p>A team must test their assistant for jailbreak and prompt-injection attacks before launch. Correct: use an adversarial test suite.</p><p>Use Bedrock evaluations with harmfulness and refusal metrics. Use human red-team review. Distractors are wrong. "Enable guardrails" alone is an untested defense.</p><p>"Run automatic evaluation" is wrong. Accuracy does not measure attack resistance. Watch for the retrieval-channel twist. "Attacks hidden in knowledge base documents" means scanning retrieved context. It means red-teaming the RAG pipeline. It does not mean only user inputs.</p></div>
-<h2 id="questions">Questions</h2>
+<h2 id="questions-11-testing-safety-red-teaming-basics-with-aws-tooling">Questions</h2>
 <p>MULTIPLE CHOICE</p>
 <p>EASY</p>
 <p>A team wants to check if a customer-facing assistant resists jailbreak and prompt-injection attacks before launch. Which approach is the most correct?</p>
@@ -1958,15 +1995,15 @@ html.xp-js .xp-reveal.xp-in {
 <div class="exam-ask"><p>Trap.</p>
 <p>The application code has versioning. The prompt does not have versioning. The exam will describe a team with "full CI/CD". Their prompts are hardcoded strings. Then the exam will ask why a prompt rollback needs a redeploy. The answer: prompts are configuration.</p><p>Configuration needs its own versioning. A second trap: eval gates only run unit tests. Unit tests check code. Only eval jobs check model behavior. A GenAI pipeline without an eval gate is a deployment pipeline. It has no quality check on the thing users experience.</p></div>
 <figure><img src="assets/img/mermaid/48-cicd-eval-gate.svg" alt="Pipeline diagram: commit, prompt version, eval gate with a fail stop sign, canary at 5 percent, prod, with a rollback arrow back to prompt version" loading="lazy"><figcaption>Pipeline diagram: commit, prompt version, eval gate with a fail stop sign, canary at 5 percent, prod, with a rollback arrow back to prompt version.</figcaption>
-<figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <p>Read the diagram. The commit is the trigger. Code and prompt changes enter the same pipeline. But they have separate versioning. Publishing makes the prompt version.</p><p>This is the immutable version artifact. The app will use this artifact by version ARN. This makes rollback a pointer change. The eval gate is the red stop sign. It is the heart of GenAI CI/CD.</p><p>Bedrock eval jobs score the new version. They use the production baseline. A failed gate stops the pipeline here. No user sees the change. The canary puts 5 percent of live traffic on the new version. This validates what offline evals cannot.</p><p>It validates real user phrasing and real traffic patterns. Full promotion follows clean canary metrics. The dashed rollback arrow is the escape hatch. Repoint to the previous version. No rebuild is necessary. No redeploy is necessary.</p>
 <div class="exam-ask"><p>Exam framing.</p>
 <p>"Marketing needs to change prompt wording often. They need to do this without engineering deploys. Every change must be tested before production." Correct: Bedrock Prompt Management versioning plus a CodePipeline eval gate. Distractors: hardcoded prompts with faster code deploys. This is still a deploy.</p><p>It is still untested. Or versioning without eval gates. This is reversible but unmeasured. "Rollback must be instant" points to version ARNs. The distractor is CloudFormation rollback of the whole stack.</p></div>
 <figure><img src="assets/img/ste100/aip-cicd-genai.svg" alt="CI/CD for GenAI: versioned prompts, eval gates, monitored deploy with rollback" loading="lazy">
 <figcaption>Teams version prompts in git, gate them on eval scores, and roll back on regression.</figcaption>
-<figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <div class="walkthrough"><p><strong>How to read this.</strong> The prompt version enters the eval gate. The gate needs a score above the line on the golden set. A pass deploys, and monitoring rolls back on a drop.</p></div>
-<h2 id="questions">Questions</h2>
+<h2 id="questions-12-cicd-for-genai-apps-prompt-versioning-and-eval-gates">Questions</h2>
 <p>MULTIPLE CHOICE</p>
 <p>EASY</p>
 <p>A non-technical content team must update assistant wording each week. They must do this without code deployments. Each update needs quality validation. This must happen before users see it. Which solution is MOST appropriate?</p>
@@ -2584,6 +2621,73 @@ window.DS_MANIFEST = [
       }
     }
   });
+  /* ---------- 11. Scroll reveal + figure parallax (progressive enhancement) ----------
+     .reveal is added here (never in markup), so content is fully visible with
+     JS disabled. Respects prefers-reduced-motion. Parallax drift is a small
+     transform on plain figure images only; it never changes layout. ---------- */
+
+  (function () {
+    var reduceMotion = window.matchMedia &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    /* Scroll reveal: gentle rise-in on content blocks as they enter the viewport. */
+    var revealTargets = inner.querySelectorAll(
+      "figure, .pq, .exam-ask, .takeaway, .panel, .diagram-walkthrough, " +
+      ".table-wrap, .ladder, .cc-qa"
+    );
+    if (!reduceMotion && "IntersectionObserver" in window) {
+      var revealEls = Array.prototype.slice.call(revealTargets);
+      revealEls.forEach(function (el) { el.classList.add("reveal"); });
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (en) {
+          if (en.isIntersecting) {
+            en.target.classList.add("revealed");
+            io.unobserve(en.target);
+          }
+        });
+      }, { rootMargin: "0px 0px -8% 0px", threshold: 0.05 });
+      revealEls.forEach(function (el) { io.observe(el); });
+    }
+    /* reduceMotion or no IntersectionObserver: no .reveal class is added,
+       so every block stays fully visible. */
+
+    /* Figure parallax: gentle --px drift on plain figure images only
+       (.fig-light cards are excluded so the white plate never shows an edge). */
+    if (!reduceMotion) {
+      var pxFigs = [];
+      Array.prototype.forEach.call(
+        inner.querySelectorAll("figure:not(.fig-light)"),
+        function (fig) {
+          if (fig.querySelector("img")) {
+            fig.classList.add("ds-px");
+            pxFigs.push(fig);
+          }
+        }
+      );
+      var pxTicking = false;
+      function pxUpdate() {
+        var vh = window.innerHeight || 800;
+        pxFigs.forEach(function (fig) {
+          var img = fig.querySelector("img");
+          if (!img) return;
+          var r = img.getBoundingClientRect();
+          if (r.bottom < -160 || r.top > vh + 160) return; /* off-screen: skip */
+          var center = (r.top + r.height / 2) - vh / 2;
+          var drift = center * -0.015;
+          if (drift > 8) drift = 8;
+          if (drift < -8) drift = -8;
+          img.style.setProperty("--px", drift.toFixed(1) + "px");
+        });
+        pxTicking = false;
+      }
+      function pxRequest() {
+        if (!pxTicking) { pxTicking = true; window.requestAnimationFrame(pxUpdate); }
+      }
+      window.addEventListener("scroll", pxRequest, { passive: true });
+      window.addEventListener("resize", pxRequest);
+      pxUpdate();
+    }
+  })();
 })();
 
 </script>
