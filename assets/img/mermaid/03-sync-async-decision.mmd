@@ -1,0 +1,12 @@
+graph TD
+  S["Inference request arrives"] --> Q{"Response needed<br/>in seconds?"}
+  Q -->|yes, interactive| T{"Response longer<br/>than ~30s?"}
+  T -->|no| SYNC["InvokeModel / Converse<br/>synchronous"]
+  T -->|yes| STR["Response streaming<br/>(ConverseStream)"]
+  Q -->|no, batch OK| B{"Large batch,<br/>latency-tolerant?"}
+  B -->|yes| BAT["Batch inference<br/>~50% cheaper"]
+  B -->|no, async job| ASY["Async invocation<br/>S3 in / S3 out"]
+  style SYNC fill:#161616,stroke:#f0b429,color:#ececec
+  style STR fill:#161616,stroke:#f0b429,color:#ececec
+  style BAT fill:#161616,stroke:#f0b429,color:#ececec
+  style ASY fill:#161616,stroke:#f0b429,color:#ececec
