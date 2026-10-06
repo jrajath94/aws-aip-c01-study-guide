@@ -1167,6 +1167,42 @@ footer p{text-align:left}
   #ds-content .ds-site-footer,
   .ds-side-volumes { display: none !important; }
 }
+
+/* ==========================================================================
+   World-class upgrade (2026-10-05): scroll reveal + figure parallax.
+   Progressive enhancement: .reveal is added by JS only, so with JS disabled
+   every element stays fully visible. Parallax drift is transform-only (no
+   layout shift) and limited to plain figures; both honor
+   prefers-reduced-motion.
+   ========================================================================== */
+
+/* Scroll reveal: subtle rise-in. JS adds .reveal to content blocks; the
+   IntersectionObserver adds .revealed as each block enters the viewport. */
+.reveal {
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.reveal.revealed {
+  opacity: 1;
+  transform: none;
+}
+
+/* Figure parallax: gentle vertical drift on figure images (excludes
+   .fig-light cards so the white plate never shows an edge). The figure gets
+   overflow:hidden from JS when parallax activates, so the drift cannot
+   cause layout shift or edge bleed. */
+figure.ds-px { overflow: hidden; }
+figure.ds-px img {
+  transform: translateY(var(--px, 0px));
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal { opacity: 1; transform: none; transition: none; }
+  figure.ds-px img { transform: none; }
+  html { scroll-behavior: auto; }
+}
 </style>
 <style>
 /* Hallmark · pre-emit critique: P5 H4 E5 S4 R5 V5
@@ -1307,10 +1343,10 @@ html.xp-js .xp-reveal.xp-in {
 <p>Entries marked UNVERIFIED are not confirmed in AWS documentation. Treat them with lower confidence. Numbers for pricing and quotas are illustrative. They can change.</p>
 <h2 id="scope">Scope and gap types</h2>
 <p>Each entry gives you the concept.
-<figure class="fig-light"><img src="assets/img/gaps/gap-taxonomy.svg" alt="Hard gaps versus partial gaps: the 17 topics this appendix closes." loading="lazy"><figcaption>There are 17 topics. They are split by gap type. This guide teaches 5 hard gaps completely. This guide teaches 12 partials correctly for the first time.</figcaption></figure><div class="walkthrough">Read the two columns as a coverage map. The left column has material you will not find in other books. The right column has material other books mention but do not teach. If a practice question names a topic from either column, use this appendix as a reference.</div> It gives the reason for the topic. It gives the mechanics. It gives concrete numbers. It gives the misunderstanding AWS uses. It gives a diagram with a walkthrough. It gives a "how AWS will ask" line. Two gap types are important. A <strong>hard gap</strong> does not appear in other books. The entry here is the complete teaching. The appendix condenses it to exam size. Another entry mentions a <strong>partial</strong> elsewhere. But it is not taught as a topic. The entry here teaches the missing part. It points to the home book for context.</p>
+<figure class="fig-light"><img src="assets/img/gaps/gap-taxonomy.svg" alt="Hard gaps versus partial gaps: the 17 topics this appendix closes." loading="lazy"><figcaption>There are 17 topics. They are split by gap type. This guide teaches 5 hard gaps completely. This guide teaches 12 partials correctly for the first time. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure><div class="walkthrough">Read the two columns as a coverage map. The left column has material you will not find in other books. The right column has material other books mention but do not teach. If a practice question names a topic from either column, use this appendix as a reference.</div> It gives the reason for the topic. It gives the mechanics. It gives concrete numbers. It gives the misunderstanding AWS uses. It gives a diagram with a walkthrough. It gives a "how AWS will ask" line. Two gap types are important. A <strong>hard gap</strong> does not appear in other books. The entry here is the complete teaching. The appendix condenses it to exam size. Another entry mentions a <strong>partial</strong> elsewhere. But it is not taught as a topic. The entry here teaches the missing part. It points to the home book for context.</p>
 <h2 id="ladder">Decision ladder placement</h2>
 <p>Each entry ends with a one-line placement on the GenAI decision ladder. You can answer "which service" questions fast.</p>
-<figure class="fig-light"><img src="assets/img/gaps/gap-ladder.svg" alt="Pipeline grid: each appendix topic sits in one column from data in to ops." loading="lazy"><figcaption>Figure 0.1. Each appendix topic placed on the pipeline it belongs to. Read left to right: raw data becomes model input becomes answers becomes monitored products.</figcaption></figure>
+<figure class="fig-light"><img src="assets/img/gaps/gap-ladder.svg" alt="Pipeline grid: each appendix topic sits in one column from data in to ops." loading="lazy"><figcaption>Figure 0.1. Each appendix topic placed on the pipeline it belongs to. Read left to right: raw data becomes model input becomes answers becomes monitored products. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 
 <p>How to read this diagram</p>
 <ol>
@@ -1334,7 +1370,7 @@ html.xp-js .xp-reveal.xp-in {
 <div class="exam-ask"><p>Trap.</p>
 <p>AWS will offer Amazon EventBridge or a custom Lambda poller as distractors. This is for "sync Salesforce cases into S3 for RAG." EventBridge routes events. It does not do field mapping, transformation, or incremental record pulls. If the scenario mentions field mapping or masking PII during the sync, the answer is AppFlow.</p></div>
 <figure class="fig-light"><img src="assets/img/gaps/gap-appflow.svg" alt="AppFlow flow: SaaS source to S3 to Glue crawler and Bedrock knowledge base." loading="lazy"><figcaption>Figure 1.1. AppFlow syncs SaaS data into S3, where it becomes RAG fuel. The flow handles auth, mapping, masking, and incremental sync.
-Downstream, Glue or a Knowledge Base treats the S3 prefix as a normal data source.</figcaption></figure>
+Downstream, Glue or a Knowledge Base treats the S3 prefix as a normal data source. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 
 <p>How to read this diagram</p>
 <ol>
@@ -1359,7 +1395,7 @@ Downstream, Glue or a Knowledge Base treats the S3 prefix as a normal data sourc
 <p>AWS Transfer Family is a fully managed file-transfer service. It runs SFTP (SSH File Transfer Protocol), FTPS (FTP over TLS/SSL), FTP (plain File Transfer Protocol), and AS2 (Applicability Statement 2, a B2B messaging protocol) servers. Amazon S3 or Amazon EFS backs these servers. Enterprises exchange data as file drops. A partner uploads a nightly CSV over SFTP. A vendor sends invoices over AS2.</p><p> Before Transfer Family, you ran your own SFTP servers on EC2. You handled patching, scaling, and key management. Then you copied files into S3. Transfer Family removes the server fleet. AWS manages the protocol endpoint. S3 is the storage.</p><p> So, a file drop is one hop from a GenAI ingestion pipeline. Partners keep using their existing clients.</p>
 <p>Setup runs in three steps. Create a Transfer Family server for a protocol. For example, use SFTP. Point it at an S3 bucket or EFS file system. Users authenticate with SSH keys, passwords, or an external identity provider. Each user maps to a home directory inside the bucket.</p><p> Uploads and downloads go straight to S3 objects. An S3 event notification can then trigger the next step. This can be Lambda validation, Bedrock Data Automation, or a Knowledge Base ingestion job. One rule set is very important. Public endpoints support SFTP only. Plain FTP runs only on VPC-internal endpoints.</p><p> Unencrypted FTP must not cross the public internet.</p>
 <figure><img src="assets/img/ste100/aip-protocol-matrix.svg" alt="Transfer Family protocol matrix: SFTP, FTPS, and AS2 work on public and VPC-internal endpoints. Plain FTP works only on VPC-internal endpoints" loading="lazy"><figcaption>Transfer Family protocols by endpoint. SFTP, FTPS, and AS2 work on public and VPC-internal endpoints. Plain FTP works only on VPC-internal endpoints.</figcaption>
-<figcaption class="credit"><em>Drawn for this volume.</em></figcaption></figure><p>How to read this diagram</p><ol><li>Read each row left to right: the protocol, then the public endpoint, then the VPC-internal endpoint.</li><li>SFTP, FTPS, and AS2: both endpoints work.</li><li>Plain FTP: only the VPC-internal endpoint works.</li></ol>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure><p>How to read this diagram</p><ol><li>Read each row left to right: the protocol, then the public endpoint, then the VPC-internal endpoint.</li><li>SFTP, FTPS, and AS2: both endpoints work.</li><li>Plain FTP: only the VPC-internal endpoint works.</li></ol>
 <p>Pricing is per protocol-enabled endpoint per hour. It also includes data transferred. (These figures are examples; exact figures change.) The exam-relevant number is not the price. It is the protocol matrix in the table below.</p>
 
 <div class="table-wrap"><table>
@@ -1399,7 +1435,7 @@ Downstream, Glue or a Knowledge Base treats the S3 prefix as a normal data sourc
 
 <div class="exam-ask"><p>Trap.</p>
 <p>The classic distractor is "use S3 presigned URLs" for partner file exchange. Presigned URLs work for your own applications. They do not work for partners. Partners only speak SFTP. They will not rewrite their tooling. The phrase "partners upload files using their existing SFTP clients" is the Transfer Family trigger.</p></div>
-<figure class="fig-light"><img src="assets/img/gaps/gap-transfer.svg" alt="Transfer Family: partner file drops land in S3, then a pipeline wakes up." loading="lazy"><figcaption>Figure 1.2. Transfer Family terminates the legacy protocol and stores objects in S3. From there the standard GenAI ingestion pipeline takes over; the partner never learns anything changed.</figcaption></figure>
+<figure class="fig-light"><img src="assets/img/gaps/gap-transfer.svg" alt="Transfer Family: partner file drops land in S3, then a pipeline wakes up." loading="lazy"><figcaption>Figure 1.2. Transfer Family terminates the legacy protocol and stores objects in S3. From there the standard GenAI ingestion pipeline takes over; the partner never learns anything changed. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 
 <p>How to read this diagram</p>
 <ol>
@@ -1427,7 +1463,7 @@ Downstream, Glue or a Knowledge Base treats the S3 prefix as a normal data sourc
 <h3 id="quicksight">Amazon QuickSight</h3>
 <p>Amazon QuickSight is a serverless business-intelligence (BI) service. It provides interactive dashboards, paginated reports, and embedded analytics. You do not manage servers. Its in-memory engine is SPICE (Super-fast Parallel In-memory Calculation Engine). SPICE imports data. It answers dashboard queries from memory.</p><p> It does not access the source database for each click. GenAI applications make data worth watching. This includes token spend per team, evaluation scores over time, RAG retrieval hit rates, and user feedback. Engineers query that data in Athena or OpenSearch. Product owners and finance need dashboards. QuickSight turns S3, Athena, Redshift, and RDS data into shareable dashboards.</p>
 <figure><img src="assets/img/ste100/aip-spice-vs-direct.svg" alt="SPICE import versus direct query: SPICE is fast but refreshes on a schedule, direct query is slower but fresh" loading="lazy"><figcaption>SPICE imports data and answers from memory. It refreshes on a schedule. Direct query is slower but always fresh.</figcaption>
-<figcaption class="credit"><em>Drawn for this volume.</em></figcaption></figure><p>How to read this diagram</p><ol><li>Left path: SPICE. Data is imported. Queries run from memory.</li><li>Right path: direct query. Each query reads the source. It is slower but fresh.</li><li>Bottom: the tradeoff is speed against freshness.</li></ol><p> It provides row-level security. Each viewer sees only their rows. It provides ML-powered insights. This includes anomaly detection and forecasting. You do not set up a BI server.</p>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure><p>How to read this diagram</p><ol><li>Left path: SPICE. Data is imported. Queries run from memory.</li><li>Right path: direct query. Each query reads the source. It is slower but fresh.</li><li>Bottom: the tradeoff is speed against freshness.</li></ol><p> It provides row-level security. Each viewer sees only their rows. It provides ML-powered insights. This includes anomaly detection and forecasting. You do not set up a BI server.</p>
 <p>The flow: Connect a data source. This can be S3, Athena, Redshift, RDS, or a SaaS application via AppFlow. Query it directly or import it into SPICE for fast, repeated queries. Build analyses with drag-and-drop visuals. Then publish them as dashboards. Add ML insights.</p><p> Anomaly detection flags unusual spend spikes. Forecasting projects next month's token usage. Natural-language Q lets users type a question and get a chart. Share with row-level and column-level security. Teams see only their data. Or embed dashboards into your application.</p><p> Editions matter: Standard is the basic tier. Enterprise adds ML insights, row and column-level security, and encryption at rest. Exam scenarios that mention anomaly detection or per-team data isolation point to Enterprise.</p>
 <p>SPICE capacity sells in GB blocks. This is illustrative. It costs tens of cents per GB-month. On Enterprise, per-reader pricing counts sessions. The exam does not test exact figures. The operational number that matters: SPICE datasets refresh on a schedule you set.</p><p> This can be as frequent as every 15 minutes on Enterprise. A "near real-time dashboard" scenario needs direct query mode. It does not need SPICE import.</p>
 
@@ -1436,7 +1472,7 @@ Downstream, Glue or a Knowledge Base treats the S3 prefix as a normal data sourc
 
 <div class="exam-ask"><p>Trap.</p>
 <p>AWS will offer OpenSearch Dashboards as a distractor for log analytics. QuickSight will be a distractor for log analytics. The split: OpenSearch Dashboards shows data already in OpenSearch. This includes logs and traces. QuickSight combines business data from many sources. This includes S3, Athena, and Redshift.</p><p> It provides governed sharing. "Dashboard of monthly Bedrock spend per team from CUR (Cost and Usage Report, the detailed AWS billing file) data in S3" is QuickSight.</p></div>
-<figure class="fig-light"><img src="assets/img/gaps/gap-quicksight.svg" alt="QuickSight: data sources to SPICE to dashboards, with ML extras." loading="lazy"><figcaption>Figure 2.1. QuickSight aggregates GenAI operational data from several sources into one governed dashboard. SPICE keeps repeated views fast; ML insights watch for anomalies automatically.</figcaption></figure>
+<figure class="fig-light"><img src="assets/img/gaps/gap-quicksight.svg" alt="QuickSight: data sources to SPICE to dashboards, with ML extras." loading="lazy"><figcaption>Figure 2.1. QuickSight aggregates GenAI operational data from several sources into one governed dashboard. SPICE keeps repeated views fast; ML insights watch for anomalies automatically. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 
 <p>How to read this diagram</p>
 <ol>
@@ -1460,7 +1496,7 @@ Downstream, Glue or a Knowledge Base treats the S3 prefix as a normal data sourc
 <h3 id="neptune-analytics">Neptune Analytics</h3>
 <p>Neptune Analytics is a serverless graph-analytics engine. It is part of the Amazon Neptune family. It loads graph data into memory. It runs analytical queries on the data. This includes vector similarity search. Do not confuse Neptune Analytics with Neptune Database.</p><p> Neptune Database is a transactional graph database. D1 ch11 for GraphRAG covers Neptune Database. Neptune Analytics is an analytics engine. You use it for fast traversals. You use it for nearest-neighbor vector queries. It works with millions of nodes.</p>
 <figure><img src="assets/img/ste100/aip-neptune-db-vs-analytics.svg" alt="Neptune Database versus Neptune Analytics: the database serves transactional graph queries, Analytics serves bulk graph computation and vector search" loading="lazy"><figcaption>Neptune Database serves transactional graph queries. Neptune Analytics serves bulk graph computation and vector search.</figcaption>
-<figcaption class="credit"><em>Drawn for this volume.</em></figcaption></figure><p>How to read this diagram</p><ol><li>Left: Neptune Database. It answers live graph queries.</li><li>Right: Neptune Analytics. It runs bulk computation and vector search.</li><li>Bottom: pick by workload, not by name.</li></ol><p> GraphRAG works well on Neptune Database. This is for transactional workloads. Some questions are analytical. For example, "find the 50 most similar incident reports to this one." Another example is "detect communities of related entities." These questions need an engine. This engine must be good for bulk graph computation. It must be good for vector search.</p><p> It is not for single-record reads and writes. Neptune Analytics fills this need. Its vector search makes it a candidate vector store. This is for RAG pipelines. These pipelines also need graph structure.</p>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure><p>How to read this diagram</p><ol><li>Left: Neptune Database. It answers live graph queries.</li><li>Right: Neptune Analytics. It runs bulk computation and vector search.</li><li>Bottom: pick by workload, not by name.</li></ol><p> GraphRAG works well on Neptune Database. This is for transactional workloads. Some questions are analytical. For example, "find the 50 most similar incident reports to this one." Another example is "detect communities of related entities." These questions need an engine. This engine must be good for bulk graph computation. It must be good for vector search.</p><p> It is not for single-record reads and writes. Neptune Analytics fills this need. Its vector search makes it a candidate vector store. This is for RAG pipelines. These pipelines also need graph structure.</p>
 <p><p>Create a graph and load data from S3 or from a Neptune Database snapshot. The graph holds nodes, edges, and vector properties. Vector search uses HNSW (Hierarchical Navigable Small World). HNSW is an approximate nearest-neighbor index. It trades a tiny accuracy loss for large speedups on big vector sets. Query vectors with the <code>vectors.topK.byEmbedding</code> API. Pass an embedding and ask for the top K most similar vectors. The older name <code>vectors.topKByEmbedding</code> is deprecated. The exam may show it as a distractor. Vector dimensions are fixed at graph creation (up to 65,000 dimensions). You cannot change them afterward. If your embedding model changes dimension, create a new graph. The engine is serverless and in-memory. You pay for the graph's memory footprint while it runs, not for provisioned instances.</p> The graph holds nodes, edges, and vector properties. Vector search uses HNSW (Hierarchical Navigable Small World), an approximate nearest-neighbor index that trades a tiny accuracy loss for large speedups on big vector sets. You query vectors with the <code>vectors.topK.byEmbedding</code> API, passing an embedding and asking for the top K most similar vectors. The older name <code>vectors.topKByEmbedding</code> is deprecated, and the exam may show it as a distractor. Vector dimensions are fixed at graph creation (up to 65,000 dimensions) and cannot be changed afterward, so if your embedding model changes dimension, you create a new graph. Because the engine is serverless and in-memory, you pay for the graph's memory footprint while it runs, not for provisioned instances.</p>
 <p><p>Concrete numbers: the maximum vector dimension at graph creation is 65,000. HNSW search is approximate. Expect recall in the high 90s percent range in exchange for millisecond queries over millions of vectors (illustrative; tune the HNSW parameters for your recall target). The deprecated API name is the highest-value fact on this page. AWS loves deprecation-rename questions.</p> HNSW search is approximate; expect recall in the high 90s percent range in exchange for millisecond queries over millions of vectors (illustrative; tune the HNSW parameters for your recall target). The deprecated API name is the highest-value fact on this page: AWS loves deprecation-rename questions.</p>
 
@@ -1472,7 +1508,7 @@ Downstream, Glue or a Knowledge Base treats the S3 prefix as a normal data sourc
 <p>The system does not use this. (3) Set vector dimensions at creation. The maximum dimension is 65,000. The dimensions are immutable after creation.</p></div>
 
 <div class="exam-ask"><p><strong>Trap.</strong> This entry hides two traps. First, the deprecated API name <code>topKByEmbedding</code> will appear as an answer choice. The current name is <code>topK.byEmbedding</code>. Second, do not confuse Neptune Analytics with Neptune Database. "Transactional graph with ACID writes" means the Database.</p><p> "In-memory analytics and vector similarity over a loaded graph" means Analytics.</p></div>
-<figure class="fig-light"><img src="assets/img/gaps/gap-neptune.svg" alt="Neptune Database for live graph queries versus Neptune Analytics for in-memory analysis." loading="lazy"><figcaption>Figure 2.2. Neptune Database serves transactional graph reads and writes; Neptune Analytics loads the graph into memory for analytical vector and traversal queries. Pick by workload shape, not by brand.</figcaption></figure>
+<figure class="fig-light"><img src="assets/img/gaps/gap-neptune.svg" alt="Neptune Database for live graph queries versus Neptune Analytics for in-memory analysis." loading="lazy"><figcaption>Figure 2.2. Neptune Database serves transactional graph reads and writes; Neptune Analytics loads the graph into memory for analytical vector and traversal queries. Pick by workload shape, not by brand. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 
 <p>How to read this diagram</p>
 <ol>
@@ -1506,7 +1542,7 @@ Downstream, Glue or a Knowledge Base treats the S3 prefix as a normal data sourc
 <div class="exam-ask"><p>Trap.</p>
 <p><p>AWS will confuse Q Apps with Q Developer and with Bedrock Agents. Q Developer is the coding assistant for developers. Bedrock Agents are developer-built autonomous agents with action groups and Lambda. Q Apps are for non-developers. Users build them in natural language, with no code and no Lambda. "The HR team wants a reusable leave-policy Q and A tool they build themselves" means Q Apps, not an agent.</p> Q Developer is the coding assistant for developers; Bedrock Agents are developer-built autonomous agents with action groups and Lambda. Q Apps are for non-developers, built in natural language, with no code and no Lambda. "The HR team wants a reusable leave-policy Q and A tool they build themselves" is Q Apps, not an agent.</p></div>
 <figure class="fig-light"><img src="assets/img/gaps/gap-qapps.svg" alt="Q Apps: describe, generate, wire cards, share." loading="lazy"><figcaption>Figure 2.3. A Q App is a chain of cards wired with @ mentions. The user fills the input card; each downstream card runs in turn.
-Teams share the finished app like a template, not like code.</figcaption></figure>
+Teams share the finished app like a template, not like code. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 
 <p>How to read this diagram</p>
 <ol>
@@ -1535,7 +1571,7 @@ Teams share the finished app like a template, not like code.</figcaption></figur
 <p>AWS Secrets Manager stores secrets. Secrets are database passwords, API keys, and OAuth tokens. Secrets Manager encrypts secrets with KMS. Its main feature is automatic rotation. Secrets Manager can change a secret on a schedule. It does this without human action.</p><p> It does this without breaking applications that read the secret. Hardcoded credentials leak. Manually rotated passwords are not changed. Rotation is operationally difficult. Changing a password breaks every client that uses the old password. Secrets Manager solves this with staged rotation.</p><p> The system creates and tests the new password. The old password still works. Then the new password becomes current. Applications read the secret at runtime. They use the API. They do not embed the secret.</p><p></p>
 <p>Rotation works like this. You set a rotation interval. For example, set it to 30 days (<code>rotate-secret --rotation-rules AutomaticallyAfterDays=30</code>). A Lambda function does the rotation. AWS provides ready-made rotation functions for RDS (MySQL, PostgreSQL, Oracle, SQL Server), Redshift, DocumentDB, Neptune, and MongoDB Atlas. You write a custom Lambda for other systems.</p><p> Every rotation does four steps in order: <code>createSecret</code> (make the new value, staged as AWSPENDING), <code>setSecret</code> (put it on the database), <code>testSecret</code> (check if the new credential works), <code>finishSecret</code> (change AWSPENDING to AWSCURRENT). If any step fails, the old secret stays current. Nothing breaks. Applications call <code>GetSecretValue</code> (or use the Secrets Manager JDBC driver or container injection). They cache briefly. Rotation happens in stages.</p><p> A reader that got the secret seconds before rotation still has a valid credential.</p>
 <figure><img src="assets/img/ste100/aip-secrets-rotation.svg" alt="Secrets Manager rotation: a schedule triggers a Lambda function that writes a new secret version, and apps re-read the new version" loading="lazy"><figcaption>Rotation happens in stages. A schedule triggers a Lambda function. The function writes a new secret version. Apps re-read the new version.</figcaption>
-<figcaption class="credit"><em>Drawn for this volume.</em></figcaption></figure><p>How to read this diagram</p><ol><li>Step one: the schedule fires.</li><li>Step two: the Lambda function creates, sets, and tests the new secret.</li><li>Step three: apps read the new version. Nothing breaks.</li></ol>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure><p>How to read this diagram</p><ol><li>Step one: the schedule fires.</li><li>Step two: the Lambda function creates, sets, and tests the new secret.</li><li>Step three: apps read the new version. Nothing breaks.</li></ol>
 <p>Rotation intervals are often 30, 60, or 90 days. The API accepts any day count. Secrets Manager charges per secret per month. It also charges for API calls (this is an example). The exam tests the four-step sequence. It tests the staging labels AWSPENDING and AWSCURRENT.</p><p> It does not test the price.</p>
 
 <div class="takeaway"><p>Key exam facts.</p>
@@ -1543,7 +1579,7 @@ Teams share the finished app like a template, not like code.</figcaption></figur
 
 <div class="exam-ask"><p>Trap.</p>
 <p>The distractor is always SSM Parameter Store. Parameter Store (even Advanced) stores parameters cheaply. It has no built-in rotation engine for databases. The phrase "automatically rotate the database password every 30 days" means Secrets Manager. A second trap: rotation changes the secret on the database. It does not just change the stored copy.</p></div>
-<figure class="fig-light"><img src="assets/img/gaps/gap-secrets.svg" alt="Secret rotation in four steps: create, update, promote, clean up." loading="lazy"><figcaption>Figure 3.1. The four-step rotation. The new secret is staged, installed, and tested before promotion; failure at any step leaves the old secret live. Applications are insulated because they read at runtime.</figcaption></figure>
+<figure class="fig-light"><img src="assets/img/gaps/gap-secrets.svg" alt="Secret rotation in four steps: create, update, promote, clean up." loading="lazy"><figcaption>Figure 3.1. The four-step rotation. The new secret is staged, installed, and tested before promotion; failure at any step leaves the old secret live. Applications are insulated because they read at runtime. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 
 <p>How to read this diagram</p>
 <ol>
@@ -1577,7 +1613,7 @@ Teams share the finished app like a template, not like code.</figcaption></figur
 
 <div class="exam-ask"><p>Trap.</p>
 <p>AWS will offer Security Groups or NACLs as the firewall answer. These filter at layers 3 and 4 (IP and port). WAF inspects layer 7. It inspects HTTP bodies, SQLi strings, and bot signatures. Only WAF can block requests that contain SQL injection payloads. A second trap creates the CloudFront web ACL in the application's region.</p><p> Create it in us-east-1.</p></div>
-<figure class="fig-light"><img src="assets/img/gaps/gap-waf.svg" alt="WAF rules in priority order: lowest number runs first." loading="lazy"><figcaption>Figure 3.2. WAF evaluates rules top to bottom; the first match decides. Managed rule groups carry the OWASP coverage; custom rules start in Count mode to avoid blocking legitimate traffic.</figcaption></figure>
+<figure class="fig-light"><img src="assets/img/gaps/gap-waf.svg" alt="WAF rules in priority order: lowest number runs first." loading="lazy"><figcaption>Figure 3.2. WAF evaluates rules top to bottom; the first match decides. Managed rule groups carry the OWASP coverage; custom rules start in Count mode to avoid blocking legitimate traffic. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 
 <p>How to read this diagram</p>
 <ol>
@@ -1609,7 +1645,7 @@ Teams share the finished app like a template, not like code.</figcaption></figur
 
 <div class="exam-ask"><p>Trap.</p>
 <p>The OAC-vs-OAI trap: Any answer that uses Origin Access Identity for a new design is wrong. OAC is the current method. The signed-URL-vs-cookie trap: One premium file needs a signed URL. A library of premium files needs signed cookies. The us-east-1 trap appears for both WAF and ACM certificates.</p></div>
-<figure class="fig-light"><img src="assets/img/gaps/gap-cloudfront.svg" alt="CloudFront edge location: cache hit serves instantly, miss forwards to S3 origin via OAC." loading="lazy"><figcaption>Figure 3.3. The CloudFront request path. Edge caching, origin fetch on miss, and security (WAF, Shield) all happen before your origin sees the request.</figcaption></figure>
+<figure class="fig-light"><img src="assets/img/gaps/gap-cloudfront.svg" alt="CloudFront edge location: cache hit serves instantly, miss forwards to S3 origin via OAC." loading="lazy"><figcaption>Figure 3.3. The CloudFront request path. Edge caching, origin fetch on miss, and security (WAF, Shield) all happen before your origin sees the request. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 
 <p>How to read this diagram</p>
 <ol>
@@ -1634,7 +1670,7 @@ Teams share the finished app like a template, not like code.</figcaption></figur
 <h3 id="counttokens">The CountTokens API</h3>
 <p>CountTokens is a Bedrock runtime API. It is <code>POST /model/{modelId}/count-tokens</code>. It returns the number of tokens an input uses. It does not run inference. It accepts the same input formats as <code>InvokeModel</code> and <code>Converse</code>. The count matches your bill.</p><p> It is free to call. Token-efficient design needs a measurement step first. This includes prompt caching, context pruning, and maxTokens limits. Before CountTokens, teams estimated tokens with client-side tokenizers. These tokenizers did not match the model's real tokenizer. Cost projections and context fit checks were not reliable.</p>
 <figure><img src="assets/img/ste100/aip-counttokens-guard.svg" alt="CountTokens API: count tokens before the call to stay under the context window. Shrink the input if it does not fit" loading="lazy"><figcaption>CountTokens counts tokens before the call. If the input does not fit the context window, shrink it first.</figcaption>
-<figcaption class="credit"><em>Drawn for this volume.</em></figcaption></figure><p>How to read this diagram</p><ol><li>Step one: call CountTokens on the input.</li><li>Step two: compare the count to the model context window.</li><li>Step three: if it does not fit, shrink the input before the real call.</li></ol><p> CountTokens gives the correct number from the service.</p>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure><p>How to read this diagram</p><ol><li>Step one: call CountTokens on the input.</li><li>Step two: compare the count to the model context window.</li><li>Step three: if it does not fit, shrink the input before the real call.</li></ol><p> CountTokens gives the correct number from the service.</p>
 <p>Send the same request body you send to <code>InvokeModel</code> or <code>Converse</code>. Send it to the <code>count-tokens</code> endpoint. The response returns the input token count. The system does not generate tokens. It does not run inference. It does not charge you.</p><p> Use it to check if a RAG prompt fits the model's context window before the call. Use it to estimate batch-job cost. Use it to measure if a prompt-compression change saved tokens. One caution: official documents mark this as UNVERIFIED. Community reports say CountTokens can reject inference-profile model IDs that <code>InvokeModel</code> accepts. If you are not sure, test with the base model ID.</p><p></p>
 <p>The API is free. There is zero cost per call. CountTokens changes arithmetic from guessing to measurement.</p>
 <details class="cc-qa"><summary>Worked example: the batch-cost math</summary><p>A RAG prompt has 8 retrieved chunks. Each chunk is about 400 tokens. It has 200 tokens of instructions.</p><p style="text-align:center;font-size:1.15em;">tokens per prompt = 8 x 400 + 200 = 3,400</p><p>For 10,000 calls:</p><p style="text-align:center;font-size:1.15em;">total tokens = 10,000 x 3,400 = 34,000,000 = 34 million</p><p>The cost is a few dollars per million input tokens. For example, $3.</p><p style="text-align:center;font-size:1.15em;">cost = 34 x $3 = $102</p><p>"About one hundred dollars" is now a measured number. It is not a guess. This is what CountTokens provides. It gives the correct token count before any billed call.</p></details>
@@ -1644,7 +1680,7 @@ Teams share the finished app like a template, not like code.</figcaption></figur
 
 <div class="exam-ask"><p>Trap.</p>
 <p>AWS will offer "estimate with a local tokenizer" or "send a real InvokeModel and read the usage fields" as wrong answers. Local tokenizers do not give the true count. A real invocation costs money. It generates output. CountTokens is the free, exact answer.</p></div>
-<figure class="fig-light"><img src="assets/img/gaps/gap-counttokens.svg" alt="CountTokens as a free gate before billed inference, with a cost worked example." loading="lazy"><figcaption>Figure 3.4. CountTokens as a gate before billed inference. The loop is free until the prompt fits; only the final call costs money.</figcaption></figure>
+<figure class="fig-light"><img src="assets/img/gaps/gap-counttokens.svg" alt="CountTokens as a free gate before billed inference, with a cost worked example." loading="lazy"><figcaption>Figure 3.4. CountTokens as a gate before billed inference. The loop is free until the prompt fits; only the final call costs money. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 
 <p>How to read this diagram</p>
 <ol>
@@ -1670,7 +1706,7 @@ Teams share the finished app like a template, not like code.</figcaption></figur
 <p>How it works, and the exam trap: In raw <code>InvokeModel</code> request bodies, top_k is a normal provider parameter. It is usually written <code>top_k</code> or <code>topK</code>. This depends on the provider. But in the Converse API, <code>inferenceConfig</code> documents only four fields. These fields are <code>maxTokens</code>, <code>stopSequences</code>, <code>temperature</code>, and <code>topP</code>. There is no standard <code>topK</code> field in Converse <code>inferenceConfig</code>.</p><p> To set top_k through Converse, pass it inside <code>additionalModelRequestFields</code>. This is the provider-specific escape hatch. Use the provider's own field name. Alternatively, use <code>InvokeModel</code> with the raw body. This confuses readers. topK does exist in the Bedrock Agents <code>InferenceConfiguration</code>. It has the same name.</p><p> It is a different API. It has different rules.</p>
 <p>Typical top_k values range from 1 to a few hundred. 1 is greedy within the top candidate. This is nearly deterministic. Provider defaults vary. The operational guidance mirrors top_p. For factual extraction, use low top_k with low temperature.</p><p> For brainstorming, use higher values. Do not combine aggressive top_k with aggressive top_p without testing. They interact.</p>
 <figure><img src="assets/img/ste100/aip-topk-vs-topp.svg" alt="top_k versus top_p: top_k keeps the k most likely tokens, top_p keeps tokens covering probability mass p" loading="lazy"><figcaption>top_k keeps the k most likely tokens. top_p keeps the tokens that cover probability mass p. Both narrow the choices.</figcaption>
-<figcaption class="credit"><em>Drawn for this volume.</em></figcaption></figure><p>How to read this diagram</p><ol><li>Left: top_k. A hard cutoff after k tokens.</li><li>Right: top_p. A cutoff when the probabilities add up to p.</li><li>Bottom: the exam trap. top_k in one API is not topK in another.</li></ol>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure><p>How to read this diagram</p><ol><li>Left: top_k. A hard cutoff after k tokens.</li><li>Right: top_p. A cutoff when the probabilities add up to p.</li><li>Bottom: the exam trap. top_k in one API is not topK in another.</li></ol>
 
 <div class="takeaway"><p>Key exam facts.</p>
 <p>(1) top_k limits sampling to the k most likely tokens. (2) Converse</p>
@@ -1682,7 +1718,7 @@ Teams share the finished app like a template, not like code.</figcaption></figur
 <p>does include topK.</p></div>
 
 <div class="exam-ask"><p><strong>Trap.</strong> This is a purpose-built exam trap. A question will show a Converse call with <code>inferenceConfig: {topK: 50}</code> and ask why it fails or which field is invalid. The answer: <code>topK</code> is not a valid <code>inferenceConfig</code> member. A second trap swaps in the Agents API, where <code>topK</code> is valid. Memorization without context fails.</p></div>
-<figure class="fig-light"><img src="assets/img/gaps/gap-topk.svg" alt="Where top_k lives: Converse allowlist versus model-specific fields versus Agents API." loading="lazy"><figcaption>Figure 3.5. Where topK is and is not allowed. Converse keeps a small standard config and pushes provider specifics into additionalModelRequestFields; the Agents API has its own configuration shape.</figcaption></figure>
+<figure class="fig-light"><img src="assets/img/gaps/gap-topk.svg" alt="Where top_k lives: Converse allowlist versus model-specific fields versus Agents API." loading="lazy"><figcaption>Figure 3.5. Where topK is and is not allowed. Converse keeps a small standard config and pushes provider specifics into additionalModelRequestFields; the Agents API has its own configuration shape. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 
 <p>How to read this diagram</p>
 <ol>
@@ -1717,7 +1753,7 @@ Teams share the finished app like a template, not like code.</figcaption></figur
 
 <div class="exam-ask"><p>Trap.</p>
 <p>AWS will offer "deploy two Lambda versions and compare CloudWatch dashboards by eye" as a wrong answer. Looking at dashboards is not an experiment. It has no randomization. It has no significance. The phrase "statistically significant" or "which variant wins" points to Evidently. Here is a second trap: Prompt Management variants are for prompt text.</p><p> Model or pipeline A/B tests need Evidently.</p></div>
-<figure class="fig-light"><img src="assets/img/gaps/gap-evidently.svg" alt="Evidently loop: EvaluateFeature serves flags, PutProjectEvents records metrics." loading="lazy"><figcaption>Figure 3.6. The Evidently experiment loop. Assignment is per request and sticky per user; outcomes flow back as events; statistics decide the winner.</figcaption></figure>
+<figure class="fig-light"><img src="assets/img/gaps/gap-evidently.svg" alt="Evidently loop: EvaluateFeature serves flags, PutProjectEvents records metrics." loading="lazy"><figcaption>Figure 3.6. The Evidently experiment loop. Assignment is per request and sticky per user; outcomes flow back as events; statistics decide the winner. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 
 <p>This is how to read this diagram.</p>
 <ol>
@@ -1754,7 +1790,7 @@ Teams share the finished app like a template, not like code.</figcaption></figur
 <p>covers all calls. (3) Long prompts are the main TTFT driver. Prompt caching and shorter context reduce it.</p></div>
 
 <div class="exam-ask"><p><strong>Trap.</strong> AWS will conflate TTFT with end-to-end latency or with TPOT. "Reduce the time until the user sees the first word" means TTFT. "Increase tokens per second during streaming" means TPOT. "The whole request took 8 seconds" means end-to-end. A second trap applies TTFT reasoning to non-streaming <code>Converse</code> calls, where the metric does not exist.</p></div>
-<figure class="fig-light"><img src="assets/img/gaps/gap-ttft.svg" alt="Request timeline showing TTFT, TPOT, and end-to-end latency." loading="lazy"><figcaption>Figure 3.7. The three latency metrics on one timeline. TTFT covers the prefill wait; TPOT covers the streaming rate; end-to-end covers everything.</figcaption></figure>
+<figure class="fig-light"><img src="assets/img/gaps/gap-ttft.svg" alt="Request timeline showing TTFT, TPOT, and end-to-end latency." loading="lazy"><figcaption>Figure 3.7. The three latency metrics on one timeline. TTFT covers the prefill wait; TPOT covers the streaming rate; end-to-end covers everything. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 
 <p>How to read this diagram</p>
 <ol>
@@ -1782,7 +1818,7 @@ Teams share the finished app like a template, not like code.</figcaption></figur
 <h3 id="textract">Amazon Textract</h3>
 <p>Amazon Textract is a managed document-analysis service. It gets printed text, handwriting, forms (key-value pairs), tables, and layout structure from documents and images. You do not train a model. RAG needs text. But enterprise knowledge is in PDFs, scanned contracts, and photographed forms. Plain OCR gives a mix of words.</p><p> Textract gives structure. It shows which text is a table cell. It shows which words make a key-value pair. It shows where the checkboxes are. This structure helps a chunking pipeline keep a table together. It does not break the table across chunks.</p>
 <figure><img src="assets/img/ste100/aip-textract-vs-rekognition.svg" alt="Textract versus Rekognition: Textract extracts text from documents, Rekognition analyzes images and video" loading="lazy"><figcaption>Textract extracts text from documents. Rekognition analyzes images and video. Pick by input type.</figcaption>
-<figcaption class="credit"><em>Drawn for this volume.</em></figcaption></figure><p>How to read this diagram</p><ol><li>Left: Textract. Input is documents: PDFs, scans, forms.</li><li>Right: Rekognition. Input is images and video.</li><li>Bottom: the exam trap. Text in a photo is still Rekognition.</li></ol><p></p>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure><p>How to read this diagram</p><ol><li>Left: Textract. Input is documents: PDFs, scans, forms.</li><li>Right: Rekognition. Input is images and video.</li><li>Bottom: the exam trap. Text in a photo is still Rekognition.</li></ol><p></p>
 <p>The API has three types. Synchronous APIs process single-page documents. They give an immediate response. Use <code>DetectDocumentText</code> for raw OCR. This gives words and lines. Use <code>AnalyzeDocument</code> for document structure.</p><p> Use <code>FeatureTypes</code> to select <code>TABLES</code>, <code>FORMS</code>, <code>QUERIES</code>, <code>LAYOUT</code>, and <code>SIGNATURES</code>. Queries ask a natural-language question. They give an answer pair. Layout includes titles, headers, lists, and reading order. Asynchronous APIs process multi-page PDFs and TIFFs in S3. Use <code>StartDocumentTextDetection</code> and <code>StartDocumentAnalysis</code>.</p><p> These return a job ID. Get results from <code>GetDocumentTextDetection</code> and <code>GetDocumentAnalysis</code>. SNS sends a notification when the job is complete. Specialized APIs process standard document types. Use <code>AnalyzeExpense</code> to extract invoices and receipts. It puts data into standard fields.</p><p> This includes totals and line items. Use <code>AnalyzeID</code> to extract identity documents. This includes passports and driver's licenses. It puts data into typed fields. The output model is a graph of <code>Block</code> objects. Block objects include PAGE, LINE, WORD, TABLE, CELL, KEY_VALUE_SET, and SELECTION_ELEMENT.</p><p> SELECTION_ELEMENT is for checkboxes. Blocks have bounding boxes, confidence scores, and relationships. Relationships link keys to values and tables to cells. Send low-confidence results to Amazon A2I (Augmented AI). A2I provides human verification. This is the standard answer for high-stakes documents.</p><p></p>
 <p>Synchronous calls process single pages. These pages can be up to a few MB. Asynchronous jobs process multi-page documents. These documents can be up to hundreds of MB from S3. (Check current quotas for exact limits.) Each feature type adds cost. Request only the <code>FeatureTypes</code> you need.</p><p> Confidence scores are for each block. A common A2I threshold sends results below 90% confidence to humans. (This is an example value.)</p>
 
@@ -1802,7 +1838,7 @@ Teams share the finished app like a template, not like code.</figcaption></figur
 <p>(identity documents). (4) Low confidence goes to A2I human review.</p></div>
 
 <div class="exam-ask"><p><strong>Trap.</strong> The sync/async split is the favorite trap. <code>AnalyzeDocument</code> on a 200-page PDF fails. Multi-page documents require the async <code>StartDocumentAnalysis</code> with the document in S3. A second trap uses <code>AnalyzeDocument</code> with no <code>FeatureTypes</code> when the scenario needs tables. Raw OCR does not reconstruct table structure.</p></div>
-<figure class="fig-light"><img src="assets/img/gaps/gap-textract.svg" alt="Textract API decision tree: page count and document type pick the API." loading="lazy"><figcaption>Figure 4.1. The Textract API decision tree. Page count picks sync vs async; document type picks the specialized API; confidence picks whether humans review.</figcaption></figure>
+<figure class="fig-light"><img src="assets/img/gaps/gap-textract.svg" alt="Textract API decision tree: page count and document type pick the API." loading="lazy"><figcaption>Figure 4.1. The Textract API decision tree. Page count picks sync vs async; document type picks the specialized API; confidence picks whether humans review. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 
 <p>How to read this diagram</p>
 <ol>
@@ -1827,7 +1863,7 @@ Teams share the finished app like a template, not like code.</figcaption></figur
 <h3 id="divider-strings">Divider strings for chunking</h3>
 <p>A divider string is a unique delimiter. You put it between logical sections of a document during preprocessing. A later split-on-delimiter chunker breaks the text at section boundaries. For example, a Lambda preprocessor puts <code>\n\n###SECTION###\n\n</code> between detected headings before chunking. The chunker then splits on that marker. It does not split on blind character counts.</p><p> This is a course-taught preprocessing technique. It is not an AWS-documented feature. Treat it as a pattern. Do not treat it as a service. Fixed-size chunking has a failure mode. It can split in the middle of a table.</p>
 <figure><img src="assets/img/ste100/aip-divider-demo.svg" alt="Divider strings demo: paragraph dividers keep ideas whole, line dividers split some ideas, space dividers destroy meaning" loading="lazy"><figcaption>Divider strings control chunking. Paragraph dividers keep ideas whole. Line dividers split some ideas. Space dividers destroy meaning.</figcaption>
-<figcaption class="credit"><em>Drawn for this volume.</em></figcaption></figure><p>How to read this diagram</p><ol><li>Box one: paragraph dividers. Each chunk holds one whole idea.</li><li>Box two: line dividers. Some ideas split across chunks.</li><li>Box three: space dividers. The meaning breaks.</li></ol><p> It can split in the middle of a procedure. It can split in the middle of an argument. This makes chunks that confuse retrieval. Divider strings are a cheap fix. One preprocessing pass marks the true boundaries. The chunker respects them.</p><p> Each chunk stays semantically whole.</p>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure><p>How to read this diagram</p><ol><li>Box one: paragraph dividers. Each chunk holds one whole idea.</li><li>Box two: line dividers. Some ideas split across chunks.</li><li>Box three: space dividers. The meaning breaks.</li></ol><p> It can split in the middle of a procedure. It can split in the middle of an argument. This makes chunks that confuse retrieval. Divider strings are a cheap fix. One preprocessing pass marks the true boundaries. The chunker respects them.</p><p> Each chunk stays semantically whole.</p>
 <p>This is how it works. After Textract or BDA extraction, a Lambda preprocessor scans the text. It looks for structural signals. These are headings, page breaks, and table boundaries. It puts in a divider string. This string never occurs naturally in the text.</p><p> A random-looking token is safer than a common word. The chunking step splits on the divider first. Then it applies size limits within each section. Sections longer than the target get sub-split. Small adjacent sections may merge. Each chunk keeps metadata.</p><p> This metadata notes its source section. This improves citation and reranking later.</p>
 <p>For example, use a 512-token target chunk size. Divider-first splitting on a 40-page manual gives chunks. These chunks are near the target size. They have fewer mid-sentence breaks than pure fixed-size splitting. There are no AWS quotas here. This is application code.</p><p> Numbers are examples.</p>
 
@@ -1836,7 +1872,7 @@ Teams share the finished app like a template, not like code.</figcaption></figur
 
 <div class="exam-ask"><p>Trap.</p>
 <p>AWS will offer "smaller fixed-size chunks" to fix bad retrieval. Smaller blind chunks make more fragments. The fix for boundary violations is boundary-aware splitting. The trigger phrase is "chunks split tables/procedures in the middle."</p></div>
-<figure class="fig-light"><img src="assets/img/gaps/gap-dividers.svg" alt="Blind splitting versus divider-first splitting of documents." loading="lazy"><figcaption>Figure 4.2. Blind splitting cuts wherever the counter lands; divider-first splitting cuts only at marked boundaries. Retrieval quality follows chunk coherence.</figcaption></figure>
+<figure class="fig-light"><img src="assets/img/gaps/gap-dividers.svg" alt="Blind splitting versus divider-first splitting of documents." loading="lazy"><figcaption>Figure 4.2. Blind splitting cuts wherever the counter lands; divider-first splitting cuts only at marked boundaries. Retrieval quality follows chunk coherence. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 
 <p>How to read this diagram</p>
 <ol>
@@ -1867,7 +1903,7 @@ Teams share the finished app like a template, not like code.</figcaption></figur
 
 <div class="exam-ask"><p>Trap.</p>
 <p>AWS offers two options for an expensive vector index. AWS offers to add more nodes. AWS offers to move to a bigger instance. Quantization is the cost-efficient answer. Scale is the second cost-efficient answer. Quantization is not lossless.</p><p> Quantization is approximate. The rerank step exists because quantization is approximate.</p></div>
-<figure class="fig-light"><img src="assets/img/gaps/gap-vecquant.svg" alt="Two-stage quantized retrieval with a memory worked example." loading="lazy"><figcaption>Figure 4.3. The two-stage quantized retrieval pattern. Cheap approximate search narrows the field; expensive precise scoring picks the winners.</figcaption></figure>
+<figure class="fig-light"><img src="assets/img/gaps/gap-vecquant.svg" alt="Two-stage quantized retrieval with a memory worked example." loading="lazy"><figcaption>Figure 4.3. The two-stage quantized retrieval pattern. Cheap approximate search narrows the field; expensive precise scoring picks the winners. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 
 <p>How to read this diagram</p>
 <ol>
@@ -1892,7 +1928,7 @@ Teams share the finished app like a template, not like code.</figcaption></figur
 <h3 id="sagemaker-large">SageMaker large-model tuning specifics</h3>
 <p>This entry shows the SageMaker specifics for large models. The exam names these specifics. They are the timeout and volume settings. You change these settings when you deploy a model. The model has tens or hundreds of gigabytes of weights. AWS shows instance families for big GPU models.</p><p> AWS shows instance families for small CPU tasks. Deploying a small classifier is different from deploying a 70B-parameter LLM. Large model artifacts take a long time to download from S3. Containers take a long time to load weights into GPU memory. They must load weights before they can answer a health check. SageMaker's default settings are for small models.</p>
 <figure><img src="assets/img/ste100/aip-lora-adapters.svg" alt="LoRA: frozen base model weights plus small trainable adapters per task, versioned in the SageMaker Model Registry" loading="lazy"><figcaption>LoRA freezes the base model. It trains small adapters, one per task. Versions live in the SageMaker Model Registry.</figcaption>
-<figcaption class="credit"><em>Drawn for this volume.</em></figcaption></figure><p>How to read this diagram</p><ol><li>Top: the base model. Its weights stay frozen.</li><li>Middle: one adapter per task. Each adapter is a small delta.</li><li>Bottom: the registry. Swap adapters per task. Roll back by version.</li></ol><p> Without tuning, the deployment fails with timeout errors. These errors look like broken code. They are really just impatience.</p>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure><p>How to read this diagram</p><ol><li>Top: the base model. Its weights stay frozen.</li><li>Middle: one adapter per task. Each adapter is a small delta.</li><li>Bottom: the registry. Swap adapters per task. Roll back by version.</li></ol><p> Without tuning, the deployment fails with timeout errors. These errors look like broken code. They are really just impatience.</p>
 <p>There are three settings. On the endpoint configuration's production variant, set <code>ModelDataDownloadTimeoutInSeconds</code>. This is how long SageMaker waits for the model artifact download. Set <code>ContainerStartupHealthCheckTimeoutInSeconds</code>. This is how long SageMaker waits for the container to become healthy after download. Large models need both settings raised a lot.</p><p> Set <code>VolumeSizeInGB</code>. The attached EBS volume must fit the model artifact. It must also fit the container and have extra space. SageMaker supports very large models. These models are up to the 500 GB class. For instance selection, large GPU models use GPU families.</p><p> An example is <code>ml.p4d.24xlarge</code>. This instance has high-end NVIDIA GPUs and large GPU memory. Small CPU tasks, such as named-entity recognition, use compute families. An example is <code>ml.c5.9xlarge</code>. The exam's favorite discriminator is this pairing. It is a big generative model versus a small CPU-friendly task.</p><p> Remember the failure signature. A deployment fails during creation. It has download or health-check timeouts. The instance type looks big enough. This is a timeout-tuning problem. It is not a model problem.</p><p></p>
 <p>You can deploy model sizes up to the 500 GB class. This is an example upper limit. Check current quotas. Default timeouts are in minutes. They are good for small models. Large-model deployments often need tens of minutes for download.</p><p> They also need tens of minutes for container startup. This is an example. Tune to your artifact size and instance network throughput.</p>
 
@@ -1910,7 +1946,7 @@ Teams share the finished app like a template, not like code.</figcaption></figur
 <p>class.</p></div>
 
 <div class="exam-ask"><p><strong>Trap.</strong> AWS will show a large-model deployment failing and offer "use a bigger instance" as the fix. If the failure is a download or health-check timeout, a bigger instance does not help. Raising the timeouts does. A second trap swaps the instance families. Putting a small NER model on <code>ml.p4d.24xlarge</code> is technically possible but economically wrong.</p><p>The exam tests cost-awareness.</p></div>
-<figure class="fig-light"><img src="assets/img/gaps/gap-sagemaker.svg" alt="SageMaker hosting timeouts: 60 seconds real-time versus up to 1 hour async." loading="lazy"><figcaption>Figure 4.4. Where large-model deployments actually fail: the two timeout windows. Both must cover the real duration of their phase, and the instance family must match the workload, not just be large.</figcaption></figure>
+<figure class="fig-light"><img src="assets/img/gaps/gap-sagemaker.svg" alt="SageMaker hosting timeouts: 60 seconds real-time versus up to 1 hour async." loading="lazy"><figcaption>Figure 4.4. Where large-model deployments actually fail: the two timeout windows. Both must cover the real duration of their phase, and the instance family must match the workload, not just be large. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 
 <p>How to read this diagram</p>
 <ol>
@@ -1934,7 +1970,7 @@ Teams share the finished app like a template, not like code.</figcaption></figur
 <h3 id="emr">Amazon EMR</h3>
 <p>Amazon EMR (Elastic MapReduce) is a managed big-data platform. It runs open-source distributed frameworks. These frameworks are Apache Spark, Hadoop (MapReduce/YARN), Hive, Presto/Trino, HBase, and Flink. AWS provisions, configures, and scales the cluster. You submit data-processing jobs. There are three types: EMR on EC2 (classic clusters), EMR on EKS (run on your Kubernetes cluster), and EMR Serverless.</p><p> EMR Serverless lets you submit a Spark or Hive job without managing a cluster. GenAI training and large-scale RAG ingestion need much data processing. This includes deduplicating billions of web documents, joining click logs, and computing embeddings in bulk. EMR is the managed platform for Spark-scale ETL. It is not central to the exam's GenAI core. But it appears as the "big ETL" answer in data-pipeline scenarios.</p>
 <figure><img src="assets/img/ste100/aip-emr-vs-glue.svg" alt="EMR versus Glue versus Athena: EMR runs big-data clusters, Glue does serverless ETL, Athena runs SQL over S3" loading="lazy"><figcaption>EMR runs big-data clusters that you manage. Glue does serverless ETL. Athena runs SQL over S3.</figcaption>
-<figcaption class="credit"><em>Drawn for this volume.</em></figcaption></figure><p>How to read this diagram</p><ol><li>Left: EMR. You manage the cluster. Use it for big frameworks.</li><li>Middle: Glue. Serverless ETL. No cluster to manage.</li><li>Right: Athena. SQL directly over S3.</li></ol><p> The exam expects you to tell the difference between EMR and Glue.</p>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure><p>How to read this diagram</p><ol><li>Left: EMR. You manage the cluster. Use it for big frameworks.</li><li>Middle: Glue. Serverless ETL. No cluster to manage.</li><li>Right: Athena. SQL directly over S3.</li></ol><p> The exam expects you to tell the difference between EMR and Glue.</p>
 <p>The cluster topology has a primary node. The primary node coordinates. Core nodes run tasks and host HDFS. Optional task nodes only do compute. They are good for Spot instances. For storage: EMRFS lets the cluster read and write S3 directly.</p><p> This is durable and decoupled. HDFS on core nodes is fast but temporary. The AWS Glue Data Catalog is the shared Hive metastore across clusters. Jobs run as steps. These are Spark/Hive applications. You can configure concurrency.</p><p> Bootstrap actions install dependencies at launch. The decision between EMR and Glue: Glue is serverless Spark for standard ETL. It needs minimal tuning. EMR gives full control over framework versions, instance types, and cluster topology. Use EMR for large, long-running, or very customized jobs. EMR Serverless is in between.</p><p> It has no cluster to manage. It has pay-per-job billing.</p>
 <p>EMR on EC2 adds an EMR surcharge per instance-hour. This adds to the EC2 cost. EMR Serverless bills per vCPU-second and memory-second. It has a one-minute minimum on some dimensions. These are examples. The exam names cost controls: Spot instances for task nodes, S3 (not HDFS) for durable data, and auto-termination of idle clusters.</p>
 
@@ -1943,7 +1979,7 @@ Teams share the finished app like a template, not like code.</figcaption></figur
 
 <div class="exam-ask"><p>Trap.</p>
 <p>AWS will offer Glue for a "massive custom Spark job needing specific framework versions and fine-grained cluster control." This specific need means EMR. In contrast, "standard nightly ETL, no cluster management" means Glue, not EMR.</p></div>
-<figure class="fig-light"><img src="assets/img/gaps/gap-emr.svg" alt="EMR cluster topology: primary, core, and task nodes, and when to skip the cluster." loading="lazy"><figcaption>Figure 4.5. EMR's shape and the three-way decision. Topology and framework control are what you buy with EMR; Glue and EMR Serverless trade control for simplicity.</figcaption></figure>
+<figure class="fig-light"><img src="assets/img/gaps/gap-emr.svg" alt="EMR cluster topology: primary, core, and task nodes, and when to skip the cluster." loading="lazy"><figcaption>Figure 4.5. EMR's shape and the three-way decision. Topology and framework control are what you buy with EMR; Glue and EMR Serverless trade control for simplicity. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 
 <p>How to read this diagram</p>
 <ol>
@@ -1967,7 +2003,7 @@ Teams share the finished app like a template, not like code.</figcaption></figur
 <p><strong>Next:</strong> how we checked every fact in this book.</p>
 <h2 id="5-qa-and-verification-log">5. QA and verification log</h2>
 <p>The facts are complete. This chapter shows how we checked each fact.</p>
-<figure class="fig-light"><img src="assets/img/gaps/gap-qa.svg" alt="Verification flow: prose, diagram, and AWS docs must all agree." loading="lazy"><figcaption>How the team verified each entry: the prose, the diagram, and the documented service behavior must all agree before an entry ships.</figcaption></figure><div class="walkthrough">Follow the arrows: the prose teaches, the diagram shows, and the AWS docs confirm. The gate at the end is the rule: if the three disagree, the team rewrites the entry instead of shipping it.</div>
+<figure class="fig-light"><img src="assets/img/gaps/gap-qa.svg" alt="Verification flow: prose, diagram, and AWS docs must all agree." loading="lazy"><figcaption>How the team verified each entry: the prose, the diagram, and the documented service behavior must all agree before an entry ships. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure><div class="walkthrough">Follow the arrows: the prose teaches, the diagram shows, and the AWS docs confirm. The gate at the end is the rule: if the three disagree, the team rewrites the entry instead of shipping it.</div>
 <p>How we checked this book. What passed. What is open. Where every fact came from.</p>
 <h3 id="qa-checklist">QA checklist results</h3>
 <div class="table-wrap"><table>
@@ -2716,6 +2752,73 @@ window.DS_MANIFEST = [
       }
     }
   });
+  /* ---------- 11. Scroll reveal + figure parallax (progressive enhancement) ----------
+     .reveal is added here (never in markup), so content is fully visible with
+     JS disabled. Respects prefers-reduced-motion. Parallax drift is a small
+     transform on plain figure images only; it never changes layout. ---------- */
+
+  (function () {
+    var reduceMotion = window.matchMedia &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    /* Scroll reveal: gentle rise-in on content blocks as they enter the viewport. */
+    var revealTargets = inner.querySelectorAll(
+      "figure, .pq, .exam-ask, .takeaway, .panel, .diagram-walkthrough, " +
+      ".table-wrap, .ladder, .cc-qa"
+    );
+    if (!reduceMotion && "IntersectionObserver" in window) {
+      var revealEls = Array.prototype.slice.call(revealTargets);
+      revealEls.forEach(function (el) { el.classList.add("reveal"); });
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (en) {
+          if (en.isIntersecting) {
+            en.target.classList.add("revealed");
+            io.unobserve(en.target);
+          }
+        });
+      }, { rootMargin: "0px 0px -8% 0px", threshold: 0.05 });
+      revealEls.forEach(function (el) { io.observe(el); });
+    }
+    /* reduceMotion or no IntersectionObserver: no .reveal class is added,
+       so every block stays fully visible. */
+
+    /* Figure parallax: gentle --px drift on plain figure images only
+       (.fig-light cards are excluded so the white plate never shows an edge). */
+    if (!reduceMotion) {
+      var pxFigs = [];
+      Array.prototype.forEach.call(
+        inner.querySelectorAll("figure:not(.fig-light)"),
+        function (fig) {
+          if (fig.querySelector("img")) {
+            fig.classList.add("ds-px");
+            pxFigs.push(fig);
+          }
+        }
+      );
+      var pxTicking = false;
+      function pxUpdate() {
+        var vh = window.innerHeight || 800;
+        pxFigs.forEach(function (fig) {
+          var img = fig.querySelector("img");
+          if (!img) return;
+          var r = img.getBoundingClientRect();
+          if (r.bottom < -160 || r.top > vh + 160) return; /* off-screen: skip */
+          var center = (r.top + r.height / 2) - vh / 2;
+          var drift = center * -0.015;
+          if (drift > 8) drift = 8;
+          if (drift < -8) drift = -8;
+          img.style.setProperty("--px", drift.toFixed(1) + "px");
+        });
+        pxTicking = false;
+      }
+      function pxRequest() {
+        if (!pxTicking) { pxTicking = true; window.requestAnimationFrame(pxUpdate); }
+      }
+      window.addEventListener("scroll", pxRequest, { passive: true });
+      window.addEventListener("resize", pxRequest);
+      pxUpdate();
+    }
+  })();
 })();
 
 </script>
