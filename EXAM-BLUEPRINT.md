@@ -399,7 +399,7 @@ Children's tutor scenario (block profanity/violence inputs, prevent harmful outp
 
 ---
 
-## 7. Domain 4: Operational Efficiency and Optimization (12%, ~8 scored questions)
+## 7. Domain 4: Operational Efficiency and Optimization for GenAI Applications (12%, ~8 scored questions)
 
 Small domain, tricky questions: every scenario forces cost vs latency vs quality trade-offs.
 
