@@ -1168,6 +1168,42 @@ footer p{text-align:left}
   .ds-side-volumes { display: none !important; }
 }
 
+/* ==========================================================================
+   World-class upgrade (2026-10-05): scroll reveal + figure parallax.
+   Progressive enhancement: .reveal is added by JS only, so with JS disabled
+   every element stays fully visible. Parallax drift is transform-only (no
+   layout shift) and limited to plain figures; both honor
+   prefers-reduced-motion.
+   ========================================================================== */
+
+/* Scroll reveal: subtle rise-in. JS adds .reveal to content blocks; the
+   IntersectionObserver adds .revealed as each block enters the viewport. */
+.reveal {
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.reveal.revealed {
+  opacity: 1;
+  transform: none;
+}
+
+/* Figure parallax: gentle vertical drift on figure images (excludes
+   .fig-light cards so the white plate never shows an edge). The figure gets
+   overflow:hidden from JS when parallax activates, so the drift cannot
+   cause layout shift or edge bleed. */
+figure.ds-px { overflow: hidden; }
+figure.ds-px img {
+  transform: translateY(var(--px, 0px));
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal { opacity: 1; transform: none; transition: none; }
+  figure.ds-px img { transform: none; }
+  html { scroll-behavior: auto; }
+}
+
 
 /* ==== YouTube click-to-load facades (track-local) ==== */
 .prereq-video iframe.yt-player { width: 100%; aspect-ratio: 16/9; border: 0; border-radius: 8px; }
@@ -1348,11 +1384,11 @@ details.kc[open] summary::before{content:"\2212 "}
 <p>Why this one: it is the 2024 CLF-C02 refresh (not the older CLF-C01 cut). It walks through shared responsibility, IAM, S3 storage classes, EC2 pricing, and Aurora with exam phrasing. It ships with a free practice exam. Chapters are timestamped, so you can jump straight to VPC or KMS.</p>
 
 
-<figure class="fig-light"><img src="assets/img/foundations/found-regions.svg" alt="Region, AZ, edge location nesting: a region with three AZs, all under one edge location layer." loading="lazy"><figcaption>Three layers of the world map: a region holds the AZs, edge locations sit on top.</figcaption></figure><div class="walkthrough">Read outside in. A region is a geographic area. It holds two or more AZs, which are separate data centers. Edge locations are hundreds of cache points in cities. High availability means two or more AZs.</div>
+<figure class="fig-light"><img src="assets/img/foundations/found-regions.svg" alt="Region, AZ, edge location nesting: a region with three AZs, all under one edge location layer." loading="lazy"><figcaption>Three layers of the world map: a region holds the AZs, edge locations sit on top. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure><div class="walkthrough">Read outside in. A region is a geographic area. It holds two or more AZs, which are separate data centers. Edge locations are hundreds of cache points in cities. High availability means two or more AZs.</div>
 
 <figure class="fig-light">
 <img src="assets/img/ste100/aip-cld-region-az-edge.svg" alt="Region us-east-1 holding three availability zones, with edge locations in NYC, London, and Tokyo caching content near users." loading="lazy">
-<figcaption>One Region holds the AZs. Edge locations sit in cities around the world.</figcaption>
+<figcaption>One Region holds the AZs. Edge locations sit in cities around the world. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption>
 </figure>
 <div class="walkthrough">Read top to bottom. The Region is the geographic area. Inside it, two or more AZs are separate data centers. Edge locations are not regions: they cache content and answer DNS close to users. High availability means two or more AZs.</div>
 
@@ -1377,11 +1413,11 @@ details.kc[open] summary::before{content:"\2212 "}
 </div>
 </div>
 <p><strong>Next:</strong> the deal you sign for living in this world. It is called shared responsibility.</p>
-<figure class="fig-light"><img src="assets/img/foundations/found-sharedresp.svg" alt="Shared responsibility: AWS of the cloud on the left, you in the cloud on the right." loading="lazy"><figcaption>The deal: AWS secures the cloud itself; you secure what you put in it.</figcaption></figure><div class="walkthrough">Read the two columns as a contract. The line moves with the service: on EC2 you patch the OS; on RDS and Lambda, AWS does. 'Who patches the OS' is a classic exam question.</div>
+<figure class="fig-light"><img src="assets/img/foundations/found-sharedresp.svg" alt="Shared responsibility: AWS of the cloud on the left, you in the cloud on the right." loading="lazy"><figcaption>The deal: AWS secures the cloud itself; you secure what you put in it. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure><div class="walkthrough">Read the two columns as a contract. The line moves with the service: on EC2 you patch the OS; on RDS and Lambda, AWS does. 'Who patches the OS' is a classic exam question.</div>
 
 <figure class="fig-light">
 <img src="assets/img/ste100/aip-cld-shared-responsibility.svg" alt="Shared responsibility across EC2, RDS, and S3: the customer owns more on EC2 and only data and permissions on S3." loading="lazy">
-<figcaption>The line moves with the service. Your data and permissions are always yours.</figcaption>
+<figcaption>The line moves with the service. Your data and permissions are always yours. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption>
 </figure>
 <div class="walkthrough">Read left to right. On EC2 you own the OS, apps, and data. On RDS AWS takes the OS and the database engine. On S3 and Bedrock AWS runs everything under the API. You always own your data and your permissions.</div>
 
@@ -1443,7 +1479,7 @@ details.kc[open] summary::before{content:"\2212 "}
 <p>Managed policies are reusable rule sheets. AWS-managed (like <code>ReadOnlyAccess</code>) are maintained by AWS. Customer-managed are yours. Inline policies belong to exactly one identity and die with it.</p>
 <figure class="fig-light">
 <img src="assets/img/foundations/found-policy-anatomy.svg" alt="IAM policy anatomy: Effect allow or deny, Action naming API calls, Resource using ARN addresses; identity-based and resource-based policies combine with a union rule, and any explicit Deny overrides every Allow" loading="lazy">
-<figcaption>A policy in plain English: allow or deny, on API calls, on resources addressed by ARN. An allow from either the identity side or the resource side is enough, but one explicit Deny anywhere overrides everything.</figcaption>
+<figcaption>A policy in plain English: allow or deny, on API calls, on resources addressed by ARN. An allow from either the identity side or the resource side is enough, but one explicit Deny anywhere overrides everything. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption>
 </figure>
 
 <h3 id="how-aws-decides-deny-wins">How AWS decides: deny wins</h3>
@@ -1455,20 +1491,20 @@ details.kc[open] summary::before{content:"\2212 "}
 <li>Boundaries (permission boundaries, SCPs (Service Control Policies: rules set at the organization level), and session policies) can only shrink permissions, never grow them.</li>
 <li>If all checks pass, allowed.</li>
 </ol>
-<figure class="fig-light"><img src="assets/img/internet/permissions_policies_effective.png" alt="How identity-based and resource-based policies combine: an allow from either side grants access within one account, but one explicit deny anywhere overrides everything." loading="lazy"><figcaption>How identity-based and resource-based policies combine: an allow from either side grants access within one account, but one explicit deny anywhere overrides everything.</figcaption><figcaption class="credit">Source: AWS IAM User Guide (docs.aws.amazon.com), downloaded Sept 2026.</figcaption></figure>
+<figure class="fig-light"><img src="assets/img/internet/permissions_policies_effective.png" alt="How identity-based and resource-based policies combine: an allow from either side grants access within one account, but one explicit deny anywhere overrides everything." loading="lazy"><figcaption>How identity-based and resource-based policies combine: an allow from either side grants access within one account, but one explicit deny anywhere overrides everything.</figcaption><figcaption class="credit">Source: AWS IAM User Guide (docs.aws.amazon.com), downloaded Sept 2026. Reused in the AWS AIP-C01 Study Guide.</figcaption></figure>
 <h3 id="permission-boundaries-the-ceiling">Permission boundaries: the ceiling</h3>
 <p>A <strong>permission boundary</strong> is a managed policy that caps what an identity can ever do. The real permissions are the overlap of the identity's policies and the boundary. Admins use it to delegate safely: "you may grant your team anything, but never more than this ceiling."</p>
-<figure class="fig-light"><img src="assets/img/internet/permissions_boundary.png" alt="A permissions boundary intersects with identity-based policies. Removing the boundary can only widen access; adding one can only narrow it." loading="lazy"><figcaption>A permissions boundary intersects with identity-based policies. Removing the boundary can only widen access; adding one can only narrow it.</figcaption><figcaption class="credit">Source: AWS IAM User Guide (docs.aws.amazon.com), downloaded Sept 2026.</figcaption></figure>
+<figure class="fig-light"><img src="assets/img/internet/permissions_boundary.png" alt="A permissions boundary intersects with identity-based policies. Removing the boundary can only widen access; adding one can only narrow it." loading="lazy"><figcaption>A permissions boundary intersects with identity-based policies. Removing the boundary can only widen access; adding one can only narrow it.</figcaption><figcaption class="credit">Source: AWS IAM User Guide (docs.aws.amazon.com), downloaded Sept 2026. Reused in the AWS AIP-C01 Study Guide.</figcaption></figure>
 <h3 id="iam-identity-center-sso-for-humans">IAM Identity Center: SSO for humans</h3>
 <p>Real companies do not make an IAM user per employee. They connect their company login (Google Workspace, Okta, Active Directory) to <strong>IAM Identity Center</strong> (AWS's SSO, or single sign-on, service for the workforce). People get short-lived AWS access through permission sets. One login, many accounts, no long-term keys floating around.</p>
 <figure class="fig-light">
 <img src="assets/img/foundations/found-sso-vs-roles.svg" alt="Humans get SSO through IAM Identity Center: one company login, permission sets, short-lived access. Machines and services get IAM roles with temporary auto-expiring keys." loading="lazy">
-<figcaption>Humans get SSO through Identity Center: one company login, permission sets, short-lived access. Machines and services get IAM roles with temporary keys. No long-term keys floating around.</figcaption>
+<figcaption>Humans get SSO through Identity Center: one company login, permission sets, short-lived access. Machines and services get IAM roles with temporary keys. No long-term keys floating around. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption>
 </figure>
 
 <figure class="fig-light">
 <img src="assets/img/ste100/aip-cld-iam-eval.svg" alt="IAM policy evaluation order: explicit deny first, then an allow must exist, then boundaries and service control policies can still block." loading="lazy">
-<figcaption>Deny always wins. An allow must exist. Boundaries only shrink.</figcaption>
+<figcaption>Deny always wins. An allow must exist. Boundaries only shrink. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption>
 </figure>
 <div class="walkthrough">Read top to bottom. An explicit deny anywhere ends the request. Next, an allow must exist in the identity policy or the resource policy. Last, a permissions boundary or SCP can still block it. No allow means implicit deny.</div>
 
@@ -1527,12 +1563,12 @@ details.kc[open] summary::before{content:"\2212 "}
 <p>The exam traps hide in the minimums. Store a file in Deep Archive and delete it after 60 days, and you still pay for 180. That single fact answers a whole family of "cheapest compliant storage" questions.</p>
 <figure class="fig-light">
 <img src="assets/img/foundations/found-storage-classes.svg" alt="S3 storage classes ordered by access frequency: Standard, Intelligent-Tiering, Standard-IA with a 30-day minimum, Glacier Instant and Flexible with 90-day minimums, Deep Archive with a 180-day minimum and 12 to 48 hour retrieval" loading="lazy">
-<figcaption>Pick the storage class by how often you touch the data. The exam traps hide in the minimum days: delete early and you still pay for them.</figcaption>
+<figcaption>Pick the storage class by how often you touch the data. The exam traps hide in the minimum days: delete early and you still pay for them. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption>
 </figure>
 
 <figure class="fig-light">
 <img src="assets/img/ste100/aip-cld-storage-classes.svg" alt="S3 storage class ladder: Standard for daily reads, Standard-IA for monthly reads with a 30-day minimum, Glacier for archives with a 90-day minimum." loading="lazy">
-<figcaption>Pick by access pattern, not by feel. Early delete means you still pay the minimum days.</figcaption>
+<figcaption>Pick by access pattern, not by feel. Early delete means you still pay the minimum days. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption>
 </figure>
 <div class="walkthrough">Read top to bottom. Standard fits data you read daily. Standard-IA fits monthly reads with a 30-day minimum. Glacier fits archives with a 90-day minimum. Delete before the minimum and you pay for days you did not use.</div>
 
@@ -1569,12 +1605,12 @@ s3.put_bucket_lifecycle_configuration(
 <p><strong>Replication</strong> (CRR across Regions, SRR within one) copies new objects to a second bucket automatically. It needs versioning turned on in both buckets. Exam phrasing: "low-latency access on two continents" or "regulatory copy in a second Region".</p>
 <figure class="fig-light">
 <img src="assets/img/foundations/found-lifecycle.svg" alt="S3 lifecycle timeline: day 0 S3 Standard, day 30 Standard-IA, day 90 Glacier Flexible, year 7 expire; versioning keeps every version as an undo button, replication copies buckets automatically" loading="lazy">
-<figcaption>Lifecycle rules move objects down the cost ladder on a schedule. Standard at day 0, Standard-IA at day 30, Glacier at day 90, expire at year 7.</figcaption>
+<figcaption>Lifecycle rules move objects down the cost ladder on a schedule. Standard at day 0, Standard-IA at day 30, Glacier at day 90, expire at year 7. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption>
 </figure>
 
 <figure class="fig-light">
 <img src="assets/img/ste100/aip-cld-lifecycle.svg" alt="S3 lifecycle timeline: Standard at day 0, Standard-IA at day 30, Glacier at day 90, expire at year 7." loading="lazy">
-<figcaption>Lifecycle rules move objects down the cost ladder on a schedule.</figcaption>
+<figcaption>Lifecycle rules move objects down the cost ladder on a schedule. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption>
 </figure>
 <div class="walkthrough">Read left to right. Day 0: Standard. Day 30: Standard-IA. Day 90: Glacier. Year 7: expire. Versioning keeps old copies. Replication copies buckets.</div>
 
@@ -1584,7 +1620,7 @@ s3.put_bucket_lifecycle_configuration(
 <p>To share one private file without opening the bucket, hand out a <strong>presigned URL</strong>. It is a signed link that works until it expires (minutes to 7 days). The bucket stays private. This is the answer to every "share a private object temporarily" question.</p>
 <figure class="fig-light">
 <img src="assets/img/foundations/found-encryption.svg" alt="S3 server-side encryption flavors: SSE-S3 with AWS-managed keys, SSE-KMS with customer keys and per-use CloudTrail logging, SSE-C with keys brought per request; presigned URLs share one private file while the bucket stays private" loading="lazy">
-<figcaption>Three server-side flavors: SSE-S3 with AWS-managed keys, SSE-KMS with your keys and per-use audit logging, SSE-C where you bring the key each request. Share one private file with a presigned URL: the bucket stays private.</figcaption>
+<figcaption>Three server-side flavors: SSE-S3 with AWS-managed keys, SSE-KMS with your keys and per-use audit logging, SSE-C where you bring the key each request. Share one private file with a presigned URL: the bucket stays private. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption>
 </figure>
 
 <div class="exam-ask"><p>S3 key points. "Users report stale data after overwrite" is outdated: S3 is strongly consistent now. "Bucket must never be public": S3 Block Public Access at the account level. "Ransomware-proof backups": versioning plus Object Lock (WORM, write once read many: nobody, not even root, can delete until the retention date). "Website hosting": S3 static website hosting plus CloudFront, not EC2 for static files.</p></div>
@@ -1638,7 +1674,7 @@ s3.put_bucket_lifecycle_configuration(
 <p>You do not need to memorize every type. The exam gives you the workload ("memory-intensive database") and expects the family ("R").</p>
 <figure class="fig-light">
 <img src="assets/img/foundations/found-instance-types.svg" alt="EC2 instance type letters map to strengths: T and M general purpose, C compute-heavy, R and X memory-heavy, I and D storage-heavy, P and G GPU, Inf and Trn AWS chips" loading="lazy">
-<figcaption>The first letter of an instance type names its strength. T and M are balanced. C computes. R and X remember. I and D store. P and G accelerate with GPUs.</figcaption>
+<figcaption>The first letter of an instance type names its strength. T and M are balanced. C computes. R and X remember. I and D store. P and G accelerate with GPUs. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption>
 </figure>
 
 <h3 id="pricing-five-ways-to-pay">Pricing: five ways to pay</h3>
@@ -1651,12 +1687,12 @@ s3.put_bucket_lifecycle_configuration(
 </div>
 <figure class="fig-light">
 <img src="assets/img/foundations/found-pricing.svg" alt="EC2 pricing by commitment: On-Demand with no commitment, Spot with spare capacity up to 90 percent off and a 2-minute reclaim warning, Reserved and Savings Plans with 1 to 3 year commitments up to 72 percent off, Dedicated Host with a whole server for compliance" loading="lazy">
-<figcaption>Five ways to pay, ordered by commitment. On-Demand for the unknown. Spot for interruptible work at up to 90 percent off. Reserved and Savings Plans for the steady state. Dedicated Host when compliance wants the hardware.</figcaption>
+<figcaption>Five ways to pay, ordered by commitment. On-Demand for the unknown. Spot for interruptible work at up to 90 percent off. Reserved and Savings Plans for the steady state. Dedicated Host when compliance wants the hardware. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption>
 </figure>
 
 <figure class="fig-light">
 <img src="assets/img/ste100/aip-cld-ec2-pricing.svg" alt="Five ways to pay for EC2: On-Demand, Spot at up to 90 percent off but interruptible, Reserved and Savings Plans for steady state, Dedicated Host and Instance for single-tenant hardware." loading="lazy">
-<figcaption>Ordered by commitment: none, interruptible, 1-3 years, dedicated.</figcaption>
+<figcaption>Ordered by commitment: none, interruptible, 1-3 years, dedicated. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption>
 </figure>
 <div class="walkthrough">Read the top row first. On-Demand fits the unknown. Spot fits interruptible batch at up to 90 percent off. Reserved and Savings Plans fit steady state with a 1-3 year commit. Dedicated Host and Instance fit compliance that wants the hardware.</div>
 
@@ -1711,19 +1747,19 @@ s3.put_bucket_lifecycle_configuration(
 <p>Machines need a network to live in. That is the VPC.</p>
 <p>A VPC is your own isolated network inside AWS. You draw the map: the IP range, the subnets, the roads between them, and the gates to the outside. Nothing gets in or out unless you build the road.</p>
 <p>Start with the picture from the AWS docs: one VPC, one subnet per AZ, EC2 instances inside, an internet gateway on the edge.</p>
-<figure class="fig-light"><img src="assets/img/internet/vpc-how-it-works.png" alt="A VPC with subnets spread across three AZs, EC2 instances in each subnet, and an internet gateway connecting the VPC to the internet." loading="lazy"><figcaption>A VPC with subnets spread across three AZs, EC2 instances in each subnet, and an internet gateway connecting the VPC to the internet.</figcaption><figcaption class="credit">Source: AWS VPC User Guide (docs.aws.amazon.com), downloaded Sept 2026.</figcaption></figure>
+<figure class="fig-light"><img src="assets/img/internet/vpc-how-it-works.png" alt="A VPC with subnets spread across three AZs, EC2 instances in each subnet, and an internet gateway connecting the VPC to the internet." loading="lazy"><figcaption>A VPC with subnets spread across three AZs, EC2 instances in each subnet, and an internet gateway connecting the VPC to the internet.</figcaption><figcaption class="credit">Source: AWS VPC User Guide (docs.aws.amazon.com), downloaded Sept 2026. Reused in the AWS AIP-C01 Study Guide.</figcaption></figure>
 <h3 id="the-pieces-one-by-one">The pieces, one by one</h3>
 <p>You create a VPC with a <strong>CIDR block</strong> (CIDR is Classless Inter-Domain Routing), your private IP range, like <code>10.0.0.0/16</code> (65,536 addresses). Inside it you carve <strong>subnets</strong>, each pinned to exactly one AZ, like <code>10.0.1.0/24</code> in us-east-1a. AWS reserves 5 addresses per subnet, so a /24 gives you 251 usable.</p>
 <p>A <strong>route table</strong> is the road map: rows that say "traffic for this destination goes to that target". A subnet is <strong>public</strong> when its route table sends <code>0.0.0.0/0</code> (everything) to an <strong>internet gateway</strong> (IGW). No IGW route means <strong>private</strong>.</p>
 <p>The NAT gateway sits in a public subnet and gives private subnets a one-way door. Instances inside can reach out (download patches, call APIs). Nobody outside can reach in.</p>
 <figure class="fig-light">
 <img src="assets/img/foundations/found-vpc-pieces.svg" alt="VPC layout: a VPC with a public subnet in one AZ routing 0.0.0.0/0 to the internet gateway, a private subnet in another AZ routing 0.0.0.0/0 to a NAT gateway, and a database in the private subnet" loading="lazy">
-<figcaption>A VPC holds subnets in different AZs. The public subnet routes 0.0.0.0/0 to the internet gateway (two-way). The private subnet routes it to the NAT gateway (one-way out). Databases sit in private subnets with no route at all.</figcaption>
+<figcaption>A VPC holds subnets in different AZs. The public subnet routes 0.0.0.0/0 to the internet gateway (two-way). The private subnet routes it to the NAT gateway (one-way out). Databases sit in private subnets with no route at all. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption>
 </figure>
 
 <figure class="fig-light">
 <img src="assets/img/ste100/aip-cld-vpc.svg" alt="A VPC with public subnets holding web servers and a NAT gateway, private subnets holding app servers and Lambda, an internet gateway, and a VPC endpoint to S3." loading="lazy">
-<figcaption>Public subnets face the internet through the IGW. Private subnets leave only through the NAT.</figcaption>
+<figcaption>Public subnets face the internet through the IGW. Private subnets leave only through the NAT. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption>
 </figure>
 <div class="walkthrough">Read top to bottom. The internet gateway is two-way. Public subnets hold web servers and the NAT gateway. Private subnets hold app servers and Lambda with no public IP. The NAT gives a one-way door out. The VPC endpoint reaches S3 without the internet.</div>
 
@@ -1739,7 +1775,7 @@ s3.put_bucket_lifecycle_configuration(
 
 <figure class="fig-light">
 <img src="assets/img/ste100/aip-cld-sg-nacl.svg" alt="Security group versus network ACL: security groups attach to instances, are stateful and allow-only; NACLs attach to subnets, are stateless, and can deny." loading="lazy">
-<figcaption>Security groups guard instances. NACLs guard subnets. Only NACLs can deny.</figcaption>
+<figcaption>Security groups guard instances. NACLs guard subnets. Only NACLs can deny. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption>
 </figure>
 <div class="walkthrough">Read the two columns. A security group attaches to an instance, is stateful, and holds allow rules only. A NACL attaches to a subnet, is stateless, and can deny. "Block a single attacking IP" is a NACL deny rule.</div>
 
@@ -1790,7 +1826,7 @@ s3.put_bucket_lifecycle_configuration(
 </div>
 </div>
 <p><strong>Next:</strong> databases, picked by shape of data.</p>
-<figure class="fig-light"><img src="assets/img/foundations/found-dbpicker.svg" alt="Database picker: SQL tables to RDS or Aurora, key-value document at scale to DynamoDB." loading="lazy"><figcaption>Pick the database by the shape of the data.</figcaption></figure><div class="walkthrough">Answer the first question: do you need SQL tables? If yes, the scale question picks Aurora or RDS; if no, DynamoDB fits key-value and document data at any scale.</div>
+<figure class="fig-light"><img src="assets/img/foundations/found-dbpicker.svg" alt="Database picker: SQL tables to RDS or Aurora, key-value document at scale to DynamoDB." loading="lazy"><figcaption>Pick the database by the shape of the data. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure><div class="walkthrough">Answer the first question: do you need SQL tables? If yes, the scale question picks Aurora or RDS; if no, DynamoDB fits key-value and document data at any scale.</div>
 <p>One-liners for the rest: <strong>ElastiCache</strong> (Redis/Memcached) sits in front of a database to absorb reads. <strong>Redshift</strong> is the data warehouse for analytics over petabytes. <strong>Neptune</strong> is for graph data (relationships first). The exam mentions them to test whether you reach past the big three.</p>
 <div class="exam-ask"><p>"Relational, needs cross-Region reads": RDS read replica or Aurora Global Database. "Session store for a million users, sub-10ms": DynamoDB or ElastiCache, not RDS. "Zero database administration": Aurora Serverless or DynamoDB on-demand. "Lift-and-shift Oracle with minimal changes": RDS for Oracle.</p></div>
 
@@ -1812,7 +1848,7 @@ s3.put_bucket_lifecycle_configuration(
 </div>
 </div>
 <p><strong>Next:</strong> Lambda, code with no servers.</p>
-<figure class="fig-light"><img src="assets/img/foundations/found-lambdaflow.svg" alt="Lambda flow: event sources trigger the function, which runs and writes results." loading="lazy"><figcaption>Lambda: event sources on the left, your function in the middle, results on the right.</figcaption></figure><div class="walkthrough">Anything on the left can wake the function: S3, SQS, API Gateway, a schedule. The function runs, writes to DynamoDB or S3, and disappears. Triggers are the whole game.</div>
+<figure class="fig-light"><img src="assets/img/foundations/found-lambdaflow.svg" alt="Lambda flow: event sources trigger the function, which runs and writes results." loading="lazy"><figcaption>Lambda: event sources on the left, your function in the middle, results on the right. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure><div class="walkthrough">Anything on the left can wake the function: S3, SQS, API Gateway, a schedule. The function runs, writes to DynamoDB or S3, and disappears. Triggers are the whole game.</div>
 <p>Triggers are the vocabulary: S3 events, SQS queues, DynamoDB Streams, API Gateway requests, EventBridge schedules and events. <strong>Concurrency</strong> is how many copies run at once. Reserve some for critical functions so a busy neighbor cannot starve them. <strong>Provisioned concurrency</strong> keeps copies warm to remove cold starts for latency-sensitive APIs.</p>
 <pre><code class="language-python">import json
 import boto3
@@ -1837,7 +1873,7 @@ def handler(event, context):
 </code></pre>
 <p>Walkthrough: Lambda hands your function an <code>event</code> dict describing what happened. For S3, that means bucket and key. <code>context</code> carries runtime info (time left, request id). The function does its work with boto3 and returns. Keep it short: anything over 15 minutes does not belong here.</p>
 <div class="exam-ask"><p>"Run code when a file lands in S3": Lambda trigger, not a polling EC2. "Job takes 45 minutes": not Lambda; use Fargate (serverless containers), EC2, or Batch (AWS Batch, for scheduled heavy jobs). "API with spiky traffic and zero idle cost": API Gateway plus Lambda. "Cold starts hurting p99 (the 99th-percentile latency: the slowest 1% of requests)": provisioned concurrency. "Function needs a VPC resource": attach it to private subnets (then it needs a NAT or endpoint for the internet).</p></div>
-<figure class="fig-light"><img src="assets/img/foundations/found-lambdalimits.svg" alt="Lambda limits: 15 minute max, memory and disk sizes, provisioned concurrency, VPC attachment." loading="lazy"><figcaption>Lambda's limits at a glance: 15-minute max, memory up to 10 GB, warm copies on demand.</figcaption></figure><div class="walkthrough">The 15-minute line is the exam's favorite tripwire: a 45-minute job is not Lambda, it is Fargate or Batch. Provisioned concurrency keeps copies warm when cold starts hurt p99.</div>
+<figure class="fig-light"><img src="assets/img/foundations/found-lambdalimits.svg" alt="Lambda limits: 15 minute max, memory and disk sizes, provisioned concurrency, VPC attachment." loading="lazy"><figcaption>Lambda's limits at a glance: 15-minute max, memory up to 10 GB, warm copies on demand. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure><div class="walkthrough">The 15-minute line is the exam's favorite tripwire: a 45-minute job is not Lambda, it is Fargate or Batch. Provisioned concurrency keeps copies warm when cold starts hurt p99.</div>
 
 <div class="takeaway"><p>Lambda = event in, code runs, bill per millisecond. Fifteen minutes max. Triggers are the whole game.</p></div>
 
@@ -1868,7 +1904,7 @@ def handler(event, context):
 <div class="takeaway"><p>CloudWatch watches health. CloudTrail audits actions. Config audits configuration. Who/what/when = Trail; is-it-right = Config.</p>
 <figure class="fig-light">
 <img src="assets/img/foundations/found-observability.svg" alt="Observability trio: CloudWatch answers how healthy it is right now with metrics, alarms, and logs; CloudTrail answers who did what and when; Config answers whether resources are still configured right" loading="lazy">
-<figcaption>CloudWatch answers how healthy it is right now. CloudTrail answers who did what and when. Config answers whether it is still configured right.</figcaption>
+<figcaption>CloudWatch answers how healthy it is right now. CloudTrail answers who did what and when. Config answers whether it is still configured right. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption>
 </figure>
 </div>
 
@@ -1916,12 +1952,12 @@ print(resp[&quot;MessageId&quot;])  # unique id; use it to trace the message
 <div class="takeaway"><p>SQS = queue, pull, buffer. SNS = broadcast, push, fan-out. EventBridge = rules over events, plus cron. DLQ catches the poison messages.</p>
 <figure class="fig-light">
 <img src="assets/img/foundations/found-messaging.svg" alt="Messaging patterns: SQS queue with senders, queue, and workers, plus a dead-letter queue; SNS topic fanning out to email, SMS, Lambda, and SQS; EventBridge matching events to targets with cron schedules" loading="lazy">
-<figcaption>SQS is the queue: producers drop in, workers pull out, failures go to the dead-letter queue. SNS is the broadcast: one publish, everyone subscribed gets it. EventBridge matches events to rules and adds cron.</figcaption>
+<figcaption>SQS is the queue: producers drop in, workers pull out, failures go to the dead-letter queue. SNS is the broadcast: one publish, everyone subscribed gets it. EventBridge matches events to rules and adds cron. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption>
 </figure>
 
 <figure class="fig-light">
 <img src="assets/img/ste100/aip-cld-messaging.svg" alt="Messaging decision: SQS queue for one-to-one pull, SNS topic for one-to-many push, EventBridge bus for filtered events." loading="lazy">
-<figcaption>Queue for pull, topic for push, bus for filtered events.</figcaption>
+<figcaption>Queue for pull, topic for push, bus for filtered events. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption>
 </figure>
 <div class="walkthrough">Start at the question. One-to-one with buffering is SQS. One-to-many fan-out is SNS. Many-to-many with rules and schedules is EventBridge. Failed messages return to the queue, then move to the dead-letter queue.</div>
 
@@ -1957,7 +1993,7 @@ print(resp[&quot;MessageId&quot;])  # unique id; use it to trace the message
 <div class="takeaway"><p>API Gateway = managed entry point. HTTP API for cheap and simple, REST API for full control, WebSocket for two-way.</p>
 <figure class="fig-light">
 <img src="assets/img/foundations/found-api-gateway.svg" alt="API Gateway flavors: clients hit one HTTPS endpoint, API Gateway handles throttling, auth, and validation, with HTTP API for cheap and fast, REST API for usage plans, API keys, WAF, and caching, and WebSocket API for two-way traffic" loading="lazy">
-<figcaption>One HTTPS entry point for your backends. HTTP API is cheap and fast. REST API adds usage plans, API keys, WAF, and caching. WebSocket API stays open for two-way traffic.</figcaption>
+<figcaption>One HTTPS entry point for your backends. HTTP API is cheap and fast. REST API adds usage plans, API keys, WAF, and caching. WebSocket API stays open for two-way traffic. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption>
 </figure>
 </div>
 
@@ -1992,7 +2028,7 @@ print(resp[&quot;MessageId&quot;])  # unique id; use it to trace the message
 <div class="takeaway"><p>KMS holds the keys, you hold the policies. Envelope encryption keeps it fast. KMS logs every use. Disabling a key revokes everything under it.</p>
 <figure class="fig-light">
 <img src="assets/img/foundations/found-kms.svg" alt="KMS envelope encryption: KMS creates a data key, the data key encrypts the file locally, the master key encrypts the data key; every unwrap is logged in CloudTrail and disabling the key instantly revokes everything under it" loading="lazy">
-<figcaption>Envelope encryption: KMS makes a data key, the data key encrypts your file locally (fast), and the master key encrypts the data key. CloudTrail logs every unwrap. Disable the key and everything under it becomes unreadable.</figcaption>
+<figcaption>Envelope encryption: KMS makes a data key, the data key encrypts your file locally (fast), and the master key encrypts the data key. CloudTrail logs every unwrap. Disable the key and everything under it becomes unreadable. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption>
 </figure>
 </div>
 
@@ -2038,7 +2074,7 @@ print(resp[&quot;MessageId&quot;])  # unique id; use it to trace the message
 <div class="takeaway"><p>Template in, stack out. Same file, same environment, every time. Preview with change sets, catch hand edits with drift detection.</p>
 <figure class="fig-light">
 <img src="assets/img/foundations/found-cloudformation.svg" alt="CloudFormation flow: a YAML template goes in, CloudFormation creates every resource as one stack, identical in any Region; change sets preview updates, drift detection catches hand edits, StackSets repeat across accounts" loading="lazy">
-<figcaption>Template in, stack out: CloudFormation creates every resource in the file as one stack, identical in any Region. Change sets preview updates. Drift detection catches hand edits.</figcaption>
+<figcaption>Template in, stack out: CloudFormation creates every resource in the file as one stack, identical in any Region. Change sets preview updates. Drift detection catches hand edits. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption>
 </figure>
 </div>
 
@@ -2069,7 +2105,7 @@ print(resp[&quot;MessageId&quot;])  # unique id; use it to trace the message
 <div class="takeaway"><p>Pay as you go, tag everything, budget everything. Free Tier is real but limited. Consolidated billing merges accounts and discounts.</p>
 <figure class="fig-light">
 <img src="assets/img/foundations/found-billing.svg" alt="Billing tools: Cost Explorer shows where the money went, Budgets alert and act at 80 percent, Anomaly Detection pings on weird spikes, cost allocation tags split the bill by team, consolidated billing merges many accounts for volume discounts" loading="lazy">
-<figcaption>Cost Explorer shows where the money went. Budgets alert and act at 80 percent. Anomaly Detection pings on weird spikes. Tags split the bill by team. Organizations merge the bills and stack the volume discounts.</figcaption>
+<figcaption>Cost Explorer shows where the money went. Budgets alert and act at 80 percent. Anomaly Detection pings on weird spikes. Tags split the bill by team. Organizations merge the bills and stack the volume discounts. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption>
 </figure>
 </div>
 
@@ -2119,13 +2155,13 @@ print(resp[&quot;MessageId&quot;])  # unique id; use it to trace the message
 <div class="exam-ask"><p>When a scenario says "secure GenAI application", check four things in order. (1) Network: private subnets plus endpoints. (2) Identity: least-privilege roles, no keys. (3) Data: KMS encryption and versioning. (4) Audit: CloudTrail and CloudWatch.</p>
 <figure class="fig-light">
 <img src="assets/img/foundations/found-genai-arch.svg" alt="Secure RAG chatbot architecture: users reach CloudFront and API Gateway, Lambda in private subnets reads documents from an encrypted versioned S3 bucket and calls Bedrock through a VPC endpoint; CloudTrail, CloudWatch, and Config form the audit layer" loading="lazy">
-<figcaption>The RAG chatbot, assembled. The user reaches CloudFront and API Gateway. Lambda in private subnets reads documents from an encrypted S3 bucket and calls Bedrock through a VPC endpoint. The audit layer logs everything.</figcaption>
+<figcaption>The RAG chatbot, assembled. The user reaches CloudFront and API Gateway. Lambda in private subnets reads documents from an encrypted S3 bucket and calls Bedrock through a VPC endpoint. The audit layer logs everything. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption>
 </figure>
 </div>
 
 <figure class="fig-light">
 <img src="assets/img/ste100/aip-cld-genai-arch.svg" alt="Secure GenAI architecture: user to CloudFront to API Gateway to Lambda in private subnets, reading versioned encrypted S3 documents and calling Bedrock through a VPC endpoint, with CloudTrail, CloudWatch, and Config auditing." loading="lazy">
-<figcaption>The user never touches compute. Prompts never cross the public internet.</figcaption>
+<figcaption>The user never touches compute. Prompts never cross the public internet. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption>
 </figure>
 <div class="walkthrough">Read left to right. The user reaches CloudFront and API Gateway. Lambda runs in private subnets with no public IP. It reads versioned, KMS-encrypted documents from S3. It calls Bedrock through a VPC endpoint. The audit layer logs everything.</div>
 
@@ -2822,6 +2858,73 @@ window.DS_MANIFEST = [
       }
     }
   });
+  /* ---------- 11. Scroll reveal + figure parallax (progressive enhancement) ----------
+     .reveal is added here (never in markup), so content is fully visible with
+     JS disabled. Respects prefers-reduced-motion. Parallax drift is a small
+     transform on plain figure images only; it never changes layout. ---------- */
+
+  (function () {
+    var reduceMotion = window.matchMedia &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    /* Scroll reveal: gentle rise-in on content blocks as they enter the viewport. */
+    var revealTargets = inner.querySelectorAll(
+      "figure, .pq, .exam-ask, .takeaway, .panel, .diagram-walkthrough, " +
+      ".table-wrap, .ladder, .cc-qa"
+    );
+    if (!reduceMotion && "IntersectionObserver" in window) {
+      var revealEls = Array.prototype.slice.call(revealTargets);
+      revealEls.forEach(function (el) { el.classList.add("reveal"); });
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (en) {
+          if (en.isIntersecting) {
+            en.target.classList.add("revealed");
+            io.unobserve(en.target);
+          }
+        });
+      }, { rootMargin: "0px 0px -8% 0px", threshold: 0.05 });
+      revealEls.forEach(function (el) { io.observe(el); });
+    }
+    /* reduceMotion or no IntersectionObserver: no .reveal class is added,
+       so every block stays fully visible. */
+
+    /* Figure parallax: gentle --px drift on plain figure images only
+       (.fig-light cards are excluded so the white plate never shows an edge). */
+    if (!reduceMotion) {
+      var pxFigs = [];
+      Array.prototype.forEach.call(
+        inner.querySelectorAll("figure:not(.fig-light)"),
+        function (fig) {
+          if (fig.querySelector("img")) {
+            fig.classList.add("ds-px");
+            pxFigs.push(fig);
+          }
+        }
+      );
+      var pxTicking = false;
+      function pxUpdate() {
+        var vh = window.innerHeight || 800;
+        pxFigs.forEach(function (fig) {
+          var img = fig.querySelector("img");
+          if (!img) return;
+          var r = img.getBoundingClientRect();
+          if (r.bottom < -160 || r.top > vh + 160) return; /* off-screen: skip */
+          var center = (r.top + r.height / 2) - vh / 2;
+          var drift = center * -0.015;
+          if (drift > 8) drift = 8;
+          if (drift < -8) drift = -8;
+          img.style.setProperty("--px", drift.toFixed(1) + "px");
+        });
+        pxTicking = false;
+      }
+      function pxRequest() {
+        if (!pxTicking) { pxTicking = true; window.requestAnimationFrame(pxUpdate); }
+      }
+      window.addEventListener("scroll", pxRequest, { passive: true });
+      window.addEventListener("resize", pxRequest);
+      pxUpdate();
+    }
+  })();
 })();
 
 </script>
