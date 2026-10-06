@@ -1,0 +1,415 @@
+<!-- D1 lessons: L0-L4. Crash-course path, AIP-C01 v2 rebuild. Fragment: sections only. -->
+<section class="lesson" id="l0">
+<h2>L0 - Foundation ramp: AI minimums and AWS minimums</h2>
+<p class="lesson-sub">Zero prior knowledge assumed. Every later lesson names these terms without re-teaching them.</p>
+
+<h3 id="l0-problem">The problem</h3>
+<p>Every later lesson names AWS services and AI terms as if you already know them. Without a ramp, the first mention of a token or a Lambda stops you cold. This lesson builds the minimum map: what a model reads, what the AWS parts do, and how the parts connect.</p>
+
+<h3 id="l0-mental">Mental model</h3>
+<p>A model does not read words. It reads <dfn>tokens</dfn>, which are pieces of words. The word "Generative" splits into "Gener" plus "ative", which is two tokens. Billing counts tokens in and tokens out, so tokens are money.</p>
+<p>The <dfn>context window</dfn> is the maximum tokens the model can see in one request. Input plus output must fit inside it. An <dfn>embedding</dfn> is a list of numbers that places a piece of text on a meaning map, so nearness means similar meaning. <dfn>Temperature</dfn> is a randomness dial: low values give steady factual answers, high values give varied creative ones. <dfn>Top-p</dfn> and <dfn>top-k</dfn> are two more dials that trim the candidate set before the pick. An <dfn>agent</dfn> is a model that calls tools in a loop until the job is done.</p>
+<p>Three ways exist to change what a model does, from cheap to costly. <dfn>Prompt engineering</dfn> changes the instructions only. <dfn>RAG (Retrieval-Augmented Generation)</dfn> pastes fresh facts into the prompt at query time, with no weight change. <dfn>Fine-tuning</dfn> trains the weights further on your examples, which bakes in behavior. Pick the cheapest rung that solves the problem.</p>
+<p>AWS rents you the parts of a data center. <dfn>EC2 (Elastic Compute Cloud)</dfn> is a rented virtual server that runs 24/7 until you stop it. <dfn>Lambda</dfn> runs one function on one event and then vanishes, with a hard cap of minutes per run. <dfn>Step Functions</dfn> is a workflow engine that can wait hours and call services in order. <dfn>S3 (Simple Storage Service)</dfn> is durable object storage and the home for documents, datasets, and logs. <dfn>DynamoDB</dfn> is a fast key-value store and the home for session state and metadata. It is not a vector store. <dfn>VPC (Virtual Private Cloud)</dfn> is your private network inside AWS. <dfn>IAM (Identity and Access Management)</dfn> is the badge reader: every call carries an identity, and a policy states allow or deny.</p>
+<p>A <dfn>Region</dfn> is a geographic cluster of data centers, and models are not served in every Region. An <dfn>AZ (Availability Zone)</dfn> is one isolated data center inside a Region. You use several so one failure does not stop you. For observability, <dfn>CloudWatch</dfn> holds metrics and logs, <dfn>CloudTrail</dfn> is the audit log of who called what, and <dfn>X-Ray</dfn> traces one request across services.</p>
+
+<h3 id="l0-worked">Worked example: tokens and the window</h3>
+<figure id="fig-l0-tokens">
+<img src="assets/img/v2/d1-tokens-1.png" alt="Raw text split into six token chips">
+<figcaption>Shell 2. Count the toy. Source: original toy.</figcaption>
+<ol class="how-to-read">
+<li>Read the left panel: one sentence, "Generative AI writes code today".</li>
+<li>Follow the center arrow, "split into pieces": the one rule of this plate.</li>
+<li>Read the right panel: six chips, one per token ("Gener", "ative", "AI", "writes", "code", "today").</li>
+<li>Read the footer: tokens drive billing and context limits, not words.</li>
+</ol>
+</figure>
+<p>Take a request with a 1,000-token system prompt, 5,000 tokens of user input, and 2,000 tokens of output. Total equals 1,000 + 5,000 + 2,000 = 8,000 tokens. If the model window is 8,000 tokens (toy size, not a real limit), the request fits exactly. Add 500 more input tokens and the total becomes 8,500, which exceeds the window, so the call fails or truncates [Version-dependent]. The window is a hard budget, and every token you add on one side removes room from the other.</p>
+
+<h3 id="l0-aws">How AWS does it: the minimum map</h3>
+<table>
+<tr><th>Service</th><th>One-line job</th><th>Exam note</th></tr>
+<tr><td>EC2</td><td>Rented virtual server</td><td>You manage the OS, you pay while it runs</td></tr>
+<tr><td>Lambda</td><td>One function per event</td><td>Minutes-scale cap, cannot wait hours</td></tr>
+<tr><td>Step Functions</td><td>Ordered workflows with waits</td><td>The service for long waits and retries</td></tr>
+<tr><td>S3</td><td>Durable object storage</td><td>Source of truth for documents and logs</td></tr>
+<tr><td>DynamoDB</td><td>Fast key-value store</td><td>Session state and metadata, never vectors</td></tr>
+<tr><td>VPC</td><td>Private network in the cloud</td><td>Isolation boundary for regulated data</td></tr>
+<tr><td>IAM</td><td>Who may do what</td><td>Explicit deny beats any allow</td></tr>
+<tr><td>CloudWatch</td><td>Metrics and logs</td><td>Where performance questions get answered</td></tr>
+<tr><td>CloudTrail</td><td>Audit log of API calls</td><td>Who called what, never a perf tool</td></tr>
+<tr><td>X-Ray</td><td>Request traces</td><td>Follows one call across services</td></tr>
+<tr><td>Bedrock</td><td>Model API service</td><td>Full teach in L1, the front door to FMs</td></tr>
+</table>
+<p>An IAM action names the exact call, in the form service:verb-noun, for example <code>bedrock:InvokeModel</code>. A policy combines Effect plus Action plus Resource. Least privilege means you name the exact model or table in Resource and never leave it as "*".</p>
+
+<h3 id="l0-limits">Limits and traps</h3>
+<p>CloudTrail answers "who did what", it never answers "how fast", so it is audit, not monitoring. DynamoDB cannot do vector search, and the exam sets this trap often: metadata lives in DynamoDB, vectors live in a vector index. Lambda cannot hold a two-hour wait. That wait belongs to Step Functions. A bigger model is not the default fix for a bad answer. The ladder in L1 decides the fix.</p>
+
+<h3 id="l0-closest">Closest alternative: which compute fits</h3>
+<table>
+<tr><th>Option</th><th>Best for</th><th>Fails at</th></tr>
+<tr><td>Lambda</td><td>Short event-driven bursts</td><td>Long waits, runs over minutes</td></tr>
+<tr><td>Step Functions</td><td>Ordered steps with waits and retries</td><td>Heavy compute per step</td></tr>
+<tr><td>EC2</td><td>Always-on servers you fully control</td><td>Cost when idle, you patch the OS</td></tr>
+</table>
+<p>The decisive requirement is the duration and shape of the work: a burst favors Lambda, a wait favors Step Functions, an always-on server favors EC2. If the requirement changed to full OS control with 24/7 uptime, EC2 would win over Lambda despite the higher ops load.</p>
+
+<h3 id="l0-arch">Valid but inferior, and technically invalid</h3>
+<p>Valid but inferior: a nightly 2-minute batch job on an EC2 server that runs all day.</p>
+<pre>
+22:00 cron fires on EC2 ......... server already running (paid all day)
+22:00 job starts ................ 2 minutes of real work
+22:02 job ends .................. server idles 23 h 58 min, still billed
+result: correct output, wasteful bill
+</pre>
+<p>Technically invalid: a Lambda that waits 2 hours for a human approval.</p>
+<pre>
+10:00 Lambda starts ............. waits for approval callback
+10:15 Lambda hits minutes cap ... runtime kills it mid-wait
+12:00 approval arrives .......... no function left to receive it
+result: dead workflow, Step Functions owns long waits
+</pre>
+
+<h3 id="l0-check">Check yourself <span class="tag">original exam-style practice</span></h3>
+<details class="check"><summary>Q1 (recall). An agent must keep conversation state for weeks and also store PDF source documents. Which two services do you pick?</summary>
+<div class="answer"><p>Correct: DynamoDB for the conversation state, S3 for the PDFs. DynamoDB is a fast key-value store built for state, S3 is durable object storage built for documents. S3 alone fails because object storage is the wrong shape and speed for session reads. DynamoDB alone fails because it is not a document store and cannot hold vectors or large binaries well.</p></div>
+</details>
+<details class="check"><summary>Q2 (recall). Token spend spikes at 3am. Which tool finds the cause: CloudWatch or CloudTrail?</summary>
+<div class="answer"><p>Correct: CloudWatch, with its metrics and anomaly detection. CloudTrail records who called which API, which is audit data, not performance data. Picking CloudTrail confuses audit with monitoring, which is the exam trap.</p></div>
+</details>
+<details class="check"><summary>Q3 (transfer). A workflow waits up to 2 hours for a human approval, then calls a model. Which two services handle the wait and the call, and why can one service not do both?</summary>
+<div class="answer"><p>Correct: Step Functions holds the wait, Lambda (or a direct Bedrock step) makes the model call via <code>bedrock:InvokeModel</code>. Lambda cannot do both because its runtime cap is minutes-scale, so a 2-hour wait kills it. Step Functions orchestrates but is not the compute that runs your code.</p></div>
+</details>
+
+<h3 id="l0-deep">Deep reference</h3>
+<p class="deep-ref">If you stumble: <code>prereq-aws-cloud-foundations.html</code> (AWS parts), <code>prereq-ml-specialty.html</code> (AI basics), <code>prereq-aif-c01.html</code> (AI on AWS).</p>
+
+<h3 id="l0-evidence">Evidence notes</h3>
+<p class="evidence">Research date: 2026-10-06. Service roles [Guide] (official exam guide in-scope list), toy token/window numbers are original illustrations, not source claims, Lambda minutes-scale cap is a taught decision rule, exact seconds [Version-dependent].</p>
+</section>
+
+<section class="lesson" id="l1">
+<h2>L1 - D1: Requirements, model selection, resilience, customization lifecycle</h2>
+<p class="lesson-sub">Skills 1.1.1-1.1.3, 1.2.1-1.2.4. Decide the technique first, the model second, the plumbing third.</p>
+
+<h3 id="l1-problem">The problem</h3>
+<p>Teams pick a model first and never pick a technique. A fine-tune where RAG fits burns months of data work and a large budget, then goes stale on the first manual update. A giant model where a small one fits burns money on every single request. The damage comes from deciding in the wrong order.</p>
+
+<h3 id="l1-mental">Mental model</h3>
+<p>Use the escalation ladder: prompt engineering, then RAG, then fine-tuning, then (out of scope for this exam) training from scratch. Climb one rung only when the lower rung fails a named test. The analogy is a car repair: you try the tune-up before the engine rebuild, and you can state why the tune-up failed.</p>
+<p>A <dfn>PoC (proof of concept)</dfn> is a small build that tests three things before scale: feasibility, speed, and value. Skill 1.1.2 exists because a PoC on <dfn>Amazon Bedrock</dfn> (the managed model API service) costs little and answers those three questions in days. Skill 1.1.3 then says: turn what worked into standard reusable components, reviewed against the <dfn>Well-Architected Framework</dfn> GenAI Lens, so the tenth deployment matches the first.</p>
+<p>Model selection (skill 1.2.1) is a trade across four axes: capability, cost, latency, and regional availability. A model that wins on capability but is not served in your Region loses by default. Resilience (skill 1.2.3) means the system keeps answering through an outage: retry, switch Region, switch model, degrade gracefully. Customization (skill 1.2.4) is a lifecycle, not a single training run. The stages are adapt, register the version, deploy through a pipeline, roll back on failure, and retire at end of life.</p>
+
+<h3 id="l1-worked">Worked example: token cost and context budget</h3>
+<figure id="fig-l1-budget">
+<img src="assets/img/v2/d1-context-budget-1.png" alt="Context window bar divided into fixed parts and free space">
+<figcaption>Shell 2. Score the toy window. Source: original toy.</figcaption>
+<ol class="how-to-read">
+<li>Read the claim: a 200k toy window minus fixed parts leaves free space.</li>
+<li>Read the four solid segments left to right: system prompt 3k, retrieved chunks 40k, user input 2k, reserved output 10k.</li>
+<li>Read the hatched segment: free space 145k, computed as 200k minus 55k.</li>
+<li>Read the footer: toy numbers only, never a real model limit.</li>
+</ol>
+</figure>
+<p>Assumptions: input price $3.00 per 1M tokens, output price $15.00 per 1M tokens [Version-dependent]. One request carries 8,000 input tokens and 500 output tokens. Cost per request = (8,000 / 1,000,000) x $3.00 + (500 / 1,000,000) x $15.00 = $0.024 + $0.0075 = $0.0315. At 1M requests per month, the bill is $31,500. A smaller model at $0.30 input and $1.50 output per 1M [Version-dependent] gives (8,000 / 1,000,000) x $0.30 + (500 / 1,000,000) x $1.50 = $0.00315 per request. At 1M requests per month that is $3,150: a 10x cut for the same traffic.</p>
+<p>Context budget on a 200k toy window: system prompt 3,000 + retrieved chunks 8 x 5,000 = 40,000 + user input 2,000 + reserved output 10,000 = 55,000. Free space = 200,000 - 55,000 = 145,000 tokens. The model breaks here. If retrieved chunks grow to 160,000 tokens, the sum passes the window and the call fails. Chunk count is a budget decision, not just a quality decision.</p>
+
+<h3 id="l1-aws">How AWS does it</h3>
+<p>Bedrock is the front door. Your app calls <code>bedrock:InvokeModel</code> with a model ID and a JSON body, and gets text back. For chat, <code>bedrock:InvokeModelWithResponseStream</code> streams tokens as they arrive, which cuts perceived latency. If your Region does not serve the model you want, an inference profile (for example a <code>us.</code> prefix profile) routes the request cross-region to where it is served [Behavior].</p>
+<figure id="fig-l1-switch">
+<img src="assets/img/v2/d1-model-switch-1.png" alt="Hard-coded model name replaced by a config-driven router">
+<figcaption>Shell 3. Apply the one rule. Source: original toy.</figcaption>
+<ol class="how-to-read">
+<li>Read the left panel: app code points straight at one hard-coded model name.</li>
+<li>Read the center arrow, "move the choice to config": the one rule of this plate.</li>
+<li>Read the right panel: app code points at a router, and the router reads config to pick model A or model B.</li>
+<li>Read the footer: model switches now need no new deploy.</li>
+</ol>
+</figure>
+<p>Skill 1.2.2 in practice: the app never names a model. A Lambda reads the active model ID from <dfn>AWS AppConfig</dfn> (a managed configuration store) at request time. The read uses <code>appconfig:GetLatestConfiguration</code> [Unverified]. The Lambda then calls Bedrock with that ID. <dfn>Amazon API Gateway</dfn> (the managed front door for APIs) fronts the Lambda. Flip the config value and traffic moves to the new model with no code change and no deploy.</p>
+<p>Skill 1.2.3 in practice: a Step Functions circuit breaker. Try the primary model first. On throttling or outage, route through the cross-region inference profile. If that fails, fall back to a smaller cheaper model. If that fails, return a cached or static answer. Each rung trades answer quality for availability, which is graceful degradation by design.</p>
+<p>Skill 1.2.4 in practice: fine-tune on <dfn>Amazon SageMaker AI</dfn> (the managed ML platform). <dfn>LoRA (Low-Rank Adaptation)</dfn> freezes the base weights and trains two small matrices per layer, so the adapter is megabytes while the model is gigabytes. The artifact goes into <dfn>SageMaker Model Registry</dfn> with a version number, an automated pipeline deploys it to an endpoint (<code>sagemaker:InvokeEndpoint</code> serves traffic). Rollback means pointing the endpoint at the prior registry version. Retire means a scheduled swap to the replacement, not a silent delete.</p>
+
+<h3 id="l1-limits">Limits and traps</h3>
+<p>Fine-tuning teaches style and behavior, it does not reliably teach fresh facts. A fine-tuned model will still invent the new product price, because facts come from retrieval, not from weight updates. Cross-region inference adds latency and moves data across borders, which is a compliance flag in regulated workloads. Provisioned throughput reserves capacity for steady load, it is not a discount for spiky traffic, and idle reserved capacity still bills. A PoC proves feasibility, never production readiness: the exam tests whether you know what a PoC cannot promise.</p>
+
+<h3 id="l1-closest">Closest alternative: which technique fits</h3>
+<table>
+<tr><th>Technique</th><th>Changes</th><th>Needs</th><th>Fails when</th></tr>
+<tr><td>Prompt engineering</td><td>Instructions only</td><td>Good prompt craft</td><td>Facts absent or behavior complex</td></tr>
+<tr><td>RAG</td><td>Prompt plus retrieved facts</td><td>A current corpus and a vector index</td><td>The task needs new behavior, not new facts</td></tr>
+<tr><td>Fine-tuning</td><td>Model weights (adapter)</td><td>Labeled examples, training budget</td><td>Facts change often, it memorizes stale data</td></tr>
+</table>
+<p>The decisive requirement is the gap: absent facts point to RAG, absent behavior with stable facts points to fine-tuning, and no gap points to prompt engineering. If the requirement changed to a support bot that must cite a monthly manual, RAG would win over fine-tuning. The fine-tuned weights would go stale with every manual update.</p>
+
+<h3 id="l1-arch">Valid but inferior, and technically invalid</h3>
+<p>Valid but inferior: fine-tune a model on the whole product manual to "teach" it the facts.</p>
+<pre>
+manual v8 ----> LoRA fine-tune --> model answers from weights
+manual v9 ships --> weights still hold v8 --> answers now wrong
+fix: retrain monthly .... cost and delay on every update
+result: works between updates, stale after each one
+</pre>
+<p>Technically invalid: an app in eu-west-1 hard-codes a model served only in us-east-1.</p>
+<pre>
+app (eu-west-1) --> bedrock:InvokeModel model-id (us-east-1 only)
+Bedrock ......... ValidationException: model not available here
+fix: inference profile with cross-region routing (us. prefix)
+result: request fails until routing is fixed
+</pre>
+
+<h3 id="l1-check">Check yourself <span class="tag">original exam-style practice</span></h3>
+<details class="check"><summary>Q1 (recall). A support bot must answer from a product manual that updates monthly, with citations. Pick prompt engineering, RAG, or fine-tuning, and give the one-sentence reason.</summary>
+<div class="answer"><p>Correct: RAG, because the facts change monthly and citations need the source text at query time. Fine-tuning fails since weights go stale on each manual update. Prompt engineering fails since instructions alone cannot supply facts the model never saw.</p></div>
+</details>
+<details class="check"><summary>Q2 (recall). A classifier handles 1M calls a day and each call costs too much. What is the first move: fine-tune, or switch to a smaller model with tiered routing?</summary>
+<div class="answer"><p>Correct: switch to a smaller model with tiered routing (simple queries to the small model, hard ones escalated). Fine-tuning changes behavior, not per-token price, so it does not fix a cost problem. The exam tests cost-capability trade-offs, not bigger-is-better.</p></div>
+</details>
+<details class="check"><summary>Q3 (transfer). Your primary model has an outage in your Region during peak traffic. Sketch the fallback order and name what each step sacrifices.</summary>
+<div class="answer"><p>Correct: retry with backoff, then the cross-region inference profile (sacrifices latency and data residency), then a smaller backup model (sacrifices answer quality), then a cached or static answer (sacrifices freshness). Each rung trades quality for availability, which is graceful degradation. Skipping straight to the static answer fails because it wastes the middle rungs.</p></div>
+</details>
+
+<h3 id="l1-deep">Deep reference</h3>
+<p class="deep-ref">If you stumble: <code>volume-d1-foundation-models.html</code>, sections on requirements, model selection, resilience, and the customization lifecycle.</p>
+
+<h3 id="l1-evidence">Evidence notes</h3>
+<p class="evidence">Research date: 2026-10-06. Skill mapping [Guide] (official exam guide tasks 1.1-1.2), Bedrock invoke/streaming actions and SageMaker endpoint flow [Behavior], all prices and the 200k window are toy values [Version-dependent], <code>appconfig:GetLatestConfiguration</code> [Unverified].</p>
+</section>
+
+<section class="lesson" id="l2">
+<h2>L2 - D1: Data validation and processing pipelines</h2>
+<p class="lesson-sub">Skills 1.3.1-1.3.4. The model cannot clean its own input, the pipeline must.</p>
+
+<h3 id="l2-problem">The problem</h3>
+<p>A model reads whatever you feed it and answers with full confidence. Feed it a corrupt PDF, a mislabeled audio file, or a table with shifted columns, and you get a fluent, confident, wrong answer. No prompt trick fixes data the pipeline never checked. Quality gates belong before inference, not after.</p>
+
+<h3 id="l2-mental">Mental model</h3>
+<p>Think of a kitchen prep line. The wash station (validate) rejects rotten produce. The chop station (process) cuts each item to the shape the recipe needs. The plate station (format) arranges it for the diner. The chef (model) never sees the raw delivery. Skills 1.3.1 through 1.3.4 map to those four stations in order: validate, process by type, format per model, and enrich quality.</p>
+<p>Validation asks "is this data fit to use": complete, fresh, de-duplicated, correctly typed. Processing asks "is it in the shape the model can read": audio becomes text, scans become text, tables become rows. Formatting asks "does this request body match what this specific model expects": providers differ, so one JSON shape does not fit all models. Enrichment asks "can we add signal before the call": extract entities, normalize spellings, rewrite noisy text.</p>
+
+<h3 id="l2-worked">Worked example: reject, dedupe, save</h3>
+<figure id="fig-l2-pipeline">
+<img src="assets/img/v2/d1-data-pipeline-1.png" alt="Raw documents pass a quality check and extraction before the model">
+<figcaption>Shell 3. Apply the one rule. Source: original toy.</figcaption>
+<ol class="how-to-read">
+<li>Read the left panel: raw documents point straight at the model, marked "fails on junk".</li>
+<li>Read the center arrow, "validate, then process": the one rule of this plate.</li>
+<li>Read the right panel: documents flow through a quality check, then extraction and formatting, then a clean prompt, then the model.</li>
+<li>Read the footer: only clean data reaches the model.</li>
+</ol>
+</figure>
+<p>Assumptions: 10,000 PDFs land in S3, input price $3.00 per 1M tokens [Version-dependent]. Validation rejects 800 corrupt or empty files: 800 / 10,000 = 8% rejected before any money is spent. The corpus holds 50M tokens, de-duplication removes 15%, which is 0.15 x 50M = 7.5M tokens. Savings per full-corpus pass = (7.5M / 1M) x $3.00 = $22.50. At 100 passes per month, the pipeline saves $2,250 per month, which pays for the validation stage many times over. The model breaks here. If de-duplication is too aggressive, it removes near-duplicate contracts that differ in one clause. Recall drops, and the savings cost you answers.</p>
+
+<h3 id="l2-aws">How AWS does it</h3>
+<p>S3 is the source of truth: raw files land in a bucket, and every stage reads and writes buckets or prefixes. <dfn>AWS Glue Data Quality</dfn> runs rulesets over the data for skill 1.3.1: completeness, freshness, schema match. A custom Lambda validator covers rules no managed check expresses (<code>lambda:InvokeFunction</code>). <dfn>SageMaker Processing</dfn> runs batch transforms for skill 1.3.2: heavy jobs over large datasets on ephemeral compute.</p>
+<p>Each data type gets its own extractor. <dfn>Amazon Transcribe</dfn> turns audio into text (<code>transcribe:StartTranscriptionJob</code> [Unverified]). <dfn>Amazon Textract</dfn> pulls text and tables from scanned images (<code>textract:DetectDocumentText</code> [Unverified]). Bedrock multimodal models read images directly when the use case needs vision. For skill 1.3.4, <dfn>Amazon Comprehend</dfn> extracts entities such as names and dates (<code>comprehend:DetectEntities</code> [Unverified]). A Lambda normalizes spellings and formats. Bedrock itself can rewrite noisy text into clean input.</p>
+<p>For skill 1.3.3, format per model. The Bedrock Converse API takes a messages list with roles (<code>user</code>, <code>assistant</code>) plus inference parameters. Provider-specific request bodies differ in field names and limits [Version-dependent]. Format against the target model contract. Dialog apps keep the full turn history in order, one mislabeled role corrupts the conversation. <dfn>Amazon CloudWatch</dfn> metrics track reject rates per stage, so a spike in validation failures pages the team before bad data reaches the model.</p>
+
+<h3 id="l2-limits">Limits and traps</h3>
+<p>Schema checks cannot catch semantic lies: a fluent paragraph with a false date passes every format rule. Validation at ingest does not replace validation at query time, because user input arrives raw on every request. Formatting is provider-specific. A request body built for one model family can fail on another with a validation error. "One JSON fits all" is the trap. Processing improves the odds, it never guarantees truth, which is why L3 adds retrieval grounding.</p>
+
+<h3 id="l2-closest">Closest alternative: managed pipeline vs hand-rolled chain</h3>
+<table>
+<tr><th>Option</th><th>Best for</th><th>Fails at</th></tr>
+<tr><td>Managed: Glue plus SageMaker Processing</td><td>Daily TB-scale, scheduled, audited</td><td>One-off jobs, slower to change</td></tr>
+<tr><td>Hand-rolled: Lambda chain</td><td>Small, fast-changing, event-driven</td><td>Scale, timeouts, no data-quality rules</td></tr>
+</table>
+<p>The decisive requirement is volume times schedule regularity: daily terabytes with audit needs point to the managed path, while a small event-driven flow points to the Lambda chain. If the requirement changed to a one-off cleanup of 50 files, the Lambda chain would win. The managed path adds setup cost for no repeat value.</p>
+
+<h3 id="l2-arch">Valid but inferior, and technically invalid</h3>
+<p>Valid but inferior: one giant Lambda validates, processes, and calls the model in a single function.</p>
+<pre>
+S3 event --> Lambda: validate + extract + entities + infer
+10:00 start ....... 10:09 still running ..... 10:15 timeout kills it
+one timeout budget for four stages, no per-stage retry
+result: works on small files, dies on large ones
+</pre>
+<p>Technically invalid: feed raw scanned PDFs as binary to a text-only model call.</p>
+<pre>
+S3 PDF (binary) --> bedrock:InvokeModel text body (no extraction)
+API ............. rejects content type / returns garbage
+fix: Textract first, then send extracted text
+result: fails until an extraction stage exists
+</pre>
+
+<h3 id="l2-check">Check yourself <span class="tag">original exam-style practice</span></h3>
+<details class="check"><summary>Q1 (recall). Support tickets arrive as text and need product names pulled out before the model sees them. Which service: Transcribe, Comprehend, or Textract?</summary>
+<div class="answer"><p>Correct: Comprehend, with entity extraction. Transcribe fails because it handles audio, not text. Textract fails because it reads scanned images, not plain text. The exam tests one-service-per-data-type mapping.</p></div>
+</details>
+<details class="check"><summary>Q2 (recall). Answer quality drops the week after a data refresh, with no model change. What is the first suspect: the model, or the validation stage?</summary>
+<div class="answer"><p>Correct: the validation stage, suspect new files that skipped quality checks. Blaming the model fails because nothing about the model changed. Check CloudWatch reject-rate metrics first: a drop in rejections after a refresh means bad data started flowing through.</p></div>
+</details>
+<details class="check"><summary>Q3 (transfer). Design the pipeline for 5,000 scanned contracts a day that need clause extraction. Name the stages and one service per stage.</summary>
+<div class="answer"><p>Correct: S3 lands the scans, Textract extracts text and tables, a Lambda validates completeness, Comprehend extracts entities such as dates and parties, a formatter builds the per-model JSON, Bedrock runs inference. Skipping Textract fails because the model cannot read raw scans, skipping validation fails because corrupt scans poison the batch silently.</p></div>
+</details>
+
+<h3 id="l2-deep">Deep reference</h3>
+<p class="deep-ref">If you stumble: <code>volume-d1-foundation-models.html</code>, the data pipeline sections (validation, processing, formatting, enrichment).</p>
+
+<h3 id="l2-evidence">Evidence notes</h3>
+<p class="evidence">Research date: 2026-10-06. Skill mapping [Guide] (official exam guide task 1.3), Glue Data Quality, SageMaker Processing, Transcribe, Comprehend roles [Behavior], token price and corpus numbers are original toy arithmetic [Version-dependent], <code>transcribe:StartTranscriptionJob</code>, <code>textract:DetectDocumentText</code>, <code>comprehend:DetectEntities</code> [Unverified].</p>
+</section>
+
+<section class="lesson" id="l3">
+<h2>L3 - D1: Vector stores and retrieval mechanisms (RAG core)</h2>
+<p class="lesson-sub">Skills 1.4.1-1.4.5, 1.5.1-1.5.6. The largest lesson in D1: this is where answers stop being invented.</p>
+
+<h3 id="l3-problem">The problem</h3>
+<p>A model answers from weights frozen at training time. Ask about last month policy change or your private runbook, and it invents a fluent answer with no basis. The business cost is not a wrong answer, it is a wrong answer delivered with total confidence. Retrieval fixes this by fetching the facts first and forcing the model to reason from them.</p>
+
+<h3 id="l3-mental">Mental model</h3>
+<p>Think of a library. An embedding gives every text chunk a coordinate on a meaning map. "Refund policy" sits near "return rules" even though they share no words. The vector store is the card catalog sorted by meaning, not by alphabet. Retrieval walks in with the question coordinate and pulls the nearest chunks. RAG pastes those chunks into the prompt, so the model reasons from your text instead of its memory.</p>
+<p>Two searches exist. Keyword search matches exact words, it misses paraphrase. Semantic search matches meaning via vectors, it misses exact codes and names. <dfn>Hybrid search</dfn> runs both and merges the lists, and a <dfn>reranker</dfn> model reorders the merged top results for precision. Chunking decides the unit of retrieval: too small and meaning shatters across cuts, too large and noise dilutes the match.</p>
+<figure id="fig-l3-chunk">
+<img src="assets/img/v2/d1-chunking-1.png" alt="One long document cut into five overlapping chunks">
+<figcaption>Shell 3. Apply the one rule. Source: original toy.</figcaption>
+<ol class="how-to-read">
+<li>Read the left panel: one 12k-token manual, one block, too big.</li>
+<li>Read the center arrow, "chunk with 200 token overlap": the one rule of this plate.</li>
+<li>Read the right panel: five 1k chunks with hatched overlap zones between neighbors.</li>
+<li>Read the footer: overlap keeps meaning across the cuts.</li>
+</ol>
+</figure>
+<figure id="fig-l3-rag">
+<img src="assets/img/v2/d1-rag-1.png" alt="Question plus retrieved chunks flow into the model instead of the bare question">
+<figcaption>Shell 3. Apply the one rule. Source: original toy.</figcaption>
+<ol class="how-to-read">
+<li>Read the left panel: bare question into the model, marked "answer invented".</li>
+<li>Read the center arrow, "add retrieved context": the one rule of this plate.</li>
+<li>Read the right panel chain: question, then vector store, then top 3 chunks merged with the question, then the model.</li>
+<li>Read the footer: ground the answer in retrieved text.</li>
+</ol>
+</figure>
+
+<h3 id="l3-worked">Worked example: storage, chunks, and cosine</h3>
+<p>Embedding storage. Assumptions: N = 50,000 documents, D = 1,024 dimensions, 4 bytes per float. Bytes = 50,000 x 1,024 x 4 = 204,800,000. Convert: 204,800,000 / 1,048,576 = 195.3 MiB. So the raw vectors need about 195 MB before any index overhead. That is why the vector index lives on storage built for it, not in a key-value table.</p>
+<p>Chunk count with overlap. Assumptions: document length L = 12,000 tokens, chunk size C = 1,000, overlap O = 200. New tokens per chunk after the first = C - O = 800. Chunks = ceil((L - O) / (C - O)) = ceil(11,800 / 800) = ceil(14.75) = 15. Fifteen chunks cover the document, and each boundary shares 200 tokens with its neighbor, so no sentence is cut blind.</p>
+<p>Cosine similarity on a 2-D toy. Let a = [1, 0] and b = [0.6, 0.8]. Both are unit length: |a| = 1, |b| = sqrt(0.36 + 0.64) = 1. Cosine = (a . b) / (|a| |b|) = (0.6 + 0) / 1 = 0.6, about a 53-degree angle. Distance identity: for unit vectors, |a - b|^2 = (a - b) . (a - b) = |a|^2 - 2(a . b) + |b|^2 = 1 - 2cos + 1 = 2(1 - cos). Here 2 x (1 - 0.6) = 0.8. Check directly: a - b = [0.4, -0.8], squared length = 0.16 + 0.64 = 0.80. The identity holds, which means nearest by cosine equals nearest by Euclidean distance on normalized vectors. Where the model breaks: on raw unnormalized vectors the identity fails. Normalize before you compare. Long chunks then stop outranking short ones for no semantic reason.</p>
+
+<h3 id="l3-aws">How AWS does it</h3>
+<p>The managed path is <dfn>Amazon Bedrock Knowledge Bases</dfn>. You point it at an S3 document repository. It chunks the documents with a fixed-size, hierarchical, or semantic strategy. It embeds them with a Bedrock embedding model such as <dfn>Amazon Titan</dfn> embeddings. It stores vectors in a managed vector index. Sync runs via <code>bedrock:StartIngestionJob</code> [Unverified]. At query time your app calls <code>bedrock:Retrieve</code> for chunks or <code>bedrock:RetrieveAndGenerate</code> for the full RAG answer in one call.</p>
+<p>The self-managed path is <dfn>Amazon OpenSearch Service</dfn> with the Neural plugin for vector search. <dfn>Amazon Aurora</dfn> with the <dfn>pgvector</dfn> extension is the Postgres-native option. OpenSearch sharding splits the index across nodes as it grows, multi-index designs isolate specialized domains, hierarchical indexing speeds coarse-to-fine search. Metadata lives alongside: S3 object metadata for timestamps, custom attributes for authorship, tags for domain, and DynamoDB for document metadata. Note the exam trap: DynamoDB holds metadata, never the vectors.</p>
+<p>Precision comes from filters and reranking. Metadata filters prune by tenant, date, or domain before the vector search runs, which also enforces access control at retrieval time. Hybrid search merges keyword and vector results inside OpenSearch. A Bedrock reranker model then reorders the top candidates, it costs extra latency and tokens, so you rerank tens of results, not thousands.</p>
+<p>Query handling upgrades the question before search. Expansion adds synonyms via Bedrock. Decomposition splits one hard question into sub-questions via Lambda. Transformation chains (rewrite, then route, then search) run on Step Functions. The app reaches all of this through one stable interface. Use a function-calling interface for vector search, or an <dfn>MCP (Model Context Protocol)</dfn> client for vector queries. The model code then never changes when the store changes.</p>
+<p>Freshness is a correctness control. Incremental updates add only changed documents, change detection (S3 events) triggers re-ingest, scheduled refresh pipelines re-sync on a cadence. A stale index serves stale facts with full confidence, so sync lag is a bug, not a nicety.</p>
+
+<h3 id="l3-limits">Limits and traps</h3>
+<p>Top-k retrieval can miss the one decisive chunk, recall is not precision, and a reranker only reorders what retrieval found. Chunk too small and meaning shatters. Chunk too large and noise dilutes the match. Tune chunk size per corpus, never copy it from a blog. Embeddings capture meaning, not truth: a well-embedded false document retrieves beautifully. DynamoDB is metadata only and never the vector index, the exam sets this trap in several wordings. Cosine similarity assumes normalized vectors, skip normalization and the ranking silently skews toward long chunks.</p>
+
+<h3 id="l3-closest">Closest alternative: managed KB vs self-managed vs pgvector</h3>
+<table>
+<tr><th>Option</th><th>Ops load</th><th>Control</th><th>Best fit</th></tr>
+<tr><td>Bedrock Knowledge Bases</td><td>Lowest, AWS owns chunking and index</td><td>Lowest, fixed strategies</td><td>Fast launch, standard corpora</td></tr>
+<tr><td>OpenSearch self-managed</td><td>Highest, you tune shards and scoring</td><td>Highest, custom scoring, hybrid</td><td>Large scale, custom relevance</td></tr>
+<tr><td>Aurora pgvector</td><td>Medium, Postgres you already run</td><td>Medium, SQL plus vectors</td><td>Teams living in Postgres</td></tr>
+</table>
+<p>The decisive requirement is who tunes relevance and who owns uptime: a small team with a standard corpus picks the managed KB, while a team that must own custom scoring picks self-managed OpenSearch. If the requirement changed to a custom scoring function over hybrid results, self-managed OpenSearch would win. The managed KB cannot host custom scoring despite its lower ops load.</p>
+
+<h3 id="l3-arch">Valid but inferior, and technically invalid</h3>
+<p>Valid but inferior: keyword-only search over the document corpus.</p>
+<pre>
+query "refund policy" --> keyword index --> docs with those words
+doc says "return rules" (no word match) --> missed entirely
+result: works for exact terms, blind to paraphrase
+</pre>
+<p>Technically invalid: full table scan of embeddings in DynamoDB per query.</p>
+<pre>
+query --> Scan whole DynamoDB table --> cosine in app code
+50k docs: slow ..... 5M docs: timeout ..... 500M docs: dead
+no vector index exists, latency grows with corpus size
+result: fails at scale, vectors need a vector index
+</pre>
+
+<h3 id="l3-check">Check yourself <span class="tag">original exam-style practice</span></h3>
+<details class="check"><summary>Q1 (recall). 50,000 support docs need semantic search with low latency. Do you scan a DynamoDB table per query, or use a vector index?</summary>
+<div class="answer"><p>Correct: a vector index (Bedrock Knowledge Bases or OpenSearch vector search). A DynamoDB scan reads the whole table per query and has no vector index, so latency grows with corpus size. DynamoDB holds document metadata only, that is the exam trap.</p></div>
+</details>
+<details class="check"><summary>Q2 (recall). RAG answers cite the manual but the facts are two versions old. The model and prompts are unchanged. What broke, and what is the fix?</summary>
+<div class="answer"><p>Correct: the vector index is stale, the sync pipeline broke. Fix: re-run ingestion (<code>bedrock:StartIngestionJob</code>) and repair the scheduled refresh or S3-event trigger. Retraining or re-prompting fails because the model was never the problem.</p></div>
+</details>
+<details class="check"><summary>Q3 (transfer). One knowledge base serves three tenants, and each tenant must see only its own documents. Where do you enforce this, and how?</summary>
+<div class="answer"><p>Correct: at retrieval time, with a metadata filter on tenant_id applied before the vector search. Filtering after retrieval fails because other-tenant data may already sit in the model context. A separate index per tenant also works but multiplies ops cost, the filter is the standard answer.</p></div>
+</details>
+
+<h3 id="l3-deep">Deep reference</h3>
+<p class="deep-ref">If you stumble: <code>volume-d1-foundation-models.html</code>, the vector store and retrieval sections (the D1 volume core).</p>
+
+<h3 id="l3-evidence">Evidence notes</h3>
+<p class="evidence">Research date: 2026-10-06. Skill mapping [Guide] (official exam guide tasks 1.4-1.5), Bedrock KB flow, OpenSearch Neural plugin, Aurora pgvector, hybrid search, reranker [Behavior], storage/chunk/cosine numbers are original toy arithmetic, <code>bedrock:StartIngestionJob</code> [Unverified], <code>bedrock:Retrieve</code> and <code>bedrock:RetrieveAndGenerate</code> are standard Bedrock actions [Behavior].</p>
+</section>
+
+<section class="lesson" id="l4">
+<h2>L4 - D1: Prompt engineering, management, and governance</h2>
+<p class="lesson-sub">Skills 1.6.1-1.6.6. Prompts are production code: version them, test them, audit them.</p>
+
+<h3 id="l4-problem">The problem</h3>
+<p>Prompts start as strings pasted into code. Six months later nobody can say which version answered a customer. A careless edit ships with no test. A small wording tweak quietly drops accuracy. The failure is not the wording, it is the absence of every control that code takes for granted: versions, reviews, tests, and audit trails.</p>
+
+<h3 id="l4-mental">Mental model</h3>
+<p>Treat a prompt like a config file in production. It gets a version number and a review before release. A test suite runs on every change. A log records who used which version when. <dfn>Amazon Bedrock Prompt Management</dfn> is the version store. <dfn>Amazon Bedrock Prompt Flows</dfn> is the visual builder for chains with branches and pre/post steps. <dfn>Amazon Bedrock Guardrails</dfn> is the policy layer that filters content (full teach in D3).</p>
+<p>Prompt craft uses named techniques. Role definition tells the model who it is ("you are a support classifier"). Few-shot gives input-output examples. <dfn>Chain-of-thought</dfn> asks for step-by-step reasoning, which lifts accuracy on hard tasks at the price of more output tokens. Structured output (a JSON schema) forces machine-readable answers. Feedback loops feed bad outputs back into the next prompt revision.</p>
+<figure id="fig-l4-gov">
+<img src="assets/img/v2/d1-prompt-gov-1.png" alt="Pasted prompt string replaced by a versioned template with approval and usage log">
+<figcaption>Shell 3. Apply the one rule. Source: original toy.</figcaption>
+<ol class="how-to-read">
+<li>Read the left panel: app code holds a prompt pasted as a string, marked "no version, no trail".</li>
+<li>Read the center arrow, "manage as versioned artifact": the one rule of this plate.</li>
+<li>Read the right panel: template v3 passes an approval gate, then lands in a usage log.</li>
+<li>Read the footer: every prompt has a version and an audit trail.</li>
+</ol>
+</figure>
+
+<h3 id="l4-worked">Worked example: regression gate and prompt bloat</h3>
+<p>Regression gate. Assumptions: 200 golden prompt cases with known-good outputs. Version 4 passes 186: 186 / 200 = 93.0%. Version 5 passes 172: 172 / 200 = 86.0%. The delta is 14 newly failing cases, so version 5 does not ship until those 14 are fixed or explained. This is prompt regression testing: the same discipline as unit tests, applied to word choice.</p>
+<p>System prompt bloat. Assumptions: 1M calls per month, input price $3.00 per 1M tokens [Version-dependent]. A 3,000-token system prompt costs (3,000 / 1M) x $3.00 = $0.009 per call in system-prompt tokens alone, which is $9,000 per month. Compress it to 1,000 tokens with no quality loss and the cost falls to $3,000 per month, a $6,000 monthly saving from editing words. The model breaks here. Compression that deletes a constraint (for example the output schema) saves money and breaks the integration. Every cut re-runs the golden set.</p>
+
+<h3 id="l4-aws">How AWS does it</h3>
+<p>Bedrock Prompt Management stores templates with variables (for example <code>{{customer_tier}}</code>). It versions each save. It serves a chosen version at runtime (<code>bedrock:CreatePrompt</code> [Unverified]). Approval workflows gate promotion: a reviewer approves v5 before it becomes default. S3 can hold the template repository for teams that want raw files, but then versioning and approvals are your code to write.</p>
+<p>Bedrock Prompt Flows builds complex systems without custom orchestration. It supports sequential chains where step two consumes step one output. It supports conditional branches on the model reply. It offers reusable prompt components shared across flows, with Lambda pre/post-processing around any node. For conversation, Step Functions runs clarification workflows ("which order do you mean"). Comprehend detects intent. DynamoDB stores the turn history so the model remembers the session.</p>
+<p>Governance closes the loop. CloudTrail records which identity invoked which prompt version (<code>cloudtrail:LookupEvents</code> reads the trail). CloudWatch Logs holds the access log. Quality assurance runs on three rails. A Lambda checks each output against the expected shape. Step Functions walks edge cases. CloudWatch tracks the golden-set pass rate per version so regressions page the team. Guardrails sit in front as the policy layer: denied topics, content filters, and PII redaction (<code>bedrock:ApplyGuardrail</code> [Unverified]), the safety deep teach lives in D3.</p>
+
+<h3 id="l4-limits">Limits and traps</h3>
+<p>A system prompt cannot override the model safety training. Jailbreak instructions fail closed. The exam tests whether you know the policy layer wins. Chain-of-thought raises accuracy but also token cost and latency, so you reserve it for hard tasks. Pin the model version and the prompt version together. One without the other is not reproducible. The same prompt on a new model is a new system. Governance has a cost, a solo prototype does not need an approval board, and the exam rewards proportionate answers.</p>
+
+<h3 id="l4-closest">Closest alternative: Prompt Management vs S3 templates vs hard-coded strings</h3>
+<table>
+<tr><th>Option</th><th>Versions and audit</th><th>Best fit</th></tr>
+<tr><td>Bedrock Prompt Management</td><td>Built in: versions, approvals, usage log</td><td>Teams with compliance or many prompts</td></tr>
+<tr><td>S3 template repository</td><td>You build it: versioning is manual</td><td>Teams that want raw file control</td></tr>
+<tr><td>Hard-coded strings</td><td>None, edits ship with the code</td><td>Solo prototype, one user</td></tr>
+</table>
+<p>The decisive requirement is audit and approval: regulated or multi-author prompts need the managed path, while raw files suit teams that own their own tooling. If the requirement changed to a weekend prototype with one user, hard-coded strings would win because governance overhead buys nothing there.</p>
+
+<h3 id="l4-arch">Valid but inferior, and technically invalid</h3>
+<p>Valid but inferior: one mega-prompt that classifies, extracts, and formats in a single call.</p>
+<pre>
+input --> MEGA-PROMPT (classify + extract + format) --> output
+happy path: correct ..... edge case: which step failed? unknown
+no per-step test, one edit risks all three jobs
+result: works until it does not, then undebuggable
+</pre>
+<p>Technically invalid: a prompt chain that loops with no stop condition.</p>
+<pre>
+prompt --> model --> prompt --> model --> ... (no max steps)
+each lap bills tokens, nothing stops the loop
+result: runaway bill, chains need step caps and timeouts
+</pre>
+
+<h3 id="l4-check">Check yourself <span class="tag">original exam-style practice</span></h3>
+<details class="check"><summary>Q1 (recall). The team needs prompt versions, an approval step, and a log of which version served each request. Which AWS combo: S3 alone, or Prompt Management plus CloudTrail?</summary>
+<div class="answer"><p>Correct: Bedrock Prompt Management plus CloudTrail. Prompt Management gives versions and approvals. CloudTrail logs who invoked which version. S3 alone fails because versioning and the audit wiring are code you must write and maintain.</p></div>
+</details>
+<details class="check"><summary>Q2 (recall). A new prompt version drops the golden-set pass rate from 93% to 86%. What is the correct response: ship it, or roll back?</summary>
+<div class="answer"><p>Correct: roll back to the prior version and fix the 14 regressions first. Shipping fails because the regression gate exists to block exactly this. The exam tests whether process beats urgency.</p></div>
+</details>
+<details class="check"><summary>Q3 (transfer). A support bot must ask a clarifying question when user intent is unclear, then remember the answer for the rest of the session. Sketch the design.</summary>
+<div class="answer"><p>Correct: Comprehend detects low-confidence intent, a Step Functions clarification workflow asks the follow-up, DynamoDB stores the turn history as session memory, the next prompt includes the clarified intent. Skipping the memory store fails because the bot would ask again on every turn.</p></div>
+</details>
+
+<h3 id="l4-deep">Deep reference</h3>
+<p class="deep-ref">If you stumble: <code>volume-d1-foundation-models.html</code>, the prompt engineering sections (craft, management, governance, flows).</p>
+
+<h3 id="l4-evidence">Evidence notes</h3>
+<p class="evidence">Research date: 2026-10-06. Skill mapping [Guide] (official exam guide task 1.6), Prompt Management, Prompt Flows, Guardrails roles [Behavior], golden-set and bloat numbers are original toy arithmetic with [Version-dependent] prices, <code>bedrock:CreatePrompt</code> and <code>bedrock:ApplyGuardrail</code> [Unverified].</p>
+</section>
