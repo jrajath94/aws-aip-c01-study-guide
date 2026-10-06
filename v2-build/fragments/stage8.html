@@ -1,0 +1,461 @@
+<!-- Stage 8: confusion matrices, minimal-pair drills, L12 worked-scenario drills, troubleshooting playbooks. Crash-course path, AIP-C01 v2 rebuild. Fragment: sections only. -->
+<section class="lesson" id="matrices">
+<h2>Stage 8A - Confusion matrices: name the decisive requirement</h2>
+<p class="lesson-sub">Twelve pairs the exam loves to confuse. This stage teaches discrimination, not new mechanisms. Short callbacks name the lesson that taught each option.</p>
+
+<h3 id="matrices-how">How to read a matrix</h3>
+<p>The exam rarely asks for a definition. It shows a scenario and asks for the best fit. The wrong answers look right because they share most traits with the right one.</p>
+<p>Each matrix below compares options that look alike. Rows name what they share and what splits them. More rows name when each wins, when each loses, what each costs, and what each demands in operations. A last row names the misconception that traps test-takers.</p>
+<p>Treat bolded phrases in these matrices as clues, never as rules. A phrase suggests a direction. The decisive requirement in the scenario decides the answer. If the phrase and the requirement disagree, the requirement wins.</p>
+
+<h3 id="m1">M1 - Bedrock managed inference vs SageMaker self-hosted endpoints</h3>
+<table>
+<tr><th>Dimension</th><th>Bedrock managed inference</th><th>SageMaker self-hosted endpoints</th></tr>
+<tr><th>Shared ground</th><td colspan="2">Both serve model predictions to an app through an API call. API means application programming interface.</td></tr>
+<tr><th>Decisive difference</th><td>AWS hosts and operates the model. You call an API.</td><td>You deploy a foundation model (FM) on instances you configure. You own the container, the GPU size, and the scaling.</td></tr>
+<tr><th>Wins when</th><td>The model ships in the Bedrock catalog. The team wants <b>lowest operational overhead</b>.</td><td>The model is proprietary or needs a custom runtime. The team wants <b>maximum customization</b>.</td></tr>
+<tr><th>Loses when</th><td>The model is absent from the catalog. The workload needs a custom container.</td><td>A catalog model fits and the team has no ML operations staff.</td></tr>
+<tr><th>Cost</th><td>Pay per token. No bill when idle.</td><td>Pay per instance hour. Idle instances still bill.</td></tr>
+<tr><th>Operations</th><td>No patching. No GPU sizing. No scaling config.</td><td>You patch, scale, and size GPUs. Full control, full duty.</td></tr>
+<tr><th>Common misconception</th><td colspan="2">SageMaker is always cheaper at scale. Idle instances bill, so low utilization flips the math. (L1, L6)</td></tr>
+</table>
+
+<h3 id="m2">M2 - RAG (Retrieval-Augmented Generation) vs fine-tuning vs continued pre-training</h3>
+<table>
+<tr><th>Dimension</th><th>RAG</th><th>Fine-tuning</th><th>Continued pre-training</th></tr>
+<tr><th>Shared ground</th><td colspan="3">All three change what a model does for a task. All three sit above plain prompt engineering.</td></tr>
+<tr><th>Decisive difference</th><td>Facts arrive at query time through retrieval. Weights never change.</td><td>Weights change through training on labeled examples. Behavior and style get baked in.</td><td>Weights change through training on a domain corpus. The model learns domain language.</td></tr>
+<tr><th>Wins when</th><td><b>Frequently changing facts</b>, or answers that need citations.</td><td><b>Consistent task-specific writing style</b> with stable facts and labeled examples.</td><td>The base model lacks the domain vocabulary entirely. Rare on this exam.</td></tr>
+<tr><th>Loses when</th><td>The gap is behavior, not facts. Retrieval cannot teach tone.</td><td>Facts change often. Weights go stale between trainings.</td><td>The task is small. The training bill dwarfs the gain.</td></tr>
+<tr><th>Cost</th><td>Index build plus retrieval tokens per query.</td><td>Training job plus hosted adapter.</td><td>The largest training bill of the three.</td></tr>
+<tr><th>Operations</th><td>Keep the index fresh. Sync lag is a bug.</td><td>Run the lifecycle: register, deploy, roll back, retire.</td><td>Run a full training pipeline with eval gates.</td></tr>
+<tr><th>Common misconception</th><td colspan="3">Fine-tuning teaches the model new facts. It teaches behavior. Facts still come from retrieval. (L1)</td></tr>
+</table>
+<figure id="fig-s8-ladder">
+<img src="assets/img/v2/s8-ladder-1.png" alt="Gap types routed to prompt, RAG, or fine-tuning rungs">
+<figcaption>Shell 3. Apply the one rule. Source: original.</figcaption>
+<ol class="how-to-read">
+<li>Read the left panel: three gap chips under one question.</li>
+<li>Read the center arrow, "match the gap to the rung": the one rule.</li>
+<li>Read the right panel: each chip points to its rung on the ladder.</li>
+<li>Read the footer: facts change means RAG, behavior gap means fine-tune.</li>
+</ol>
+</figure>
+
+<h3 id="m3">M3 - Retrieve vs RetrieveAndGenerate</h3>
+<table>
+<tr><th>Dimension</th><th>Retrieve</th><th>RetrieveAndGenerate</th></tr>
+<tr><th>Shared ground</th><td colspan="2">Both query a Bedrock Knowledge Base. Both use the same index and the same chunks.</td></tr>
+<tr><th>Decisive difference</th><td>Returns chunks. Your code builds the prompt and calls the model.</td><td>Returns the final answer in one call. AWS builds the prompt.</td></tr>
+<tr><th>Wins when</th><td>You need <b>custom prompt control</b>: your schema, your guardrail, your citations.</td><td>You need <b>one call to an answer</b> with minimal code.</td></tr>
+<tr><th>Loses when</th><td>More code to write and govern.</td><td>Less control over the prompt, the citations, and the safety checks.</td></tr>
+<tr><th>Cost</th><td>You pay for your own generation call.</td><td>One call covers retrieval and generation.</td></tr>
+<tr><th>Operations</th><td>You version the prompt and wire the checks.</td><td>AWS owns the generation step. You own less.</td></tr>
+<tr><th>Common misconception</th><td colspan="2">RetrieveAndGenerate is RAG with no downside. The downside is prompt control. (L3)</td></tr>
+</table>
+<figure id="fig-s8-rag-call">
+<img src="assets/img/v2/s8-rag-call-1.png" alt="One-call RAG answer versus Retrieve with a custom prompt">
+<figcaption>Shell 3. Apply the one rule. Source: original.</figcaption>
+<ol class="how-to-read">
+<li>Read the left panel: one call returns one answer, no prompt control.</li>
+<li>Read the center arrow, "take prompt control": the one rule.</li>
+<li>Read the right panel: Retrieve returns chunks, the app builds the prompt with schema and guardrail chips.</li>
+<li>Read the footer: one call is fast, own prompt is control.</li>
+</ol>
+</figure>
+
+<h3 id="m4">M4 - InvokeModel APIs vs Converse API</h3>
+<table>
+<tr><th>Dimension</th><th>InvokeModel APIs</th><th>Converse API</th></tr>
+<tr><th>Shared ground</th><td colspan="2">Both call a Bedrock model for text. Both bill per token.</td></tr>
+<tr><th>Decisive difference</th><td>Takes a provider-specific raw JSON body. You manage the tool loop.</td><td>Takes one unified messages schema across providers. Tool use is native.</td></tr>
+<tr><th>Wins when</th><td>You need raw provider features in a one-shot call.</td><td>You need <b>chat plus tools</b> with <b>one schema across providers</b>.</td></tr>
+<tr><th>Loses when</th><td>Each provider needs its own body. Tool loops are hand-rolled.</td><td>Bedrock calls only. Non-Bedrock models stay out.</td></tr>
+<tr><th>Cost</th><td colspan="2">Same per-token price. Converse saves engineering time, not tokens.</td></tr>
+<tr><th>Operations</th><td>You maintain one contract per provider.</td><td>You govern one schema.</td></tr>
+<tr><th>Common misconception</th><td colspan="2">Converse is a thin wrapper. It standardizes the schema and the tool loop, which changes integration code. (L6)</td></tr>
+</table>
+<figure id="fig-s8-api">
+<img src="assets/img/v2/s8-api-1.png" alt="Raw provider body versus unified Converse schema with native tools">
+<figcaption>Shell 3. Apply the one rule. Source: original.</figcaption>
+<ol class="how-to-read">
+<li>Read the left panel: raw provider body, one per provider, hand-rolled tool loop.</li>
+<li>Read the center arrow, "use one schema": the one rule.</li>
+<li>Read the right panel: unified messages, tool blocks flow natively.</li>
+<li>Read the footer: raw body means per-provider work, Converse means one schema.</li>
+</ol>
+</figure>
+
+<h3 id="m5">M5 - Bedrock Agents vs Step Functions orchestration vs Strands Agents</h3>
+<table>
+<tr><th>Dimension</th><th>Bedrock Agents</th><th>Step Functions orchestration</th><th>Strands Agents</th></tr>
+<tr><th>Shared ground</th><td colspan="3">All three run multi-step work that uses tools. All three can call Lambda.</td></tr>
+<tr><th>Decisive difference</th><td>AWS manages the loop: action groups, sessions, memory.</td><td>You define fixed steps with waits and retries. The model picks no steps.</td><td>An open-source SDK. You own the loop in code.</td></tr>
+<tr><th>Wins when</th><td><b>Managed agent loop</b> with sessions and memory.</td><td><b>Fixed workflow</b> with long waits or human approval gates.</td><td><b>Full code control</b> and fast builds.</td></tr>
+<tr><th>Loses when</th><td>Logic outside AWS patterns.</td><td>Dynamic tool choice per situation.</td><td>You write every safeguard yourself.</td></tr>
+<tr><th>Cost</th><td>Orchestration charge plus model tokens.</td><td>Charge per state transition.</td><td>Model tokens only.</td></tr>
+<tr><th>Operations</th><td>Managed sessions and memory.</td><td>You design the graph.</td><td>You own failure handling.</td></tr>
+<tr><th>Common misconception</th><td colspan="3">Step Functions is an agent framework. It runs fixed steps. The model chooses nothing. (L5)</td></tr>
+</table>
+<figure id="fig-s8-loop-gate">
+<img src="assets/img/v2/s8-loop-gate-1.png" alt="Free agent loop versus loop with an approval gate on writes">
+<figcaption>Shell 3. Apply the one rule. Source: original.</figcaption>
+<ol class="how-to-read">
+<li>Read the left panel: the refund tool fires with no gate.</li>
+<li>Read the center arrow, "gate irreversible acts": the one rule.</li>
+<li>Read the right panel: reads pass free, the write stops at the gate.</li>
+<li>Read the footer: reads flow free, writes pause for approval.</li>
+</ol>
+</figure>
+
+<h3 id="m6">M6 - MCP (Model Context Protocol) vs OpenAPI action groups</h3>
+<table>
+<tr><th>Dimension</th><th>MCP</th><th>OpenAPI action groups</th></tr>
+<tr><th>Shared ground</th><td colspan="2">Both connect an agent to tools. Both describe tools with schemas.</td></tr>
+<tr><th>Decisive difference</th><td>An open protocol with host, client, and server roles. Any host can use any server.</td><td>A Bedrock Agents feature. Tools map to your API through an OpenAPI schema or to Lambda code.</td></tr>
+<tr><th>Wins when</th><td><b>Standard tool access</b> across many hosts and vendors.</td><td><b>Bedrock Agents</b> with an existing API to expose.</td></tr>
+<tr><th>Loses when</th><td>You host the servers: Lambda for stateless, ECS (Elastic Container Service) for stateful. Remote servers use SSE (server-sent events).</td><td>Bedrock Agents only. No open ecosystem.</td></tr>
+<tr><th>Cost</th><td colspan="2">Both cost integration work. MCP servers need hosting.</td></tr>
+<tr><th>Operations</th><td>One protocol, many hosts.</td><td>Managed inside Bedrock Agents.</td></tr>
+<tr><th>Common misconception</th><td colspan="2">MCP replaces action groups. They overlap. Action groups are the Bedrock-native path. (L5)</td></tr>
+</table>
+
+<h3 id="m7">M7 - Prompt caching vs semantic result caching</h3>
+<table>
+<tr><th>Dimension</th><th>Prompt caching</th><th>Semantic result caching</th></tr>
+<tr><th>Shared ground</th><td colspan="2">Both skip repeat model work. Both cut cost and latency.</td></tr>
+<tr><th>Decisive difference</th><td>Reuses the processed prefix on Bedrock. Match is exact.</td><td>Embeds the new question and serves a stored answer. Match is by meaning.</td></tr>
+<tr><th>Wins when</th><td><b>The same long prefix repeats</b> on many calls.</td><td><b>The same questions repeat with different wording</b>.</td></tr>
+<tr><th>Loses when</th><td>The prefix varies per call. Single-use prompts waste the write.</td><td>Answers go stale. The threshold needs tuning.</td></tr>
+<tr><th>Cost</th><td>One full-price write, cheap re-reads.</td><td>Embedding plus store lookups per query.</td></tr>
+<tr><th>Operations</th><td>Keep the prefix static. Watch the TTL (time to live).</td><td>Tune the threshold. Namespace keys by tenant.</td></tr>
+<tr><th>Common misconception</th><td colspan="2">One cache fits all repeats. The repetition shape decides: exact prefix or same meaning. (L10)</td></tr>
+</table>
+<figure id="fig-s8-cache">
+<img src="assets/img/v2/s8-cache-1.png" alt="Exact prefix reuse versus meaning-based reuse">
+<figcaption>Shell 3. Apply the one rule. Source: original.</figcaption>
+<ol class="how-to-read">
+<li>Read the left panel: repeat calls at full price.</li>
+<li>Read the center arrow, "name what repeats": the one rule.</li>
+<li>Read the right panel: exact prefix reuse versus meaning reuse.</li>
+<li>Read the footer: prefix repeats mean prompt cache, meaning repeats mean semantic cache.</li>
+</ol>
+</figure>
+
+<h3 id="m8">M8 - On-demand vs provisioned throughput vs batch inference</h3>
+<table>
+<tr><th>Dimension</th><th>On-demand</th><th>Provisioned throughput</th><th>Batch inference</th></tr>
+<tr><th>Shared ground</th><td colspan="3">All three run Bedrock inference on the same models.</td></tr>
+<tr><th>Decisive difference</th><td>Shared capacity. Pay per token.</td><td>Reserved units. Fixed monthly price.</td><td>Async bulk jobs. Results land in S3.</td></tr>
+<tr><th>Wins when</th><td><b>Spiky or unknown load</b>.</td><td><b>Steady high volume</b> above break-even.</td><td><b>Offline bulk</b> with a loose deadline.</td></tr>
+<tr><th>Loses when</th><td>Steady volume overpays per token.</td><td>Spiky traffic wastes idle units.</td><td>Anything interactive. Results arrive hours later.</td></tr>
+<tr><th>Cost</th><td>Scales with use.</td><td>Fixed, even when idle.</td><td>Cheapest per token.</td></tr>
+<tr><th>Operations</th><td>No capacity planning.</td><td>Forecast units. Watch utilization.</td><td>Schedule jobs. Handle S3 outputs.</td></tr>
+<tr><th>Common misconception</th><td colspan="3">Provisioned throughput is a discount. It is reserved capacity. Idle units still bill. (L6)</td></tr>
+</table>
+
+<h3 id="m9">M9 - Dense vs lexical vs hybrid retrieval</h3>
+<table>
+<tr><th>Dimension</th><th>Dense retrieval</th><th>Lexical retrieval</th><th>Hybrid retrieval</th></tr>
+<tr><th>Shared ground</th><td colspan="3">All three find documents for a query. All three feed RAG.</td></tr>
+<tr><th>Decisive difference</th><td>Vector search matches meaning. Misses exact codes.</td><td>Keyword search matches exact terms. Misses paraphrase.</td><td>Runs both, merges the lists, then reranks.</td></tr>
+<tr><th>Wins when</th><td><b>Natural-language questions</b>.</td><td><b>Exact codes and names</b>.</td><td><b>Mixed queries</b> where a miss costs.</td></tr>
+<tr><th>Loses when</th><td>Exact-term queries.</td><td>Paraphrased queries.</td><td>Tight latency budgets. Extra merge and rerank cost.</td></tr>
+<tr><th>Cost</th><td colspan="3">Hybrid adds a merge plus a rerank step. Dense and lexical cost one pass each.</td></tr>
+<tr><th>Operations</th><td colspan="3">Hybrid needs merge-weight tuning and score normalization.</td></tr>
+<tr><th>Common misconception</th><td colspan="3">Vectors replaced keywords. Codes and part numbers still need exact match. (L3)</td></tr>
+</table>
+<figure id="fig-s8-retrieval">
+<img src="assets/img/v2/s8-retrieval-1.png" alt="Query types routed to lexical, dense, or hybrid search">
+<figcaption>Shell 3. Apply the one rule. Source: original.</figcaption>
+<ol class="how-to-read">
+<li>Read the left panel: three query pills, one per query type.</li>
+<li>Read the center arrow, "match the query type": the one rule.</li>
+<li>Read the right panel: each query sits under its search method.</li>
+<li>Read the footer: exact terms mean lexical, meaning means dense.</li>
+</ol>
+</figure>
+
+<h3 id="m10">M10 - Reranking vs increasing top-k</h3>
+<table>
+<tr><th>Dimension</th><th>Reranking</th><th>Increasing top-k</th></tr>
+<tr><th>Shared ground</th><td colspan="2">Both aim to put the best chunk where the model sees it.</td></tr>
+<tr><th>Decisive difference</th><td>A second model reorders the top candidates for precision.</td><td>Retrieval returns more candidates for recall.</td></tr>
+<tr><th>Wins when</th><td><b>Precision matters</b> and you can spend latency on tens of candidates.</td><td><b>Recall matters</b> and the generator tolerates noise.</td></tr>
+<tr><th>Loses when</th><td>Retrieval missed the doc. Rerank cannot find what is absent.</td><td>More noise in the prompt. Higher token cost.</td></tr>
+<tr><th>Cost</th><td>One extra model call.</td><td>More prompt tokens per query.</td></tr>
+<tr><th>Operations</th><td>Cap candidates at tens, never thousands.</td><td>Tune k per corpus.</td></tr>
+<tr><th>Common misconception</th><td colspan="2">Reranking fixes bad retrieval. It only reorders what retrieval found. (L3, L11)</td></tr>
+</table>
+
+<h3 id="m11">M11 - CloudWatch vs CloudTrail vs distributed tracing (X-Ray)</h3>
+<table>
+<tr><th>Dimension</th><th>CloudWatch</th><th>CloudTrail</th><th>X-Ray</th></tr>
+<tr><th>Shared ground</th><td colspan="3">All three observe the system. All three help in an incident.</td></tr>
+<tr><th>Decisive difference</th><td>Metrics and logs. How much, how fast, what happened.</td><td>Audit log of API calls. Who did what.</td><td>Traces one request across services. Where the time went.</td></tr>
+<tr><th>Wins when</th><td><b>Performance, spend, and alarms</b>.</td><td><b>Audit and forensics</b>.</td><td><b>Latency debugging</b> across services.</td></tr>
+<tr><th>Loses when</th><td>Who-called-what questions.</td><td>Latency questions. Timestamps are coarse.</td><td>Aggregate trends.</td></tr>
+<tr><th>Cost</th><td colspan="3">All three bill on volume: metric ingestion, event storage, trace sampling.</td></tr>
+<tr><th>Operations</th><td colspan="3">Join all three on the correlation ID.</td></tr>
+<tr><th>Common misconception</th><td colspan="3">CloudTrail measures latency. It is audit, never a performance tool. (L0, L10)</td></tr>
+</table>
+
+<h3 id="m12">M12 - Detection vs enforcement</h3>
+<table>
+<tr><th>Dimension</th><th>Trace mode / Macie findings</th><th>Enforce mode / your quarantine code</th></tr>
+<tr><th>Shared ground</th><td colspan="2">Both pairs split seeing from acting. Both need the second half wired.</td></tr>
+<tr><th>Decisive difference</th><td>Trace evaluates and logs. Never blocks. Macie publishes PII (personally identifiable information) findings. Never quarantines.</td><td>Enforce blocks the exchange. Your code moves or redacts the object.</td></tr>
+<tr><th>Wins when</th><td><b>Measure first</b>: false-positive rate before users feel blocks. Discover the PII spread.</td><td><b>Act after</b> the rate is acceptable. Stop the threat.</td></tr>
+<tr><th>Loses when</th><td>Threats pass during measurement. Findings pile up with no remediation.</td><td>False positives hit users.</td></tr>
+<tr><th>Cost</th><td>Log volume plus review labor.</td><td>Support cost of blocked users.</td></tr>
+<tr><th>Operations</th><td colspan="2">Trace first, then enforce. Wire Macie findings through EventBridge to a Lambda.</td></tr>
+<tr><th>Common misconception</th><td colspan="2">Detection equals protection. A verdict nobody acts on is decoration. (L8, L9)</td></tr>
+</table>
+</section>
+
+<section class="lesson" id="drills">
+<h2>Stage 8B - Minimal-pair drills: one change flips the answer</h2>
+<p class="lesson-sub">Twelve drills on the six most exam-decisive pairs. Same scenario, one changed requirement, flipped answer.</p>
+
+<h3 id="drills-how">How to run a drill</h3>
+<p>A minimal pair changes one requirement and flips the answer. The rest of the scenario stays fixed.</p>
+<p>Each drill quotes the exact changed phrase. Read the scenario and name the winner. Apply the change and re-decide.</p>
+<p>If you cannot name the phrase that flipped your answer, you guessed.</p>
+
+<h3 id="drills-a">Pair A - RAG vs fine-tuning</h3>
+<div class="drill" id="drill-a1">
+<p><b>Drill A1.</b> A support bot answers from a 2,000-page product manual. The manual ships a new version every month. The team must choose between RAG and fine-tuning.</p>
+<p><b>Change:</b> "The manual ships a new version every month" -> "The style guide is fixed and the product facts never change".</p>
+<p><b>Flip:</b> The answer flips from RAG to fine-tuning. Monthly fact changes make trained weights go stale between runs. A fixed style with stable facts is a behavior gap, and fine-tuning teaches behavior while citations matter less than consistent tone.</p>
+</div>
+<div class="drill" id="drill-a2">
+<p><b>Drill A2.</b> A bank answers loan-officer questions from policy PDFs. Every answer must cite the exact policy section.</p>
+<p><b>Change:</b> "Every answer must cite the exact policy section" -> "Every answer must match the bank approved tone, and the policy text never changes".</p>
+<p><b>Flip:</b> The answer flips from RAG to fine-tuning. Citations need source text at query time, which only retrieval provides. Fixed text with a tone requirement is a style gap with labeled examples, which fine-tuning fits.</p>
+</div>
+
+<h3 id="drills-b">Pair B - Bedrock managed inference vs SageMaker self-hosted endpoints</h3>
+<div class="drill" id="drill-b1">
+<p><b>Drill B1.</b> A startup ships a chat feature on a standard chat model. The team has no ML operations staff and wants the fastest launch.</p>
+<p><b>Change:</b> "lowest operational overhead" -> "maximum customization".</p>
+<p><b>Flip:</b> The answer flips from Bedrock managed inference to a SageMaker endpoint. Custom runtimes and full hardware control need instances the team configures. The managed API cannot host a custom container, so the team pays the operations cost for control.</p>
+</div>
+<div class="drill" id="drill-b2">
+<p><b>Drill B2.</b> A team serves document Q&A on a model from the Bedrock catalog.</p>
+<p><b>Change:</b> "the model ships in the Bedrock catalog" -> "the model is proprietary, fine-tuned in-house, and Bedrock does not serve it".</p>
+<p><b>Flip:</b> The answer flips from Bedrock to SageMaker. Bedrock serves its catalog models. A proprietary model needs a self-hosted endpoint where the team owns the container and the GPU size.</p>
+</div>
+
+<h3 id="drills-c">Pair C - On-demand vs provisioned throughput vs batch inference</h3>
+<div class="drill" id="drill-c1">
+<p><b>Drill C1.</b> A fraud check runs 400,000 requests per month with sharp unpredictable spikes.</p>
+<p><b>Change:</b> "intermittent traffic" -> "sustained predictable traffic".</p>
+<p><b>Flip:</b> The answer flips from on-demand to provisioned throughput. Above break-even, steady volume makes the fixed unit cheaper than per-token billing. Spiky traffic would waste idle units, but predictable load keeps utilization high.</p>
+</div>
+<div class="drill" id="drill-c2">
+<p><b>Drill C2.</b> A ticket-scoring job runs all day as tickets arrive. It holds provisioned units around the clock.</p>
+<p><b>Change:</b> "scores stream in all day" -> "one nightly bulk run with results needed by morning".</p>
+<p><b>Flip:</b> The answer flips from provisioned to batch inference. Batch is the cheapest per token for offline bulk with a loose deadline. Provisioned units billed all day for a job that runs at night waste the idle hours.</p>
+</div>
+
+<h3 id="drills-d">Pair D - Prompt caching vs semantic result caching</h3>
+<div class="drill" id="drill-d1">
+<p><b>Drill D1.</b> A support bot sends the same 8,000-token system prefix on every call. Prompt caching cuts the repeat cost.</p>
+<p><b>Change:</b> "the same 8,000-token system prefix repeats on every call" -> "the prefix carries per-user values, so no two prefixes match".</p>
+<p><b>Flip:</b> The answer flips from prompt caching to semantic caching. Exact-match caching dies when the prefix varies per request. The questions still repeat in meaning, so the team embeds each question and serves stored answers, which still skips model calls.</p>
+</div>
+<div class="drill" id="drill-d2">
+<p><b>Drill D2.</b> Users ask paraphrases of 500 FAQ questions. Answers stay valid for a day. Semantic caching serves the repeats.</p>
+<p><b>Change:</b> "paraphrased repeats of stable answers" -> "byte-identical repeats of one long shared prefix".</p>
+<p><b>Flip:</b> The answer flips from semantic caching to prompt caching. Exact prefix matches hit every time and cost less than embedding lookups. The meaning match adds nothing when every byte already matches.</p>
+</div>
+
+<h3 id="drills-e">Pair E - Bedrock Agents vs Step Functions orchestration</h3>
+<div class="drill" id="drill-e1">
+<p><b>Drill E1.</b> A shopping assistant looks up orders and drafts refunds. Every action today is a read-only lookup.</p>
+<p><b>Change:</b> "read-only lookup" -> "irreversible account modification".</p>
+<p><b>Flip:</b> The answer flips from a free agent loop to a Step Functions approval gate. Irreversible actions need a human decision before the tool fires. Step Functions holds the wait that Lambda cannot, then the loop resumes with the decision.</p>
+</div>
+<div class="drill" id="drill-e2">
+<p><b>Drill E2.</b> A claims agent picks tools on the fly. Sometimes it checks fraud, sometimes policy, based on the claim text.</p>
+<p><b>Change:</b> "the agent chooses tools per situation" -> "the workflow is a fixed 5-step sequence with retries and a 2-hour human review wait".</p>
+<p><b>Flip:</b> The answer flips from Bedrock Agents to Step Functions. Dynamic tool choice needs the model in the loop. A fixed sequence with long waits needs the workflow engine, which owns retries and waits natively.</p>
+</div>
+
+<h3 id="drills-f">Pair F - Dense vs lexical vs hybrid retrieval</h3>
+<div class="drill" id="drill-f1">
+<p><b>Drill F1.</b> Engineers search runbooks with exact error codes like ERR-4401. Lexical search wins.</p>
+<p><b>Change:</b> "queries use exact error codes" -> "queries are natural-language descriptions of symptoms".</p>
+<p><b>Flip:</b> The answer flips from lexical to dense retrieval. Exact codes need keyword match. Symptom descriptions share no words with the runbook, so vectors match meaning where keywords find nothing.</p>
+</div>
+<div class="drill" id="drill-f2">
+<p><b>Drill F2.</b> Support search mixes part numbers and plain-language questions. Hybrid search wins today.</p>
+<p><b>Change:</b> "queries mix codes and natural language" -> "every query is an exact part number and the latency budget allows one index".</p>
+<p><b>Flip:</b> The answer flips from hybrid to lexical. Hybrid pays merge and rerank latency for coverage the workload no longer needs. Exact-term queries on one index run faster and simpler.</p>
+</div>
+</section>
+
+<section class="lesson" id="l12">
+<h2>Stage 8C - L12 worked-scenario drills: the 7-step best-answer method</h2>
+<p class="lesson-sub">Six end-to-end scenarios across domains. One decision method for all of them.</p>
+
+<h3 id="l12-method">The 7-step best-answer decision method</h3>
+<figure id="fig-s8-method">
+<img src="assets/img/v2/s8-method-1.png" alt="Seven decision steps in order with a recheck loop">
+<figcaption>Shell 4. Show the new symbol. Source: original.</figcaption>
+<ol class="how-to-read">
+<li>Read the seven pills left to right: objective through validate.</li>
+<li>Follow the arrows: each step feeds the next.</li>
+<li>Read the recheck loop: step 7 can send you back to step 4.</li>
+<li>Read the footer: run the steps in order, never skip.</li>
+</ol>
+</figure>
+<p>Step 1 extracts the objective and quotes the scenario phrase. Step 2 extracts the hard constraints. Step 3 names the layer: model, retrieval, network, IAM, encryption, orchestration, deployment, capacity, evaluation, or governance. Step 4 removes every option that violates a constraint.</p>
+<p>Step 5 ranks what remains. Step 6 checks hidden dependencies. Step 7 validates that the answer is complete.</p>
+
+<div class="walk" id="w1">
+<h4>W1 - RAG vector-store pick <span class="tag">original exam-style practice</span></h4>
+<p><b>Scenario.</b> A 200-person SaaS company holds 80,000 support articles. Three engineers own the search. None has search expertise. They need semantic search with tenant isolation and monthly document updates. Launch is in three weeks.</p>
+<ol class="steps">
+<li><b>Objective.</b> Quote: "Launch is in three weeks" and "semantic search". The goal is fast shipment of meaning-based search.</li>
+<li><b>Hard constraints.</b> Three engineers, no search expertise. Tenant isolation. Monthly updates. 80,000 articles.</li>
+<li><b>Layer.</b> Retrieval.</li>
+<li><b>Eliminate.</b> Self-managed OpenSearch needs search expertise the team lacks. It fails the team constraint.</li>
+<li><b>Rank.</b> Bedrock Knowledge Bases first: managed chunking, embedding, and index. Aurora pgvector second: medium ops for a SQL team. OpenSearch last.</li>
+<li><b>Hidden dependencies.</b> Tenant isolation needs a tenant_id metadata filter on every query. Monthly updates need an S3-event sync trigger. The managed chunking strategy is fixed.</li>
+<li><b>Validate.</b> Bedrock Knowledge Bases plus the tenant filter plus the sync trigger covers search, isolation, and freshness. The design is complete.</li>
+</ol>
+<p><b>Final pick.</b> Bedrock Knowledge Bases with a tenant_id metadata filter and S3-triggered ingestion sync.</p>
+<p><b>Counterfactual.</b> Change "none has search expertise" to "the team must own custom hybrid scoring". The answer flips to self-managed OpenSearch. Custom scoring needs the control that the managed path cannot give.</p>
+<p class="deep-ref">If you stumble: <code>volume-d1-foundation-models.html</code>, the vector store and retrieval sections.</p>
+<p class="evidence">Research date: 2026-10-06. Options [Behavior], scenario numbers are original fiction.</p>
+</div>
+
+<div class="walk" id="w2">
+<h4>W2 - Agent-safety design <span class="tag">original exam-style practice</span></h4>
+<p><b>Scenario.</b> A shopping assistant looks up orders freely. It processes refunds up to $500. The refund tool charges the card. The fraud team requires a human check on every refund above $50.</p>
+<ol class="steps">
+<li><b>Objective.</b> Quote: "processes refunds" with "a human check on every refund above $50". The goal is safe refunds with human approval.</li>
+<li><b>Hard constraints.</b> Lookups are free. Refunds are irreversible. The threshold is $50. Card charges must never double.</li>
+<li><b>Layer.</b> Orchestration and safety.</li>
+<li><b>Eliminate.</b> A free agent loop fails: it can fire the refund with no gate. A Lambda-held wait fails: the minutes cap kills a long human wait.</li>
+<li><b>Rank.</b> Bedrock Agents plus a Step Functions approval gate first. Return of control to the app second. A manual review queue last: too slow.</li>
+<li><b>Hidden dependencies.</b> The refund tool needs an idempotency key: retries are normal in agent loops. Tool results stay untrusted data. Guardrails screen the inputs.</li>
+<li><b>Validate.</b> The agent calls get_order freely. Above $50 the workflow pauses for the human. The loop resumes with approve or deny. The idempotency key blocks double charges. Complete.</li>
+</ol>
+<p><b>Final pick.</b> Bedrock Agents with a Step Functions approval gate on refunds above $50 and an idempotent refund tool.</p>
+<p><b>Counterfactual.</b> Change "the agent writes a schema-valid refund summary" to "the agent must produce a financially correct refund total". The pick flips from model-written text to a deterministic calculator tool call. A JSON schema proves shape, never arithmetic.</p>
+<p class="deep-ref">If you stumble: <code>volume-d2-implementation-integration.html</code>, the agent sections (loops, action groups, memory, MCP).</p>
+<p class="evidence">Research date: 2026-10-06. Options [Behavior], scenario numbers are original fiction.</p>
+</div>
+
+<div class="walk" id="w3">
+<h4>W3 - Cost-optimization routing choice <span class="tag">original exam-style practice</span></h4>
+<p><b>Scenario.</b> A Q&A app serves 2,000,000 requests per month. About 80% are simple FAQ lookups. The rest need deep reasoning. One large model serves all traffic today. The bill must fall by half with no quality drop on hard queries.</p>
+<ol class="steps">
+<li><b>Objective.</b> Quote: "The bill must fall by half with no quality drop on hard queries". The goal is lower spend with the quality bar intact.</li>
+<li><b>Hard constraints.</b> 2M requests per month. An 80/20 split. Quality measured on the hard 20%.</li>
+<li><b>Layer.</b> Deployment and cost.</li>
+<li><b>Eliminate.</b> One large model for all traffic fails the cost goal. The cheapest model for all traffic fails the quality bar.</li>
+<li><b>Rank.</b> Tiered routing first: small model for FAQ, large model for hard queries. Semantic caching on FAQ repeats second. Prompt caching third: the prefix is short here.</li>
+<li><b>Hidden dependencies.</b> A classifier routes each query. Its error rate needs measurement. Cost per success is the gate, not cost per call. FAQ answers need a TTL.</li>
+<li><b>Validate.</b> The router sends 80% to the small model. The golden set confirms hard-query quality. Cost per success falls by half. Complete.</li>
+</ol>
+<p><b>Final pick.</b> Tiered model routing with semantic caching on repeated FAQ questions.</p>
+<p><b>Counterfactual.</b> Change "80% are simple FAQ lookups" to "every query needs deep reasoning". Tiering dies and provisioned throughput on the large model wins for the steady volume.</p>
+<p class="deep-ref">If you stumble: <code>volume-d4-optimization.html</code>, the cost sections (tiered routing, caching, cost per success).</p>
+<p class="evidence">Research date: 2026-10-06. Options [Behavior], scenario numbers are original fiction.</p>
+</div>
+
+<div class="walk" id="w4">
+<h4>W4 - Cross-account private-connectivity design <span class="tag">original exam-style practice</span></h4>
+<p><b>Scenario.</b> Account A holds the app in a private subnet. Account B holds Bedrock access and the KMS (Key Management Service) key for the data. Compliance forbids any traffic on the public internet. Both accounts demand least privilege.</p>
+<ol class="steps">
+<li><b>Objective.</b> Quote: "forbids any traffic on the public internet". The goal is private cross-account model access.</li>
+<li><b>Hard constraints.</b> Two accounts. A private subnet. Least privilege on both sides. KMS-encrypted data.</li>
+<li><b>Layer.</b> Network, IAM (Identity and Access Management), and encryption.</li>
+<li><b>Eliminate.</b> A NAT gateway plus internet fails the compliance rule. One shared role fails least privilege.</li>
+<li><b>Rank.</b> A VPC (Virtual Private Cloud) interface endpoint with PrivateLink in account A plus a cross-account role first. VPC peering second: heavier. A public endpoint with IP rules last: it violates the rule.</li>
+<li><b>Hidden dependencies.</b> The endpoint policy must allow bedrock:InvokeModel. The KMS key policy must name account A plus a grant. Private DNS must resolve the endpoint. The trust policy needs an external ID against the confused deputy.</li>
+<li><b>Validate.</b> The call stays on the private network. Both policies allow. The external ID is present. A decrypt round trip succeeds. Complete.</li>
+</ol>
+<p><b>Final pick.</b> An interface endpoint in account A plus a cross-account role with an external ID. The endpoint policy scopes to the model. A KMS grant covers account A.</p>
+<p><b>Counterfactual.</b> Change "forbids any traffic on the public internet" to "public internet allowed, only auth matters". The endpoints drop out and an IAM-only design wins.</p>
+<p class="deep-ref">If you stumble: <code>volume-d3-safety-security-governance.html</code>, the security sections (networking, IAM evaluation, encryption).</p>
+<p class="evidence">Research date: 2026-10-06. Options [Behavior], scenario numbers are original fiction.</p>
+</div>
+
+<div class="walk" id="w5">
+<h4>W5 - Evaluation-design question <span class="tag">original exam-style practice</span></h4>
+<p><b>Scenario.</b> A team ships prompt updates weekly to a RAG support bot. They must catch quality drops before users do. They track relevance, groundedness, and tone. The budget allows one engineer-day per week for evaluation.</p>
+<ol class="steps">
+<li><b>Objective.</b> Quote: "catch quality drops before users do". The goal is pre-ship detection on three dimensions.</li>
+<li><b>Hard constraints.</b> Weekly ships. Three dimensions. One engineer-day per week.</li>
+<li><b>Layer.</b> Evaluation.</li>
+<li><b>Eliminate.</b> Human-only review fails the cadence: too slow for weekly ships. Metrics-only fails tone and groundedness: overlap counts cannot read quality.</li>
+<li><b>Rank.</b> LLM-as-a-judge on a golden set with human calibration first. Bedrock automatic evaluations second. Ad-hoc spot checks last.</li>
+<li><b>Hidden dependencies.</b> The holdout set stays locked away from tuning: no leakage. The judge needs defenses: randomize the order, score one answer at a time, use a different model family. The rubric versions with the prompt.</li>
+<li><b>Validate.</b> A nightly judge run scores the holdout. Human spot checks measure agreement. The pipeline gate blocks ships on score drops. Complete.</li>
+</ol>
+<p><b>Final pick.</b> A calibrated LLM-as-a-judge on a locked golden set, wired as a deploy gate.</p>
+<p><b>Counterfactual.</b> Change "one engineer-day per week" to "a full-time evaluation team". Human review on samples plus the judge at scale wins.</p>
+<p class="deep-ref">If you stumble: <code>volume-d5-testing-validation.html</code>, the evaluation sections (golden sets, judge bias, Bedrock evaluations).</p>
+<p class="evidence">Research date: 2026-10-06. Options [Behavior], scenario numbers are original fiction.</p>
+</div>
+
+<div class="walk" id="w6">
+<h4>W6 - Resilience and fallback design <span class="tag">original exam-style practice</span></h4>
+<p><b>Scenario.</b> A checkout fraud check calls a Bedrock model at 500 requests per second. The model is served in one Region only. Peak season allows at most 30 seconds of degraded answers.</p>
+<ol class="steps">
+<li><b>Objective.</b> Quote: "at most 30 seconds of degraded answers". The goal is fast recovery at peak load.</li>
+<li><b>Hard constraints.</b> 500 requests per second. A single-Region model. A 30-second degradation budget.</li>
+<li><b>Layer.</b> Resilience and deployment.</li>
+<li><b>Eliminate.</b> Single-Region on-demand only fails: a regional outage outlasts the budget. Unbounded retries fail: they add latency under load.</li>
+<li><b>Rank.</b> A cross-region inference profile plus a circuit breaker plus a cached fallback first. Provisioned units in one Region second. A static fallback page last.</li>
+<li><b>Hidden dependencies.</b> Cross-region adds latency and moves data across borders: check compliance. Breaker thresholds need tuning per model. The cache TTL bounds staleness.</li>
+<li><b>Validate.</b> Failure drills show recovery inside 30 seconds. The breaker trips on error rate. The fallback serves cached verdicts. Complete.</li>
+</ol>
+<p><b>Final pick.</b> A cross-region inference profile with a Step Functions circuit breaker and a cached fallback.</p>
+<p><b>Counterfactual.</b> Change "served in one Region only" to "served in the home Region with spare quota". Provisioned throughput in-region wins and cross-region becomes unneeded.</p>
+<p class="deep-ref">If you stumble: <code>volume-d1-foundation-models.html</code>, the resilience section (circuit breakers, cross-region inference, graceful degradation).</p>
+<p class="evidence">Research date: 2026-10-06. Options [Behavior], scenario numbers are original fiction.</p>
+</div>
+</section>
+
+<section class="lesson" id="troubleshooting">
+<h2>Stage 8D - Troubleshooting playbooks: the ten L11 missed</h2>
+<p class="lesson-sub">Cross-domain failures beyond the twelve playbooks in L11. Same loop, new territory.</p>
+
+<h3 id="pb-how">How to run a playbook</h3>
+<p>L11 taught twelve playbooks. These ten cover the failures L11 left out.</p>
+<p>Every playbook follows one loop.</p>
+<p>The loop runs: symptom, likely causes, evidence, diagnostic order, minimal correction, verification, prevention.</p>
+
+<h3 id="pb-list">The ten playbooks</h3>
+<p class="playbook" id="pb-schemas"><b>Wrong request schemas.</b> Symptom: the call fails with a validation error before the model runs. Likely causes: the body was built for model family A but sent to family B. A required field is absent. A field has the wrong type. Evidence to collect: the exact request body, the model ID, and the error text. Diagnostic order: read the error field name, compare the body against the target model contract, then confirm the model ID. Minimal correction: rebuild the body per the model contract, or switch to Converse for one schema. Verification: one successful call per model family in use. Prevention: contract tests per model in the pipeline.</p>
+<p class="playbook" id="pb-features"><b>Unsupported model features.</b> Symptom: tool-use blocks go ignored, or streaming returns full text with no chunks. Likely causes: the model predates the feature, the API lacks support for it on that model, or the Region lacks it. Evidence to collect: the model ID, the API name, and the feature list for that model. Diagnostic order: confirm the model supports the feature, confirm the API supports it on that model, then check the Region. Minimal correction: switch to a model with the feature, or hand-roll the tool loop on InvokeModel. Verification: a canary call shows the feature working. Prevention: keep a capability matrix per model in config and fail fast at startup.</p>
+<p class="playbook" id="pb-permissions"><b>Missing permissions.</b> Symptom: AccessDenied on <code>bedrock:InvokeModel</code> though the code path looks right. Likely causes: the identity policy misses the action. An explicit deny hides in another policy. The endpoint policy blocks the call. The KMS key policy misses the caller. Evidence to collect: the CloudTrail error event, the identity policy, the endpoint policy, and the key policy. Diagnostic order: read the CloudTrail error first, then the identity policy, then the endpoint policy, then the key policy. Test the endpoint policy from outside the VPC. Minimal correction: add the missing allow and never broaden to star. Verification: the exact call succeeds under the same identity. Prevention: run IAM Access Analyzer on every policy change.</p>
+<p class="playbook" id="pb-dns"><b>DNS failures.</b> Symptom: the endpoint hostname does not resolve inside the VPC, and calls time out at connect. Likely causes: private DNS is off on the interface endpoint, the app uses the public hostname, or the DHCP option set is wrong. Evidence to collect: name resolution output from inside the VPC and the endpoint DNS settings. Diagnostic order: resolve from inside versus outside the VPC, check the private DNS flag on the endpoint, then check the DHCP options. Minimal correction: enable private DNS on the interface endpoint. Verification: the hostname resolves to private IPs from the subnet. Prevention: add a connectivity test to the deploy pipeline.</p>
+<p class="playbook" id="pb-sg"><b>Security-group failures.</b> Symptom: the connection hangs with no error, just a timeout. Likely causes: the security group misses the outbound HTTPS rule. The NACL (network access control list) misses the inbound reply rule. A NACL is stateless, so the reply needs its own rule. Evidence to collect: the security group rules, the NACL rules, and VPC flow logs. Diagnostic order: check the security group outbound rule, check the NACL inbound reply rule, then read flow logs for rejects. Minimal correction: add the missing rule: outbound on the security group, both directions on the NACL. Verification: the call completes and flow logs show accepts. Prevention: keep the rules in IaC and alarm on flow-log rejects.</p>
+<p class="playbook" id="pb-timeouts"><b>Timeouts.</b> Symptom: calls fail at a fixed duration, and long agent runs die mid-loop. Likely causes: the Lambda minutes cap, the API Gateway timeout, an agent loop with no step cap, or one slow tool in the loop. Evidence to collect: the duration of failed calls, the timeout setting per layer, and loop step counts. Diagnostic order: match the failure time to a layer limit, check the loop step count, then time the slowest tool. Minimal correction: move long waits to Step Functions, cap agent steps, and stream for chat UX. Verification: the 99th-percentile latency fits under the smallest layer limit. Prevention: document a timeout budget per layer and alarm near the line.</p>
+<p class="playbook" id="pb-steps"><b>Excessive agent steps.</b> Symptom: the agent runs 40 turns on a 3-turn task, and the token bill spikes. Likely causes: no max steps configured, a tool returns output the model cannot parse, or no stop condition exists. Evidence to collect: step counts per run, tool outputs in the trace, and the stop config. Diagnostic order: count the steps, read the trace for the repeated failed tool, then check max steps and timeouts. Minimal correction: set a step cap and a per-run token budget, and fix the failing tool output format. Verification: 95% of runs finish under the cap. Prevention: add a circuit breaker after repeated tool failures and alarm on step counts.</p>
+<p class="playbook" id="pb-duplicates"><b>Duplicate side effects.</b> Symptom: customers get charged twice, or two tickets exist for one request. Likely causes: a retry without an idempotency key, a webhook delivered twice, or the agent retried the tool. Evidence to collect: duplicate records with timestamps, retry logs, and the tool key handling. Diagnostic order: match duplicates to retry events, check for the idempotency key on the call, then check webhook dedupe. Minimal correction: add idempotency keys on every mutating call and dedupe webhooks by event ID. Verification: replay a duplicate delivery and confirm one effect lands. Prevention: require idempotency in the tool contract and test it in the pipeline.</p>
+<p class="playbook" id="pb-unauthz"><b>Unauthorized retrieval.</b> Symptom: tenant A sees tenant B documents inside answers. Likely causes: the query carries no metadata filter, the filter runs after retrieval, or the attribute name is wrong. Evidence to collect: the filter text on the query, the tenant IDs on retrieved chunks, and the index mapping. Diagnostic order: reproduce with two tenants, read the filter on the query, then confirm the tenant attribute exists on the chunks. Minimal correction: apply the tenant_id filter before the vector search on every query. Verification: a cross-tenant probe returns zero hits. Prevention: assert the filter in code and fail closed when it is absent. Keep separate indexes for regulated tenants.</p>
+<p class="playbook" id="pb-hallucination"><b>Hallucinations despite relevant context.</b> Symptom: the chunks hold the right facts, yet the answer invents new ones. Likely causes: the prompt buries the context, no grounding check runs, the temperature is too high, or long context dilutes the key facts. Evidence to collect: the prompt with chunk positions, the answer claims, and grounding scores. Diagnostic order: confirm the chunks sit in the prompt, map each claim to a chunk, then check temperature and the prompt version. Minimal correction: lead with "answer only from the context", add the contextual grounding filter, lower the temperature, and trim chunks. Verification: the groundedness score clears the bar on the golden set. Prevention: run the grounding check in the eval pipeline with the prompt regression gate.</p>
+
+<h3 id="pb-master">Master diagnostic order</h3>
+<p>When no playbook matches, run this order. It is the same loop, stripped to the bone.</p>
+<pre>
+symptom seen
+-> ask: what changed (deploy, config, data, traffic)
+-> reproduce on one case
+-> read the exact error text
+-> metrics: when did it start
+-> logs: this one request, by correlation id
+-> traces: where the time went
+-> audit: who changed what
+-> fix the smallest cause
+-> verify on the case
+-> lock prevention in the pipeline
+</pre>
+</section>
