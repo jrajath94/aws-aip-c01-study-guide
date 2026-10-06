@@ -1167,6 +1167,42 @@ footer p{text-align:left}
   #ds-content .ds-site-footer,
   .ds-side-volumes { display: none !important; }
 }
+
+/* ==========================================================================
+   World-class upgrade (2026-10-05): scroll reveal + figure parallax.
+   Progressive enhancement: .reveal is added by JS only, so with JS disabled
+   every element stays fully visible. Parallax drift is transform-only (no
+   layout shift) and limited to plain figures; both honor
+   prefers-reduced-motion.
+   ========================================================================== */
+
+/* Scroll reveal: subtle rise-in. JS adds .reveal to content blocks; the
+   IntersectionObserver adds .revealed as each block enters the viewport. */
+.reveal {
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.reveal.revealed {
+  opacity: 1;
+  transform: none;
+}
+
+/* Figure parallax: gentle vertical drift on figure images (excludes
+   .fig-light cards so the white plate never shows an edge). The figure gets
+   overflow:hidden from JS when parallax activates, so the drift cannot
+   cause layout shift or edge bleed. */
+figure.ds-px { overflow: hidden; }
+figure.ds-px img {
+  transform: translateY(var(--px, 0px));
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal { opacity: 1; transform: none; transition: none; }
+  figure.ds-px img { transform: none; }
+  html { scroll-behavior: auto; }
+}
 </style>
 <style>
 /* Hallmark · pre-emit critique: P5 H4 E5 S4 R5 V5
@@ -1334,19 +1370,19 @@ html.xp-js .xp-reveal.xp-in {
 </table></div>
 <p>Last verified against the official AWS exam guide and independent 2026 candidate sources: September 2026.</p></div>
 <p>This is the complete study guide. It holds zero-to-one volumes for all five exam domains. It holds a 200-question bank with a 75-question mock exam. It holds a one-volume crash course and an end-to-end system design guide. It is built for a visual learner who studies 4+ hours a day. Every volume is self-contained and opens offline.</p>
-<figure><img src="assets/img/ste100/aip-idx-exam-facts.svg" alt="AIP-C01 exam facts: 75 questions, 180 minutes, pass at 750 out of 1000, multiple choice and multiple response with no partial credit" loading="lazy"><figcaption>Exam facts to memorize: 75 questions, 180 minutes, pass at 750 out of 1000, MC and multiple response with no partial credit.</figcaption></figure>
+<figure><img src="assets/img/ste100/aip-idx-exam-facts.svg" alt="AIP-C01 exam facts: 75 questions, 180 minutes, pass at 750 out of 1000, multiple choice and multiple response with no partial credit" loading="lazy"><figcaption>Exam facts to memorize: 75 questions, 180 minutes, pass at 750 out of 1000, MC and multiple response with no partial credit. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <h2 id="what-this-exam-is-really-about">What this exam is really about</h2>
 <p>Generative AI on AWS means one thing: you call large AI models through managed AWS services. You do not train or host the models yourself. A foundation model is a large model pre-trained on broad data. You adapt it instead of building from scratch. Amazon Bedrock is the managed AWS service that serves foundation models from many providers through one set of APIs. You never manage GPUs.</p>
 <p>Most exam questions are variations on three moves. First, grounding the model in your own data. RAG (retrieval-augmented generation) fetches relevant documents at answer time, and the model answers citing them. Second, wiring the model into real applications: agents that take actions through tools, and Lambda functions that connect services. API Gateway endpoints face users. Third, guarding it all: guardrails that filter harmful or off-policy content, and IAM policies that control who can call what.</p>
 <p>The rest is day-to-day operation. Pick the right model for the cost. Cache repeated work and measure quality with evals. Evals are structured tests of model behavior. Debug what breaks. With that shape in mind, the vocabulary below reads as names for things you already understand, not jargon.</p>
-<figure><img src="assets/img/ste100/aip-idx-three-moves.svg" alt="The three moves behind most exam questions: ground the model with RAG, wire it into applications, guard it with guardrails and IAM" loading="lazy"><figcaption>The three moves behind most exam questions: ground with RAG, wire into applications, guard with guardrails and IAM.</figcaption></figure>
+<figure><img src="assets/img/ste100/aip-idx-three-moves.svg" alt="The three moves behind most exam questions: ground the model with RAG, wire it into applications, guard it with guardrails and IAM" loading="lazy"><figcaption>The three moves behind most exam questions: ground with RAG, wire into applications, guard with guardrails and IAM. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <div class="walkthrough">How to read this diagram. 1. GROUND: the system fetches documents at answer time, and the model cites them. This is RAG. It exists because the model does not know your private data. If retrieval fails, the model hallucinates. 2. WIRE: agents, Lambda, and API Gateway connect the model to real applications. This exists because a model alone cannot act. If the wiring breaks, answers never reach users. 3. GUARD: guardrails filter content, and IAM controls who can call what. This exists because unsafe output and open access are failures. If guards fail, the system leaks or harms. The bottom bar is operations: pick the right model, cache repeated work, eval quality, debug what breaks.</div>
-<figure><img src="assets/img/ste100/aip-idx-bedrock-core.svg" alt="Amazon Bedrock in one picture: foundation models from many providers enter, one set of APIs leaves - Converse for text generation, InvokeModel for raw bodies and embeddings" loading="lazy"><figcaption>Amazon Bedrock in one picture: foundation models in, one set of APIs out. Converse for text, InvokeModel for raw bodies and embeddings.</figcaption></figure>
+<figure><img src="assets/img/ste100/aip-idx-bedrock-core.svg" alt="Amazon Bedrock in one picture: foundation models from many providers enter, one set of APIs leaves - Converse for text generation, InvokeModel for raw bodies and embeddings" loading="lazy"><figcaption>Amazon Bedrock in one picture: foundation models in, one set of APIs out. Converse for text, InvokeModel for raw bodies and embeddings. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <div class="walkthrough">How to read this diagram. 1. Foundation models from many providers enter from the left. They exist so you never train or host models yourself. If one model is unavailable, pick another through the same API. 2. Amazon Bedrock sits in the center with one set of APIs. It exists to unify access across providers. If Bedrock is misconfigured, no calls succeed. 3. Two APIs leave to the right. Converse is the unified text-generation API. InvokeModel sends the provider's raw body and is the only path for embeddings. Pick Converse for chat; pick InvokeModel for embeddings.</div>
-<figure><img src="assets/img/mermaid/103-study-ladder.svg" alt="The AIP-C01 study ladder: prereq volumes first, then domains D1 through D5 in exam-weight order, then system design, labs, the question bank, question patterns and the gap appendix, and the crash course as the final sprint" loading="lazy"><figcaption>The study ladder, top to bottom. Domains run in exam-weight order so the heaviest topics come first. The crash course is the final sprint, not the starting point.</figcaption><figcaption class="credit">Generated diagram for this guide.</figcaption></figure>
+<figure><img src="assets/img/mermaid/103-study-ladder.svg" alt="The AIP-C01 study ladder: prereq volumes first, then domains D1 through D5 in exam-weight order, then system design, labs, the question bank, question patterns and the gap appendix, and the crash course as the final sprint" loading="lazy"><figcaption>The study ladder, top to bottom. Domains run in exam-weight order so the heaviest topics come first. The crash course is the final sprint, not the starting point.</figcaption><figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <h2 id="terms-you-will-meet">Terms you will meet</h2>
 <p>One-line definitions for the vocabulary every volume assumes. Each term is taught in depth where it is first used. This is only so every word on this page is clear.</p>
-<figure class="fig-light"><img src="assets/img/index/idx-terms.svg" alt="Concept map: token to embedding to vector store to RAG, with Knowledge Base, agent, guardrail, inference." loading="lazy"><figcaption>The vocabulary as one map.</figcaption></figure><div class="walkthrough">Tokens become embeddings. Embeddings live in a vector store. The store powers RAG. Knowledge Bases, agents, guardrails, and inference sit on top. Every volume assumes these. Each is taught in depth where first used.</div>
+<figure class="fig-light"><img src="assets/img/index/idx-terms.svg" alt="Concept map: token to embedding to vector store to RAG, with Knowledge Base, agent, guardrail, inference." loading="lazy"><figcaption>The vocabulary as one map. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure><div class="walkthrough">Tokens become embeddings. Embeddings live in a vector store. The store powers RAG. Knowledge Bases, agents, guardrails, and inference sit on top. Every volume assumes these. Each is taught in depth where first used.</div>
 <dl class="kv">
 <dt>Foundation model</dt><dd>A foundation model is a large model pre-trained on broad data. You adapt it for tasks instead of training it from scratch.</dd>
 <dt>Amazon Bedrock</dt><dd>Amazon Bedrock is the managed AWS service that serves foundation models from many providers through one set of APIs.</dd>
@@ -1370,48 +1406,48 @@ html.xp-js .xp-reveal.xp-in {
 <a class="vol" href="prereq-aif-c01.html"><span class="row"><h3>AIF-C01: AWS Certified AI Practitioner crash course</h3><span class="w">Prereq</span></span><p>This covers AI and ML fundamentals, generative AI basics, foundation-model applications, and responsible AI. It teaches the vocabulary and concepts that AIP-C01 builds on.</p></a>
 <a class="vol" href="prereq-aws-cloud-foundations.html"><span class="row"><h3>AWS cloud foundations</h3><span class="w">Prereq</span></span><p>This covers IAM, S3, EC2, VPC, RDS, Aurora, DynamoDB, Lambda, CloudWatch, and CloudTrail. These are the core AWS services that every AIP-C01 scenario touches.</p></a>
 <a class="vol" href="prereq-ml-specialty.html"><span class="row"><h3>ML Specialty essentials</h3><span class="w">Prereq</span></span><p>This covers deeper machine learning for the pro exam: data and feature engineering, training and tuning, evaluation metrics, SageMaker workflows, and MLOps.</p></a>
-<figure class="fig-light"><img src="assets/img/index/idx-prereq-aif.svg" alt="Nested boxes: AI contains machine learning, which contains deep learning, which contains generative AI." loading="lazy"><figcaption>The AI family this volume teaches: AI, machine learning, deep learning, generative AI.</figcaption></figure><div class="walkthrough">Read the nesting outside in. Each ring adds one idea: AI is the broad field, ML learns from data, deep learning uses layered neural nets, GenAI creates new content. AIF-C01 teaches the whole stack with visuals at every step.</div>
-<figure class="fig-light"><img src="assets/img/index/idx-prereq-cloud.svg" alt="Eight service cards: IAM, S3, EC2, VPC, RDS and DynamoDB, Lambda, CloudWatch, CloudTrail." loading="lazy"><figcaption>The AWS core services every AIP-C01 scenario touches.</figcaption></figure><div class="walkthrough">Each card is one service you must know well. IAM gates everything. S3 stores everything. Lambda connects the serverless pieces. If a scenario names none of these, re-read the stem.</div>
-<figure class="fig-light"><img src="assets/img/index/idx-prereq-mls.svg" alt="The ML lifecycle: prepare, train and tune, deploy, monitor." loading="lazy"><figcaption>The ML lifecycle: prepare, train, deploy, monitor.</figcaption></figure><div class="walkthrough">Follow the pipeline left to right. The pro exam tests service judgment at every stage, not deep theory. MLOps closes the loop: monitoring feeds back into preparation.</div>
+<figure class="fig-light"><img src="assets/img/index/idx-prereq-aif.svg" alt="Nested boxes: AI contains machine learning, which contains deep learning, which contains generative AI." loading="lazy"><figcaption>The AI family this volume teaches: AI, machine learning, deep learning, generative AI. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure><div class="walkthrough">Read the nesting outside in. Each ring adds one idea: AI is the broad field, ML learns from data, deep learning uses layered neural nets, GenAI creates new content. AIF-C01 teaches the whole stack with visuals at every step.</div>
+<figure class="fig-light"><img src="assets/img/index/idx-prereq-cloud.svg" alt="Eight service cards: IAM, S3, EC2, VPC, RDS and DynamoDB, Lambda, CloudWatch, CloudTrail." loading="lazy"><figcaption>The AWS core services every AIP-C01 scenario touches. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure><div class="walkthrough">Each card is one service you must know well. IAM gates everything. S3 stores everything. Lambda connects the serverless pieces. If a scenario names none of these, re-read the stem.</div>
+<figure class="fig-light"><img src="assets/img/index/idx-prereq-mls.svg" alt="The ML lifecycle: prepare, train and tune, deploy, monitor." loading="lazy"><figcaption>The ML lifecycle: prepare, train, deploy, monitor. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure><div class="walkthrough">Follow the pipeline left to right. The pro exam tests service judgment at every stage, not deep theory. MLOps closes the loop: monitoring feeds back into preparation.</div>
 <h2 id="study-volumes-read-in-order">Study volumes (read in order)</h2>
 <p>The order below is deliberate. The domains run heaviest first, and each volume builds on the vocabulary of the one before it. D1 is the foundation. Everything else assumes you know its terms well.</p>
-<figure><img src="assets/img/ste100/aip-idx-domain-weights.svg" alt="Bar chart of AIP-C01 domain weights: D1 31 percent, D2 26, D3 20, D4 12, D5 11" loading="lazy"><figcaption>Domain weights as bars: D1 31, D2 26, D3 20, D4 12, D5 11 percent. Study time follows the bars.</figcaption></figure>
-<figure><img src="assets/img/mermaid/101-exam-overview.svg" alt="The AIP-C01 exam at a glance: 75 questions in 180 minutes, pass at 750 out of 1000, with domains weighted D1 31, D2 26, D3 20, D4 12, D5 11 percent" loading="lazy"><figcaption>The AIP-C01 exam at a glance. 75 questions in 180 minutes. Pass at 750 out of 1000. Domain weights: D1 31, D2 26, D3 20, D4 12, D5 11 percent.</figcaption><figcaption class="credit">The AIP-C01 exam at a glance. 75 questions in 180 minutes. Pass at 750 out of 1000. Domain weights: D1 31, D2 26, D3 20, D4 12, D5 11 percent.</figcaption></figure>
-<figure><img src="assets/img/ste100/aip-idx-study-ladder.svg" alt="Study ladder top to bottom: prereqs, then D1 to D5 in exam-weight order, then labs, then question bank and mock, then crash course last" loading="lazy"><figcaption>The study ladder, new version: prereqs, then D1 to D5 by weight, then labs, then the bank and mock, then the crash course last.</figcaption></figure>
+<figure><img src="assets/img/ste100/aip-idx-domain-weights.svg" alt="Bar chart of AIP-C01 domain weights: D1 31 percent, D2 26, D3 20, D4 12, D5 11" loading="lazy"><figcaption>Domain weights as bars: D1 31, D2 26, D3 20, D4 12, D5 11 percent. Study time follows the bars. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
+<figure><img src="assets/img/mermaid/101-exam-overview.svg" alt="The AIP-C01 exam at a glance: 75 questions in 180 minutes, pass at 750 out of 1000, with domains weighted D1 31, D2 26, D3 20, D4 12, D5 11 percent" loading="lazy"><figcaption>The AIP-C01 exam at a glance. 75 questions in 180 minutes. Pass at 750 out of 1000. Domain weights: D1 31, D2 26, D3 20, D4 12, D5 11 percent.</figcaption><figcaption class="credit">The AIP-C01 exam at a glance. 75 questions in 180 minutes. Pass at 750 out of 1000. Domain weights: D1 31, D2 26, D3 20, D4 12, D5 11 percent. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
+<figure><img src="assets/img/ste100/aip-idx-study-ladder.svg" alt="Study ladder top to bottom: prereqs, then D1 to D5 in exam-weight order, then labs, then question bank and mock, then crash course last" loading="lazy"><figcaption>The study ladder, new version: prereqs, then D1 to D5 by weight, then labs, then the bank and mock, then the crash course last. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <div class="walkthrough">How to read this diagram. Read top to bottom. 1. Prereqs first if AWS feels rusty. They teach what the pro exam assumes. 2. D1 first: 31% of the exam and the vocabulary every volume builds on. 3. D2, D3, then D4 and D5 in weight order. 4. Labs build the muscle memory. 5. The question bank and mock test readiness. 6. The crash course is the final sprint, never the starting point. Skipping ahead breaks the vocabulary chain.</div>
 <a class="vol" href="volume-d1-foundation-models.html"><span class="row"><h3>Foundation Model Integration, Data Management, and Compliance</h3><span class="w">D1 · 31%</span></span><p>The biggest domain. It covers the foundation model catalog on Bedrock and model selection. It covers InvokeModel vs the Converse API, inference profiles, and prompt routers. It covers Provisioned Throughput and custom models: fine-tuning, continued pre-training, distillation, and imports. It covers Knowledge Bases, chunking strategies, embeddings, and vector store comparison. It covers RAG end to end, data pipelines, data privacy, and compliance.</p>
 <p>18 topics. 8 diagrams + 10 ASCII figures. 108 exam-style questions: easy, medium, and hard; MC and multiple response.</p></a>
-<figure class="fig-light"><img src="assets/img/index/idx-d1.svg" alt="RAG pipeline: documents to chunks to vector store to retrieved top chunks to cited answer." loading="lazy"><figcaption>D1 in one picture: the RAG pipeline.</figcaption></figure><div class="walkthrough">Documents become chunks. Chunks become vectors. The question retrieves the top chunks. The model answers with citations. RAG is the biggest domain because grounding drives most exam questions.</div>
+<figure class="fig-light"><img src="assets/img/index/idx-d1.svg" alt="RAG pipeline: documents to chunks to vector store to retrieved top chunks to cited answer." loading="lazy"><figcaption>D1 in one picture: the RAG pipeline. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure><div class="walkthrough">Documents become chunks. Chunks become vectors. The question retrieves the top chunks. The model answers with citations. RAG is the biggest domain because grounding drives most exam questions.</div>
 <a class="vol" href="volume-d2-implementation-integration.html"><span class="row"><h3>Implementation and Integration</h3><span class="w">D2 · 26%</span></span><p>This covers Bedrock Agents: anatomy, action groups, and multi-agent collaboration. It covers Lambda sync, async, and streaming patterns. It covers API Gateway in front of Bedrock and Step Functions orchestration. It covers S3 and EventBridge pipelines and Converse tool-use loops. It covers async and batch inference, deployment strategies, and enterprise integration. It covers prompt management, SDKs, and reliability.</p>
 <p>15 topics. 20 figures. 90 exam-style questions plus a 20-item master trap list.</p></a>
-<figure class="fig-light"><img src="assets/img/index/idx-d2.svg" alt="The agent loop: agent to tools to world and back." loading="lazy"><figcaption>D2 in one picture: the agent loop.</figcaption></figure><div class="walkthrough">The agent reasons, acts through tools like Lambda action groups, observes the result, and repeats until the goal is done. Everything else in D2 supports this loop.</div>
+<figure class="fig-light"><img src="assets/img/index/idx-d2.svg" alt="The agent loop: agent to tools to world and back." loading="lazy"><figcaption>D2 in one picture: the agent loop. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure><div class="walkthrough">The agent reasons, acts through tools like Lambda action groups, observes the result, and repeats until the goal is done. Everything else in D2 supports this loop.</div>
 <a class="vol" href="volume-d3-safety-security-governance.html"><span class="row"><h3>AI Safety, Security, and Governance</h3><span class="w">D3 · 20%</span></span><p>This covers Bedrock Guardrails in full depth: content filters, denied topics, word filters, PII filters, contextual grounding, and Automated Reasoning. It covers where Guardrails apply and prompt-injection defenses with their honest limits. It covers IAM, KMS, and VPC endpoints. It covers CloudTrail vs invocation logging, governance, and responsible AI practices.</p>
 <p>10 topics. 8 figures. 60 exam-style questions plus a cheat sheet and a glossary.</p></a>
-<figure class="fig-light"><img src="assets/img/index/idx-d3.svg" alt="Guardrails as two gates: input screen and output screen around the model." loading="lazy"><figcaption>D3 in one picture: guardrails as two gates.</figcaption></figure><div class="walkthrough">Blocked requests never reach the model. Bad answers never reach the user. IAM, KMS, VPC endpoints, and the audit trail surround the gates.</div>
+<figure class="fig-light"><img src="assets/img/index/idx-d3.svg" alt="Guardrails as two gates: input screen and output screen around the model." loading="lazy"><figcaption>D3 in one picture: guardrails as two gates. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure><div class="walkthrough">Blocked requests never reach the model. Bad answers never reach the user. IAM, KMS, VPC endpoints, and the audit trail surround the gates.</div>
 <a class="vol" href="volume-d4-optimization.html"><span class="row"><h3>Operational Efficiency and Optimization</h3><span class="w">D4 · 12%</span></span><p>This covers Bedrock pricing models with worked cost math: on-demand, prompt caching, batch inference, Provisioned Throughput, and inference profiles. It covers latency vs throughput and streaming. It covers rate limits and throttling, right-sizing, and model cascading. It covers CloudWatch metrics, token efficiency, semantic caching, and the production operations checklist.</p>
 <p>13 topics. 14 figures. 78 exam-style questions.</p></a>
-<figure class="fig-light"><img src="assets/img/index/idx-d4.svg" alt="Three sliders: cost, latency, quality." loading="lazy"><figcaption>D4 in one picture: cost, latency, quality.</figcaption></figure><div class="walkthrough">Every D4 scenario asks you to turn one dial without breaking the other two. Name the dial the stem cares about before you read the options.</div>
+<figure class="fig-light"><img src="assets/img/index/idx-d4.svg" alt="Three sliders: cost, latency, quality." loading="lazy"><figcaption>D4 in one picture: cost, latency, quality. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure><div class="walkthrough">Every D4 scenario asks you to turn one dial without breaking the other two. Name the dial the stem cares about before you read the options.</div>
 <a class="vol" href="volume-d5-testing-validation.html"><span class="row"><h3>Testing, Validation, and Troubleshooting</h3><span class="w">D5 · 11%</span></span><p>This covers automatic and human model evaluation and LLM-as-a-judge. It covers BYO datasets, metric selection, and RAG evaluation. It covers eval loops and A/B testing. It covers troubleshooting common failures: throttling, guardrail blocks, agent failures, KB sync, and embedding mismatches. It covers CloudWatch and CloudTrail debugging, grounding validation, red-teaming, and CI/CD eval gates.</p>
 <p>12 topics. 12 figures. 36 exam-style questions.</p></a>
-<figure class="fig-light"><img src="assets/img/index/idx-d5.svg" alt="The eval loop: dataset to automatic metrics and judges and back." loading="lazy"><figcaption>D5 in one picture: the eval loop.</figcaption></figure><div class="walkthrough">Measure with automatic metrics and judges. Find failures. Fix the prompt or data. Run again. Troubleshooting is the same loop applied to production.</div>
+<figure class="fig-light"><img src="assets/img/index/idx-d5.svg" alt="The eval loop: dataset to automatic metrics and judges and back." loading="lazy"><figcaption>D5 in one picture: the eval loop. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure><div class="walkthrough">Measure with automatic metrics and judges. Find failures. Fix the prompt or data. Run again. Troubleshooting is the same loop applied to production.</div>
 <a class="vol" href="volume-question-bank.html"><span class="row"><h3>Question Bank + Full Mock Exam</h3><span class="w">BANK</span></span><p>This holds 200 scenario-style questions. 140 match the exam weighting: D1 44, D2 36, D3 28, D4 17, D5 15. 52 are bonus professional-bar questions, calibrated one notch harder. 8 are field-research questions built from September 2026 passer reports. Questions run easy, medium, and hard, in single-answer and multiple-response formats. Every answer explains the correct choice and explains why each distractor is wrong.</p>
 <p>200 questions. A 75-question mock exam. Self-test collapsible answers.</p></a>
-<figure class="fig-light"><img src="assets/img/index/idx-bank.svg" alt="Question anatomy: stem to options to answer." loading="lazy"><figcaption>The question bank: every question's anatomy.</figcaption></figure><div class="walkthrough">A scenario stem, four plausible options, and an answer that explains each distractor. Practice by naming the constraint before reading the options.</div>
+<figure class="fig-light"><img src="assets/img/index/idx-bank.svg" alt="Question anatomy: stem to options to answer." loading="lazy"><figcaption>The question bank: every question's anatomy. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure><div class="walkthrough">A scenario stem, four plausible options, and an answer that explains each distractor. Practice by naming the constraint before reading the options.</div>
 <a class="vol" href="volume-system-design.html"><span class="row"><h3>System Design Guide</h3><span class="w">DESIGN</span></span><p>This covers end-to-end reference architectures. It covers RAG on Bedrock Knowledge Bases and Bedrock Agents with action groups. It covers the sync vs async invocation decision ladder and a chatbot reference architecture. It covers cost, latency, and quality tradeoff tables and eval loop design. It covers security hardening and the three decision ladders: grounding, inference pricing, and safety.</p>
 <p>8 designs. 4 embedded diagrams + 13 ASCII diagrams. 24 questions.</p></a>
-<figure class="fig-light"><img src="assets/img/index/idx-design.svg" alt="Reference stack: users to API Gateway to Lambda to Bedrock to data." loading="lazy"><figcaption>The design volume: one reference stack.</figcaption></figure><div class="walkthrough">Traffic flows from users to API Gateway to Lambda to Bedrock to data. The 8 architectures in the volume are variations on this stack with different tradeoff tables.</div>
+<figure class="fig-light"><img src="assets/img/index/idx-design.svg" alt="Reference stack: users to API Gateway to Lambda to Bedrock to data." loading="lazy"><figcaption>The design volume: one reference stack. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure><div class="walkthrough">Traffic flows from users to API Gateway to Lambda to Bedrock to data. The 8 architectures in the volume are variations on this stack with different tradeoff tables.</div>
 <a class="vol" href="volume-maarek-labs.html"><span class="row"><h3>Hands-On Labs (Maarek Course Labs)</h3><span class="w">LABS</span></span><p>This holds nine guided labs mined from the course lab files. They cover Strands agents with custom tools and multi-agent squad routing. They cover AgentCore Runtime deployment and Bedrock Flows from JSON. They cover Lambda as a Bedrock front-end and Lambda as an agent action. They cover CI/CD with eval gates and CDK for GenAI infrastructure. They cover supporting labs: KMS, X-Ray, and SQS. Every lab carries the Maarek framing. Each lab gives what it is, why and when to use it, how AWS will ask about it, its traps, and a practice question.</p>
 <p>9 labs. Architecture diagrams with walkthroughs. 9 practice questions.</p></a>
-<figure class="fig-light"><img src="assets/img/index/idx-labs.svg" alt="The lab loop: build, probe, break, fix." loading="lazy"><figcaption>The labs volume: build, probe, break, fix.</figcaption></figure><div class="walkthrough">Every lab follows the loop: build it on real docs, probe it with hostile prompts, break it with failing tools, then read why it broke. The last step is the learning.</div>
+<figure class="fig-light"><img src="assets/img/index/idx-labs.svg" alt="The lab loop: build, probe, break, fix." loading="lazy"><figcaption>The labs volume: build, probe, break, fix. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure><div class="walkthrough">Every lab follows the loop: build it on real docs, probe it with hostile prompts, break it with failing tools, then read why it broke. The last step is the learning.</div>
 <a class="vol" href="volume-question-patterns.html"><span class="row"><h3>How AWS Asks: Pattern Guide + Original Questions</h3><span class="w">PATTERNS</span></span><p>This analyzes real exam question patterns: scenario stems, MOST-correct discriminators, multi-response, ordering, matching, and anti-pattern traps. It covers all four verified exam formats. It then gives 81 original questions written in those patterns. It complements the main question bank with different scenarios and angles.</p>
 <p>6 patterns plus a 30-trap catalog. 81 original questions: MC, MR, ordering, and matching.</p></a>
-<figure class="fig-light"><img src="assets/img/index/idx-patterns.svg" alt="The stem at the center with four question formats around it." loading="lazy"><figcaption>The pattern guide: four question formats.</figcaption></figure><div class="walkthrough">Start from the stem. The format only shapes how you read it. Read the last sentence first. The constraint picks the winner.</div>
+<figure class="fig-light"><img src="assets/img/index/idx-patterns.svg" alt="The stem at the center with four question formats around it." loading="lazy"><figcaption>The pattern guide: four question formats. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure><div class="walkthrough">Start from the stem. The format only shapes how you read it. Read the last sentence first. The constraint picks the winner.</div>
 <a class="vol" href="volume-crash-course.html"><span class="row"><h3>Crash Course: the Whole Exam in One Volume</h3><span class="w">CRASH</span></span><p>This is one dense volume for the final sprint. It holds per-domain rapid-fire sheets, D1 to D5 by weight. It holds "if stem says X, pick Y" decision rules. It holds the must-memorize numbers sheet and all 50 traps in one line each. It holds 58 rapid-fire self-test questions with one-line answers. Nothing is left out. There is no padding.</p>
 <p>5 domain sheets. A numbers table. 50 traps. 58 rapid-fire questions.</p></a>
-<figure class="fig-light"><img src="assets/img/index/idx-crash.svg" alt="Domain weight bars: D1 31 percent down to D5 11 percent." loading="lazy"><figcaption>The crash course: domains by weight.</figcaption></figure><div class="walkthrough">Study time follows the bars: D1 first, D5 last. Then come the decision rules, the 50 traps, and the must-memorize numbers. This is the final sprint, not the starting point.</div>
+<figure class="fig-light"><img src="assets/img/index/idx-crash.svg" alt="Domain weight bars: D1 31 percent down to D5 11 percent." loading="lazy"><figcaption>The crash course: domains by weight. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure><div class="walkthrough">Study time follows the bars: D1 first, D5 last. Then come the decision rules, the 50 traps, and the must-memorize numbers. This is the final sprint, not the starting point.</div>
 <a class="vol" href="volume-appendix-gaps.html"><span class="row"><h3>Gap Appendix: Peripheral Services</h3><span class="w">APPENDIX</span></span><p>This is the completeness appendix. It covers every peripheral topic from the three-way coverage check. The topics: AppFlow, Transfer Family, QuickSight, Neptune Analytics, Q Apps, Secrets Manager, WAF, and CloudFront. Also Textract, CountTokens, top_k, Evidently, TTFT, vector quantization, SageMaker large-model tuning, and EMR. Each topic gives what it is and why it matters, its exam angles, its traps, and a practice question.</p>
 <p>17 topics. 18 figures. 17 practice questions.</p></a>
-<figure class="fig-light"><img src="assets/img/index/idx-appendix.svg" alt="Seventeen appendix topics grouped in four buckets." loading="lazy"><figcaption>The appendix: 17 topics in four buckets.</figcaption></figure><div class="walkthrough">The four buckets: ingestion, analytics, guards and dials, mechanics. Each entry gives what, why, exam angle, trap, and a practice question.</div>
+<figure class="fig-light"><img src="assets/img/index/idx-appendix.svg" alt="Seventeen appendix topics grouped in four buckets." loading="lazy"><figcaption>The appendix: 17 topics in four buckets. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure><div class="walkthrough">The four buckets: ingestion, analytics, guards and dials, mechanics. Each entry gives what, why, exam angle, trap, and a practice question.</div>
 <h2 id="exam-blueprint-and-coverage-proof">Exam blueprint and coverage proof</h2>
 <h3 id="exam-blueprintmd"><a href="EXAM-BLUEPRINT.md">EXAM-BLUEPRINT.md</a></h3>
 <p>This is the research behind these volumes. It holds verified exam facts vs assumptions. It holds all five domains with every official task statement. It holds "what AWS tests", "how AWS asks this", and "common trap patterns" per topic. It holds cross-cutting decision ladders, a 15-item master trap list, and the sources consulted.</p>
@@ -1428,7 +1464,7 @@ html.xp-js .xp-reveal.xp-in {
 <li><strong>Optional warm-up.</strong> Take AIF-C01 (AI Practitioner) first for exam-structure familiarity. It does not reach professional depth. Treat it as a warm-up, not prep.</li>
 </ol>
 <h2 id="top-pitfalls">Top pitfalls candidates report</h2>
-<figure class="fig-light"><img src="assets/img/index/idx-pitfalls.svg" alt="Exam-day funnel: four options narrowed to one answer." loading="lazy"><figcaption>The exam-day funnel.</figcaption></figure><div class="walkthrough">Read the last sentence first, eliminate two options fast, decide between the last two. Flag at 2.5 minutes and move on. The review pass is for flagged questions.</div>
+<figure class="fig-light"><img src="assets/img/index/idx-pitfalls.svg" alt="Exam-day funnel: four options narrowed to one answer." loading="lazy"><figcaption>The exam-day funnel. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure><div class="walkthrough">Read the last sentence first, eliminate two options fast, decide between the last two. Flag at 2.5 minutes and move on. The review pass is for flagged questions.</div>
 <ol>
 <li>Time pressure is the real enemy. Read for shape, then read again for the constraint. Eliminate two answers fast. Decide between the last two. If you are undecided at about 2.5 minutes, flag the question and move on. Do not count on review time.</li>
 <li>"Least operational overhead" is the most repeated phrase. Read it as "fewest services you manage yourself." Managed and serverless options beat clusters and custom Lambda wiring.</li>
@@ -1441,9 +1477,9 @@ html.xp-js .xp-reveal.xp-in {
 <li>Safety threads through all domains. A Domain 2 question can hinge on a guardrail behavior from Domain 3. Do not study domains in isolation.</li>
 <li>The center of gravity is Bedrock, not SageMaker. There are no confusion matrices, no feature engineering, and no SageMaker training pipelines. SageMaker shows up via JumpStart, alternative hosting, and Clarify-style evaluation.</li>
 </ol>
-<figure><img src="assets/img/ste100/aip-idx-exam-funnel.svg" alt="Exam-day funnel: read for shape, read again for the constraint, eliminate two answers fast, decide between the last two; flag at 2.5 minutes" loading="lazy"><figcaption>The exam-day funnel: shape, constraint, eliminate two, decide. Flag at 2.5 minutes.</figcaption></figure>
+<figure><img src="assets/img/ste100/aip-idx-exam-funnel.svg" alt="Exam-day funnel: read for shape, read again for the constraint, eliminate two answers fast, decide between the last two; flag at 2.5 minutes" loading="lazy"><figcaption>The exam-day funnel: shape, constraint, eliminate two, decide. Flag at 2.5 minutes. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <div class="walkthrough">How to read this diagram. 1. Read for shape: skim the scenario. 2. Read again for the constraint: the one requirement that decides. 3. Eliminate two answers fast. 4. Decide between the last two. The orange bar is the time rule: if you are undecided at about 2.5 minutes, flag the question and move on. Do not count on review time.</div>
-<figure><img src="assets/img/ste100/aip-idx-pitfall-matrix.svg" alt="Six pitfalls candidates report: least operational overhead, proactive requirement, fabricated features, Bedrock not SageMaker, multi-response pairs, Express Step Functions limits" loading="lazy"><figcaption>Six pitfalls candidates report, each with its one-line rule.</figcaption></figure>
+<figure><img src="assets/img/ste100/aip-idx-pitfall-matrix.svg" alt="Six pitfalls candidates report: least operational overhead, proactive requirement, fabricated features, Bedrock not SageMaker, multi-response pairs, Express Step Functions limits" loading="lazy"><figcaption>Six pitfalls candidates report, each with its one-line rule. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <h2 id="practice-resources">Practice resources, with honest assessments</h2>
 <ul>
 <li>This guide's question bank and mock exam: your main bank. 200 questions plus a 75-question mock exam.</li>
@@ -1454,7 +1490,7 @@ html.xp-js .xp-reveal.xp-in {
 <li><strong>MishreePatel/AIP-C01-GenAI-Study on GitHub</strong>: free public study log and a 4-part YouTube series with slide decks across all five domains. Good companion. Quality unverified.</li>
 <li>awscertificationswiki GenAI Developer Pro page. Free community resource list, updated Apr 2026. Best single starting page.</li>
 </ul>
-<figure><img src="assets/img/ste100/aip-idx-resource-ladder.svg" alt="Practice resources ranked: this guide first, then Tutorials Dojo, Maarek plus Abhishek Singh, AWS Skill Builder, then supplementary sources" loading="lazy"><figcaption>Practice resources in priority order, with honest assessments.</figcaption></figure>
+<figure><img src="assets/img/ste100/aip-idx-resource-ladder.svg" alt="Practice resources ranked: this guide first, then Tutorials Dojo, Maarek plus Abhishek Singh, AWS Skill Builder, then supplementary sources" loading="lazy"><figcaption>Practice resources in priority order, with honest assessments. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <h2 id="suggested-study-order-4-hoursday">Suggested study order: 2-week sprint (4+ hours/day)</h2>
 <div class="table-wrap"><table>
 <thead>
@@ -1497,12 +1533,12 @@ html.xp-js .xp-reveal.xp-in {
 </tr>
 </tbody>
 </table></div>
-<figure><img src="assets/img/ste100/aip-idx-sprint-timeline.svg" alt="Two-week sprint timeline: D1 volume, D2 volume, D3 volume, D4 plus D5, then question bank and mock; readiness bar 80 percent" loading="lazy"><figcaption>The 2-week sprint as a timeline, with the 80%+ readiness bar.</figcaption></figure>
+<figure><img src="assets/img/ste100/aip-idx-sprint-timeline.svg" alt="Two-week sprint timeline: D1 volume, D2 volume, D3 volume, D4 plus D5, then question bank and mock; readiness bar 80 percent" loading="lazy"><figcaption>The 2-week sprint as a timeline, with the 80%+ readiness bar. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <div class="walkthrough">How to read this diagram. Read left to right. 1. D1 volume: 31%, heaviest first. 2. D2 volume: 26%. 3. D3 volume: 20%, heavy trap territory. 4. D4 and D5: 23% combined, faster domains. 5. Question bank and mock exam. The green bar is the readiness rule: score 80%+ on the mock before booking. The pass bar is 750, not 700.</div>
 <div class="exam-ask"><p><strong>The trap pattern to carry through everything:</strong> Expect scenario-based questions of the "choose the MOST correct answer" type. Two options look defensible, but only one satisfies all constraints: cost, latency, compliance, and scale. When stuck, prefer the managed Bedrock-native service over building it yourself. Re-read the constraint the scenario emphasized.</p></div>
-<figure><img src="assets/img/ste100/aip-idx-trap-pattern.svg" alt="The MOST-correct trap: option A looks defensible but misses one constraint, option B looks defensible and satisfies all constraints - cost, latency, compliance, scale" loading="lazy"><figcaption>The MOST-correct trap: two defensible options, only one satisfies every constraint.</figcaption></figure>
+<figure><img src="assets/img/ste100/aip-idx-trap-pattern.svg" alt="The MOST-correct trap: option A looks defensible but misses one constraint, option B looks defensible and satisfies all constraints - cost, latency, compliance, scale" loading="lazy"><figcaption>The MOST-correct trap: two defensible options, only one satisfies every constraint. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <div class="walkthrough">How to read this diagram. The exam asks "choose the MOST correct answer." 1. Option A looks defensible but misses one constraint: wrong answer. 2. Option B looks defensible and satisfies ALL constraints: correct answer. The constraint row names the four: cost, latency, compliance, scale. When stuck, prefer the managed Bedrock-native service over building it yourself.</div>
-<figure class="fig-light"><img src="assets/img/index/idx-sprint2w.svg" alt="Two-week timeline: days 1-3 D1, 4-6 D2, 7-8 D3, 9 D4+D5, 10-11 design, 12-14 bank and mock." loading="lazy"><figcaption>The 2-week sprint as one timeline.</figcaption></figure><div class="walkthrough">The volume runs in four blocks by exam weight, then design, then the bank. The readiness bar is 80 percent on the mock before booking. The pass bar is 750 out of 1000.</div>
+<figure class="fig-light"><img src="assets/img/index/idx-sprint2w.svg" alt="Two-week timeline: days 1-3 D1, 4-6 D2, 7-8 D3, 9 D4+D5, 10-11 design, 12-14 bank and mock." loading="lazy"><figcaption>The 2-week sprint as one timeline. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure><div class="walkthrough">The volume runs in four blocks by exam weight, then design, then the bank. The readiness bar is 80 percent on the mock before booking. The pass bar is 750 out of 1000.</div>
 <h2 id="4-week-plan">Alternative: 4-week lab-heavy plan (115-125 hours)</h2>
 <p>For candidates who can give 4+ hours a day over four weeks and want the lab-first path the passers recommend. Plan roughly 2 hours of lab, 1.5 hours of course or video, and 30-60 minutes of practice questions and docs per day. Set up a personal AWS account with billing alarms on day one.</p>
 <p><strong>Days 1-2: Foundation.</strong> Read the official exam guide end to end. Skim the Well-Architected GenAI Lens overview. Take one untimed practice set with no preparation to find your baseline.</p>
@@ -2106,6 +2142,73 @@ window.DS_MANIFEST = [
       }
     }
   });
+  /* ---------- 11. Scroll reveal + figure parallax (progressive enhancement) ----------
+     .reveal is added here (never in markup), so content is fully visible with
+     JS disabled. Respects prefers-reduced-motion. Parallax drift is a small
+     transform on plain figure images only; it never changes layout. ---------- */
+
+  (function () {
+    var reduceMotion = window.matchMedia &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    /* Scroll reveal: gentle rise-in on content blocks as they enter the viewport. */
+    var revealTargets = inner.querySelectorAll(
+      "figure, .pq, .exam-ask, .takeaway, .panel, .diagram-walkthrough, " +
+      ".table-wrap, .ladder, .cc-qa"
+    );
+    if (!reduceMotion && "IntersectionObserver" in window) {
+      var revealEls = Array.prototype.slice.call(revealTargets);
+      revealEls.forEach(function (el) { el.classList.add("reveal"); });
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (en) {
+          if (en.isIntersecting) {
+            en.target.classList.add("revealed");
+            io.unobserve(en.target);
+          }
+        });
+      }, { rootMargin: "0px 0px -8% 0px", threshold: 0.05 });
+      revealEls.forEach(function (el) { io.observe(el); });
+    }
+    /* reduceMotion or no IntersectionObserver: no .reveal class is added,
+       so every block stays fully visible. */
+
+    /* Figure parallax: gentle --px drift on plain figure images only
+       (.fig-light cards are excluded so the white plate never shows an edge). */
+    if (!reduceMotion) {
+      var pxFigs = [];
+      Array.prototype.forEach.call(
+        inner.querySelectorAll("figure:not(.fig-light)"),
+        function (fig) {
+          if (fig.querySelector("img")) {
+            fig.classList.add("ds-px");
+            pxFigs.push(fig);
+          }
+        }
+      );
+      var pxTicking = false;
+      function pxUpdate() {
+        var vh = window.innerHeight || 800;
+        pxFigs.forEach(function (fig) {
+          var img = fig.querySelector("img");
+          if (!img) return;
+          var r = img.getBoundingClientRect();
+          if (r.bottom < -160 || r.top > vh + 160) return; /* off-screen: skip */
+          var center = (r.top + r.height / 2) - vh / 2;
+          var drift = center * -0.015;
+          if (drift > 8) drift = 8;
+          if (drift < -8) drift = -8;
+          img.style.setProperty("--px", drift.toFixed(1) + "px");
+        });
+        pxTicking = false;
+      }
+      function pxRequest() {
+        if (!pxTicking) { pxTicking = true; window.requestAnimationFrame(pxUpdate); }
+      }
+      window.addEventListener("scroll", pxRequest, { passive: true });
+      window.addEventListener("resize", pxRequest);
+      pxUpdate();
+    }
+  })();
 })();
 
 </script>
