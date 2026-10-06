@@ -114,6 +114,7 @@
   unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
 }
 
+
 /* ---------- Base ---------- */
 
 * { box-sizing: border-box; }
@@ -1166,7 +1167,43 @@ footer p{text-align:left}
   #ds-content .ds-site-footer,
   .ds-side-volumes { display: none !important; }
 }
-.walkthrough{margin:.4rem 0 1.4rem;padding:.6rem .9rem;border-left:3px solid var(--accent,#4da3ff);background:var(--card,#141414);border-radius:0 8px 8px 0;font-size:.92rem;color:var(--muted,#a8a8a8)}
+
+/* ==========================================================================
+   World-class upgrade (2026-10-05): scroll reveal + figure parallax.
+   Progressive enhancement: .reveal is added by JS only, so with JS disabled
+   every element stays fully visible. Parallax drift is transform-only (no
+   layout shift) and limited to plain figures; both honor
+   prefers-reduced-motion.
+   ========================================================================== */
+
+/* Scroll reveal: subtle rise-in. JS adds .reveal to content blocks; the
+   IntersectionObserver adds .revealed as each block enters the viewport. */
+.reveal {
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.reveal.revealed {
+  opacity: 1;
+  transform: none;
+}
+
+/* Figure parallax: gentle vertical drift on figure images (excludes
+   .fig-light cards so the white plate never shows an edge). The figure gets
+   overflow:hidden from JS when parallax activates, so the drift cannot
+   cause layout shift or edge bleed. */
+figure.ds-px { overflow: hidden; }
+figure.ds-px img {
+  transform: translateY(var(--px, 0px));
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal { opacity: 1; transform: none; transition: none; }
+  figure.ds-px img { transform: none; }
+  html { scroll-behavior: auto; }
+}
+
 .walkthrough strong{color:inherit}
 </style>
 <style>
@@ -1326,7 +1363,7 @@ html.xp-js .xp-reveal.xp-in {
 <p>You never train it yourself. You call it through an API. You send text in. It sends text back.</p>
 <p>One model can summarize a document. It can translate it. It can answer questions about it. It can draft a reply.</p>
 <p>This is what "foundation" means. It is one base. Many tasks build on it. It is not a separate trained model per task.</p>
-<figure><img src="assets/img/mermaid/106-fm-text-in-out.svg" alt="A foundation model: your prompt text goes in, the model processes it, generated text comes out" loading="lazy"><figcaption>A foundation model takes your prompt text in. It produces generated text out. You never train it. You call it.</figcaption><figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<figure><img src="assets/img/mermaid/106-fm-text-in-out.svg" alt="A foundation model: your prompt text goes in, the model processes it, generated text comes out" loading="lazy"><figcaption>A foundation model takes your prompt text in. It produces generated text out. You never train it. You call it.</figcaption><figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <h4 id="how-to-read-fm-io">How to read this diagram</h4>
 <ol>
 <li>Left box: your prompt. This is plain text that describes what you want.</li>
@@ -1344,7 +1381,7 @@ html.xp-js .xp-reveal.xp-in {
 <li>Total: $0.012 + $0.015 = $0.027.</li>
 </ol>
 <p>Output tokens cost five times input tokens at these prices. This is why a chatty completion costs more than a long prompt.</p>
-<figure><img src="assets/img/mermaid/107-tokens.svg" alt="Tokenization: the sentence The refund window is 30 days split into seven token chips" loading="lazy"><figcaption>Tokenization: one sentence becomes seven tokens. Tokens are character chunks. They are not words. They are the billing unit.</figcaption><figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<figure><img src="assets/img/mermaid/107-tokens.svg" alt="Tokenization: the sentence The refund window is 30 days split into seven token chips" loading="lazy"><figcaption>Tokenization: one sentence becomes seven tokens. Tokens are character chunks. They are not words. They are the billing unit.</figcaption><figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <h4 id="how-to-read-tokens">How to read this diagram</h4>
 <ol>
 <li>Each chip is one token. Note that tokens do not match words. " refund" carries its leading space. "30" stands alone.</li>
@@ -1355,8 +1392,8 @@ html.xp-js .xp-reveal.xp-in {
 <p><em>Size limits are set. The next question is how the model picks each token inside those limits.</em></p>
 <p>The model writes its answer one token at a time. Each time, it picks the most likely next token. Three controls shape that choice. <strong>Temperature</strong> reshapes the probabilities. At 0, the model always picks the most likely token. This is deterministic. It is correct for classification and extraction.</p>
 <p>Higher values spread probability to less likely tokens. This is more creative and less predictable. <strong>Top-p</strong> (nucleus sampling) trims the candidate list. It trims the list to the smallest set that covers probability p. Then, it samples inside that set. <strong>Max tokens</strong> caps the length of the output. It does not cap the input. If you set it too small, answers stop mid-sentence.</p>
-<figure><img src="assets/img/mermaid/62-temperature-sampling.svg" alt="Temperature and sampling: low temperature gives sharp, deterministic output; high temperature gives flat, creative output; top-p and top-k then cut the tail" loading="lazy"><figcaption>Temperature and sampling: low temperature gives sharp, deterministic output. High temperature gives flat output. High temperature gives creative output. Top-p cuts the tail. Top-k cuts the tail.Cooler temperature sharpens the distribution toward the top token. Higher temperature flattens the distribution.</figcaption><figcaption class="credit">Source: web image search. Saved locally: September 2026.</figcaption></figure>
-<figure class="fig-light"><img src="assets/img/internet/img-26.jpeg" alt="LLM generation parameters: max_tokens caps output length, temperature reshapes the token probability distribution (more randomness), top_p (nucleus sampling) limits the candidate set." loading="lazy"><figcaption>LLM generation parameters: max_tokens caps output length. Temperature reshapes the token probability distribution. (This means more randomness). Top_p (nucleus sampling) limits the candidate set.</figcaption><figcaption class="credit">Source: DailyDoseofDS.com. Image search date: September 2026.</figcaption></figure>
+<figure><img src="assets/img/mermaid/62-temperature-sampling.svg" alt="Temperature and sampling: low temperature gives sharp, deterministic output; high temperature gives flat, creative output; top-p and top-k then cut the tail" loading="lazy"><figcaption>Temperature and sampling: low temperature gives sharp, deterministic output. High temperature gives flat output. High temperature gives creative output. Top-p cuts the tail. Top-k cuts the tail.Cooler temperature sharpens the distribution toward the top token. Higher temperature flattens the distribution.</figcaption><figcaption class="credit">Source: web image search. Saved locally: September 2026. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
+<figure class="fig-light"><img src="assets/img/internet/img-26.jpeg" alt="LLM generation parameters: max_tokens caps output length, temperature reshapes the token probability distribution (more randomness), top_p (nucleus sampling) limits the candidate set." loading="lazy"><figcaption>LLM generation parameters: max_tokens caps output length. Temperature reshapes the token probability distribution. (This means more randomness). Top_p (nucleus sampling) limits the candidate set.</figcaption><figcaption class="credit">Source: DailyDoseofDS.com. Image search date: September 2026. Reused in the AWS AIP-C01 Study Guide.</figcaption></figure>
 <h4 id="how-to-read-temp">How to read this diagram</h4>
 <ol>
 <li>Low temperature piles probability onto the top token. The output is almost deterministic. Use it for classification and extraction.</li>
@@ -1369,7 +1406,7 @@ html.xp-js .xp-reveal.xp-in {
 <p>Choosing the correct model comes first. Calling it and paying for it come first. See chapters 2 through 4. The catalog deserves one more look. Bedrock hosts model families. Get access to call them.
 
 
-</p><figure class="fig-light"><img src="assets/img/internet/img-00.png" alt="Amazon Bedrock: users send requests through the console to foundation models (Titan, Stable Diffusion) via chat, text, and image playgrounds." loading="lazy"><figcaption>Amazon Bedrock users send requests through the console. They send requests to foundation models. Examples are Titan and Stable Diffusion. Users send requests through chat, text, and image playgrounds.</figcaption><figcaption class="credit">Source: AWS blog (aws.com). Image search date: September 2026.</figcaption></figure><p>This is the catalog you choose from. It shows what each model family is for. It shows how you get access to call them.</p>
+</p><figure class="fig-light"><img src="assets/img/internet/img-00.png" alt="Amazon Bedrock: users send requests through the console to foundation models (Titan, Stable Diffusion) via chat, text, and image playgrounds." loading="lazy"><figcaption>Amazon Bedrock users send requests through the console. They send requests to foundation models. Examples are Titan and Stable Diffusion. Users send requests through chat, text, and image playgrounds.</figcaption><figcaption class="credit">Source: AWS blog (aws.com). Image search date: September 2026. Reused in the AWS AIP-C01 Study Guide.</figcaption></figure><p>This is the catalog you choose from. It shows what each model family is for. It shows how you get access to call them.</p>
 <p>Amazon Bedrock is a fully managed service. It lets you call foundation models (FMs) from many providers. You use one set of AWS APIs. You do not manage servers or GPUs. Bedrock hosts models from Amazon. These include <strong>Titan</strong> for text, embeddings, and image generation.</p>
 <p>These also include <strong>Nova</strong>, a newer Amazon family. This family has fast, cheap models and flagship models. It has multimodal variants. Bedrock also hosts Anthropic <strong>Claude</strong>. This model has strong reasoning and long context. It is a frequent exam default.</p>
 <p>It hosts Meta <strong>Llama</strong>. This model has open weights. It is good for cost-sensitive and customizable deployments. It hosts <strong>Mistral AI</strong>. These are efficient European models. They are strong at multilingual and code tasks.</p>
@@ -1385,7 +1422,7 @@ html.xp-js .xp-reveal.xp-in {
 <p>The exam tests the <em>principle</em>. Bigger context is not always better. You pay per token. The exam does not test exact numbers.</p>
 <p>The trap is to assume every model is available in every region. This is true the moment you need it. The exam likes the scenario "model X is only available in two regions, and the application needs resilience." The answer is a cross-region inference profile. It is not "deploy in more regions." You cannot deploy a Bedrock model. AWS hosts it.</p>
 <p>Another trap: AccessDeniedException on a model call usually means model access was not requested. Or the model is not available in that region. It does not mean your IAM policy is wrong. Check access first.</p>
-<figure><img src="assets/img/mermaid/10-bedrock-providers.svg" alt="Amazon Bedrock with six model provider families" loading="lazy"><figcaption>Amazon Bedrock with six model provider families</figcaption><figcaption class="credit"><em>Amazon Bedrock with six model provider families</em></figcaption></figure>
+<figure><img src="assets/img/mermaid/10-bedrock-providers.svg" alt="Amazon Bedrock with six model provider families" loading="lazy"><figcaption>Amazon Bedrock with six model provider families</figcaption><figcaption class="credit"><em>Amazon Bedrock with six model provider families</em> Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <h4 id="how-to-read-this-diagram-ch1">How to read this diagram</h4>
 <ol>
 <li>The central box is Amazon Bedrock. It is the managed service you talk to.</li>
@@ -1404,19 +1441,19 @@ html.xp-js .xp-reveal.xp-in {
 <p class="ch-bridge" style="border-left:3px solid var(--accent);padding:.55rem 1rem;background:var(--surface);border-radius:0 8px 8px 0;margin:1.1rem 0">Which one do you pick? This chapter answers that question. It uses the five-axis trade-off. The exam tests this trade-off in every scenario.</p>
 
 <figure><img src="assets/img/mermaid/55-model-selection-tree.svg" alt="Model selection decision tree: pick by latency needs first, then reasoning difficulty, then evaluate on your own data" loading="lazy"><figcaption>Model selection decision tree: pick by latency needs first. Pick by reasoning difficulty. Evaluate on your own data. Model selection is a trade-off. It has five axes.The exam tests if you can remember all five at once.</p>
-<p>Judge every candidate model on five axes: <strong>capability</strong> (can it do the task well: reasoning, multilingual, code, vision), <strong>cost per token</strong> (input and output prices differ), <strong>latency</strong> (time to first token and tokens per second), <strong>context window</strong> (how much text fits in one call), and <strong>regional availability</strong> (is it offered where you run).</p> <p>Smaller models (Claude Haiku, Llama 8B, Nova Lite/Micro class) win on cost and latency.</p></figcaption>
+<p>Judge every candidate model on five axes: <strong>capability</strong> (can it do the task well: reasoning, multilingual, code, vision), <strong>cost per token</strong> (input and output prices differ), <strong>latency</strong> (time to first token and tokens per second), <strong>context window</strong> (how much text fits in one call), and <strong>regional availability</strong> (is it offered where you run).</p> <p>Smaller models (Claude Haiku, Llama 8B, Nova Lite/Micro class) win on cost and latency.</p> Source: original figure for the AWS AIP-C01 Study Guide.</figcaption>
 <figcaption><p>Flagship models (Claude Sonnet/Opus class, Nova Pro class) win on complex reasoning.</p> <p>There is no universally best model.</p> <p>There is only the best fit for the constraints.</p>
-<p>Picking on capability alone wastes money.</p> <p>A flagship model summarizing support tickets costs much more.</p> <p>This is true compared to a small model for the same output quality.</p> <p>Picking on cost alone fails tasks.</p></figcaption>
+<p>Picking on capability alone wastes money.</p> <p>A flagship model summarizing support tickets costs much more.</p> <p>This is true compared to a small model for the same output quality.</p> <p>Picking on cost alone fails tasks.</p> Source: original figure for the AWS AIP-C01 Study Guide.</figcaption>
 <figcaption><p>A tiny model cannot do multi-step reasoning over a 200-page contract.</p> <p>The five-axis trade-off exists because real workloads have hard constraints.</p> <p>They have constraints on at least two axes at once.</p> <p>For example, "sub-second responses in the EU for a multilingual summarizer." The exam writes scenarios in this way.</p>
 <p>Selection is a filtering process.</p> <p>Apply it in this order:</p>
 <ol>
-<li><strong>Capability floor.</strong> Run the task on candidate models with a golden dataset.</li></ol> <ol><li>A golden dataset is a fixed set of question-answer pairs.</li></ol></figcaption>
+<li><strong>Capability floor.</strong> Run the task on candidate models with a golden dataset.</li></ol> <ol><li>A golden dataset is a fixed set of question-answer pairs.</li></ol> Source: original figure for the AWS AIP-C01 Study Guide.</figcaption>
 <figcaption><ol><li>It is a quality benchmark.</li></ol> <ol><li>Drop any model below the quality bar.</li>
 <li><strong>Regional availability.</strong> Drop models not offered in your region.</li></ol> <ol><li>Or add a cross-region inference profile (chapter 4) if the model is worth it.</li>
 <li><strong>Cost and latency.</strong> Rank the remaining models by tokens per request.</li></ol> <ol><li>Rank them by time to first token on realistic inputs.</li>
 <li><strong>Context window.</strong> Check it against your longest realistic input.</li></ol> <ol><li>Check it against the expected output.</li></ol> <ol><li>If it does not fit, you need chunking, summarization, or a bigger window.</li>
 </ol>
-<p>The model with the lowest cost that meets every requirement wins.</p></figcaption>
+<p>The model with the lowest cost that meets every requirement wins.</p> Source: original figure for the AWS AIP-C01 Study Guide.</figcaption>
 <figcaption><p>Revisit the choice every three months.</p> <p>Model prices and capabilities change.</p>
 <pre><code>Selection filters (apply in order):
 
@@ -1431,24 +1468,24 @@ html.xp-js .xp-reveal.xp-in {
 <ol>
 <li>Start with candidate models and a golden dataset.</li></ol> <ol><li>Drop any model below the quality bar first.</li></ol> <ol><li>Then consider the cost.</li>
 <li>Check regional availability next.</li></ol> <ol><li>A model you cannot run where you operate is not an option.</li></ol> <ol><li>This is true unless you use a cross-region profile.</li>
-<li>Rank the remaining models by cost per token.</li></ol></figcaption>
+<li>Rank the remaining models by cost per token.</li></ol> Source: original figure for the AWS AIP-C01 Study Guide.</figcaption>
 <figcaption><ol><li>Rank them by latency on realistic inputs.</li>
 <li>Verify the context window fits your longest realistic input.</li></ol> <ol><li>Verify it fits the expected output.</li></ol> <ol><li>If it does not fit, you need chunking or a bigger window.</li>
 <li>The winner is the cheapest model that meets every requirement.</li></ol> <ol><li>Revisit the choice when models or prices change.</li>
-</ol><p>Price ratios are examples.</p> <p>But the order is stable.</p> <p>A flagship model typically costs about 10 to 20 times more per token.</p></figcaption>
+</ol><p>Price ratios are examples.</p> <p>But the order is stable.</p> <p>A flagship model typically costs about 10 to 20 times more per token.</p> Source: original figure for the AWS AIP-C01 Study Guide.</figcaption>
 <figcaption><p>This is true compared to the smallest model in the same family.</p> <p>Time to first token on a small model is often less than one second.</p> <p>On a flagship model with a long prompt, it can be several seconds.</p> <p>The exam will not ask you to quote prices.</p> <p>It will give you relative facts.</p> <p>For example, "Model A costs 15x Model B, the task is simple classification." It expects you to pick the cheaper model or a cascade.</p>
-<p>The trap is "bigger is safer." Teams use the flagship model for everything by default.</p></figcaption>
-<figcaption><p>The exam punishes this.</p> <p>For classification, extraction, and simple summarization, the small model usually matches the big model.</p> <p>This is true on a golden dataset.</p> <p>The most correct answer picks the small model.</p> <p>Or it routes by complexity.</p> <p>The opposite trap is picking the cheapest model for a reasoning task.</p></figcaption>
+<p>The trap is "bigger is safer." Teams use the flagship model for everything by default.</p> Source: original figure for the AWS AIP-C01 Study Guide.</figcaption>
+<figcaption><p>The exam punishes this.</p> <p>For classification, extraction, and simple summarization, the small model usually matches the big model.</p> <p>This is true on a golden dataset.</p> <p>The most correct answer picks the small model.</p> <p>Or it routes by complexity.</p> <p>The opposite trap is picking the cheapest model for a reasoning task.</p> Source: original figure for the AWS AIP-C01 Study Guide.</figcaption>
 <figcaption><p>You hope prompt engineering closes the gap.</p> <p>Measure on a golden dataset instead of hoping.</p>
 <div class="exam-ask"><p>Exam trap</p>
 <p>Watch for "choose the model with the best published benchmarks" as the complete answer.</p></div> <div><p>Benchmarks do not include your cost, latency, and region constraints.</p></div> <div><p>Also watch for picking a model that is not available in the scenario's region.</p></div> <div><p>This is a distractor unless you add cross-region inference.</p></div> <div><p>This is a guaranteed distractor kill.</p></div>
-<div class="exam-ask"><p>AWS asks this question.</p></div></figcaption>
-<figcaption><div><p>The scenario is about millions of simple support-ticket classifications per day.</p></div> <div><p>It is also about a weekly complex contract analysis.</p></div> <div><p>It requires EU data residency.</p></div> <div><p>It has a tight budget.</p></div> <div><p>Use a small model for daily volume.</p></div> <div><p>Examples are Haiku, Llama 8B, or Nova Lite class models.Use a flagship model for the weekly analysis.</p></div></figcaption>
+<div class="exam-ask"><p>AWS asks this question.</p></div> Source: original figure for the AWS AIP-C01 Study Guide.</figcaption>
+<figcaption><div><p>The scenario is about millions of simple support-ticket classifications per day.</p></div> <div><p>It is also about a weekly complex contract analysis.</p></div> <div><p>It requires EU data residency.</p></div> <div><p>It has a tight budget.</p></div> <div><p>Use a small model for daily volume.</p></div> <div><p>Examples are Haiku, Llama 8B, or Nova Lite class models.Use a flagship model for the weekly analysis.</p></div> Source: original figure for the AWS AIP-C01 Study Guide.</figcaption>
 <figcaption><div><p>Use an EU region or an EU inference profile.</p></div> <div><p>Use a golden dataset to prove the small model is good enough.</p></div> <div><p>Distractors use the flagship model for everything.</p></div> <div><p>Distractors ignore the EU constraint.</p></div>
-<p class="ch-next" style="border-top:1px solid var(--border);padding-top:1rem;margin-top:1.75rem"><strong>Next:</strong> Chapter 3, Calling models.</p> <p>You picked a model.</p> <p>Now you make the call.</p></figcaption>
+<p class="ch-next" style="border-top:1px solid var(--border);padding-top:1rem;margin-top:1.75rem"><strong>Next:</strong> Chapter 3, Calling models.</p> <p>You picked a model.</p> <p>Now you make the call.</p> Source: original figure for the AWS AIP-C01 Study Guide.</figcaption>
 <figcaption><p>Use InvokeModel, Converse, or streaming.</p>
 
-<figure><img src="assets/img/ste100/aip-five-axes-filter.svg" alt="The five-axis filter: capability floor, region, cost and latency, context window, applied in order" loading="lazy"><figcaption>Model selection is a filter, not a ranking. Apply the four gates in order. The cheapest model that clears every bar wins.</figcaption></figure>
+<figure><img src="assets/img/ste100/aip-five-axes-filter.svg" alt="The five-axis filter: capability floor, region, cost and latency, context window, applied in order" loading="lazy"><figcaption>Model selection is a filter, not a ranking. Apply the four gates in order. The cheapest model that clears every bar wins. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <h4 id="how-to-read-aip-five-axes">How to read this diagram</h4>
 <ol>
 <li>Read the four gates left to right. Each gate drops candidates. You never rank the full list.</li>
@@ -1459,7 +1496,7 @@ html.xp-js .xp-reveal.xp-in {
 <li>The footer lists the five axes you judge on: capability, cost per token, latency, context window, regional availability.</li>
 </ol>
 
-<figure><img src="assets/img/ste100/aip-cascade-design.svg" alt="Cascade design: a cheap model answers first and escalates on low confidence" loading="lazy"><figcaption>A cascade routes easy requests to a cheap model and escalates only the hard ones to the flagship. Most traffic stays cheap.</figcaption></figure>
+<figure><img src="assets/img/ste100/aip-cascade-design.svg" alt="Cascade design: a cheap model answers first and escalates on low confidence" loading="lazy"><figcaption>A cascade routes easy requests to a cheap model and escalates only the hard ones to the flagship. Most traffic stays cheap. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <h4 id="how-to-read-aip-cascade">How to read this diagram</h4>
 <ol>
 <li>Stage 1 is the small fast model. It answers every request and reports its confidence.</li>
@@ -1469,8 +1506,8 @@ html.xp-js .xp-reveal.xp-in {
 <li>Design rule: escalate on low confidence, never round-robin. Evaluate the cascade as a system, not one model.</li>
 </ol>
 
-<h2 id="5-calling-models-invokemodel-vs-converse-vs-streaming">3.</h2> <h2>Calling models: InvokeModel vs Converse vs streaming</h2>
-<figure><img src="assets/img/density/d1-call-decision.svg" alt="One decision picks the API: a provider-only feature means InvokeModel, otherwise Converse, with streaming variants when a user waits" loading="lazy"><figcaption>One decision picks the API.</figcaption></figure> <figure><figcaption>If you need a provider-only feature, use InvokeModel.</figcaption></figure> <figure><figcaption>Otherwise, use Converse.</figcaption></figure> <figure><figcaption>Use streaming variants when a user waits.</figcaption><figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure><div class="walkthrough"><strong>How to read this.</strong> The top box asks one question.</div> <div>If the answer is YES, go left to InvokeModel.</div></figcaption>
+<h2 id="5-calling-models-invokemodel-vs-converse-vs-streaming">3. Calling models: InvokeModel vs Converse vs streaming</h2>
+<figure><img src="assets/img/density/d1-call-decision.svg" alt="One decision picks the API: a provider-only feature means InvokeModel, otherwise Converse, with streaming variants when a user waits" loading="lazy"><figcaption>One decision picks the API. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure> <figure><figcaption>If you need a provider-only feature, use InvokeModel.</figcaption></figure> <figure><figcaption>Otherwise, use Converse.</figcaption></figure> <figure><figcaption>Use streaming variants when a user waits.</figcaption><figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure><div class="walkthrough"><strong>How to read this.</strong> The top box asks one question.</div> <div>If the answer is YES, go left to InvokeModel.</div></figcaption>
 <figcaption><div>InvokeModel uses provider-specific bodies and embeddings.</div> <div>If the answer is NO, go right to Converse.</div> <div>Converse has one shape.</div> <div>It has tool use.</div> <div>It has caching.</div> <div>It has built-in guardrails.</div></figcaption>
 <figcaption><div>The bottom bar covers the waiting-user case.</div> <div>New code defaults to Converse.</div>
 <p class="ch-bridge" style="border-left:3px solid var(--accent);padding:.55rem 1rem;background:var(--surface);border-radius:0 8px 8px 0;margin:1.1rem 0"><strong>Why this comes next.</strong> You know which model you want.</p> <p>The next question is how you talk to it.</p> <p>The call you make decides your code shape.</p> <p>It decides your latency profile.</p> <p>It decides your bill.</p></figcaption>
@@ -1577,7 +1614,7 @@ print(&quot;stop reason:&quot;, response[&quot;stopReason&quot;])
 <p class="ch-next" style="border-top:1px solid var(--border);padding-top:1rem;margin-top:1.75rem"><strong>Next:</strong> Chapter 4, Inference routing and pricing.</p> <p>The call works.</p></figcaption>
 <figcaption><p>Now the request must reach a region that serves it.</p> <p>It must reach it at a price that you can predict.</p>
 
-<figure><img src="assets/img/ste100/aip-inference-api-choice.svg" alt="One question picks the inference API: provider-only feature means InvokeModel, otherwise Converse" loading="lazy"><figcaption>New code defaults to Converse. Reach for InvokeModel only when Converse cannot express the feature. Streaming and batch are chosen by who waits.</figcaption></figure>
+<figure><img src="assets/img/ste100/aip-inference-api-choice.svg" alt="One question picks the inference API: provider-only feature means InvokeModel, otherwise Converse" loading="lazy"><figcaption>New code defaults to Converse. Reach for InvokeModel only when Converse cannot express the feature. Streaming and batch are chosen by who waits. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <h4 id="how-to-read-aip-api-choice">How to read this diagram</h4>
 <ol>
 <li>The diamond asks the one question. A provider-only feature, such as embeddings or image generation, goes left to InvokeModel.</li>
@@ -1587,7 +1624,7 @@ print(&quot;stop reason:&quot;, response[&quot;stopReason&quot;])
 <li>Nobody waiting and bulk work means batch inference: JSONL prompts in S3, results back to S3, hours of latency, roughly half the price.</li>
 </ol>
 
-<h2 id="6-inference-routing-and-pricing-profiles-routers-throughput">4.</h2> <h2>Inference routing and pricing: profiles, routers, throughput</h2>
+<h2 id="6-inference-routing-and-pricing-profiles-routers-throughput">4. Inference routing and pricing: profiles, routers, throughput</h2>
 <p class="ch-bridge" style="border-left:3px solid var(--accent);padding:.55rem 1rem;background:var(--surface);border-radius:0 8px 8px 0;margin:1.1rem 0"><strong>Why this comes next.</strong> Calling a model works in one region.</p> <p>It fails when the model is not in your region.</p> <p>It fails when one request causes a high bill.</p> <p>It fails when traffic increases at noon.</p></figcaption>
 <figcaption><p>This chapter answers the three questions that these failures cause.</p> <p>These questions are: where the request runs, what it costs, and how you reserve capacity.</p>
 
@@ -1646,7 +1683,7 @@ print(&quot;stop reason:&quot;, response[&quot;stopReason&quot;])
 <p>With prompt caching, you mark a <code>cachePoint</code> in the Converse request.</p></figcaption>
 <figcaption><p>Or you mark <code>cache_control</code> in InvokeModel.</p> <p>The provider caches the prefix.</p> <p>Cache hits bill at a reduced input-token rate.</p> <p>Caches have a TTL.</p> <p>The default is 5 minutes.</p> <p>It is up to 1 hour on supported models.</p></figcaption>
 <figcaption><p>They have minimum token thresholds per model.</p>
-<figure><img src="assets/img/mermaid/11-inference-pricing-ladder.svg" alt="Inference pricing ladder: on demand, caching, batch, provisioned, smaller model" loading="lazy"><figcaption>Inference pricing ladder: on demand, caching, batch, provisioned, smaller model</figcaption><figcaption class="credit"><em>Inference pricing ladder: on demand, caching, batch, provisioned, smaller model</em></figcaption></figure>
+<figure><img src="assets/img/mermaid/11-inference-pricing-ladder.svg" alt="Inference pricing ladder: on demand, caching, batch, provisioned, smaller model" loading="lazy"><figcaption>Inference pricing ladder: on demand, caching, batch, provisioned, smaller model</figcaption><figcaption class="credit"><em>Inference pricing ladder: on demand, caching, batch, provisioned, smaller model</em> Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <h4 id="how-to-read-this-diagram-ch4">How to read this diagram</h4>
 <ol>
 <li>The staircase starts at on-demand.</li></ol> <ol><li>It has no commitment.</li></ol> <ol><li>It has the highest flexibility per token.</li></ol> <ol><li>It is the correct default for spiky or experimental traffic.</li>
@@ -1668,7 +1705,7 @@ print(&quot;stop reason:&quot;, response[&quot;stopReason&quot;])
   Provisioned            guaranteed capacity  the PROVISIONED model
   Throughput             + stable latency     ARN, not the base model
 </code></pre>
-<figure><img src="assets/img/mermaid/108-cross-region-profile.svg" alt="Cross-region inference profile: your app calls the profile endpoint, Bedrock routes across the AWS backbone to a region hosting the model" loading="lazy"><figcaption>This is a cross-region inference profile.</figcaption></figure> <figure><figcaption>Your application calls the profile endpoint in its own region.</figcaption></figure> <figure><figcaption>Bedrock routes the request across the AWS backbone.</figcaption></figure></figcaption>
+<figure><img src="assets/img/mermaid/108-cross-region-profile.svg" alt="Cross-region inference profile: your app calls the profile endpoint, Bedrock routes across the AWS backbone to a region hosting the model" loading="lazy"><figcaption>This is a cross-region inference profile. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure> <figure><figcaption>Your application calls the profile endpoint in its own region.</figcaption></figure> <figure><figcaption>Bedrock routes the request across the AWS backbone.</figcaption></figure></figcaption>
 <figcaption><figure><figcaption>It routes to a region that has the model.</figcaption><figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
 <h4 id="how-to-read-xregion">How to read this diagram</h4>
 <ol>
@@ -1690,16 +1727,16 @@ print(&quot;stop reason:&quot;, response[&quot;stopReason&quot;])
 <p class="ch-next" style="border-top:1px solid var(--border);padding-top:1rem;margin-top:1.75rem"><strong>Next:</strong> Chapter 5, The approach ladder.</p></figcaption>
 <figcaption><p>You can call and pay for any model.</p> <p>Now you select the strategy: prompt, RAG, agents, or fine-tuning.</p>
 
-<h2 id="1-the-approach-ladder-prompt-rag-agents-fine-tuning">5.</h2> <h2>The approach ladder: prompt, RAG, agents, fine-tuning</h2>
+<h2 id="1-the-approach-ladder-prompt-rag-agents-fine-tuning">5. The approach ladder: prompt, RAG, agents, fine-tuning</h2>
 <p class="ch-bridge" style="border-left:3px solid var(--accent);padding:.55rem 1rem;background:var(--surface);border-radius:0 8px 8px 0;margin:1.1rem 0"><strong>Why this comes next.</strong> You can now call any model.</p> <p>You can pay for it in a sensible way.</p> <p>The earlier chapters did not answer the bigger question.</p> <p>This question is about strategy.</p></figcaption>
 <figcaption><p>Should you prompt the model?</p> <p>Should you feed documents to the model?</p> <p>Should you give tools to the model?</p> <p>Or should you train the model?</p> <p>This chapter gives you the decision ladder.</p> <p>The cheapest option is first.</p></figcaption>
 <figcaption><p>This gives a place for every chapter that follows.</p>
 <div class="takeaway"><p><strong>The ladder rule.</strong> Start at the lowest step that can work.</p></div> <div><p>Climb only if you have proof that the lower step fails.</p></div> <div><p>The correct answer on the exam is the lowest step that meets all limits.</p></div>
 
-<figure><img src="assets/img/mermaid/53-approach-ladder.svg" alt="The approach ladder: prompt engineering, then RAG, then fine-tuning, then continued pre-training, then training from scratch, in order of rising cost and effort" loading="lazy"><figcaption>This is the approach ladder.</figcaption></figure> <figure><figcaption>First, use prompt engineering.</figcaption></figure> <figure><figcaption>Then, use RAG.</figcaption></figure> <figure><figcaption>Then, use fine-tuning.</figcaption></figure></figcaption>
+<figure><img src="assets/img/mermaid/53-approach-ladder.svg" alt="The approach ladder: prompt engineering, then RAG, then fine-tuning, then continued pre-training, then training from scratch, in order of rising cost and effort" loading="lazy"><figcaption>This is the approach ladder. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure> <figure><figcaption>First, use prompt engineering.</figcaption></figure> <figure><figcaption>Then, use RAG.</figcaption></figure> <figure><figcaption>Then, use fine-tuning.</figcaption></figure></figcaption>
 <figcaption><figure><figcaption>Then, use continued pre-training.</figcaption></figure> <figure><figcaption>Then, train from scratch.</figcaption></figure> <figure><figcaption>This is the order of increasing cost.</figcaption></figure> <figure><figcaption>This is the order of increasing effort.</figcaption></figure> <figure><figcaption>This is a decision matrix.If external knowledge is the need, use RAG.</figcaption></figure> <figure><figcaption>If the model behavior must change, fine-tune the model.</figcaption></figure></figcaption>
 <figcaption><figure><figcaption>If both are true, use a hybrid approach.</figcaption><figcaption class="credit">Source: web image search.</figcaption></figure> <figure><figcaption>Saved locally in Sept 2026.</figcaption></figure>
-<figure class="fig-light"><img src="assets/img/internet/img-14.png" alt="RAG vs fine-tuning decision quadrant: high external knowledge need points to RAG, high model adaptation need points to fine-tuning, both high means hybrid." loading="lazy"><figcaption>This is a decision quadrant for RAG versus fine-tuning.</figcaption></figure> <figure><figcaption>A high external knowledge need shows RAG.</figcaption></figure> <figure><figcaption>A high model adaptation need shows fine-tuning.</figcaption></figure> <figure><figcaption>If both needs are high, use a hybrid approach.</figcaption><figcaption class="credit">Source: DailyDoseofDS.com.</figcaption></figure> <figure><figcaption>Image search in Sept 2026.</figcaption></figure><p>Domain 1 has one most-tested judgment call.</p></figcaption>
+<figure class="fig-light"><img src="assets/img/internet/img-14.png" alt="RAG vs fine-tuning decision quadrant: high external knowledge need points to RAG, high model adaptation need points to fine-tuning, both high means hybrid." loading="lazy"><figcaption>This is a decision quadrant for RAG versus fine-tuning. Source: not recorded for this figure. AWS AIP-C01 Study Guide.</figcaption></figure> <figure><figcaption>A high external knowledge need shows RAG.</figcaption></figure> <figure><figcaption>A high model adaptation need shows fine-tuning.</figcaption></figure> <figure><figcaption>If both needs are high, use a hybrid approach.</figcaption><figcaption class="credit">Source: DailyDoseofDS.com.</figcaption></figure> <figure><figcaption>Image search in Sept 2026.</figcaption></figure><p>Domain 1 has one most-tested judgment call.</p></figcaption>
 <figcaption><p>You have a business need.</p> <p>Which GenAI approach do you select?</p> <p>In which order do you try the approaches?</p>
 <p>Think of this as a ladder.</p> <p>The ladder has four steps.</p> <p>The steps are from the cheapest to the most expensive.</p>
 <ol>
@@ -1777,11 +1814,11 @@ print(&quot;stop reason:&quot;, response[&quot;stopReason&quot;])
 <p class="ch-next" style="border-top:1px solid var(--border);padding-top:1rem;margin-top:1.75rem"><strong>Next:</strong> Chapter 6 is about PoC first, the GenAI Lens, and reusable components.</p> <p>The ladder picked your technique.</p></figcaption>
 <figcaption><p>Now, run the project the way AWS expects.</p>
 
-<h2 id="2-poc-first-the-genai-lens-and-reusable-components">6.</h2> <h2>PoC first, the GenAI Lens, and reusable components</h2>
+<h2 id="2-poc-first-the-genai-lens-and-reusable-components">6. PoC first, the GenAI Lens, and reusable components</h2>
 <p class="ch-bridge" style="border-left:3px solid var(--accent);padding:.55rem 1rem;background:var(--surface);border-radius:0 8px 8px 0;margin:1.1rem 0"><strong>Why this comes next.</strong> The ladder tells you which technique fits.</p> <p>It does not tell you how to run the project without burning months.</p> <p>This chapter answers that.</p> <p>It shows the PoC-first lifecycle AWS expects.</p> <p>It shows the GenAI Lens it uses to judge architectures.</p></figcaption>
 <figcaption><p>It shows the reusable components that make the second project cheaper than the first.</p>
 
-<figure><img src="assets/img/mermaid/54-poc-lifecycle.svg" alt="PoC-first lifecycle: build a small proof of concept on Bedrock, review it against the GenAI Lens, extract reusable components, then go to production" loading="lazy"><figcaption>Use a PoC-first lifecycle.</figcaption></figure> <figure><figcaption>Build a small proof of concept on Bedrock.</figcaption></figure> <figure><figcaption>Review it against the GenAI Lens.</figcaption></figure> <figure><figcaption>Extract reusable components.</figcaption></figure> <figure><figcaption>Then, go to production.</figcaption><figcaption class="credit"><em>PoC-first lifecycle: build a small proof of concept on Bedrock, review it against the GenAI Lens, extract reusable components, then go to production</em></figcaption></figure><p>AWS expects you to design before you build.</p> <p>Prove it small.</p></figcaption>
+<figure><img src="assets/img/mermaid/54-poc-lifecycle.svg" alt="PoC-first lifecycle: build a small proof of concept on Bedrock, review it against the GenAI Lens, extract reusable components, then go to production" loading="lazy"><figcaption>Use a PoC-first lifecycle. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure> <figure><figcaption>Build a small proof of concept on Bedrock.</figcaption></figure> <figure><figcaption>Review it against the GenAI Lens.</figcaption></figure> <figure><figcaption>Extract reusable components.</figcaption></figure> <figure><figcaption>Then, go to production.</figcaption><figcaption class="credit"><em>PoC-first lifecycle: build a small proof of concept on Bedrock, review it against the GenAI Lens, extract reusable components, then go to production</em></figcaption></figure><p>AWS expects you to design before you build.</p> <p>Prove it small.</p></figcaption>
 <figcaption><p>Check it against the standard lens.</p> <p>Build parts once.</p> <p>Every team reuses these parts.</p>
 <p>There are three design habits.</p> <p>A <strong>proof of concept (PoC)</strong> is a small throwaway build on Bedrock.</p> <p>It uses on-demand inference.</p> <p>It validates feasibility, performance, and business value.</p></figcaption>
 <figcaption><p>It does this before any production commitment.</p> <p>The <strong>AWS Well-Architected Framework Generative AI Lens</strong> is AWS's published checklist.</p> <p>It reviews GenAI workloads.</p> <p>It covers pillars like responsible AI, data, model selection, cost, and security.</p> <p>The exam name-drops it as the standard for "design reviews." <strong>Standardized reusable components</strong> are the parts you build once.</p> <p>You reuse them across deployments.</p></figcaption>
@@ -1829,7 +1866,7 @@ print(&quot;stop reason:&quot;, response[&quot;stopReason&quot;])
 <p class="ch-next" style="border-top:1px solid var(--border);padding-top:1rem;margin-top:1.75rem"><strong>Next:</strong> Chapter 7 is about custom models.</p> <p>The methodology is set.</p></figcaption>
 <figcaption><p>Now, examine the ladder's top rung in detail.</p> <p>This includes fine-tuning, continued pre-training, distillation, and imports.</p>
 
-<figure><img src="assets/img/ste100/aip-poc-gates.svg" alt="PoC-first lifecycle: prove it small, review against the GenAI Lens, extract reusable parts" loading="lazy"><figcaption>Build a small proof of concept before any production commitment. The PoC answers three questions, the GenAI Lens reviews the design, and the reusable parts make the next project cheaper.</figcaption></figure>
+<figure><img src="assets/img/ste100/aip-poc-gates.svg" alt="PoC-first lifecycle: prove it small, review against the GenAI Lens, extract reusable parts" loading="lazy"><figcaption>Build a small proof of concept before any production commitment. The PoC answers three questions, the GenAI Lens reviews the design, and the reusable parts make the next project cheaper. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <h4 id="how-to-read-aip-poc">How to read this diagram</h4>
 <ol>
 <li>Step 1 builds a throwaway proof of concept on Bedrock. On-demand inference, no infrastructure.</li>
@@ -1839,12 +1876,12 @@ print(&quot;stop reason:&quot;, response[&quot;stopReason&quot;])
 <li>The footer warns against the failure mode: committing to Provisioned Throughput or custom models before the PoC answers the three questions.</li>
 </ol>
 
-<h2 id="8-custom-models-fine-tuning-continued-pre-training-distillation-imports">7.</h2> <h2>Custom models: fine-tuning, continued pre-training, distillation, imports</h2>
+<h2 id="8-custom-models-fine-tuning-continued-pre-training-distillation-imports">7. Custom models: fine-tuning, continued pre-training, distillation, imports</h2>
 <p class="ch-bridge" style="border-left:3px solid var(--accent);padding:.55rem 1rem;background:var(--surface);border-radius:0 8px 8px 0;margin:1.1rem 0"><strong>Why this comes next.</strong> The approach ladder put fine-tuning, continued pre-training, distillation, and imports on the top rungs.</p> <p>It did not explain them.</p> <p>This chapter explains them.</p> <p>It shows what each customization changes inside the model.</p></figcaption>
 <figcaption><p>It shows which scenario uses which customization.</p>
 
-<figure><img src="assets/img/mermaid/58-customization-options.svg" alt="Customization options: fine-tuning changes behavior, continued pre-training adds domain knowledge, distillation makes a cheaper copy" loading="lazy"><figcaption>Customization options exist.</figcaption></figure> <figure><figcaption>Fine-tuning changes behavior.</figcaption></figure> <figure><figcaption>Continued pre-training adds domain knowledge.</figcaption></figure> <figure><figcaption>Distillation makes a cheaper copy.</figcaption><figcaption class="credit"><em>Customization options: fine-tuning changes behavior, continued pre-training adds domain knowledge, distillation makes a cheaper copy</em></figcaption></figure>
-<figure><img src="assets/img/mermaid/07-grounding-decision.svg" alt="Grounding decision ladder: private or fresh knowledge points to RAG; stable knowledge with a new behavior or tone points to fine-tuning; new domain language points to continued pre-training; otherwise prompt engineering plus Guardrails." loading="lazy"><figcaption>Use RAG for private or fresh knowledge.</figcaption></figure> <figure><figcaption>Use fine-tuning for stable knowledge with a new behavior or tone.</figcaption></figure> <figure><figcaption>Use continued pre-training for new domain language.</figcaption></figure></figcaption>
+<figure><img src="assets/img/mermaid/58-customization-options.svg" alt="Customization options: fine-tuning changes behavior, continued pre-training adds domain knowledge, distillation makes a cheaper copy" loading="lazy"><figcaption>Customization options exist. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure> <figure><figcaption>Fine-tuning changes behavior.</figcaption></figure> <figure><figcaption>Continued pre-training adds domain knowledge.</figcaption></figure> <figure><figcaption>Distillation makes a cheaper copy.</figcaption><figcaption class="credit"><em>Customization options: fine-tuning changes behavior, continued pre-training adds domain knowledge, distillation makes a cheaper copy</em></figcaption></figure>
+<figure><img src="assets/img/mermaid/07-grounding-decision.svg" alt="Grounding decision ladder: private or fresh knowledge points to RAG; stable knowledge with a new behavior or tone points to fine-tuning; new domain language points to continued pre-training; otherwise prompt engineering plus Guardrails." loading="lazy"><figcaption>Use RAG for private or fresh knowledge. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure> <figure><figcaption>Use fine-tuning for stable knowledge with a new behavior or tone.</figcaption></figure> <figure><figcaption>Use continued pre-training for new domain language.</figcaption></figure></figcaption>
 <figcaption><figure><figcaption>Otherwise, use prompt engineering plus Guardrails.</figcaption><figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure><p>The ladder says "bake it into the weights." These are the Bedrock customization options.</p> <p>Each option has a purpose.</p>
 <p>Bedrock custom models adapt a foundation model with your data. <strong>Fine-tuning</strong> (supervised fine-tuning) trains the model.</p> <p>It uses labeled prompt-and-response pairs in S3.</p> <p>The model learns a behavior.</p> <p>This behavior can be a support tone, a classification task, or a response format.</p>
 <p><strong>Continued pre-training</strong> trains further on unlabeled domain text.</p> <p>This text includes manuals and papers.</p></figcaption>
@@ -1903,12 +1940,12 @@ print(&quot;stop reason:&quot;, response[&quot;stopReason&quot;])
 <p class="ch-next" style="border-top:1px solid var(--border);padding-top:1rem;margin-top:1.75rem"><strong>Next:</strong> This is Chapter 8, Swapping models without redeploys.</p></figcaption>
 <figcaption><p>Models change.</p> <p>Now you make your code survive the churn.</p>
 
-<h2 id="7-swapping-models-without-redeploys">8.</h2> <h2>Swapping models without redeploys</h2>
+<h2 id="7-swapping-models-without-redeploys">8. Swapping models without redeploys</h2>
 <p class="ch-bridge" style="border-left:3px solid var(--accent);padding:.55rem 1rem;background:var(--surface);border-radius:0 8px 8px 0;margin:1.1rem 0"><strong>Why this comes next.</strong> Custom models age.</p> <p>Catalog models age.</p> <p>Prices change.</p> <p>Better models arrive.</p></figcaption>
 <figcaption><p>Regions add capacity.</p> <p>The question is how your code survives that churn.</p> <p>Your code must survive without redeploys.</p> <p>This chapter covers the operational pattern.</p> <p>This pattern uses config-driven model IDs.</p> <p>This pattern uses the Converse API.</p></figcaption>
 <figcaption><p>This pattern uses canary swaps behind an eval gate.</p>
 
-<figure><img src="assets/img/mermaid/57-model-swap.svg" alt="Swapping models without redeploys: keep the model ID in config, call through the Converse API, canary the new model behind an eval gate" loading="lazy"><figcaption>Swap models without redeploys.</figcaption></figure> <figure><figcaption>Keep the model ID in config.</figcaption></figure> <figure><figcaption>Call through the Converse API.</figcaption></figure> <figure><figcaption>Canary the new model behind an eval gate.</figcaption><figcaption class="credit"><em>Swap models without redeploys.</em></figcaption></figure> <figure><figcaption><em>Keep the model ID in config.</em></figcaption></figure> <figure><figcaption><em>Call through the Converse API.</em></figcaption></figure></figcaption>
+<figure><img src="assets/img/mermaid/57-model-swap.svg" alt="Swapping models without redeploys: keep the model ID in config, call through the Converse API, canary the new model behind an eval gate" loading="lazy"><figcaption>Swap models without redeploys. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure> <figure><figcaption>Keep the model ID in config.</figcaption></figure> <figure><figcaption>Call through the Converse API.</figcaption></figure> <figure><figcaption>Canary the new model behind an eval gate.</figcaption><figcaption class="credit"><em>Swap models without redeploys.</em></figcaption></figure> <figure><figcaption><em>Keep the model ID in config.</em></figcaption></figure> <figure><figcaption><em>Call through the Converse API.</em></figcaption></figure></figcaption>
 <figcaption><figure><figcaption><em>Canary the new model behind an eval gate</em></figcaption></figure><p>Operations wants to switch between Claude.</p> <p>Operations wants to switch between Titan.</p> <p>Operations wants to switch between Llama.Operations wants to do this without a code deployment.</p> <p>This is the canonical AWS answer.</p>
 <p>The pattern uses three services. <strong>AWS AppConfig</strong> holds the model choice.</p> <p>This is a runtime configuration.</p> <p>This is a feature flag.</p></figcaption>
 <figcaption><p>This is a config value like <code>active_model = us.anthropic.claude-sonnet-...</code>.</p> <p>You can change it in seconds.</p> <p>It has validation.</p> <p>It has gradual rollout. <strong>AWS Lambda</strong> holds the routing logic.</p> <p>It reads the current config.</p> <p>It calls the chosen model through the Converse API. <strong>API Gateway</strong> is the stable front door.</p></figcaption>
@@ -1963,7 +2000,7 @@ print(&quot;stop reason:&quot;, response[&quot;stopReason&quot;])
 <p class="ch-next" style="border-top:1px solid var(--border);padding-top:1rem;margin-top:1.75rem"><strong>Next:</strong> This is Chapter 9, Data pipelines for FMs.</p> <p>Model switching is complete.</p></figcaption>
 <figcaption><p>Now, the data feeds everything else.</p> <p>This includes validation, processing, and extraction.</p>
 
-<figure><img src="assets/img/ste100/aip-model-swap-stack.svg" alt="Config-driven model swaps: AppConfig holds the model ID, Lambda routes, the gateway URL never changes" loading="lazy"><figcaption>The model ID lives in AppConfig, not in code. Operations change a config value instead of deploying code. A circuit breaker adds the fallback path.</figcaption></figure>
+<figure><img src="assets/img/ste100/aip-model-swap-stack.svg" alt="Config-driven model swaps: AppConfig holds the model ID, Lambda routes, the gateway URL never changes" loading="lazy"><figcaption>The model ID lives in AppConfig, not in code. Operations change a config value instead of deploying code. A circuit breaker adds the fallback path. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <h4 id="how-to-read-aip-swap">How to read this diagram</h4>
 <ol>
 <li>API Gateway is the stable front door. One URL, throttling, usage plans. Clients never change when the model changes.</li>
@@ -1974,11 +2011,11 @@ print(&quot;stop reason:&quot;, response[&quot;stopReason&quot;])
 <li>Exam constraint: when the scenario says no code changes or no redeploy, only this config-driven pattern qualifies.</li>
 </ol>
 
-<h2 id="9-data-pipelines-for-fms-validation-processing-extraction">9.</h2> <h2>Data pipelines for FMs: validation, processing, extraction</h2>
+<h2 id="9-data-pipelines-for-fms-validation-processing-extraction">9. Data pipelines for FMs: validation, processing, extraction</h2>
 <p class="ch-bridge" style="border-left:3px solid var(--accent);padding:.55rem 1rem;background:var(--surface);border-radius:0 8px 8px 0;margin:1.1rem 0"><strong>Why this comes next.</strong> Every customization is only as good as its data.</p> <p>Every RAG system in the chapters ahead is only as good as its data.</p> <p>The question is where the data comes from.</p> <p>The question is how the data gets clean.</p></figcaption>
 <figcaption><p>This chapter covers the ingestion machinery.</p> <p>This includes validation.</p> <p>This includes processing.</p> <p>This includes extraction.</p>
 
-<figure><img src="assets/img/mermaid/59-data-pipeline.svg" alt="Data pipeline for foundation models: raw data in S3, clean and dedupe, filter quality, tokenize, split, train, evaluate, deploy" loading="lazy"><figcaption>This is a data pipeline for foundation models.</figcaption></figure> <figure><figcaption>Raw data is in S3.</figcaption></figure> <figure><figcaption>Clean and dedupe the data.</figcaption></figure></figcaption>
+<figure><img src="assets/img/mermaid/59-data-pipeline.svg" alt="Data pipeline for foundation models: raw data in S3, clean and dedupe, filter quality, tokenize, split, train, evaluate, deploy" loading="lazy"><figcaption>This is a data pipeline for foundation models. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure> <figure><figcaption>Raw data is in S3.</figcaption></figure> <figure><figcaption>Clean and dedupe the data.</figcaption></figure></figcaption>
 <figcaption><figure><figcaption>Filter data quality.</figcaption></figure> <figure><figcaption>Tokenize the data.</figcaption></figure> <figure><figcaption>Split the data.</figcaption></figure> <figure><figcaption>Train the model.</figcaption></figure> <figure><figcaption>Evaluate the model.</figcaption></figure> <figure><figcaption>Deploy the model.</figcaption><figcaption class="credit"><em>This is a data pipeline for foundation models.</em></figcaption></figure></figcaption>
 <figcaption><figure><figcaption><em>Raw data is in S3.</em></figcaption></figure> <figure><figcaption><em>Clean and dedupe the data.</em></figcaption></figure> <figure><figcaption><em>Filter data quality.</em></figcaption></figure> <figure><figcaption><em>Tokenize the data.</em></figcaption></figure> <figure><figcaption><em>Split the data.</em></figcaption></figure> <figure><figcaption><em>Train the model.</em></figcaption></figure></figcaption>
 <figcaption><figure><figcaption><em>Evaluate the model.</em></figcaption></figure> <figure><figcaption><em>Deploy the model</em></figcaption></figure><p>Models are only as good as the data.</p> <p>You feed them the data.This topic is the ingestion machinery.</p> <p>The ingestion machinery validates data.</p> <p>The ingestion machinery normalizes data.</p> <p>The ingestion machinery extracts data.</p></figcaption>
@@ -2008,7 +2045,7 @@ print(&quot;stop reason:&quot;, response[&quot;stopReason&quot;])
 <figcaption><p>The exam cares about which service does which job.</p> <p>It does not care about the exact limits.</p>
 <p>There are two big traps.</p> <p>First, Bedrock Guardrails do not extract content.</p> <p>Guardrails are safety filters.</p> <p>The exam offers them as a distractor for extraction tasks.</p> <p>Extraction is BDA, Transcribe, or Comprehend.</p></figcaption>
 <figcaption><p>Second, Amazon Kendra is not a knowledge base.</p> <p>Kendra is enterprise search (it finds documents).</p> <p>Bedrock Knowledge Bases do RAG (retrieve plus generate with citations).</p> <p>The exam swaps them.</p> <p>"We need generated answers with citations" means Knowledge Bases, not Kendra.</p>
-<figure><img src="assets/img/mermaid/12-data-ingestion-exploration.svg" alt="AWS solutions architecture diagram for data ingestion and exploration" loading="lazy"><figcaption>AWS solutions architecture diagram for data ingestion and exploration</figcaption><figcaption class="credit"><em>AWS solutions architecture diagram for data ingestion and exploration</em></figcaption></figure>
+<figure><img src="assets/img/mermaid/12-data-ingestion-exploration.svg" alt="AWS solutions architecture diagram for data ingestion and exploration" loading="lazy"><figcaption>AWS solutions architecture diagram for data ingestion and exploration</figcaption><figcaption class="credit"><em>AWS solutions architecture diagram for data ingestion and exploration</em> Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <h4 id="how-to-read-this-diagram-ch9">How to read this diagram</h4>
 <ol>
 <li>Trace the left edge.</li></ol> <ol><li>Raw data sources feed into the ingestion layer.</li></ol></figcaption>
@@ -2024,11 +2061,7 @@ print(&quot;stop reason:&quot;, response[&quot;stopReason&quot;])
 <div class="exam-ask"><p>How AWS asks this</p>
 <p>Multimodal ingestion scenarios always use BDA for extraction.</p></div> <div><p>They use Lambda for validation and normalization.</p></div> <div><p>They use Glue Data Quality plus CloudWatch for monitoring.</p></div> <div><p>If the scenario mentions audio, Transcribe appears in the correct chain.</p></div> <div><p>Formatting questions test Converse (unified messages) versus InvokeModel (provider bodies).</p></div> <div><p>They also test JSON schema for structured output.</p></div>
 <p class="ch-next" style="border-top:1px solid var(--border);padding-top:1rem;margin-top:1.75rem"><strong>Next:</strong> Chapter 10, Chunking strategies.</p></figcaption>
-<figcaption><p>Clean documents are ready.</p> <p>Now you cut them into pieces.</p> <p>Retrieval can find these pieces.</p>
-
-<h2 id="13-chunking-strategies">10.</h2> <h2>Chunking strategies</h2>
-<p class="ch-bridge" style="border-left:3px solid var(--accent);padding:.55rem 1rem;background:var(--surface);border-radius:0 8px 8px 0;margin:1.1rem 0"><strong>Why this comes next.</strong> Data pipelines produce clean documents.</p> <p>But models do not read documents.</p> <p>They read tokens through a limited context window.</p></figcaption>
-<figcaption><p>The question is how to cut documents into retrievable pieces.</p> <p>This chapter answers the question.</p> <p>It uses chunking strategies.</p>Image search, September 2026.</figcaption>ation. They use Glue Data Quality plus CloudWatch for monitoring. If the scenario mentions audio, Transcribe appears in the correct chain. Formatting questions test Converse (unified messages) versus InvokeModel (provider bodies). They also test JSON schema for structured output.</p></div>
+ation. They use Glue Data Quality plus CloudWatch for monitoring. If the scenario mentions audio, Transcribe appears in the correct chain. Formatting questions test Converse (unified messages) versus InvokeModel (provider bodies). They also test JSON schema for structured output.</p></div>
 <p class="ch-next" style="border-top:1px solid var(--border);padding-top:1rem;margin-top:1.75rem"><strong>Next:</strong> Chapter 10, Chunking strategies. Clean documents are ready. Now you cut them into pieces. Retrieval can find these pieces.</p>
 
 <h2 id="13-chunking-strategies">10. Chunking strategies</h2>
@@ -2081,7 +2114,7 @@ print(&quot;stop reason:&quot;, response[&quot;stopReason&quot;])
 <p>At ingestion, the parser processes each document. It applies the strategy. For fixed-size: cut every N tokens. Keep the last X percent as overlap into the next chunk. For hierarchical: first cut parents. For example, cut by section or large token windows.</p>
 <p>Then cut children inside each parent. Record the parent-child link. At retrieval, the child matches the query. Then the parent's text goes to the model as context. For semantic: the service analyzes sentence and topic boundaries. It cuts where meaning changes.</p>
 <p>This costs more compute at ingestion. It runs a model over the text. The strategy and its parameters are stored on the data source. Re-ingestion after a strategy change rebuilds every vector. This is why the choice is permanent.</p>
-<figure><img src="assets/img/mermaid/14-chunking-strategies.svg" alt="Three chunking strategies: fixed size, hierarchical, semantic" loading="lazy"><figcaption>There are three chunking strategies: fixed size, hierarchical, semantic.</figcaption><figcaption class="credit"><em>Three chunking strategies: fixed size, hierarchical, semantic</em></figcaption></figure>
+<figure><img src="assets/img/mermaid/14-chunking-strategies.svg" alt="Three chunking strategies: fixed size, hierarchical, semantic" loading="lazy"><figcaption>There are three chunking strategies: fixed size, hierarchical, semantic.</figcaption><figcaption class="credit"><em>Three chunking strategies: fixed size, hierarchical, semantic</em> Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <h4 id="how-to-read-this-diagram-ch10">How to read this diagram</h4>
 <ol>
 <li>Top row, fixed-size: equal blocks have small overlaps. This is predictable and cheap. It does not consider document structure.</li>
@@ -2121,9 +2154,9 @@ print(&quot;stop reason:&quot;, response[&quot;stopReason&quot;])
 <h2 id="14-embeddings-titan-embeddings-and-cohere-embed">11. Embeddings: Titan Embeddings and Cohere Embed</h2>
 <p class="ch-bridge" style="border-left:3px solid var(--accent);padding:.55rem 1rem;background:var(--surface);border-radius:0 8px 8px 0;margin:1.1rem 0"><strong>Why this comes next.</strong> Chunks are text. Retrieval needs numbers. "Similar meaning" can become "short distance." The question is how text becomes vectors. This chapter answers this question. It describes the two embedding models for the exam. It also describes the dimension trade-off.</p>
 
-<figure class="fig-light"><img src="assets/img/internet/img-21.png" alt="Cosine similarity: the angle between two embedding vectors; a smaller angle means closer meaning" loading="lazy"><figcaption>Cosine similarity is the angle between two embedding vectors. A smaller angle means closer meaning.</figcaption><figcaption class="credit">Source: web image search. Saved locally, September 2026.</figcaption></figure>
-<figure class="fig-light"><img src="assets/img/internet/img-23.png" alt="Vector similarity metrics explained: cosine similarity, dot product, and Euclidean distance, and when to use each" loading="lazy"><figcaption>Vector similarity metrics are cosine similarity, dot product, and Euclidean distance. Learn when to use each metric.</figcaption><figcaption class="credit">Source: web image search. Saved locally, September 2026.</figcaption></figure>
-<figure class="fig-light"><img src="assets/img/internet/img-06.png" alt="OpenSearch Ingestion feeding Amazon OpenSearch Service as a vector store, connected to Amazon Bedrock." loading="lazy"><figcaption>OpenSearch Ingestion feeds Amazon OpenSearch Service. OpenSearch Service is a vector store. It connects to Amazon Bedrock.</figcaption><figcaption class="credit">Source: AWS Big Data blog. Image search, September 2026.</figcaption></figure><p>Embeddings change text into numbers. "Similar meaning" becomes "short distance." Two models are most important for the exam.</p>
+<figure class="fig-light"><img src="assets/img/internet/img-21.png" alt="Cosine similarity: the angle between two embedding vectors; a smaller angle means closer meaning" loading="lazy"><figcaption>Cosine similarity is the angle between two embedding vectors. A smaller angle means closer meaning.</figcaption><figcaption class="credit">Source: web image search. Saved locally, September 2026. Reused in the AWS AIP-C01 Study Guide.</figcaption></figure>
+<figure class="fig-light"><img src="assets/img/internet/img-23.png" alt="Vector similarity metrics explained: cosine similarity, dot product, and Euclidean distance, and when to use each" loading="lazy"><figcaption>Vector similarity metrics are cosine similarity, dot product, and Euclidean distance. Learn when to use each metric.</figcaption><figcaption class="credit">Source: web image search. Saved locally, September 2026. Reused in the AWS AIP-C01 Study Guide.</figcaption></figure>
+<figure class="fig-light"><img src="assets/img/internet/img-06.png" alt="OpenSearch Ingestion feeding Amazon OpenSearch Service as a vector store, connected to Amazon Bedrock." loading="lazy"><figcaption>OpenSearch Ingestion feeds Amazon OpenSearch Service. OpenSearch Service is a vector store. It connects to Amazon Bedrock.</figcaption><figcaption class="credit">Source: AWS Big Data blog. Image search, September 2026. Reused in the AWS AIP-C01 Study Guide.</figcaption></figure><p>Embeddings change text into numbers. "Similar meaning" becomes "short distance." Two models are most important for the exam.</p>
 <p>An <strong>embedding</strong> is a list of numbers. This list is a vector. It represents a piece of text. Texts with similar meaning get vectors. These vectors sit close together in space. An <strong>embedding model</strong> does the conversion.</p>
 <p>On Bedrock, there are two exam-relevant choices. <strong>Amazon Titan Text Embeddings v2</strong> is the cheap default with configurable dimensions. You can choose 1024, 512, or 256. <strong>Cohere Embed</strong> is strong for multilingual content. It takes an <code>input_type</code> parameter. This parameter distinguishes <code>search_query</code> from <code>search_document</code>. This action embeds queries and documents correctly. You call embedding models with InvokeModel.</p>
 <p>Never use Converse. Converse is for text generation only. The <strong>dimension count</strong> is the length of the vector. More dimensions capture more nuance. More dimensions cost more storage and slower search.</p>
@@ -2141,7 +2174,7 @@ print(&quot;stop reason:&quot;, response[&quot;stopReason&quot;])
 <li>Cosine: 10 / (2.24 × 4.47) = 10 / 10.01 ≈ 1.0.</li>
 </ol>
 <p>The vectors point the same way. So similarity is at its maximum. This is what you expect from two texts with the same meaning.</p>
-<figure><img src="assets/img/mermaid/15-vector-space.svg" alt="Text converted to points in vector space, with similar texts clustered together" loading="lazy"><figcaption>Text is converted to points in vector space. Similar texts are grouped together.</figcaption><figcaption class="credit"><em>Text converted to points in vector space, with similar texts clustered together</em></figcaption></figure>
+<figure><img src="assets/img/mermaid/15-vector-space.svg" alt="Text converted to points in vector space, with similar texts clustered together" loading="lazy"><figcaption>Text is converted to points in vector space. Similar texts are grouped together.</figcaption><figcaption class="credit"><em>Text converted to points in vector space, with similar texts clustered together</em> Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <h4 id="how-to-read-this-diagram-ch11">How to read this diagram</h4>
 <ol>
 <li>Short texts enter the embedding model on the left side. They come out as points (vectors).</li>
@@ -2163,7 +2196,7 @@ print(&quot;stop reason:&quot;, response[&quot;stopReason&quot;])
 <h2 id="11-vector-stores-compared">12. Vector stores compared</h2>
 <p class="ch-bridge" style="border-left:3px solid var(--accent);padding:.55rem 1rem;background:var(--surface);border-radius:0 8px 8px 0;margin:1.1rem 0"><strong>Why this comes next.</strong> Embeddings change text into vectors. Vectors need a home. This home must search millions of them in milliseconds. This chapter answers which home. It compares the vector stores for the exam. Each store has its own personality.</p>
 
-<figure><img src="assets/img/mermaid/103-vector-stores.svg" alt="Vector store choice for a Bedrock Knowledge Base: OpenSearch Serverless for managed AWS-native, Aurora pgvector for Postgres shops, S3 Vectors for cheap S3-native, Pinecone for external SaaS" loading="lazy"><figcaption>Choose a vector store for a Bedrock Knowledge Base. Use OpenSearch Serverless for managed AWS-native. Use Aurora pgvector for Postgres shops. Use S3 Vectors for cheap S3-native. Use Pinecone for external SaaS.</figcaption></figure><p>Knowledge Bases need a place for the vectors.Each store has a personality. The exam tests the match.</p>
+<figure><img src="assets/img/mermaid/103-vector-stores.svg" alt="Vector store choice for a Bedrock Knowledge Base: OpenSearch Serverless for managed AWS-native, Aurora pgvector for Postgres shops, S3 Vectors for cheap S3-native, Pinecone for external SaaS" loading="lazy"><figcaption>Choose a vector store for a Bedrock Knowledge Base. Use OpenSearch Serverless for managed AWS-native. Use Aurora pgvector for Postgres shops. Use S3 Vectors for cheap S3-native. Use Pinecone for external SaaS. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure><p>Knowledge Bases need a place for the vectors.Each store has a personality. The exam tests the match.</p>
 <p>A <strong>vector store</strong> (also called a vector database) stores embeddings. It finds the nearest ones to a query embedding fast. Bedrock Knowledge Bases supports several of these.</p>
 <div class="table-wrap"><table>
 <thead>
@@ -2283,7 +2316,7 @@ print(&quot;stop reason:&quot;, response[&quot;stopReason&quot;])
 <p>"Prototype on a budget" means S3 Vectors. The wrong answers are always a plausible store. But they have the wrong personality.</p></div>
 <p class="ch-next" style="border-top:1px solid var(--border);padding-top:1rem;margin-top:1.75rem"><strong>Next:</strong> Chapter 13, Knowledge Bases. The parts are compared. Now, AWS's assembled version is the managed RAG service.</p>
 
-<figure><img src="assets/img/ste100/aip-vector-store-picker.svg" alt="Vector store picker: follow the scenario verb to the right store" loading="lazy"><figcaption>Each branch matches one scenario verb. Walk the diamonds top to bottom. When no special case applies, OpenSearch Serverless is the default.</figcaption></figure>
+<figure><img src="assets/img/ste100/aip-vector-store-picker.svg" alt="Vector store picker: follow the scenario verb to the right store" loading="lazy"><figcaption>Each branch matches one scenario verb. Walk the diamonds top to bottom. When no special case applies, OpenSearch Serverless is the default. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <h4 id="how-to-read-aip-vspick">How to read this diagram</h4>
 <ol>
 <li>Start at the top diamond. Already invested in Pinecone, MongoDB Atlas, or Redis? Connect through the managed connectors.</li>
@@ -2296,7 +2329,7 @@ print(&quot;stop reason:&quot;, response[&quot;stopReason&quot;])
 <h2 id="10-knowledge-bases-the-managed-rag-service">13. Knowledge Bases: the managed RAG service</h2>
 <p class="ch-bridge" style="border-left:3px solid var(--accent);padding:.55rem 1rem;background:var(--surface);border-radius:0 8px 8px 0;margin:1.1rem 0"><strong>Why this comes next.</strong> You now know chunking, embeddings, and stores. These are separate parts. AWS sells them assembled. They are Bedrock Knowledge Bases. This chapter covers the managed RAG service. This service is the answer for half of the exam's RAG questions.</p>
 
-<figure class="fig-light"><img src="assets/img/internet/img-07.png" alt="Bedrock Knowledge Bases end to end: documents in S3, embeddings generated, stored and indexed in OpenSearch Serverless, then RetrieveAndGenerate for end users." loading="lazy"><figcaption>Bedrock Knowledge Bases work end to end. Documents are in S3. Embeddings are generated. Embeddings are stored and indexed in OpenSearch Serverless. Then RetrieveAndGenerate works for end users.</figcaption><figcaption class="credit">Source: AWS Machine Learning blog. Image search found it in September 2026.</figcaption></figure><p>Bedrock Knowledge Bases change your documents into a queryable RAG backend. This needs almost no code. This service is the answer for half of the exam's RAG questions.</p>
+<figure class="fig-light"><img src="assets/img/internet/img-07.png" alt="Bedrock Knowledge Bases end to end: documents in S3, embeddings generated, stored and indexed in OpenSearch Serverless, then RetrieveAndGenerate for end users." loading="lazy"><figcaption>Bedrock Knowledge Bases work end to end. Documents are in S3. Embeddings are generated. Embeddings are stored and indexed in OpenSearch Serverless. Then RetrieveAndGenerate works for end users.</figcaption><figcaption class="credit">Source: AWS Machine Learning blog. Image search found it in September 2026. Reused in the AWS AIP-C01 Study Guide.</figcaption></figure><p>Bedrock Knowledge Bases change your documents into a queryable RAG backend. This needs almost no code. This service is the answer for half of the exam's RAG questions.</p>
 <p><strong>Amazon Bedrock Knowledge Bases</strong> is the fully managed RAG service. You connect <strong>data sources</strong>. These include S3 buckets, a web crawler, Confluence, SharePoint, and Salesforce. The service ingests the documents. It chunks them (chapter 10).</p>
 <p>It embeds them (chapter 11). It stores the vectors in your chosen vector store (chapter 12). You set <strong>sync schedules</strong>. This ensures the service picks up new and changed documents automatically. At query time, you call <strong>Retrieve</strong>.</p>
 <p>This gets the relevant chunks. Or you call <strong>RetrieveAndGenerate</strong>. This gets chunks plus a model-generated answer with source citations. You use the bedrock-agent-runtime endpoint. You can also attach a knowledge base to a Bedrock Agent for grounding.</p>
@@ -2312,7 +2345,7 @@ print(&quot;stop reason:&quot;, response[&quot;stopReason&quot;])
 <p><em>The mechanics are set. Now the mistakes the exam loves to test.</em></p>
 <p>The multi-tenant trap: One shared knowledge base for tenants with different access controls is wrong. The exam wants isolation. Use separate knowledge bases per tenant. Or use separate knowledge bases per account. Use IAM-scoped access.</p>
 <p>Do not use one KB plus prompt instructions like "only answer about your own hotel." Prompt-level filtering is not a security boundary. Also: Retrieve versus RetrieveAndGenerate matters. If the scenario needs citations in a generated answer, you need the latter. Or you generate yourself from retrieved chunks.</p>
-<figure><img src="assets/img/mermaid/13-kb-sources-retrieval.svg" alt="Knowledge base data sources converging into retrieval" loading="lazy"><figcaption>Knowledge base data sources converge into retrieval.</figcaption><figcaption class="credit"><em>Knowledge base data sources converging into retrieval</em></figcaption></figure>
+<figure><img src="assets/img/mermaid/13-kb-sources-retrieval.svg" alt="Knowledge base data sources converging into retrieval" loading="lazy"><figcaption>Knowledge base data sources converge into retrieval.</figcaption><figcaption class="credit"><em>Knowledge base data sources converging into retrieval</em> Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <h4 id="how-to-read-this-diagram-ch13">How to read this diagram</h4>
 <ol>
 <li>Left column: These are the supported data source types. Each can have its own sync schedule.</li>
@@ -2327,7 +2360,7 @@ print(&quot;stop reason:&quot;, response[&quot;stopReason&quot;])
 <p>Kendra is search, not RAG. Hand-rolled OpenSearch pipelines are distractors. They have operational overhead. Fine-tuning is a distractor. It is stale. It has no citations.</p></div>
 <p class="ch-next" style="border-top:1px solid var(--border);padding-top:1rem;margin-top:1.75rem"><strong>Next:</strong> Chapter 14, RAG end to end. You know the managed service. Now, learn the full pipeline under the hood. It goes from S3 to a cited answer.</p>
 
-<figure><img src="assets/img/ste100/aip-kb-sync-lifecycle.svg" alt="Knowledge Base lifecycle: sources sync, chunk, embed, index, then Retrieve or RetrieveAndGenerate" loading="lazy"><figcaption>Point at your documents and get a queryable RAG backend. Sync picks up changed documents automatically. At query time, Retrieve returns chunks and RetrieveAndGenerate returns chunks plus a cited answer.</figcaption></figure>
+<figure><img src="assets/img/ste100/aip-kb-sync-lifecycle.svg" alt="Knowledge Base lifecycle: sources sync, chunk, embed, index, then Retrieve or RetrieveAndGenerate" loading="lazy"><figcaption>Point at your documents and get a queryable RAG backend. Sync picks up changed documents automatically. At query time, Retrieve returns chunks and RetrieveAndGenerate returns chunks plus a cited answer. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <h4 id="how-to-read-aip-kbsync">How to read this diagram</h4>
 <ol>
 <li>Left box: the data sources. S3 buckets, a web crawler, Confluence, SharePoint, Salesforce.</li>
@@ -2341,8 +2374,8 @@ print(&quot;stop reason:&quot;, response[&quot;stopReason&quot;])
 <h2 id="12-rag-end-to-end">14. RAG end to end</h2>
 <p class="ch-bridge" style="border-left:3px solid var(--accent);padding:.55rem 1rem;background:var(--surface);border-radius:0 8px 8px 0;margin:1.1rem 0"><strong>Why this comes next.</strong> Knowledge Bases hide the machinery. The exam sometimes asks what happens inside the box. This includes ingestion, retrieval, augmentation, and generation. This chapter walks the full RAG pipeline. It goes from a document landing in S3 to an answer with citations.</p>
 
-<figure class="fig-light"><img src="assets/img/internet/img-03.png" alt="RAG basic structure: documents are chunked and embedded into a vector database, the retriever feeds chunk context into the prompt, and the LLM generates the answer" loading="lazy"><figcaption>RAG basic structure: Documents are chunked and embedded into a vector database. The retriever feeds chunk context into the prompt. The LLM generates the answer.</figcaption><figcaption class="credit">Source: web image search, saved locally Sept 2026.</figcaption></figure>
-<figure><img src="assets/img/mermaid/01-rag-pipeline.svg" alt="RAG pipeline: documents are chunked and embedded offline into a vector store." loading="lazy"><figcaption>RAG pipeline: Documents are chunked and embedded offline. They go into a vector store.</figcaption><figcaption class="credit">At query time, the question is embedded. Top-k chunks are retrieved. The prompt is augmented with citations. The Converse API produces a grounded answer. <em>Generated diagram for this guide.</em></figcaption></figure><p>This is the full retrieval-augmented generation loop. It is traced from document to cited answer. This is the architecture behind most questions in Domain 1.</p>
+<figure class="fig-light"><img src="assets/img/internet/img-03.png" alt="RAG basic structure: documents are chunked and embedded into a vector database, the retriever feeds chunk context into the prompt, and the LLM generates the answer" loading="lazy"><figcaption>RAG basic structure: Documents are chunked and embedded into a vector database. The retriever feeds chunk context into the prompt. The LLM generates the answer.</figcaption><figcaption class="credit">Source: web image search, saved locally Sept 2026. Reused in the AWS AIP-C01 Study Guide.</figcaption></figure>
+<figure><img src="assets/img/mermaid/01-rag-pipeline.svg" alt="RAG pipeline: documents are chunked and embedded offline into a vector store." loading="lazy"><figcaption>RAG pipeline: Documents are chunked and embedded offline. They go into a vector store.</figcaption><figcaption class="credit">At query time, the question is embedded. Top-k chunks are retrieved. The prompt is augmented with citations. The Converse API produces a grounded answer. <em>Generated diagram for this guide.</em> Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure><p>This is the full retrieval-augmented generation loop. It is traced from document to cited answer. This is the architecture behind most questions in Domain 1.</p>
 <p><strong>RAG (Retrieval-Augmented Generation)</strong> is the pattern where the model does not answer from its training weights alone. At query time, the system retrieves relevant passages from your documents. It puts them into the prompt as context. Then, the model answers from that context.</p>
 <p>It cites the context. The loop has five stages. <strong>ingest</strong> (documents in). <strong>chunk and embed</strong> (split text, turn chunks into vectors). <strong>store</strong> (vectors plus metadata in a vector store). <strong>retrieve</strong> (embed the query, find nearest chunks). <strong>generate</strong> (model answers from the retrieved context with citations). Bedrock Knowledge Bases with RetrieveAndGenerate runs the whole loop managed.</p>
 <p>Foundation models have a knowledge cutoff. They have no access to your private data. They also hallucinate confidently when they do not know something. RAG fixes both without retraining. New documents are searchable the moment they are ingested.</p>
@@ -2421,11 +2454,11 @@ for citation in response.get(&quot;citations&quot;, []):
 <p class="ch-next" style="border-top:1px solid var(--border);padding-top:1rem;margin-top:1.75rem"><strong>Next:</strong> Chapter 15, Retrieval quality. The pipeline runs. Now, fix it when it retrieves the wrong chunks. Use hybrid search, rerank, and query handling.</p>
 
 <h2 id="15-retrieval-quality-hybrid-search-rerank-query-handling-debugging">15. Retrieval quality: hybrid search, rerank, query handling, debugging</h2>
-<figure><img src="assets/img/density/d1-retrieval-debug.svg" alt="Four retrieval fixes in exam order: hybrid search, rerank, query handling, then pipeline debugging" loading="lazy"><figcaption>There are four retrieval fixes in exam order. Use hybrid search. Use rerank. Use query handling. Then, debug the pipeline.</figcaption><figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure><div class="walkthrough"><strong>How to read this.</strong> Read from top to bottom. This is the order the exam expects. Each box names the fix. It also names what the fix repairs. Hybrid stops losing exact codes. Rerank reorders the top 50. Query handling rewrites the question. Debugging checks the pipeline itself. Takeaway: try them in this order. Do not try them at random.</div>
+<figure><img src="assets/img/density/d1-retrieval-debug.svg" alt="Four retrieval fixes in exam order: hybrid search, rerank, query handling, then pipeline debugging" loading="lazy"><figcaption>There are four retrieval fixes in exam order. Use hybrid search. Use rerank. Use query handling. Then, debug the pipeline.</figcaption><figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure><div class="walkthrough"><strong>How to read this.</strong> Read from top to bottom. This is the order the exam expects. Each box names the fix. It also names what the fix repairs. Hybrid stops losing exact codes. Rerank reorders the top 50. Query handling rewrites the question. Debugging checks the pipeline itself. Takeaway: try them in this order. Do not try them at random.</div>
 <p class="ch-bridge" style="border-left:3px solid var(--accent);padding:.55rem 1rem;background:var(--surface);border-radius:0 8px 8px 0;margin:1.1rem 0"><strong>Why this comes next.</strong> A working RAG pipeline still retrieves the wrong chunks. Exact product codes are missed. Plausible-but-wrong chunks rank first. Vague questions confuse the retriever.</p>
 <p class="ch-bridge" style="border-left:3px solid var(--accent);padding:.55rem 1rem;background:var(--surface);border-radius:0 8px 8px 0;margin:1.1rem 0">This chapter answers the debugging question. Use hybrid search, reranking, and query handling. Try them in this order.</p>
 
-<figure><img src="assets/img/mermaid/104-hybrid-rerank.svg" alt="Hybrid search with rerank: vector plus keyword retrieval run in parallel, the candidate pool goes to a reranker model, and only the top chunks reach the prompt" loading="lazy"><figcaption>Hybrid search with rerank uses vector and keyword retrieval. These run in parallel. The candidate pool goes to a reranker model. Only the top chunks reach the prompt.</figcaption></figure><p>If RAG retrieves the wrong passages, use these fixes.Try them in this order. This is the order the exam expects.</p>
+<figure><img src="assets/img/mermaid/104-hybrid-rerank.svg" alt="Hybrid search with rerank: vector plus keyword retrieval run in parallel, the candidate pool goes to a reranker model, and only the top chunks reach the prompt" loading="lazy"><figcaption>Hybrid search with rerank uses vector and keyword retrieval. These run in parallel. The candidate pool goes to a reranker model. Only the top chunks reach the prompt. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure><p>If RAG retrieves the wrong passages, use these fixes.Try them in this order. This is the order the exam expects.</p>
 <p>Four quality levers are between the query and the retrieved chunks. <strong>Hybrid search</strong> combines vector search with keyword search. This keeps exact terms like product codes and names. It prevents loss from pure semantic matching. BM25 is the classic keyword-scoring algorithm for the lexical side. <strong>Reranking</strong> takes the top candidates from the first pass. For example, it takes 50 chunks. It runs a dedicated rerank model over them with the query.</p>
 <p>This produces a better-ordered top-K. For example, it produces 5 chunks. Bedrock offers rerank models for this. <strong>Query handling</strong> rewrites the user's question before retrieval. <strong>query expansion</strong> adds synonyms and related terms. <strong>query decomposition</strong> splits a complex question into sub-questions. This often uses Lambda. <strong>query transformation</strong> restates the question for better matching. This is sometimes orchestrated with Step Functions. MCP clients and function-calling interfaces give agents a standard way to reach these retrieval tools.</p>
 <p>Pure vector search has a blind spot. It is good at meaning. It is bad at exact strings. A query for "invoice INV-2024-8841" needs the exact token. It does not need the general meaning. Hybrid search covers both.</p>
@@ -2469,7 +2502,7 @@ for citation in response.get(&quot;citations&quot;, []):
 <p>If queries contain exact product SKUs and retrieval misses them, it points to hybrid search. If first-pass retrieval returns 50 plausible chunks but the top 5 are often wrong, it points to reranking. If users ask vague multi-part questions, it points to query expansion and decomposition. Each scenario verb maps to one lever.</p></div>
 <p class="ch-next" style="border-top:1px solid var(--border);padding-top:1rem;margin-top:1.75rem"><strong>Next:</strong> Chapter 16, Prompt Management, Prompt Flows, and prompt governance. Retrieval is tuned. Now the prompts themselves become engineered artifacts.</p>
 
-<figure><img src="assets/img/ste100/aip-retrieval-quality-order.svg" alt="Retrieval fixes in exam order: hybrid search, rerank, query handling, then pipeline debugging" loading="lazy"><figcaption>Four levers, tried top to bottom in the order the exam expects. Each box names the fix and the failure it repairs.</figcaption></figure>
+<figure><img src="assets/img/ste100/aip-retrieval-quality-order.svg" alt="Retrieval fixes in exam order: hybrid search, rerank, query handling, then pipeline debugging" loading="lazy"><figcaption>Four levers, tried top to bottom in the order the exam expects. Each box names the fix and the failure it repairs. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <h4 id="how-to-read-aip-retorder">How to read this diagram</h4>
 <ol>
 <li>Lever 1 is hybrid search. Vector search finds meaning, keyword search finds exact terms. Together they stop losing product codes and names.</li>
@@ -2482,8 +2515,8 @@ for citation in response.get(&quot;citations&quot;, []):
 <h2 id="16-prompt-management-prompt-flows-and-prompt-governance">16. Prompt Management, Prompt Flows, and prompt governance</h2>
 <p class="ch-bridge" style="border-left:3px solid var(--accent);padding:.55rem 1rem;background:var(--surface);border-radius:0 8px 8px 0;margin:1.1rem 0"><strong>Why this comes next.</strong> So far, prompts were inline strings in API calls. At production scale, this breaks. Prompts need versions, variants, approval, and audit. This chapter covers the engineering discipline. This includes Prompt Management, Prompt Flows, and governance.</p>
 
-<figure><img src="assets/img/mermaid/60-prompt-flows.svg" alt="Bedrock Prompt Flows: a visual builder that chains prompt nodes with branches, RAG steps, and guardrails into one traceable flow" loading="lazy"><figcaption>Bedrock Prompt Flows is a visual builder. It chains prompt nodes with branches, RAG steps, and guardrails. It makes one traceable flow.</figcaption><figcaption class="credit"><em>Bedrock Prompt Flows: a visual builder that chains prompt nodes with branches, RAG steps, and guardrails into one traceable flow</em></figcaption></figure>
-<figure class="fig-light"><img src="assets/img/internet/img-12.png" alt="Anatomy of a prompt system: identity, tone and style, safety rules, output format, tools and actions, and special cases." loading="lazy"><figcaption>Anatomy of a prompt system: identity, tone and style, safety rules, output format, tools and actions, and special cases.</figcaption><figcaption class="credit">Source: Third-party prompt engineering guide, via image search Sept 2026.</figcaption></figure><p>Prompts are production assets. Bedrock gives you versioning, A/B testing, visual chaining, and audit trails for them.</p>
+<figure><img src="assets/img/mermaid/60-prompt-flows.svg" alt="Bedrock Prompt Flows: a visual builder that chains prompt nodes with branches, RAG steps, and guardrails into one traceable flow" loading="lazy"><figcaption>Bedrock Prompt Flows is a visual builder. It chains prompt nodes with branches, RAG steps, and guardrails. It makes one traceable flow.</figcaption><figcaption class="credit"><em>Bedrock Prompt Flows: a visual builder that chains prompt nodes with branches, RAG steps, and guardrails into one traceable flow</em> Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
+<figure class="fig-light"><img src="assets/img/internet/img-12.png" alt="Anatomy of a prompt system: identity, tone and style, safety rules, output format, tools and actions, and special cases." loading="lazy"><figcaption>Anatomy of a prompt system: identity, tone and style, safety rules, output format, tools and actions, and special cases.</figcaption><figcaption class="credit">Source: Third-party prompt engineering guide, via image search Sept 2026. Reused in the AWS AIP-C01 Study Guide.</figcaption></figure><p>Prompts are production assets. Bedrock gives you versioning, A/B testing, visual chaining, and audit trails for them.</p>
 <p><strong>Bedrock Prompt Management</strong> treats prompts as managed resources. It does not treat them as strings in code. A prompt has <code>{{variable}}</code> placeholders. These fill at runtime. It has <strong>versions</strong>.</p>
 <p>These are immutable snapshots. You edit a draft. Then you publish a version. It has <strong>variants</strong>. These are alternative versions of the same prompt.</p>
 <p>They are for A/B testing. There is no extra charge. You pay only for the model tokens the prompt uses. <strong>Prompt Flows</strong> (called Flows) is the visual, no-code builder. It is for multi-step GenAI workflows. It has nodes for prompts, agents, knowledge bases, Lambda functions, and conditions.</p>
@@ -2527,7 +2560,7 @@ for citation in response.get(&quot;citations&quot;, []):
 <p>If a scenario says "Three-stage prompt chain with branching on confidence, built by non-engineers," it points to Prompt Flows. If it says "Same chain but with a human approval step and timeouts," it points to Step Functions. If it says "Prove which marketing prompt variant converts better," it points to variants plus evaluation metrics. If it says "Who changed the production prompt last Tuesday," it points to CloudTrail.</p></div>
 <p class="ch-next" style="border-top:1px solid var(--border);padding-top:1rem;margin-top:1.75rem"><strong>Next:</strong> Chapter 17, Data privacy and compliance. Prompts are governed. Now, the privacy envelope covers everything. This includes PII, encryption, endpoints, and audit.</p>
 
-<figure><img src="assets/img/ste100/aip-prompt-lifecycle.svg" alt="Prompt lifecycle: draft, publish versions, test variants, approve, then call by name and version" loading="lazy"><figcaption>Prompts are production assets with immutable versions and A/B variants. Approval gates the live version. The app calls prompts by name and version, so wording tweaks stop being code deploys.</figcaption></figure>
+<figure><img src="assets/img/ste100/aip-prompt-lifecycle.svg" alt="Prompt lifecycle: draft, publish versions, test variants, approve, then call by name and version" loading="lazy"><figcaption>Prompts are production assets with immutable versions and A/B variants. Approval gates the live version. The app calls prompts by name and version, so wording tweaks stop being code deploys. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <h4 id="how-to-read-aip-plife">How to read this diagram</h4>
 <ol>
 <li>Draft the prompt with {{variable}} placeholders and edit it freely.</li>
@@ -2574,7 +2607,7 @@ for citation in response.get(&quot;citations&quot;, []):
 <p>"Keep Bedrock traffic off the public internet" always means VPC interface endpoints. "Discover PII across 500 S3 buckets" is Macie. "Detect and mask SSNs in live chat before the model sees them" is Comprehend. It is also Guardrails sensitive-information filters. "Regulator asks who accessed what" is CloudTrail. It is not CloudWatch Logs.</p></div>
 <p class="ch-next" style="border-top:1px solid var(--border);padding-top:1rem;margin-top:1.75rem"><strong>Next:</strong> is Chapter 18, Model evaluation basics. Privacy is covered. Now is the final gate before production. You must prove it is good enough.</p>
 
-<figure><img src="assets/img/ste100/aip-pii-pipeline.svg" alt="The PII pipeline: Macie discovers, Comprehend detects, Guardrails block or mask" loading="lazy"><figcaption>Three services in order, plus the network and access envelope underneath. The red caution covers invocation logging, which can carry PII.</figcaption></figure>
+<figure><img src="assets/img/ste100/aip-pii-pipeline.svg" alt="The PII pipeline: Macie discovers, Comprehend detects, Guardrails block or mask" loading="lazy"><figcaption>Three services in order, plus the network and access envelope underneath. The red caution covers invocation logging, which can carry PII. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <h4 id="how-to-read-aip-pii">How to read this diagram</h4>
 <ol>
 <li>Stage 1 is discovery. Amazon Macie scans S3 at scale and flags sensitive data.</li>
@@ -2589,7 +2622,7 @@ for citation in response.get(&quot;citations&quot;, []):
 <p class="ch-bridge" style="border-left:3px solid var(--accent);padding:.55rem 1rem;background:var(--surface);border-radius:0 8px 8px 0;margin:1.1rem 0"><strong>Why this comes next.</strong>. Everything is built and wired. One question remains before users arrive. How do you prove it is good enough?</p>
 <p class="ch-bridge" style="border-left:3px solid var(--accent);padding:.55rem 1rem;background:var(--surface);border-radius:0 8px 8px 0;margin:1.1rem 0">This chapter covers evaluation. It covers the metrics. It covers the judges. It covers the Bedrock evaluation jobs that run them.</p>
 
-<figure><img src="assets/img/mermaid/105-eval-basics.svg" alt="Model evaluation basics: programmatic metrics like exact match, LLM-as-a-judge scoring, or human raters, all runnable as a Bedrock model evaluation job" loading="lazy"><figcaption>Model evaluation basics are programmatic metrics. These are like exact match. They are LLM-as-a-judge scoring. They are human raters. All of these are runnable. They are runnable as a Bedrock model evaluation job.</figcaption></figure><p>This shows how you prove a model is good enough.Do this before it serves users. This is the exam's evaluation matrix. It is in the Domain 1 framing.</p>
+<figure><img src="assets/img/mermaid/105-eval-basics.svg" alt="Model evaluation basics: programmatic metrics like exact match, LLM-as-a-judge scoring, or human raters, all runnable as a Bedrock model evaluation job" loading="lazy"><figcaption>Model evaluation basics are programmatic metrics. These are like exact match. They are LLM-as-a-judge scoring. They are human raters. All of these are runnable. They are runnable as a Bedrock model evaluation job. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure><p>This shows how you prove a model is good enough.Do this before it serves users. This is the exam's evaluation matrix. It is in the Domain 1 framing.</p>
 <p><strong>Model evaluation</strong> measures a model's outputs. It measures them against expected quality. It does this before and after deployment.</p>
 <div class="table-wrap"><table>
 <thead>
@@ -2707,7 +2740,7 @@ for citation in response.get(&quot;citations&quot;, []):
 <div class="callout num"><span class="callout-h">Where to go next</span><p>Volume D2, Domain 2: Implementation and Integration (volume-d2-implementation-integration.html). Domain 1 gave you the building blocks. These blocks are models, calls, RAG, prompts, privacy, and evaluation. Domain 2 wires them into running systems.</p>
 <p>These systems are the Converse API in depth, Bedrock Agents, Lambda integration, API Gateway, Step Functions, event-driven pipelines, and deployment strategies. They are also enterprise patterns. If a question asks how the pieces connect in a live application, that volume is its home.</p></div>
 
-<figure><img src="assets/img/ste100/aip-eval-methods.svg" alt="Evaluation ladder: programmatic metrics, LLM-as-a-judge, human evaluation, plus RAG and bring-your-own-inference" loading="lazy"><figcaption>Climb from cheap repeatable checks to human judgment. Each row names the method and when it is the right tool. All of them run as a Bedrock model evaluation job.</figcaption></figure>
+<figure><img src="assets/img/ste100/aip-eval-methods.svg" alt="Evaluation ladder: programmatic metrics, LLM-as-a-judge, human evaluation, plus RAG and bring-your-own-inference" loading="lazy"><figcaption>Climb from cheap repeatable checks to human judgment. Each row names the method and when it is the right tool. All of them run as a Bedrock model evaluation job. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <h4 id="how-to-read-aip-eval">How to read this diagram</h4>
 <ol>
 <li>The bottom row is programmatic evaluation. Computed metrics like accuracy and toxicity on a fixed dataset. Cheap and repeatable.</li>
@@ -4692,6 +4725,73 @@ window.DS_MANIFEST = [
       }
     }
   });
+  /* ---------- 11. Scroll reveal + figure parallax (progressive enhancement) ----------
+     .reveal is added here (never in markup), so content is fully visible with
+     JS disabled. Respects prefers-reduced-motion. Parallax drift is a small
+     transform on plain figure images only; it never changes layout. ---------- */
+
+  (function () {
+    var reduceMotion = window.matchMedia &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    /* Scroll reveal: gentle rise-in on content blocks as they enter the viewport. */
+    var revealTargets = inner.querySelectorAll(
+      "figure, .pq, .exam-ask, .takeaway, .panel, .diagram-walkthrough, " +
+      ".table-wrap, .ladder, .cc-qa"
+    );
+    if (!reduceMotion && "IntersectionObserver" in window) {
+      var revealEls = Array.prototype.slice.call(revealTargets);
+      revealEls.forEach(function (el) { el.classList.add("reveal"); });
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (en) {
+          if (en.isIntersecting) {
+            en.target.classList.add("revealed");
+            io.unobserve(en.target);
+          }
+        });
+      }, { rootMargin: "0px 0px -8% 0px", threshold: 0.05 });
+      revealEls.forEach(function (el) { io.observe(el); });
+    }
+    /* reduceMotion or no IntersectionObserver: no .reveal class is added,
+       so every block stays fully visible. */
+
+    /* Figure parallax: gentle --px drift on plain figure images only
+       (.fig-light cards are excluded so the white plate never shows an edge). */
+    if (!reduceMotion) {
+      var pxFigs = [];
+      Array.prototype.forEach.call(
+        inner.querySelectorAll("figure:not(.fig-light)"),
+        function (fig) {
+          if (fig.querySelector("img")) {
+            fig.classList.add("ds-px");
+            pxFigs.push(fig);
+          }
+        }
+      );
+      var pxTicking = false;
+      function pxUpdate() {
+        var vh = window.innerHeight || 800;
+        pxFigs.forEach(function (fig) {
+          var img = fig.querySelector("img");
+          if (!img) return;
+          var r = img.getBoundingClientRect();
+          if (r.bottom < -160 || r.top > vh + 160) return; /* off-screen: skip */
+          var center = (r.top + r.height / 2) - vh / 2;
+          var drift = center * -0.015;
+          if (drift > 8) drift = 8;
+          if (drift < -8) drift = -8;
+          img.style.setProperty("--px", drift.toFixed(1) + "px");
+        });
+        pxTicking = false;
+      }
+      function pxRequest() {
+        if (!pxTicking) { pxTicking = true; window.requestAnimationFrame(pxUpdate); }
+      }
+      window.addEventListener("scroll", pxRequest, { passive: true });
+      window.addEventListener("resize", pxRequest);
+      pxUpdate();
+    }
+  })();
 })();
 
 </script>
