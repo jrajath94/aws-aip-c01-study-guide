@@ -27,7 +27,7 @@ Complete study materials for the AWS Certified Generative AI Developer - Profess
 | `volume-system-design.html` | End-to-end reference designs with trade-off math |
 | `volume-appendix-gaps.html` | Gap coverage: topics the blueprint implies but never names |
 
-Every volume is a single self-contained HTML file (works offline, no external dependencies). Each concept is taught from zero: what it is, why it exists, how it works under the hood, concrete numbers, common misunderstandings, diagrams with walkthroughs, and an exam-relevance line.
+Every volume is a single self-contained HTML file (works offline, no external dependencies). Each concept is taught from zero: what it is, why it exists, and how it works under the hood. You get concrete numbers, common misunderstandings, diagrams with walkthroughs, and an exam-relevance line.
 
 ## How the exam asks
 
