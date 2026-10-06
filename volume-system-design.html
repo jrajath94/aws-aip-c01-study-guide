@@ -1167,6 +1167,42 @@ footer p{text-align:left}
   #ds-content .ds-site-footer,
   .ds-side-volumes { display: none !important; }
 }
+
+/* ==========================================================================
+   World-class upgrade (2026-10-05): scroll reveal + figure parallax.
+   Progressive enhancement: .reveal is added by JS only, so with JS disabled
+   every element stays fully visible. Parallax drift is transform-only (no
+   layout shift) and limited to plain figures; both honor
+   prefers-reduced-motion.
+   ========================================================================== */
+
+/* Scroll reveal: subtle rise-in. JS adds .reveal to content blocks; the
+   IntersectionObserver adds .revealed as each block enters the viewport. */
+.reveal {
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.reveal.revealed {
+  opacity: 1;
+  transform: none;
+}
+
+/* Figure parallax: gentle vertical drift on figure images (excludes
+   .fig-light cards so the white plate never shows an edge). The figure gets
+   overflow:hidden from JS when parallax activates, so the drift cannot
+   cause layout shift or edge bleed. */
+figure.ds-px { overflow: hidden; }
+figure.ds-px img {
+  transform: translateY(var(--px, 0px));
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal { opacity: 1; transform: none; transition: none; }
+  figure.ds-px img { transform: none; }
+  html { scroll-behavior: auto; }
+}
 </style>
 <style>
 /* Phase-2 additions: bridge paragraphs and display math.
@@ -1317,7 +1353,7 @@ html.xp-js .xp-reveal.xp-in {
 </ul>
 <p>Numbers change over time. AWS documentation shows current values as of 2026. Numbers marked <em>illustrative</em> are examples. They teach the math. They are not official prices. The exam tests your judgment and good methods.</p><p> It does not test numbers you memorize.</p>
 <h2 id="1-requirements-first-how-to-design-any-genai-app">1. First, understand the requirements. Then, design any GenAI application.</h2>
-<figure class="fig-light"><img src="assets/img/mermaid/fpr-requirements-procedure.svg" alt="The four-step design procedure: clarify requirements, estimate tokens and latency, choose the cheapest satisfying rung, verify with an eval loop" loading="lazy"><figcaption>Clarify, estimate, choose, verify. Every design in this volume follows this procedure; skipping a step is how designs fail.</figcaption><figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<figure class="fig-light"><img src="assets/img/mermaid/fpr-requirements-procedure.svg" alt="The four-step design procedure: clarify requirements, estimate tokens and latency, choose the cheapest satisfying rung, verify with an eval loop" loading="lazy"><figcaption>Clarify, estimate, choose, verify. Every design in this volume follows this procedure; skipping a step is how designs fail.</figcaption><figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <p>Every system design question on the exam is the same. A scenario gives you limits. The correct answer is the cheapest architecture. This architecture must meet all limits. Some people choose services too fast. For example, they say "this needs a Knowledge Base".</p><p> These people fail. Other people find the limits first. For example, they find "40,000 documents, updated monthly, citations required, answers under 3 seconds". These people choose correctly. Each limit removes options. Only one design remains.</p><p></p>
 <p>There are two types of requirements. Functional requirements show what the system does. For example, it answers questions from company documents. It looks up live order status. It sends answers to a chat UI. It gets human approval before it gives refunds.</p><p> Non-functional requirements show how well the system does it. For example, latency is how fast each answer must arrive. Scale is requests per day and peak multiples. Cost is the monthly budget. Knowledge freshness is how often documents change. Safety shows who the users are.</p><p> It also shows what must never happen. Availability shows what happens when a region has an outage.</p>
 <p>Clarify before you design. These questions are half the score in a real design discussion. The exam rewards the answer that finds the missing number. For example, how many requests per day? How fresh must the knowledge be? Does the app need streaming?</p><p> What is the cost budget? The scenario usually answers each question in one line. You must find all of them.</p>
@@ -1340,8 +1376,8 @@ html.xp-js .xp-reveal.xp-in {
 <h2 id="ch3-1">2.1 The API matrix</h2>
 <p class="note"><strong>Why this chapter comes next.</strong> The matrix lists the APIs. It shows what each API is for. The next section turns the list into a decision. It is a ladder that chooses the correct API from the scenario's hardest limit.</p>
 <figure><img src="assets/img/ste100/aip-api-matrix.svg" alt="API matrix: Converse for portable code, InvokeModel for embeddings and provider features, batch for async bulk, Provisioned Throughput for steady baselines, inference profiles for regional failover" loading="lazy"><figcaption>Five APIs, five jobs. Converse for portable code. InvokeModel for embeddings and provider features. Batch for async bulk. Provisioned Throughput for steady baselines. Inference profiles for regional failover.</figcaption>
-<figcaption class="credit"><em>Drawn for this volume.</em></figcaption></figure><p>How to read this diagram</p><ol><li>Row one: Converse. One shape for all providers.</li><li>Row two: InvokeModel. Raw provider body for special features.</li><li>Row three: batch and PT. Async bulk and reserved capacity.</li><li>Row four: inference profiles. They move traffic between regions.</li></ol>
-<figure><img src="assets/img/mermaid/56-invokemodel-vs-converse.svg" alt="InvokeModel versus the Converse API: raw provider JSON against the unified messages format with built-in tool use; new code uses Converse" loading="lazy"><figcaption>InvokeModel versus the Converse API: raw provider JSON against the unified messages format with built-in tool use; new code uses Converse</figcaption><figcaption class="credit"><em>InvokeModel versus the Converse API: raw provider JSON against the unified messages format with built-in tool use; new code uses Converse</em></figcaption></figure>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure><p>How to read this diagram</p><ol><li>Row one: Converse. One shape for all providers.</li><li>Row two: InvokeModel. Raw provider body for special features.</li><li>Row three: batch and PT. Async bulk and reserved capacity.</li><li>Row four: inference profiles. They move traffic between regions.</li></ol>
+<figure><img src="assets/img/mermaid/56-invokemodel-vs-converse.svg" alt="InvokeModel versus the Converse API: raw provider JSON against the unified messages format with built-in tool use; new code uses Converse" loading="lazy"><figcaption>InvokeModel versus the Converse API: raw provider JSON against the unified messages format with built-in tool use; new code uses Converse</figcaption><figcaption class="credit"><em>InvokeModel versus the Converse API: raw provider JSON against the unified messages format with built-in tool use; new code uses Converse</em> Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <ul>
 <li><strong>Converse and ConverseStream.</strong> This is the unified API. One request shape works for Claude, Llama, Titan, Nova, and other models. It supports tool use. (Chapter 4 covers agents.) It supports inline guardrails (<code>guardrailConfig</code>). It supports prompt caching (<code>cachePoint</code>). It supports structured output (<code>outputConfig</code>). It supports inference parameters (maxTokens, temperature, topP). ConverseStream returns tokens as the system generates them. Use this API when you want provider portability. It does text generation only. It does not do embeddings.</li>
 <li><strong>InvokeModel and InvokeModelWithResponseStream.</strong> These APIs use provider-specific request bodies. You need these APIs for embeddings. (Embeddings are numeric vectors. They show text meaning. You use them for semantic search. Chapter 3 covers them fully.) You need these APIs for provider-specific features. Converse does not show these features. (<code>additionalModelRequestFields</code> is the escape hatch inside Converse.) If you make the body wrong, you get a <code>ValidationException</code>. For example, Claude needs <code>anthropic_version</code> and <code>max_tokens</code> in the InvokeModel body.</li>
@@ -1368,7 +1404,7 @@ Model missing in my region           Cross-region inference profile id
 <div class="exam-ask"><p>Common misunderstanding.</p>
 <p>"Converse and InvokeModel are interchangeable." This is not true. Embeddings need InvokeModel. Unified multi-provider code needs Converse. And "guardrails only work with Converse" is false. The standalone ApplyGuardrail API works with any model. This includes non-Bedrock models.</p></div>
 <h2 id="ch3-2">2.2 The decision ladder: latency, payload, use case</h2>
-<figure><img src="assets/img/custom/sd-22-invocation.svg" alt="Three invocation paths: one request in and out means InvokeModel or Converse, many async jobs mean batch inference, latency guarantees mean Provisioned Throughput" loading="lazy"><figcaption>Three doors into Bedrock. Read the stem for the schedule words: real-time, nightly batch, guaranteed latency.</figcaption><figcaption class="credit">Drawn for this volume.</figcaption></figure>
+<figure><img src="assets/img/custom/sd-22-invocation.svg" alt="Three invocation paths: one request in and out means InvokeModel or Converse, many async jobs mean batch inference, latency guarantees mean Provisioned Throughput" loading="lazy"><figcaption>Three doors into Bedrock. Read the stem for the schedule words: real-time, nightly batch, guaranteed latency.</figcaption><figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <p class="note"><strong>Why this chapter comes next.</strong> The ladder picks the invocation pattern. The pattern must then survive production. Every hop has a timeout. Every call can fail.</p>
 <div class="table-wrap"><table>
 <thead>
@@ -1420,7 +1456,7 @@ Model missing in my region           Cross-region inference profile id
 </table></div>
 <p><strong>These are example numbers.</strong> A chat turn uses 8 seconds of model time. This fits sync Converse behind API Gateway. API Gateway has a 29-second integration timeout. A turn that can exceed 29 seconds must use streaming. Or it must use the async queue pattern.</p><p> An agent loop uses 3 minutes per task on average. It cannot run synchronously behind API Gateway. Put it in a queue. A nightly job summarizes 20,000 tickets. It has no latency limit. Batch inference cuts the bill by 50 percent.</p><p></p>
 <h2 id="ch3-3">2.3 Timeouts and retries</h2>
-<figure><img src="assets/img/custom/sd-23-timeout.svg" alt="Nested timeout chain: client shortest, then API Gateway at 29 seconds, then Lambda, then the model call longest; retry only idempotent calls with jittered backoff" loading="lazy"><figcaption>The innermost timeout must expire first. Outer layers only observe the failure.</figcaption><figcaption class="credit">Drawn for this volume.</figcaption></figure>
+<figure><img src="assets/img/custom/sd-23-timeout.svg" alt="Nested timeout chain: client shortest, then API Gateway at 29 seconds, then Lambda, then the model call longest; retry only idempotent calls with jittered backoff" loading="lazy"><figcaption>The innermost timeout must expire first. Outer layers only observe the failure.</figcaption><figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <p><strong>The timeout chain.</strong> Each hop has a limit. The smallest limit wins. API Gateway has a 29-second integration timeout. Lambda has a 15-minute maximum. The model's own limits constrain Bedrock model invocation.</p><p> Design each hop's timeout. Make it comfortably above the p99 of the hop below it. Or separate with a queue.</p>
 <p><strong>The retry policy.</strong></p>
 <ol>
@@ -1437,6 +1473,7 @@ Model missing in my region           Cross-region inference profile id
 <p>Provisioned Throughput does not fix outputs that are not deterministic. If the same inputs give different answers, do this. Set temperature to 0. Use deterministic prompts. Use prompt versioning. Do not add more capacity.</p><p> PT fixes throttling and latency. It never fixes randomness.</p></div>
 <p class="note"><strong>Next:</strong> Chapter 3 fixes what the model answers from. It grounds the model in your documents with Knowledge Bases.</p>
 <h2 id="1-rag-on-bedrock-knowledge-bases-end-to-end">3. RAG on Bedrock: Knowledge Bases end to end</h2>
+<p>As you learned in <a href="volume-d1-foundation-models.html">D1</a>, RAG grounds a model in your data. This guide turns that pattern into a full architecture.</p>
 <p class="note"><strong>Why this chapter comes next.</strong> Chapter 2 showed how to call the model. The problem it leaves open is what the model answers from. Its training data is fixed. It knows nothing about your company. This chapter fixes that with Knowledge Bases.</p><p class="note"> This is the exam's most important topic.</p>
 <p>This is the exam's main focus. If the scenario says "private documents," or "must cite sources," or "answers grounded in company data," you build this.</p>
 <h2 id="ch1-1">3.1 What a Knowledge Base is</h2>
@@ -1454,7 +1491,7 @@ Model missing in my region           Cross-region inference profile id
 <p>Retrieve</p>
 <p>= You get chunks only. You control the prompt and the model call. Use Retrieve plus Converse if you need custom prompt control. Use it if you need inline guardrails. Use it if you need streaming.</p></div>
 
-<figure><img src="assets/img/mermaid/49-kb-neptune-arch.svg" alt="AWS official architecture diagram: data ingestion into S3 with branches to Amazon Bedrock Knowledge Bases with OpenSearch, and to Amazon Neptune via Lambda" loading="lazy"><figcaption>AWS official architecture diagram: data ingestion into S3 with branches to Amazon Bedrock Knowledge Bases with OpenSearch, and to Amazon Neptune via Lambda</figcaption><figcaption class="credit"><em>AWS official architecture diagram: data ingestion into S3 with branches to Amazon Bedrock Knowledge Bases with OpenSearch, and to Amazon Neptune via Lambda</em></figcaption></figure>
+<figure><img src="assets/img/mermaid/49-kb-neptune-arch.svg" alt="AWS official architecture diagram: data ingestion into S3 with branches to Amazon Bedrock Knowledge Bases with OpenSearch, and to Amazon Neptune via Lambda" loading="lazy"><figcaption>AWS official architecture diagram: data ingestion into S3 with branches to Amazon Bedrock Knowledge Bases with OpenSearch, and to Amazon Neptune via Lambda</figcaption><figcaption class="credit"><em>AWS official architecture diagram: data ingestion into S3 with branches to Amazon Bedrock Knowledge Bases with OpenSearch, and to Amazon Neptune via Lambda</em> Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <p>How to read this diagram</p>
 <ol>
 <li><strong>Left edge, outside the AWS boundary:</strong> There are four data source types. These are structured data (databases, CSV), streaming data (events), unstructured data (PDFs, docs), and multimedia (video, audio). This is the raw material stage. In the exam, the data source list maps directly to the ingestion tool. Multimedia points to Bedrock Data Automation or Transcribe before the KB.</li>
@@ -1497,7 +1534,7 @@ Model missing in my region           Cross-region inference profile id
 </table></div>
 <div class="exam-ask"><p>Scenario: A company has 50,000 policy PDFs. They update them quarterly. Support agents need answers with citations. The model must not hallucinate. The correct answer chains: S3 data source, scheduled sync, Knowledge Base, RetrieveAndGenerate for citations. Distractors: fine-tuning (cannot cite, goes stale), Kendra alone (enterprise search, no generation), one shared prompt telling the model the policies (no grounding).</p></div>
 <h2 id="ch1-2">3.2 Data sources and sync</h2>
-<figure><img src="assets/img/custom/sd-32-sync.svg" alt="Knowledge base sync schedules: near-real-time, hourly, or daily, and what breaks when new documents never appear" loading="lazy"><figcaption>A question hits the vector store; the store only knows the last sync. New documents sit invisible until the next run.</figcaption><figcaption class="credit">Drawn for this volume.</figcaption></figure>
+<figure><img src="assets/img/custom/sd-32-sync.svg" alt="Knowledge base sync schedules: near-real-time, hourly, or daily, and what breaks when new documents never appear" loading="lazy"><figcaption>A question hits the vector store; the store only knows the last sync. New documents sit invisible until the next run.</figcaption><figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <p class="note"><strong>This chapter is next because:</strong> Documents come in on a schedule. The next step is to divide them. Chunking is the name for this step. Chunking is the most important retrieval control.</p>
 <p>A data source is where the KB gets documents. Supported sources are: Amazon S3 (the native source), a web crawler (public or sitemap URLs), Confluence, SharePoint, and Salesforce. Each data source has its own chunking settings. Each data source has its own sync schedule.</p>
 <p>Separate data sources are important. You set chunking for each data source when you create it. You cannot change chunking later. If you change chunking, you must create the data source again. So, documents that need different chunking go into different data sources. For example, put manuals in one data source with hierarchical chunking.</p><p> Put FAQs in another data source with fixed-size chunking. Sync schedules are also different. A product catalog changes every day. It gets a daily sync. Archived contracts get a one-time sync.</p>
@@ -1506,7 +1543,7 @@ Model missing in my region           Cross-region inference profile id
 <p>"The KB reads my S3 bucket live at query time." This is not true. Retrieval searches the vector index. The vector index only knows what the last sync ingested. If answers are old after a document update, the sync did not run. This does not mean the model is broken. This is the first thing to check when "the KB does not know about the new policy."</p></div>
 <h2 id="ch1-3">3.3 Chunking strategy comparison</h2>
 <p class="note"><strong>This chapter is next because:</strong> Chunks have a size. Now each chunk becomes a vector. This is the embeddings model choice.</p>
-<figure><img src="assets/img/mermaid/99-chunking-compare.svg" alt="Chunking strategy comparison: fixed-size is simple but splits ideas, semantic respects boundaries, hierarchical keeps parent and child chunks" loading="lazy"><figcaption>Chunking strategy comparison: fixed-size is simple but splits ideas, semantic respects boundaries, hierarchical keeps parent and child chunks</figcaption><figcaption class="credit"><em>Chunking strategy comparison: fixed-size is simple but splits ideas, semantic respects boundaries, hierarchical keeps parent and child chunks</em></figcaption></figure>
+<figure><img src="assets/img/mermaid/99-chunking-compare.svg" alt="Chunking strategy comparison: fixed-size is simple but splits ideas, semantic respects boundaries, hierarchical keeps parent and child chunks" loading="lazy"><figcaption>Chunking strategy comparison: fixed-size is simple but splits ideas, semantic respects boundaries, hierarchical keeps parent and child chunks</figcaption><figcaption class="credit"><em>Chunking strategy comparison: fixed-size is simple but splits ideas, semantic respects boundaries, hierarchical keeps parent and child chunks</em> Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <p>A chunk is a part of a document. It is small enough to embed and retrieve as one unit. Chunking is the most important decision in a RAG system. It decides what the retriever can "see." If a chunk is too large, it includes text that is not relevant. This makes the match less good. If a chunk is too small, it loses the context needed to answer.</p>
 <p>The KB changes each document into raw text. Then, it uses the strategy. Fixed-size splits on token count with a configurable overlap percentage. Overlap keeps sentences from being cut in half at boundaries. Hierarchical builds a tree. Small child chunks are for precise matching.</p><p> Each child chunk links to a larger parent chunk. The system injects the parent chunk as context. Semantic splits at meaning boundaries (topic shifts). This costs more compute at ingestion. You set the strategy for each data source when you create it.</p>
 <div class="table-wrap"><table>
@@ -1567,7 +1604,7 @@ Model missing in my region           Cross-region inference profile id
 <div class="exam-ask"><p>This is an exam trap. The exam states it clearly. "Tables broken across chunks, answers miss the row context" means you need hierarchical chunking. It means you need advanced parsing. It does not mean you need a bigger generation model. "RAG returns confident but wrong answers and the chunks look relevant" is a retrieval-quality problem.</p><p> First, debug chunking. Then, debug embeddings. Debug the generation model last. Switching the model is the classic wrong answer. This happens when retrieval is broken.</p>
 <p>3.4 Select an Embeddings Model</p></div>
 <h2 id="ch1-4">3.4 Select an Embeddings Model</h2>
-<figure><img src="assets/img/custom/sd-34-embeddings.svg" alt="Titan Text Embeddings v2 versus Cohere Embed: different jobs, and the trap of mixing models between index and query time" loading="lazy"><figcaption>Match the embedding model to the job, and use the same model at index time and query time, always.</figcaption><figcaption class="credit">Drawn for this volume.</figcaption></figure>
+<figure><img src="assets/img/custom/sd-34-embeddings.svg" alt="Titan Text Embeddings v2 versus Cohere Embed: different jobs, and the trap of mixing models between index and query time" loading="lazy"><figcaption>Match the embedding model to the job, and use the same model at index time and query time, always.</figcaption><figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <p class="note"><strong>Why this chapter comes next.</strong> Vectors exist. The vectors need a home. The vector store is the home. Choose the vector store one time. Choose it when you make the KB.</p>
 <p>These are the two exam-relevant choices:</p>
 <p>The two choices are relevant to the exam.</p>
@@ -1579,7 +1616,7 @@ Model missing in my region           Cross-region inference profile id
 <div class="exam-ask"><p>Common misunderstanding.</p>
 <p>"Bigger embeddings are always better." This is true up to a point. After that point, you pay for storage. You pay for latency. You get no measurable gain. "I can swap the embeddings model later" is false. You must re-ingest the data.</p><p> Changing the model means you must re-embed every chunk. This is because vectors from different models live in different spaces. You cannot compare them.</p></div>
 <h2 id="ch1-5">3.5 Vector store decision table</h2>
-<figure><img src="assets/img/custom/sd-35-vectorstores.svg" alt="Four managed vector stores: OpenSearch Serverless, Aurora with pgvector, Neptune Analytics, S3 Vectors, plus the trap answers" loading="lazy"><figcaption>Each store answers a different scale and budget story. ElastiCache is a cache, not a vector store.</figcaption><figcaption class="credit">Drawn for this volume.</figcaption></figure>
+<figure><img src="assets/img/custom/sd-35-vectorstores.svg" alt="Four managed vector stores: OpenSearch Serverless, Aurora with pgvector, Neptune Analytics, S3 Vectors, plus the trap answers" loading="lazy"><figcaption>Each store answers a different scale and budget story. ElastiCache is a cache, not a vector store.</figcaption><figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <p class="note"><strong>This chapter comes next for this reason.</strong> The store keeps the vectors. Now, consider the query path. Which chunks reach the model? In what order do they reach the model?</p>
 <p>The vector store is the database. It holds the vectors. It runs nearest-neighbor search. The KB writes to it during ingestion. The KB queries it during retrieval. You choose it when you make the KB.</p>
 <div class="table-wrap"><table>
@@ -1634,9 +1671,9 @@ Model missing in my region           Cross-region inference profile id
 <p>DynamoDB as the vector store is wrong. DynamoDB holds metadata and session state, not vectors. ElastiCache as the vector store is wrong. It is ephemeral.
 Use it for caching, not for durable vectors. One shared KB with prompt-level instructions for multi-tenant data is wrong.</p><p> For example, "only answer for your hotel". The exam wants separate KBs with IAM-enforced isolation for each tenant.</p></div>
 <figure><img src="assets/img/ste100/aip-multitenant-iam.svg" alt="Multi-tenant agent isolation: each tenant role can read only its own knowledge base. Guardrails cannot do tenant isolation" loading="lazy"><figcaption>Isolate tenants with IAM. Each tenant role reads only its own knowledge base. Guardrails cannot do tenant isolation.</figcaption>
-<figcaption class="credit"><em>Drawn for this volume.</em></figcaption></figure><p>How to read this diagram</p><ol><li>Left: tenant A role. It reads only KB A.</li><li>Right: tenant B role. It reads only KB B.</li><li>Bottom: the exam trap. Guardrails filter content. They do not isolate tenants.</li></ol>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure><p>How to read this diagram</p><ol><li>Left: tenant A role. It reads only KB A.</li><li>Right: tenant B role. It reads only KB B.</li><li>Bottom: the exam trap. Guardrails filter content. They do not isolate tenants.</li></ol>
 <h2 id="ch1-6">3.6 Retrieval configuration</h2>
-<figure><img src="assets/img/custom/sd-36-retrieval.svg" alt="Retrieval knobs in debug order: chunking first, then hybrid search plus rerank, then filters, then top-K and score cutoff" loading="lazy"><figcaption>Bad answers are usually bad retrieval, not a bad model. Work the knobs in this order.</figcaption><figcaption class="credit">Drawn for this volume.</figcaption></figure>
+<figure><img src="assets/img/custom/sd-36-retrieval.svg" alt="Retrieval knobs in debug order: chunking first, then hybrid search plus rerank, then filters, then top-K and score cutoff" loading="lazy"><figcaption>Bad answers are usually bad retrieval, not a bad model. Work the knobs in this order.</figcaption><figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <p class="note"><strong>Why this chapter comes next.</strong> You configure retrieval here. The last step connects it to the model call. Guardrails are on the path.</p>
 <p>Retrieval configuration decides which chunks reach the model. There are three controls: how many (top-k), which subset (metadata filters), and how good (hybrid search plus reranking).</p>
 <ul>
@@ -1653,7 +1690,7 @@ Use it for caching, not for durable vectors. One shared KB with prompt-level ins
 </ol>
 <p>Never start by changing the generation model.</p>
 <h2 id="ch1-7">3.7 Converse integration and Guardrails placement</h2>
-<figure><img src="assets/img/mermaid/22-converse-tool-use-seq.svg" alt="Converse API tool-use sequence: the model requests a tool, the app runs it, results return to the model, then the final answer streams back" loading="lazy"><figcaption>Converse API tool-use sequence: the model requests a tool, the app runs it, results return to the model, then the final answer streams back</figcaption><figcaption class="credit"><em>Converse API tool-use sequence: the model requests a tool, the app runs it, results return to the model, then the final answer streams back</em></figcaption></figure>
+<figure><img src="assets/img/mermaid/22-converse-tool-use-seq.svg" alt="Converse API tool-use sequence: the model requests a tool, the app runs it, results return to the model, then the final answer streams back" loading="lazy"><figcaption>Converse API tool-use sequence: the model requests a tool, the app runs it, results return to the model, then the final answer streams back</figcaption><figcaption class="credit"><em>Converse API tool-use sequence: the model requests a tool, the app runs it, results return to the model, then the final answer streams back</em> Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <p>Use the <code>Retrieve</code> API. Do not use <code>RetrieveAndGenerate</code>. You get chunks back. You build the final prompt yourself. Then, call the model through the Converse API. This is Bedrock's unified request format across providers.</p><p> This is the manual RAG loop. Guardrails fit in here.</p>
 <pre><code>User question
     |
@@ -1713,7 +1750,7 @@ Answer + source citations returned to the user
 <div class="exam-ask"><p>Common misunderstanding.</p>
 <p>"The agent remembers everything forever." Agent session memory is short-term. The idle session TTL is about minutes. Community notes document it around 600 seconds. Verify this at build time. For memory across days or weeks, store conversation state in DynamoDB yourself. See chapter 5.</p><p> Or use a long-term memory service.</p></div>
 
-<figure><img src="assets/img/mermaid/50-slack-agent-arch.svg" alt="AWS official solution diagram: Slack users to API Gateway to Lambda verification to SQS to Bedrock Agents integration Lambda to Amazon Bedrock Agents with an action group backed by a Lambda function" loading="lazy"><figcaption>AWS official solution diagram: Slack users to API Gateway to Lambda verification to SQS to Bedrock Agents integration Lambda to Amazon Bedrock Agents with an action group backed by a Lambda function</figcaption><figcaption class="credit"><em>AWS official solution diagram: Slack users to API Gateway to Lambda verification to SQS to Bedrock Agents integration Lambda to Amazon Bedrock Agents with an action group backed by a Lambda function</em></figcaption></figure>
+<figure><img src="assets/img/mermaid/50-slack-agent-arch.svg" alt="AWS official solution diagram: Slack users to API Gateway to Lambda verification to SQS to Bedrock Agents integration Lambda to Amazon Bedrock Agents with an action group backed by a Lambda function" loading="lazy"><figcaption>AWS official solution diagram: Slack users to API Gateway to Lambda verification to SQS to Bedrock Agents integration Lambda to Amazon Bedrock Agents with an action group backed by a Lambda function</figcaption><figcaption class="credit"><em>AWS official solution diagram: Slack users to API Gateway to Lambda verification to SQS to Bedrock Agents integration Lambda to Amazon Bedrock Agents with an action group backed by a Lambda function</em> Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <p>How to read this diagram</p>
 <ol>
 <li><strong>Steps 1 and 2, left edge:</strong> Users talk in Slack. Slack posts events to an API Gateway endpoint. API Gateway is the stable front door. It gives you throttling. It gives you authentication. It gives you a fixed URL. Any chat UI fits this slot. This includes web, mobile, and Slack.</li>
@@ -1756,7 +1793,7 @@ Answer + source citations returned to the user
 </table></div>
 <h2 id="ch2-2">4.2 Action group and Lambda function contract design</h2>
 <p class="note"><strong>Why this chapter is next.</strong> The system defines contracts. Here is the loop in action. One message has three jobs. The system traces each job turn by turn.</p>
-<figure><img src="assets/img/mermaid/70-kb-guardrails-agent.svg" alt="Agent with Knowledge Base and Guardrails: the orchestrator retrieves grounded context and calls action-group Lambda tools, with guardrail filters on input and output" loading="lazy"><figcaption>Agent with Knowledge Base and Guardrails: the orchestrator retrieves grounded context and calls action-group Lambda tools, with guardrail filters on input and output</figcaption><figcaption class="credit"><em>Agent with Knowledge Base and Guardrails: the orchestrator retrieves grounded context and calls action-group Lambda tools, with guardrail filters on input and output</em></figcaption></figure>
+<figure><img src="assets/img/mermaid/70-kb-guardrails-agent.svg" alt="Agent with Knowledge Base and Guardrails: the orchestrator retrieves grounded context and calls action-group Lambda tools, with guardrail filters on input and output" loading="lazy"><figcaption>Agent with Knowledge Base and Guardrails: the orchestrator retrieves grounded context and calls action-group Lambda tools, with guardrail filters on input and output</figcaption><figcaption class="credit"><em>Agent with Knowledge Base and Guardrails: the orchestrator retrieves grounded context and calls action-group Lambda tools, with guardrail filters on input and output</em> Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <p>An action group is a named set of tools. The agent can call these tools. One executor supports the action group. There are two ways to define the tools:</p>
 <ul>
 <li><strong>OpenAPI schema.</strong> You describe a REST API. You describe paths, methods, parameters, request shapes, and response shapes. Use it when the tool is already an HTTP service.</li>
@@ -1791,7 +1828,7 @@ Bedrock --invoke--&gt; Lambda event:       Lambda --returns--&gt; {
 <h2 id="ch2-3">4.3 Multi-step task decomposition: a traced example</h2>
 <p class="note"><strong>Why this chapter is next.</strong> One agent does three jobs. Now attach the other two pieces. Attach the KB for grounding. Attach Guardrails for safety.</p>
 <figure><img src="assets/img/ste100/aip-multistep-trace.svg" alt="Multi-step task decomposition: the agent turns one request into search, compare, book, and email steps, each traced" loading="lazy"><figcaption>One request becomes many steps. The agent turns it into search, compare, book, and email steps. Each step is traced.</figcaption>
-<figcaption class="credit"><em>Drawn for this volume.</em></figcaption></figure><p>How to read this diagram</p><ol><li>Top: the user request.</li><li>Middle: the agent splits it into steps. Each step calls a tool.</li><li>Bottom: the trace. X-Ray shows each step and its time.</li></ol>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure><p>How to read this diagram</p><ol><li>Top: the user request.</li><li>Middle: the agent splits it into steps. Each step calls a tool.</li><li>Bottom: the trace. X-Ray shows each step and its time.</li></ol>
 <p><strong>Scenario.</strong> A customer writes: "My order A-123 arrived damaged. I want a refund. I want to know the return shipping label status." This is one message. It has three jobs. Look up the order.</p><p> Issue a refund. Check the label. Here is the loop. It shows each turn.</p>
 <pre><code>Turn 1: user message arrives via invoke_agent (sessionId: sess-42)
 Agent thinks: &quot;I need order facts first. The KB has the refund policy;
@@ -1851,7 +1888,7 @@ Agent answers: &quot;Refund R-991 of $189.00 is processing. Your return label
 <li><strong>Bottom row:</strong> Operations. Tracing shows the reasoning path for debugging. Prepare-agent plus alias is the deployment discipline. Production never points at DRAFT.</li>
 </ol>
 <h2 id="ch2-5">4.5 Approval flows for sensitive actions</h2>
-<figure><img src="assets/img/custom/sd-45-tasktoken.svg" alt="Step Functions task tokens: the workflow pauses for a human approver with no polling loop, then resumes on callback" loading="lazy"><figcaption>Approvals without polling: send the token, wait as long as needed, resume exactly where the workflow paused.</figcaption><figcaption class="credit">Drawn for this volume.</figcaption></figure>
+<figure><img src="assets/img/custom/sd-45-tasktoken.svg" alt="Step Functions task tokens: the workflow pauses for a human approver with no polling loop, then resumes on callback" loading="lazy"><figcaption>Approvals without polling: send the token, wait as long as needed, resume exactly where the workflow paused.</figcaption><figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <p class="note"><strong>Why this chapter is next.</strong> Approvals protect money actions. If the agent does wrong, tracing shows you why.</p>
 <p>A human must approve actions before the agent does them. This includes refunds over a limit, production changes, and external emails. This uses AWS Step Functions with a task token. The workflow stops. It tells a human by email, Slack, or ticket. It starts again only after approval.</p><p> The agent's tool call starts the workflow. It does not do the action directly.</p>
 <p>Use Step Functions, not Lambda. Lambda stops after 15 minutes. A human approval can take hours. Step Functions can wait days for a task token. It gives you timeouts, retries, and a record of actions. This is why the exam does not accept Lambda for long tasks.</p>
@@ -1869,7 +1906,7 @@ Agent tells user:                           |
 </code></pre>
 <div class="exam-ask"><p>"Specialist agents must work together. They must use tools. They must remember for weeks. They must get human approval for actions over $100k." The correct answer has four parts. It uses a multi-agent framework for control. It uses MCP or action groups for tools.</p><p>It uses DynamoDB for memory over weeks. It uses Step Functions for approval. Wrong answers are: one prompt (it does not grow), Lex (it is for talking, not for agent control), Lambda alone for approval (it stops after 15 minutes).</p></div>
 <h2 id="ch2-6">4.6 Tracing and debugging</h2>
-<figure><img src="assets/img/custom/sd-46-agentdebug.svg" alt="Agent debug order: trace first, then prompt, schema, tool data, and IAM last" loading="lazy"><figcaption>Work this order and you find it in minutes, not hours. The trace tells you which suspect to check first.</figcaption><figcaption class="credit">Drawn for this volume.</figcaption></figure>
+<figure><img src="assets/img/custom/sd-46-agentdebug.svg" alt="Agent debug order: trace first, then prompt, schema, tool data, and IAM last" loading="lazy"><figcaption>Work this order and you find it in minutes, not hours. The trace tells you which suspect to check first.</figcaption><figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <p class="note"><strong>Why this chapter is next.</strong> You can debug one agent. Some problems need many agents. This chapter shows multi-agent and framework options.</p>
 <p>Use <code>enableTrace</code> on <code>invoke_agent</code>. Bedrock gives the reasoning trace. This trace shows the model's thoughts. It shows which KB queries it ran. It shows which tools it called and with what data. It shows what each tool returned.</p><p> This is like a stack trace for an agent.</p>
 <p><strong>The debug order for agents.</strong></p>
@@ -1882,7 +1919,7 @@ Agent tells user:                           |
 </ol>
 <p>For production monitoring, X-Ray traces the calls across Lambda, Bedrock, and other services. CloudWatch Logs Insights lets you search prompt and response content for common errors.</p>
 <h2 id="ch2-7">4.7 Multi-agent and framework options</h2>
-<figure><img src="assets/img/custom/sd-47-multiagent.svg" alt="Supervisor versus collaborator: one router delegating to specialists, or agents sharing state and handing work off directly" loading="lazy"><figcaption>Needs a single decider: supervisor. Needs shared context and handoffs: collaborator.</figcaption><figcaption class="credit">Drawn for this volume.</figcaption></figure>
+<figure><img src="assets/img/custom/sd-47-multiagent.svg" alt="Supervisor versus collaborator: one router delegating to specialists, or agents sharing state and handing work off directly" loading="lazy"><figcaption>Needs a single decider: supervisor. Needs shared context and handoffs: collaborator.</figcaption><figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <p>Multi-agent means several specialist agents work together under a supervisor. Bedrock Agents has a built-in supervisor/collaborator system. The supervisor agent breaks down the task. It gives parts to collaborator agents. You must prepare and alias these agents. Conversation history can pass between them.</p><p> This is the managed way.</p>
 <p><strong>The code-first way the exam names.</strong> <strong>Strands Agents</strong> and <strong>AWS Agent Squad</strong> are open-source tools. Use them to build multi-agent systems with code. <strong>MCP (Model Context Protocol)</strong> is the standard for agent-to-tool talk. Run MCP servers on Lambda for small tools. Run them on ECS for complex tools.</p><p> <strong>AgentCore</strong> is for moving to different frameworks. Runtime hosts agents from any framework. Gateway gives access to tools with credential management. Memory stores short and long-term agent context. It also provides Identity and Observability.</p>
 <div class="exam-ask"><p>Common misunderstanding.</p>
@@ -1892,7 +1929,7 @@ Agent tells user:                           |
 <p class="note"><strong>Next:</strong> Chapter 5 puts together invocation, RAG, and agents. This makes the standard serverless chatbot system.</p>
 <h2 id="4-chatbot-and-copilot-reference-architecture">5. Chatbot and copilot reference architecture</h2>
 <p class="note"><strong>Why this chapter is next.</strong> You now have invocation patterns, RAG, and agents as parts. This chapter puts them into one standard system. This is the serverless chatbot with memory, streaming, caching, and authentication. Half of the scenario questions are types of this system.</p>
-<figure class="fig-light"><img src="assets/img/internet/img-01.png" alt="A real Bedrock AI-assistant architecture: a Streamlit app orchestrates query flow between Amazon Bedrock (Anthropic Claude), a prompt template, Amazon Kendra retrieval over synced business documents, and user feedback." loading="lazy"><figcaption>A real Bedrock AI-assistant architecture: a Streamlit app orchestrates query flow between Amazon Bedrock (Anthropic Claude), a prompt template, Amazon Kendra retrieval over synced business documents, and user feedback.</figcaption><figcaption class="credit">Source: AWS Machine Learning blog (Amazon Finance AI assistant), via image search Sept 2026.</figcaption></figure>
+<figure class="fig-light"><img src="assets/img/internet/img-01.png" alt="A real Bedrock AI-assistant architecture: a Streamlit app orchestrates query flow between Amazon Bedrock (Anthropic Claude), a prompt template, Amazon Kendra retrieval over synced business documents, and user feedback." loading="lazy"><figcaption>A real Bedrock AI-assistant architecture: a Streamlit app orchestrates query flow between Amazon Bedrock (Anthropic Claude), a prompt template, Amazon Kendra retrieval over synced business documents, and user feedback.</figcaption><figcaption class="credit">Source: AWS Machine Learning blog (Amazon Finance AI assistant), via image search Sept 2026. Reused in the AWS AIP-C01 Study Guide.</figcaption></figure>
 <p>This is the standard serverless chatbot. It uses API Gateway, Lambda, and Bedrock. It has memory, streaming, caching, and authentication. Remember this design. Many exam questions are about this design.</p>
 <h2 id="ch4-1">5.1 The reference architecture</h2>
 <p class="note"><strong>This chapter is next because:</strong> The basic design is complete. Now, we add memory, streaming, caching, and authentication.</p>
@@ -1943,13 +1980,13 @@ Agent tells user:                           |
 <li>Model ID is hardcoded in the Lambda. Every model change needs a deployment. Move it to AppConfig.</li>
 </ul>
 <h2 id="ch4-2">5.2 Session memory options</h2>
-<figure><img src="assets/img/custom/sd-52-session.svg" alt="Session trimming: keep the rolling summary and recent turns, drop old tool payloads first" loading="lazy"><figcaption>The context window is a budget. Unbounded history is an unbounded bill.</figcaption><figcaption class="credit">Drawn for this volume.</figcaption></figure>
+<figure><img src="assets/img/custom/sd-52-session.svg" alt="Session trimming: keep the rolling summary and recent turns, drop old tool payloads first" loading="lazy"><figcaption>The context window is a budget. Unbounded history is an unbounded bill.</figcaption><figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <figure><img src="assets/img/ste100/aip-token-budget.svg" alt="Token budget: system prompt, retrieved chunks, conversation history, and output reserve must fit inside the model context window" loading="lazy"><figcaption>The context window is a budget. System prompt, retrieved chunks, conversation history, and output reserve must all fit inside it.</figcaption>
-<figcaption class="credit"><em>Drawn for this volume.</em></figcaption></figure><p>How to read this diagram</p><ol><li>Four blocks stack inside the window: system prompt, chunks, history, output reserve.</li><li>If the stack is too tall, something must shrink.</li><li>Bottom: unbounded history is an unbounded bill.</li></ol>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure><p>How to read this diagram</p><ol><li>Four blocks stack inside the window: system prompt, chunks, history, output reserve.</li><li>If the stack is too tall, something must shrink.</li><li>Bottom: unbounded history is an unbounded bill.</li></ol>
 <p class="note"><strong>This chapter is next because:</strong> Sessions stay. The next problem is perceived latency. This means streaming tokens to the client.</p>
 <p>Session memory is the conversation history. The model needs it to stay coherent. Someone must store it. Load it per turn. Trim it when it gets too big.</p>
 <figure><img src="assets/img/ste100/aip-latency-waterfall.svg" alt="Latency waterfall: network plus queue plus time to first token plus time per output token. Each lever acts on one leg" loading="lazy"><figcaption>Latency is a waterfall. Network plus queue plus time to first token plus time per output token. Each lever acts on one leg.</figcaption>
-<figcaption class="credit"><em>Drawn for this volume.</em></figcaption></figure><p>How to read this diagram</p><ol><li>Left to right: network time, queue time, time to first token, time per token.</li><li>Streaming shortens the perceived part, not the total.</li><li>Bottom: pick the lever that matches the slow leg.</li></ol>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure><p>How to read this diagram</p><ol><li>Left to right: network time, queue time, time to first token, time per token.</li><li>Streaming shortens the perceived part, not the total.</li><li>Bottom: pick the lever that matches the slow leg.</li></ol>
 <div class="table-wrap"><table>
 <thead>
 <tr>
@@ -1983,14 +2020,14 @@ Agent tells user:                           |
 </table></div>
 <p><strong>Trimming strategy.</strong> Keep the last N turns. Write a summary of older turns. Store the summary. This limits the token cost per turn. It keeps long-context coherence.</p><p> A low-cost model call makes the summary.</p>
 <h2 id="ch4-3">5.3 Send data to the client</h2>
-<figure><img src="assets/img/custom/sd-53-streaming.svg" alt="Streaming versus waiting: same total generation time, but the first token arrives in under a second with streaming" loading="lazy"><figcaption>Perceived latency is what the user feels. InvokeModelWithResponseStream: same bill, happier users.</figcaption><figcaption class="credit">Drawn for this volume.</figcaption></figure>
+<figure><img src="assets/img/custom/sd-53-streaming.svg" alt="Streaming versus waiting: same total generation time, but the first token arrives in under a second with streaming" loading="lazy"><figcaption>Perceived latency is what the user feels. InvokeModelWithResponseStream: same bill, happier users.</figcaption><figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <p class="note"><strong>Why this chapter is next.</strong> Streaming makes latency seem lower. Caching stops model calls when inputs are the same.</p>
 <p>Users see latency as the time to the first token. They do not see it as the time to the last token. Streaming makes perceived latency much lower. It does not change quality.</p>
 <p>The Lambda calls <code>ConverseStream.</code> Bedrock sends tokens as server-sent events. The Lambda sends them to the client. There are two client patterns. Use API Gateway with chunked transfer encoding. This is simple.</p><p> It has a 29-second integration timeout limit. Or use WebSockets or direct SSE for long streams. These streams last longer than the timeout. For very long generations, use the async queue pattern from chapter 2. Send progress updates over the socket while the job runs.</p>
 <div class="exam-ask"><p>Common misunderstanding.</p>
 <p>"Streaming makes generation faster." This does not change the total generation time. It changes when the user sees the first word. The exam tests this difference. A scenario needs lower perceived latency. It does not need a quality change.</p></div>
 <h2 id="ch4-4">5.4 Caching layers</h2>
-<figure><img src="assets/img/custom/sd-54-caches.svg" alt="Three caches: prompt caching at the provider, semantic caching in your app, exact response caching at the edge" loading="lazy"><figcaption>Cache questions are really which-layer-holds-this questions. Never cache personalized or PII answers.</figcaption><figcaption class="credit">Drawn for this volume.</figcaption></figure>
+<figure><img src="assets/img/custom/sd-54-caches.svg" alt="Three caches: prompt caching at the provider, semantic caching in your app, exact response caching at the edge" loading="lazy"><figcaption>Cache questions are really which-layer-holds-this questions. Never cache personalized or PII answers.</figcaption><figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <p class="note"><strong>Why this chapter is next.</strong> Caching reduces the bill. The last layer is about access. It is about how models change without redeploys. This means auth and model switching.</p>
 <ul>
 <li><strong>Prompt caching.</strong> Use this for repeated large static prefixes. This includes system prompts, few-shot examples, and long documents. Attach these to every call. Set a <code>cachePoint</code> in the Converse request. Use this on supported models. Cached input tokens cost less. Constraints apply. Minimum token thresholds apply per model. The TTL is short. It is about 5 minutes by default. It is up to one hour on supported models. So, it helps high-frequency repeated prefixes. It does not help occasional prefixes.</li>
@@ -1998,7 +2035,7 @@ Agent tells user:                           |
 <li><strong>Deterministic request hashing.</strong> Use this for exactly repeated requests. These have the same prompt and parameters. Hash the request. Cache the response. This is the cheapest cache. It has zero model cost on hits.</li>
 </ul>
 <h2 id="ch4-5">5.5 Auth and model switching</h2>
-<figure><img src="assets/img/custom/sd-55-authtrio.svg" alt="Cognito authenticates, the API Gateway authorizer checks every request, AppConfig holds the model id for switch-without-redeploy" loading="lazy"><figcaption>Identity at the door, config for the model, no redeploys anywhere.</figcaption><figcaption class="credit">Drawn for this volume.</figcaption></figure>
+<figure><img src="assets/img/custom/sd-55-authtrio.svg" alt="Cognito authenticates, the API Gateway authorizer checks every request, AppConfig holds the model id for switch-without-redeploy" loading="lazy"><figcaption>Identity at the door, config for the model, no redeploys anywhere.</figcaption><figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <p><strong>Auth.</strong> Use Cognito user pools for end users. This is for sign-up, sign-in, and groups for tiered access. Use IAM roles for service-to-service calls. The authorizer on API Gateway enforces this. It does this before Lambda runs.</p><p> For enterprise scenarios, IAM Identity Center permission sets give per-team access to models and KBs.</p>
 <p><strong>Model switching without redeploys.</strong> Use the three parts from the blueprint. <strong>Lambda</strong> holds the routing logic. <strong>API Gateway</strong> gives the stable endpoint and throttling. <strong>AppConfig</strong> holds the model identifiers and feature flags. This is runtime config.</p><p> Operations changes a flag. The Lambda reads it on the next invocation. CloudFormation is a distractor here. Its changes are deployments. This breaks "no code changes." EventBridge is the other distractor. It routes events.</p><p> It does not store configuration.</p>
 <div class="exam-ask"><p>"Operations must switch between three models without code deployments." This is a select-all-that-apply question. It has exactly three correct answers. These are AppConfig, API Gateway, Lambda. Every other combination breaks one constraint. Remember these three.</p></div>
@@ -2010,7 +2047,7 @@ Agent tells user:                           |
 <p class="note"><strong>Why this chapter is next.</strong> The design fixes the architecture. The next question is about its cost. It is also about how fast it answers. This chapter changes the design into token math. It shows the independent controls for cost, latency, and quality.</p>
 <p>Every scenario question is secretly this chapter. It has three limits and one budget. Learn the controls and the math. Then, the "most correct answer" becomes easy.</p>
 <h2 id="ch5-1">6.1 The five cost controls</h2>
-<figure><img src="assets/img/custom/sd-61-cost.svg" alt="Five cost levers: right-size the model, prompt caching, batch inference, trim context, kill idle capacity" loading="lazy"><figcaption>Cost questions pick the lever that matches the bill's shape. Right-sizing the model is the biggest lever.</figcaption><figcaption class="credit">Drawn for this volume.</figcaption></figure>
+<figure><img src="assets/img/custom/sd-61-cost.svg" alt="Five cost levers: right-size the model, prompt caching, batch inference, trim context, kill idle capacity" loading="lazy"><figcaption>Cost questions pick the lever that matches the bill's shape. Right-sizing the model is the biggest lever.</figcaption><figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <p class="note"><strong>Why this chapter is next.</strong> There are five controls. Each control changes a different part of the bill. Now, see the math. It shows how much each control changes the bill.</p>
 <p>There are five independent ways to change the bill. Each way changes a different part of the cost equation. This includes tokens in, tokens out, requests, and capacity.</p>
 <div class="table-wrap"><table>
@@ -2065,7 +2102,7 @@ Agent tells user:                           |
 <p>Prompt caching attacks repeated-input cost. Provisioned Throughput attacks latency and throttling guarantees. "Same long system prompt on every call" means caching. "Throttling at peak with a steady baseline" means Provisioned Throughput. Inference profiles are for availability routing. Prompt routers are for cost-quality routing.</p><p> Provisioned Throughput is for reserved capacity. The scenario verb selects the answer. "Unavailable in region" means profiles. "Route by complexity" means routers. "Guaranteed throughput" means Provisioned Throughput.</p></div>
 <h2 id="ch5-2">6.2 Monthly cost math (example)</h2>
 <p class="note"><strong>Why this chapter is next.</strong> We make a cost model. Two limits stay: system answer speed and answer quality.</p>
-<figure><img src="assets/img/mermaid/26-token-cost-calc.svg" alt="Token cost calculation: input tokens plus output tokens times the model price, the core math behind every monthly estimate" loading="lazy"><figcaption>Token cost calculation: input tokens plus output tokens times the model price, the core math behind every monthly estimate</figcaption><figcaption class="credit"><em>Token cost calculation: input tokens plus output tokens times the model price, the core math behind every monthly estimate</em></figcaption></figure>
+<figure><img src="assets/img/mermaid/26-token-cost-calc.svg" alt="Token cost calculation: input tokens plus output tokens times the model price, the core math behind every monthly estimate" loading="lazy"><figcaption>Token cost calculation: input tokens plus output tokens times the model price, the core math behind every monthly estimate</figcaption><figcaption class="credit"><em>Token cost calculation: input tokens plus output tokens times the model price, the core math behind every monthly estimate</em> Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <div class="callout math"><span class="callout-h">The core equation</span>
 <p style="text-align:center;font-size:1.12em;margin:.6rem 0;"><strong>monthly cost = (input tokens × input price) + (output tokens × output price)</strong></p>
 <p class="note">Here: <strong>input tokens</strong> and <strong>output tokens</strong> are the total tokens processed in the month. <strong>input price</strong> and <strong>output price</strong> are the model's prices per token. The prices are usually for one million tokens. The example below uses real numbers step by step.</p></div>
@@ -2106,7 +2143,7 @@ reduction, with no UX change for interactive users.
 <div class="takeaway"><p>The multi-lever rule.</p>
 <p>"Token costs increase by 30 percent each month. Reduce spending without making the user experience worse." This is never a single answer. The best option combines five things. Use a smaller model for low-priority traffic. Use prompt caching for repeated prefixes. Use Provisioned Throughput only for the predictable part.</p><p>Use prompt compression. Use complexity-based routing. Options with only one solution are distractors.</p></div>
 <h2 id="ch5-3">6.3 Latency controls and quality controls</h2>
-<figure><img src="assets/img/custom/sd-63-latencyquality.svg" alt="Faster responses versus better answers: which lever moves which needle" loading="lazy"><figcaption>Name the constraint first (latency SLA, quality bar, budget), then pick the lever that moves that needle.</figcaption><figcaption class="credit">Drawn for this volume.</figcaption></figure>
+<figure><img src="assets/img/custom/sd-63-latencyquality.svg" alt="Faster responses versus better answers: which lever moves which needle" loading="lazy"><figcaption>Name the constraint first (latency SLA, quality bar, budget), then pick the lever that moves that needle.</figcaption><figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <p><strong>Latency controls (what changes response time).</strong></p>
 <ul>
 <li><strong>Streaming:</strong> This reduces perceived latency (time to first token). It does not reduce total time.</li>
@@ -2124,7 +2161,7 @@ reduction, with no UX change for interactive users.
 <li><strong>Prompt versioning and eval gates:</strong> See chapter 7. Quality decreases silently if you do not measure it.</li>
 </ul>
 <figure><img src="assets/img/ste100/aip-hybrid-rerank.svg" alt="Retrieval upgrades: hybrid search combines keyword and vector matching, a reranker re-scores the top chunks with a stronger model" loading="lazy"><figcaption>Two upgrades beat plain vector search. Hybrid search combines keyword and vector matching. A reranker re-scores the top chunks with a stronger model.</figcaption>
-<figcaption class="credit"><em>Drawn for this volume.</em></figcaption></figure><p>How to read this diagram</p><ol><li>Step one: hybrid search. Keyword and vector search run together.</li><li>Step two: merge the results.</li><li>Step three: the reranker re-scores the top chunks with a stronger model.</li></ol>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure><p>How to read this diagram</p><ol><li>Step one: hybrid search. Keyword and vector search run together.</li><li>Step two: merge the results.</li><li>Step three: the reranker re-scores the top chunks with a stronger model.</li></ol>
 <div class="exam-ask"><p>Common misunderstanding.</p>
 <p>Temperature, top-p, and top-k do not control cost. They change randomness and quality. The exam offers them as wrong answers for cost and consistency. The correct answer for consistency is temperature 0 plus prompt control. The correct answer for consistency is caching plus PT. Keep the three types separate: cost controls, latency controls, quality controls.</p></div>
 
@@ -2137,7 +2174,7 @@ reduction, with no UX change for interactive users.
 <p class="note"><strong>Why this chapter comes next.</strong> Chapter 6 taught you to spend less. It taught you to do this without hurting quality. But you must prove "without hurting quality". Do not assume it. This chapter builds the evaluation loop.</p><p class="note"> This loop measures quality before and after every change.</p>
 <p>You cannot improve what you do not measure. The exam knows this. Evaluation questions punish people. These people debug GenAI like normal software.</p>
 <h2 id="ch6-1">7.1 The evaluation methods</h2>
-<figure><img src="assets/img/custom/sd-71-evalmethods.svg" alt="The four evaluation methods with their system-design jobs: automatic, LLM-as-a-judge, human, BYOI" loading="lazy"><figcaption>Same matrix as D5, now wearing system-design clothes. Watch judge bias: calibrate with human spot checks.</figcaption><figcaption class="credit">Drawn for this volume.</figcaption></figure>
+<figure><img src="assets/img/custom/sd-71-evalmethods.svg" alt="The four evaluation methods with their system-design jobs: automatic, LLM-as-a-judge, human, BYOI" loading="lazy"><figcaption>Same matrix as D5, now wearing system-design clothes. Watch judge bias: calibrate with human spot checks.</figcaption><figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <p class="note"><strong>Why this chapter comes next.</strong> There are four ways to score outputs. The next question is which metric fits which task.</p>
 <p>There are four ways to score model outputs. Each way has a different cost. Each way has a different trust level.</p>
 <div class="table-wrap"><table>
@@ -2174,7 +2211,7 @@ reduction, with no UX change for interactive users.
 <div class="exam-ask"><p>Trap set.</p>
 <p>Programmatic evaluation for style or brand voice is wrong. These are subjective. They need human evaluation or LLM-as-judge. Human evaluation as the only evaluation for large-scale regression is wrong. This costs too much money and time. The exam wants automated gates with human spot checks.</p><p> A bigger model is not a fairness fix. Fairness needs metrics. Fairness needs A/B testing. Fairness needs LLM-as-judge, continuously.</p></div>
 <h2 id="ch6-2">7.2 Metrics for each task type</h2>
-<figure><img src="assets/img/custom/sd-72-metrics.svg" alt="Metric per task: summarization gets faithfulness and completeness, classification gets accuracy and F1, RAG gets citation precision, agents get task success rate" loading="lazy"><figcaption>Metric questions test whether you match the measurement to the job.</figcaption><figcaption class="credit">Drawn for this volume.</figcaption></figure>
+<figure><img src="assets/img/custom/sd-72-metrics.svg" alt="Metric per task: summarization gets faithfulness and completeness, classification gets accuracy and F1, RAG gets citation precision, agents get task success rate" loading="lazy"><figcaption>Metric questions test whether you match the measurement to the job.</figcaption><figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <p class="note"><strong>Why this chapter comes next.</strong> Metrics relate to tasks. Bedrock automates metrics at scale. Bedrock uses LLM-as-a-judge. This is the setup.</p>
 <div class="table-wrap"><table>
 <thead>
@@ -2221,7 +2258,7 @@ reduction, with no UX change for interactive users.
 <p class="note"><strong>Why this chapter comes next.</strong> The judge runs. The last step is to make the judge a gate. The gate blocks deploys when scores regress.</p>
 <p>Bedrock model evaluations use judge models. The judge models score your outputs. You provide a dataset. The dataset has prompts and optional reference answers. This is the golden dataset. You select built-in metrics.</p>
 <figure><img src="assets/img/ste100/aip-judge-setup.svg" alt="LLM as a judge setup: sampled outputs plus a rubric prompt go to a separate judge model that returns scores" loading="lazy"><figcaption>A judge needs three things. Sampled outputs, a rubric prompt, and a separate judge model. The judge returns scores.</figcaption>
-<figcaption class="credit"><em>Drawn for this volume.</em></figcaption></figure><p>How to read this diagram</p><ol><li>Left: sample outputs from the model under test.</li><li>Middle: the rubric prompt. It tells the judge how to score.</li><li>Right: the judge model. It returns scores, not text.</li></ol><p> Or, you define custom metrics in plain language. Bedrock runs the evaluation. It is a managed job.</p>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure><p>How to read this diagram</p><ol><li>Left: sample outputs from the model under test.</li><li>Middle: the rubric prompt. It tells the judge how to score.</li><li>Right: the judge model. It returns scores, not text.</li></ol><p> Or, you define custom metrics in plain language. Bedrock runs the evaluation. It is a managed job.</p>
 <p><strong>How to set up the item well.</strong></p>
 <ol>
 <li><strong>Build the golden dataset first.</strong> Make a few hundred representative prompts. Make sure the prompts have known good answers. Store the answers in S3. This dataset is the base for every gate below. You have no regression signal without this dataset.</li>
@@ -2233,9 +2270,9 @@ reduction, with no UX change for interactive users.
 <div class="exam-ask"><p>Common misunderstanding.</p>
 <p>"LLM judges are objective." This is not true. They have biases. They prefer longer answers. They prefer their own model family. They prefer a confident tone. Calibration and a written rubric make them trustworthy.</p><p> Automation does not make them trustworthy.</p></div>
 
-<figure><img src="assets/img/mermaid/51-genai-eval-pipeline.svg" alt="Flat minimal diagram of a generative AI evaluation pipeline: golden test dataset, automatic judge, human review, metrics dashboard, deploy gate" loading="lazy"><figcaption>Flat minimal diagram of a generative AI evaluation pipeline: golden test dataset, automatic judge, human review, metrics dashboard, deploy gate</figcaption><figcaption class="credit"><em>Flat minimal diagram of a generative AI evaluation pipeline: golden test dataset, automatic judge, human review, metrics dashboard, deploy gate</em></figcaption></figure>
+<figure><img src="assets/img/mermaid/51-genai-eval-pipeline.svg" alt="Flat minimal diagram of a generative AI evaluation pipeline: golden test dataset, automatic judge, human review, metrics dashboard, deploy gate" loading="lazy"><figcaption>Flat minimal diagram of a generative AI evaluation pipeline: golden test dataset, automatic judge, human review, metrics dashboard, deploy gate</figcaption><figcaption class="credit"><em>Flat minimal diagram of a generative AI evaluation pipeline: golden test dataset, automatic judge, human review, metrics dashboard, deploy gate</em> Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <h2 id="ch6-4">7.4 Eval gates in CI/CD</h2>
-<figure><img src="assets/img/mermaid/48-cicd-eval-gate.svg" alt="Eval gates in CI/CD: every model or prompt change must pass automated evaluation before it ships" loading="lazy"><figcaption>Eval gates in CI/CD: every model or prompt change must pass automated evaluation before it ships</figcaption><figcaption class="credit"><em>Eval gates in CI/CD: every model or prompt change must pass automated evaluation before it ships</em></figcaption></figure>
+<figure><img src="assets/img/mermaid/48-cicd-eval-gate.svg" alt="Eval gates in CI/CD: every model or prompt change must pass automated evaluation before it ships" loading="lazy"><figcaption>Eval gates in CI/CD: every model or prompt change must pass automated evaluation before it ships</figcaption><figcaption class="credit"><em>Eval gates in CI/CD: every model or prompt change must pass automated evaluation before it ships</em> Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <p>A quality checkpoint stops deployment if scores decrease. The pipeline works like this: Every prompt change, model change, or KB re-sync starts the evaluation job. The job runs against the golden dataset. Scores must pass thresholds. Then the new version can ship.</p>
 <pre><code>Developer changes prompt / model / KB content
         |
@@ -2268,14 +2305,14 @@ golden probes, semantic drift checks, bias drift alerts (chapter 8).
 
 <div class="exam-ask"><p>"Compare two models for summarization quality including brand voice" means use LLM-as-judge for scale. Use human evaluation for brand voice. "Validate a new prompt version before rollout" means use regression testing. Also use canary testing. The exam always pairs the subjective metric with the human method.</p>
 <figure><img src="assets/img/ste100/aip-shadow-ab.svg" alt="Safe rollout: shadow traffic sends copies of real requests invisibly to the new version, A and B testing splits real users across two aliases" loading="lazy"><figcaption>Roll out safely. Shadow traffic sends copies of real requests to the new version invisibly. A/B testing splits real users across two aliases.</figcaption>
-<figcaption class="credit"><em>Drawn for this volume.</em></figcaption></figure><p>How to read this diagram</p><ol><li>Left: shadow. The new version sees real traffic but no user sees it.</li><li>Right: A/B. Two aliases split real users.</li><li>Bottom: compare, then promote the winner.</li></ol></div>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure><p>How to read this diagram</p><ol><li>Left: shadow. The new version sees real traffic but no user sees it.</li><li>Right: A/B. Two aliases split real users.</li><li>Bottom: compare, then promote the winner.</li></ol></div>
 <p class="note"><strong>Next:</strong> Chapter 8 hardens the measured system. It covers IAM, encryption, audit, guardrails, and PII redaction.</p>
 <h2 id="7-security-hardening-for-a-production-genai-app">8. Security hardening for a production GenAI app</h2>
 <p class="note"><strong>Why this chapter comes next.</strong> A fast, cheap, well-measured system is not ready for production. It must be safe. This chapter hardens the system. It covers IAM least privilege, encryption, audit trails, guardrail layering, and PII redaction.</p>
 <p>One in five exam questions is about this topic. Candidates who are not ready fail here. Remember defense in depth. No single layer is the full answer.</p>
 <figure><img src="assets/img/ste100/aip-pii-redaction-flow.svg" alt="PII redaction flow: Comprehend detects PII entities in text, the pipeline redacts or masks them, Guardrails filter at the model boundary" loading="lazy"><figcaption>Redact PII before the model sees it. Comprehend detects PII entities in text. The pipeline redacts or masks them. Guardrails filter at the model boundary.</figcaption>
-<figcaption class="credit"><em>Drawn for this volume.</em></figcaption></figure><p>How to read this diagram</p><ol><li>Step one: Comprehend finds the PII entities.</li><li>Step two: the pipeline redacts or masks them.</li><li>Step three: Guardrails filter at the model boundary as a backstop.</li></ol>
-<figure><img src="assets/img/mermaid/52-defense-in-depth-layers.svg" alt="Flat minimal diagram of defense-in-depth security layers: user, WAF, authentication, prompt filter, model guardrails, output filter, VPC private network, with a request flow arrow" loading="lazy"><figcaption>Flat minimal diagram of defense-in-depth security layers: user, WAF, authentication, prompt filter, model guardrails, output filter, VPC private network, with a request flow arrow</figcaption><figcaption class="credit"><em>Flat minimal diagram of defense-in-depth security layers: user, WAF, authentication, prompt filter, model guardrails, output filter, VPC private network, with a request flow arrow</em></figcaption></figure>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure><p>How to read this diagram</p><ol><li>Step one: Comprehend finds the PII entities.</li><li>Step two: the pipeline redacts or masks them.</li><li>Step three: Guardrails filter at the model boundary as a backstop.</li></ol>
+<figure><img src="assets/img/mermaid/52-defense-in-depth-layers.svg" alt="Flat minimal diagram of defense-in-depth security layers: user, WAF, authentication, prompt filter, model guardrails, output filter, VPC private network, with a request flow arrow" loading="lazy"><figcaption>Flat minimal diagram of defense-in-depth security layers: user, WAF, authentication, prompt filter, model guardrails, output filter, VPC private network, with a request flow arrow</figcaption><figcaption class="credit"><em>Flat minimal diagram of defense-in-depth security layers: user, WAF, authentication, prompt filter, model guardrails, output filter, VPC private network, with a request flow arrow</em> Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <p>How to read this diagram</p>
 <ol>
 <li><strong>Read top to bottom as a request's journey.</strong> Every request passes through every layer. It passes in order. A missing layer is a gap. An attacker can use this gap. It is not an optimization.</li>
@@ -2286,26 +2323,26 @@ golden probes, semantic drift checks, bias drift alerts (chapter 8).
 <li><strong>What the diagram implies but does not draw:</strong> Audit logging runs with every layer. CloudTrail logs API calls. Invocation logs record model traffic. Encryption wraps all of it. KMS encrypts data at rest. TLS encrypts data in transit.</li>
 </ol>
 <h2 id="ch7-1">8.1 IAM least privilege</h2>
-<figure><img src="assets/img/custom/sd-81-iam.svg" alt="One role per component: Lambda execution role, agent service role, human reviewer, CI deploy role, each least-privilege" loading="lazy"><figcaption>A single admin-style role shared by Lambda, agent, and humans is the exam smell. Split it.</figcaption><figcaption class="credit">Drawn for this volume.</figcaption></figure>
+<figure><img src="assets/img/custom/sd-81-iam.svg" alt="One role per component: Lambda execution role, agent service role, human reviewer, CI deploy role, each least-privilege" loading="lazy"><figcaption>A single admin-style role shared by Lambda, agent, and humans is the exam smell. Split it.</figcaption><figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <p class="note"><strong>Why this chapter comes next.</strong> Permissions are for each component. Now, consider the data itself. This includes encryption at rest and private network paths.</p>
 <p>Each component gets only the permissions it needs. It gets no more permissions. Permissions are for specific resources. The router Lambda can invoke specific model ARNs. It cannot invoke <code>bedrock:*</code>. The agent's role can read specific knowledge bases.</p><p> It can invoke specific action-group Lambdas. The action-group Lambda's resource-based policy allows invocation only from the agent.</p>
 <p><strong>Concrete shape.</strong> Use one IAM role for each component. This includes the router Lambda, agent, action-group Lambda, and eval job. Each role has resource-level ARNs. For multi-tenant systems, use separate KBs for each tenant. Use IAM boundaries.</p><p> Do not use one shared KB with prompt instructions. For enterprise-wide model access, use a central GenAI gateway. This gives each team one audited path. It avoids direct Bedrock calls from everywhere.</p>
 <div class="exam-ask"><p>Common misunderstanding.</p>
 <p>"The model's built-in safety is enough." This is never the most correct answer for a sensitive audience. The exam expects layered controls. Use guardrails, IAM, network, evaluation, and human review. Match these to the risk.</p></div>
 <h2 id="ch7-2">8.2 KMS and VPC endpoints</h2>
-<figure><img src="assets/img/custom/sd-82-kmsvpc.svg" alt="KMS encrypts data at rest; VPC endpoints keep traffic off the public internet; the exam swaps the two" loading="lazy"><figcaption>Name the job, then the tool. Encryption and network isolation are different jobs.</figcaption><figcaption class="credit">Drawn for this volume.</figcaption></figure>
+<figure><img src="assets/img/custom/sd-82-kmsvpc.svg" alt="KMS encrypts data at rest; VPC endpoints keep traffic off the public internet; the exam swaps the two" loading="lazy"><figcaption>Name the job, then the tool. Encryption and network isolation are different jobs.</figcaption><figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <p class="note"><strong>Why this chapter comes next.</strong> The service encrypts data. Data stays off the public internet. The next layer records who did what. This is audit.</p>
 <p><strong>KMS.</strong> KMS encrypts all data at rest that the system uses. This includes S3 document buckets, DynamoDB session tables, EBS volumes, and model invocation logs. Use customer-managed keys for compliance workloads. This lets you control key rotation and access. TLS is the default for all AWS API calls in transit.</p>
 <p><strong>VPC endpoints (PrivateLink).</strong> Interface endpoints for the Bedrock planes keep traffic off the public internet. These are <code>com.amazonaws.&lt;region&gt;.bedrock</code> (control plane), <code>bedrock-runtime</code> (invocations), <code>bedrock-agent</code> and <code>bedrock-agent-runtime</code> (agents). With endpoints, Lambda functions in private subnets reach Bedrock. They do not need a NAT gateway. They do not need an internet path.</p><p> "Keep Bedrock traffic private" is always the VPC endpoint answer.</p>
 <h2 id="ch7-3">8.3 CloudTrail and audit</h2>
-<figure><img src="assets/img/custom/sd-83-trailvslogs.svg" alt="CloudTrail records who did what and when; CloudWatch Logs hold what the app said" loading="lazy"><figcaption>Prompts live in Logs; identity actions live in Trail. Checking Trail for a bad answer is the distractor.</figcaption><figcaption class="credit">Drawn for this volume.</figcaption></figure>
+<figure><img src="assets/img/custom/sd-83-trailvslogs.svg" alt="CloudTrail records who did what and when; CloudWatch Logs hold what the app said" loading="lazy"><figcaption>Prompts live in Logs; identity actions live in Trail. Checking Trail for a bad answer is the distractor.</figcaption><figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <p class="note"><strong>Why this chapter comes next.</strong> You covered the audit trail. Now, consider the model boundary itself. This is Guardrails layering.</p>
 <p><strong>The split the exam tests.</strong> <strong>CloudTrail</strong> records who called which API. It records when and from where. This is the audit trail. <strong>CloudWatch Logs</strong> holds application and decision content. It shows what the prompt said.</p><p> It shows what the model answered. Trail is for compliance. For example, "who accessed the KB last Tuesday." Logs is for debugging. For example, "why did the agent choose that tool." Know which question each answers.</p>
 <p><strong>Model invocation logging.</strong> Bedrock can log full requests and responses to S3 or CloudWatch for forensics. These logs can contain PII in compliance environments. Encrypt them with KMS. Or, disable logging. Rely on metadata-only records.</p><p> Logging unencrypted invocations to CloudWatch in a healthcare scenario is an exam trap. The correct answer adds KMS or disables it.</p>
 <p><strong>Lineage.</strong> A regulator asks "which data produced this answer." The answer uses Glue Data Catalog registration. It uses metadata tags on documents. It uses source citations from RetrieveAndGenerate. It uses the CloudTrail audit trail. No single one is enough.</p>
 <p><strong>Concrete numbers (illustrative).</strong> CloudTrail records every Bedrock API call. It records the caller identity, timestamp, and source IP. A mid-size chatbot fleet can make tens of thousands of management events each day. Size trail storage and retention to your compliance window. Remember that Trails answer "who called what." They do not answer "how fast" or "how good."</p>
 <h2 id="ch7-4">8.4 Guardrails layering</h2>
-<figure><img src="assets/img/custom/sd-84-guardlayers.svg" alt="Guardrail layers: denied topics, word filters, PII redaction, contextual grounding, plus the verb drill" loading="lazy"><figcaption>Layer the controls and match the verb: block, filter, redact, check.</figcaption><figcaption class="credit">Drawn for this volume.</figcaption></figure>
+<figure><img src="assets/img/custom/sd-84-guardlayers.svg" alt="Guardrail layers: denied topics, word filters, PII redaction, contextual grounding, plus the verb drill" loading="lazy"><figcaption>Layer the controls and match the verb: block, filter, redact, check.</figcaption><figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <p class="note"><strong>Why this chapter comes next.</strong> Guardrails filter at inference. One data class needs its own end-to-end pipeline. This is PII.</p>
 <p><strong>The control matrix (memorize).</strong></p>
 <div class="table-wrap"><table>
@@ -2474,9 +2511,9 @@ Most expensive, slowest
 <li><strong>Option 5 is the most costly. The exam uses it carefully.</strong> Human review appears in answers only when the risk is high. This includes money movement, actions that cannot be undone, and vulnerable users. For normal questions and answers, options 1 to 4 are enough.</li>
 </ol>
 <h2 id="ch8-4">9.4 One scenario, all three ladders</h2>
-<figure><img src="assets/img/mermaid/98-ladder-comparison.svg" alt="One scenario, three ladders: prompt-only is cheapest with the weakest grounding, RAG is grounded at moderate cost, fine-tuning plus RAG gives the best quality at the highest cost" loading="lazy"><figcaption>One scenario, three ladders: prompt-only is cheapest with the weakest grounding, RAG is grounded at moderate cost, fine-tuning plus RAG gives the best quality at the highest cost</figcaption><figcaption class="credit"><em>One scenario, three ladders: prompt-only is cheapest with the weakest grounding, RAG is grounded at moderate cost, fine-tuning plus RAG gives the best quality at the highest cost</em></figcaption></figure>
+<figure><img src="assets/img/mermaid/98-ladder-comparison.svg" alt="One scenario, three ladders: prompt-only is cheapest with the weakest grounding, RAG is grounded at moderate cost, fine-tuning plus RAG gives the best quality at the highest cost" loading="lazy"><figcaption>One scenario, three ladders: prompt-only is cheapest with the weakest grounding, RAG is grounded at moderate cost, fine-tuning plus RAG gives the best quality at the highest cost</figcaption><figcaption class="credit"><em>One scenario, three ladders: prompt-only is cheapest with the weakest grounding, RAG is grounded at moderate cost, fine-tuning plus RAG gives the best quality at the highest cost</em> Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <figure><img src="assets/img/ste100/aip-scenario-ladders.svg" alt="Decision ladders composed: one support scenario run through the grounding ladder, the inference pricing ladder, and the safety control ladder" loading="lazy"><figcaption>One scenario, three ladders. Run it through the grounding ladder, the inference pricing ladder, and the safety control ladder.</figcaption>
-<figcaption class="credit"><em>Drawn for this volume.</em></figcaption></figure><p>How to read this diagram</p><ol><li>Ladder one: grounding. How does the answer stay factual?</li><li>Ladder two: pricing. What does the inference cost?</li><li>Ladder three: safety. What controls guard the actions?</li></ol>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure><p>How to read this diagram</p><ol><li>Ladder one: grounding. How does the answer stay factual?</li><li>Ladder two: pricing. What does the inference cost?</li><li>Ladder three: safety. What controls guard the actions?</li></ol>
 <p><strong>Scenario.</strong> A bank needs a customer-service copilot. The copilot must answer from 40,000 policy documents. The bank updates these documents each month. The copilot must handle balance inquiries. It must also handle card replacements.</p><p> These use live core-banking APIs. The copilot must block financial advice. It must redact account numbers. The cost must be less than the current call-center cost. The copilot must get human approval. This approval is for any fee reversal over $500.</p><p></p>
 <p><strong>Walk the ladders.</strong></p>
 <ol>
@@ -2496,7 +2533,7 @@ Most expensive, slowest
 <p class="note"><strong>Why this chapter comes next.</strong> The theory is complete. This chapter has 24 scenario questions. They are in the exam's "most correct answer" style. There is roughly one question per design chapter. This drills the ladders under pressure.</p>
 <p>There are 24 scenario questions. They are in the exam's "most correct answer" style. There are 8 easy questions, 8 medium questions, and 8 hard multiple-response questions. Every answer explains the correct choice. It also eliminates each distractor.</p>
 <h2 id="chapter-1-rag-on-bedrock-knowledge-bases">Chapter 3: RAG on Bedrock Knowledge Bases</h2>
-<figure><img src="assets/img/mermaid/100-rag-kb-arch.svg" alt="RAG on Bedrock Knowledge Bases: the system ingests documents from S3, chunks them, and embeds them into a vector store; queries retrieve top-k chunks for grounded generation" loading="lazy"><figcaption>RAG on Bedrock Knowledge Bases: the system ingests documents from S3, chunks them, and embeds them into a vector store; queries retrieve top-k chunks for grounded generation</figcaption><figcaption class="credit"><em>RAG on Bedrock Knowledge Bases: the system ingests documents from S3, chunks them, and embeds them into a vector store; queries retrieve top-k chunks for grounded generation</em></figcaption></figure>
+<figure><img src="assets/img/mermaid/100-rag-kb-arch.svg" alt="RAG on Bedrock Knowledge Bases: the system ingests documents from S3, chunks them, and embeds them into a vector store; queries retrieve top-k chunks for grounded generation" loading="lazy"><figcaption>RAG on Bedrock Knowledge Bases: the system ingests documents from S3, chunks them, and embeds them into a vector store; queries retrieve top-k chunks for grounded generation</figcaption><figcaption class="credit"><em>RAG on Bedrock Knowledge Bases: the system ingests documents from S3, chunks them, and embeds them into a vector store; queries retrieve top-k chunks for grounded generation</em> Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <p>A. Fine-tune a foundation model on the manuals each quarter.</p>
 <p>B. Create a Bedrock Knowledge Base with an S3 data source. Use a quarterly sync schedule. Use RetrieveAndGenerate.</p>
 <p>C. Paste the manuals into the system prompt of every chat call.</p>
@@ -2612,7 +2649,7 @@ Most expensive, slowest
 <p>E. Amazon Rekognition to scan chat text for PII.</p>
 <p><strong>Correct: A, B, and C.</strong> Use one service per plane. Use Macie at rest. Use Comprehend in flight. Use Guardrails at the model boundary. This is the exam's canonical PII triple.</p><p> D is wrong: translation keeps meaning. It protects nothing. E is wrong: Rekognition is a vision service. Comprehend is the text answer.</p>
 <h2 id="chapter-8-decision-ladders">Chapter 9: Decision ladders</h2>
-<figure><img src="assets/img/mermaid/53-approach-ladder.svg" alt="The approach ladder again: prompt engineering, then RAG, then fine-tuning, then continued pre-training, in order of rising cost and effort" loading="lazy"><figcaption>The approach ladder again: prompt engineering, then RAG, then fine-tuning, then continued pre-training, in order of rising cost and effort</figcaption><figcaption class="credit"><em>The approach ladder again: prompt engineering, then RAG, then fine-tuning, then continued pre-training, in order of rising cost and effort</em></figcaption></figure>
+<figure><img src="assets/img/mermaid/53-approach-ladder.svg" alt="The approach ladder again: prompt engineering, then RAG, then fine-tuning, then continued pre-training, in order of rising cost and effort" loading="lazy"><figcaption>The approach ladder again: prompt engineering, then RAG, then fine-tuning, then continued pre-training, in order of rising cost and effort</figcaption><figcaption class="credit"><em>The approach ladder again: prompt engineering, then RAG, then fine-tuning, then continued pre-training, in order of rising cost and effort</em> Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <p>A. Prompt engineering with a longer system prompt.</p>
 <p>B. RAG with Bedrock Knowledge Bases and a monthly sync schedule.</p>
 <p>C. Fine-tuning a custom model every month.</p>
@@ -3219,6 +3256,73 @@ window.DS_MANIFEST = [
       }
     }
   });
+  /* ---------- 11. Scroll reveal + figure parallax (progressive enhancement) ----------
+     .reveal is added here (never in markup), so content is fully visible with
+     JS disabled. Respects prefers-reduced-motion. Parallax drift is a small
+     transform on plain figure images only; it never changes layout. ---------- */
+
+  (function () {
+    var reduceMotion = window.matchMedia &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    /* Scroll reveal: gentle rise-in on content blocks as they enter the viewport. */
+    var revealTargets = inner.querySelectorAll(
+      "figure, .pq, .exam-ask, .takeaway, .panel, .diagram-walkthrough, " +
+      ".table-wrap, .ladder, .cc-qa"
+    );
+    if (!reduceMotion && "IntersectionObserver" in window) {
+      var revealEls = Array.prototype.slice.call(revealTargets);
+      revealEls.forEach(function (el) { el.classList.add("reveal"); });
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (en) {
+          if (en.isIntersecting) {
+            en.target.classList.add("revealed");
+            io.unobserve(en.target);
+          }
+        });
+      }, { rootMargin: "0px 0px -8% 0px", threshold: 0.05 });
+      revealEls.forEach(function (el) { io.observe(el); });
+    }
+    /* reduceMotion or no IntersectionObserver: no .reveal class is added,
+       so every block stays fully visible. */
+
+    /* Figure parallax: gentle --px drift on plain figure images only
+       (.fig-light cards are excluded so the white plate never shows an edge). */
+    if (!reduceMotion) {
+      var pxFigs = [];
+      Array.prototype.forEach.call(
+        inner.querySelectorAll("figure:not(.fig-light)"),
+        function (fig) {
+          if (fig.querySelector("img")) {
+            fig.classList.add("ds-px");
+            pxFigs.push(fig);
+          }
+        }
+      );
+      var pxTicking = false;
+      function pxUpdate() {
+        var vh = window.innerHeight || 800;
+        pxFigs.forEach(function (fig) {
+          var img = fig.querySelector("img");
+          if (!img) return;
+          var r = img.getBoundingClientRect();
+          if (r.bottom < -160 || r.top > vh + 160) return; /* off-screen: skip */
+          var center = (r.top + r.height / 2) - vh / 2;
+          var drift = center * -0.015;
+          if (drift > 8) drift = 8;
+          if (drift < -8) drift = -8;
+          img.style.setProperty("--px", drift.toFixed(1) + "px");
+        });
+        pxTicking = false;
+      }
+      function pxRequest() {
+        if (!pxTicking) { pxTicking = true; window.requestAnimationFrame(pxUpdate); }
+      }
+      window.addEventListener("scroll", pxRequest, { passive: true });
+      window.addEventListener("resize", pxRequest);
+      pxUpdate();
+    }
+  })();
 })();
 
 </script>
