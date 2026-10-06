@@ -16,14 +16,15 @@ Complete study materials for the AWS Certified Generative AI Developer - Profess
 | `prereq-aif-c01.html` | Prerequisite: AWS Certified AI Practitioner (AIF-C01) crash course |
 | `prereq-aws-cloud-foundations.html` | Prerequisite: AWS cloud foundations (IAM, S3, EC2, VPC, Lambda, and more) |
 | `prereq-ml-specialty.html` | Prerequisite: ML Specialty essentials (SageMaker, training/tuning, MLOps) |
-| `volume-d1-foundation-models.html` | D1: Foundation Models and Prompt Engineering (31%) |
+| `volume-d1-foundation-models.html` | D1: Foundation Model Integration, Data Management, and Compliance (31%) |
 | `volume-d2-implementation-integration.html` | D2: Implementation and Integration (26%) |
-| `volume-d3-safety-security-governance.html` | D3: Safety, Security, and Governance (20%) |
-| `volume-d4-optimization.html` | D4: Optimization (12%) |
-| `volume-d5-testing-validation.html` | D5: Testing and Validation (11%) |
+| `volume-d3-safety-security-governance.html` | D3: AI Safety, Security, and Governance (20%) |
+| `volume-d4-optimization.html` | D4: Operational Efficiency and Optimization for GenAI Applications (12%) |
+| `volume-d5-testing-validation.html` | D5: Testing, Validation, and Troubleshooting (11%) |
 | `volume-maarek-labs.html` | Hands-on labs in the Stephane Maarek style: build it, then answer |
 | `volume-question-bank.html` | Practice questions across easy, medium, and hard |
 | `volume-question-patterns.html` | How AWS phrases questions, and the traps they set |
+| `volume-crash-course.html` | Crash course: the whole exam in one volume, decision rules and numbers |
 | `volume-system-design.html` | End-to-end reference designs with trade-off math |
 | `volume-appendix-gaps.html` | Gap coverage: topics the blueprint implies but never names |
 
