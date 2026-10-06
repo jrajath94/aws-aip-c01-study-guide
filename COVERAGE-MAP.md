@@ -42,7 +42,7 @@ Weights are verbatim from the official exam guide: D1 31%, D2 26%, D3 20%, D4 12
 | 3.3 AI governance and compliance (model cards, lineage, CloudTrail vs CloudWatch Logs, drift monitoring) | D3 ch9 |
 | 3.4 Responsible AI (transparency, fairness, LLM-as-a-judge, policy compliance) | D3 ch10; D5 ch2 |
 
-### Domain 4: Operational Efficiency and Optimization (12%)
+### Domain 4: Operational Efficiency and Optimization for GenAI Applications (12%)
 
 | Task statement | Covered by |
 |---|---|
@@ -101,7 +101,7 @@ Method: keyword and chapter-title search across all existing volumes on 2026-09-
 | Q Developer (./amazon/rules) | Covered | D2 |
 | HITL (human augmentation, escalation criteria, API Gateway + DynamoDB feedback) | Covered | D2 ch6; D5 ch3 |
 
-### Section IV: Operational Efficiency and Optimization
+### Section IV: Operational Efficiency and Optimization for GenAI Applications
 
 | Topic | Status | Volumes |
 |---|---|---|
