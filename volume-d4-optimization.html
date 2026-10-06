@@ -1167,6 +1167,42 @@ footer p{text-align:left}
   #ds-content .ds-site-footer,
   .ds-side-volumes { display: none !important; }
 }
+
+/* ==========================================================================
+   World-class upgrade (2026-10-05): scroll reveal + figure parallax.
+   Progressive enhancement: .reveal is added by JS only, so with JS disabled
+   every element stays fully visible. Parallax drift is transform-only (no
+   layout shift) and limited to plain figures; both honor
+   prefers-reduced-motion.
+   ========================================================================== */
+
+/* Scroll reveal: subtle rise-in. JS adds .reveal to content blocks; the
+   IntersectionObserver adds .revealed as each block enters the viewport. */
+.reveal {
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.reveal.revealed {
+  opacity: 1;
+  transform: none;
+}
+
+/* Figure parallax: gentle vertical drift on figure images (excludes
+   .fig-light cards so the white plate never shows an edge). The figure gets
+   overflow:hidden from JS when parallax activates, so the drift cannot
+   cause layout shift or edge bleed. */
+figure.ds-px { overflow: hidden; }
+figure.ds-px img {
+  transform: translateY(var(--px, 0px));
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal { opacity: 1; transform: none; transition: none; }
+  figure.ds-px img { transform: none; }
+  html { scroll-behavior: auto; }
+}
 .walkthrough{margin:.4rem 0 1.4rem;padding:.6rem .9rem;border-left:3px solid var(--accent,#4da3ff);background:var(--card,#141414);border-radius:0 8px 8px 0;font-size:.92rem;color:var(--muted,#a8a8a8)}
 .walkthrough strong{color:inherit}
 </style>
@@ -1315,7 +1351,7 @@ html.xp-js .xp-reveal.xp-in {
 <p>On-demand charges per token. It works for traffic that has spikes. Token efficiency is the first free control.</p><p>Retrieval tuning makes the retrieved context smaller. Prompt caching reduces input-token cost for repeated prefixes. Semantic caching skips repeated calls completely. Batch inference makes the price half for offline jobs.</p><p>Provisioned Throughput buys guaranteed capacity for steady base levels. Smaller models and routing reduce cost per call. Fine-tuning puts repeated behavior into a cheap model. This is the last choice. CloudWatch, invocation logs, and X-Ray show you which control to use. Each Domain 4 question is one of these controls applied to a limit.</p></div>
 <h2 id="the-domain-4-decision-map">The Domain 4 decision map</h2>
 <figure><img src="assets/img/density/d4-decision-map.svg" alt="The Domain 4 decision map: read the constraint on the left, take the lever on the right" loading="lazy"><figcaption>The Domain 4 decision map: read the constraint on the left, take the lever on the right</figcaption>
-<figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <div class="walkthrough"><p><strong>How to read this.</strong> Each row is one scenario constraint with an arrow to its lever; border colors group the levers by family (green cheapest, amber capacity, blue latency/quality). Takeaway: read the constraint first, then reach for exactly one row; the distractor is always a real lever on the wrong row.</p></div>
 <p>Memorize this before you read other information. It answers half of this domain.</p>
 <div class="table-wrap"><table>
@@ -1375,13 +1411,14 @@ html.xp-js .xp-reveal.xp-in {
 <div class="takeaway"><p><strong>This is the main idea of this domain.</strong></p>
 <p>These are the pricing controls in order: token efficiency, retrieval tuning, prompt caching, semantic caching, batch, provisioned throughput, smaller models and routers, fine-tuning. AWS will ask this: a situation with one main limit (cost increase, latency SLA, throttling at peak, offline work). This is the trap: every wrong answer is a real control used for the wrong limit. Provisioned throughput is for a spiky workload.</p><p>Prompt caching is for personalized queries with no repeated start. A bigger model is for a cost problem. Read the limit first. Then choose only one row from the table.</p></div>
 <h2 id="01-on-demand-inference-pricing-and-token-economics">01. On-demand inference pricing and token economics</h2>
+<p>As you learned in <a href="volume-d1-foundation-models.html">D1</a>, the price of inference starts with input and output tokens. This domain is about spending fewer of them.</p>
 <p>Every team learns this domain the same way. They see the first production invoice. The demo was cheap. Then real traffic came. The chat history grew. The retrieved context became very large.</p><p>The bill increased when no one watched. No one changed the model. The tokens kept moving. Users said the chat was slow. Cost and speed are the same problem. This book teaches both.</p>
 <p>This is the default way you pay for Bedrock: per token. It splits into input tokens and output tokens. Each model has a rate.</p>
 <figure><img src="assets/img/mermaid/05-cost-ladder.svg" alt="Cost ladder: prompt caching plus small models for simple tasks is cheapest per token, then batch inference (~50% off), then on-demand, then Provisioned Throughput for steady high volume." loading="lazy"><figcaption>Prompt caching plus small models for simple tasks is cheapest per token. Then batch inference is about 50% off. Then on-demand is next. Provisioned Throughput is for steady high volume.</figcaption>
-<figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <h3>The bill, in one paragraph</h3>
 <figure><img src="assets/img/density/d4-bill.svg" alt="The bill: input tokens plus output tokens, times the per-token price" loading="lazy"><figcaption>The bill: input tokens plus output tokens, times the per-token price</figcaption>
-<figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <div class="walkthrough"><p><strong>How to read this.</strong> Three blocks in the equation: inputs priced lower, outputs priced higher because generation costs compute, times price. Takeaway: the input meter is where multi-turn history silently multiplies the bill.</p></div>
 <p>On-demand inference is Bedrock's pay-as-you-go price. You use InvokeModel or Converse with a model ID. AWS bills input tokens and output tokens. Input tokens are all data you send. Output tokens are all data the model makes. AWS bills each token type at the model's per-thousand-token price.</p><p>A token is a piece of text. The model processes this text. A token is about three quarters of an English word. Output tokens cost more than input tokens. Making text costs more. It takes a full forward pass of the model for each token.</p>
 <p>It exists because GenAI traffic is not steady. An app in beta, a demo, an internal tool with 50 users: paying for hourly capacity is not logical. On-demand means zero cost when idle. You pay only for what you use. It removes idle waste. You never pay for GPU time you do not use.</p>
@@ -1413,7 +1450,7 @@ At 1 million calls/month:  $1,000/month. 12x cheaper.
 <p class="ch-next" style="color:var(--muted);font-size:.95em;margin:1.4rem 0 .4rem"><strong>Next:</strong> Token efficiency. This is the free lever. Use it before you spend money.</p>
 <figure><img src="assets/img/ste100/aip-token-cost-math.svg" alt="Worked example: token counts times price equals call cost" loading="lazy">
 <figcaption>One call with 2,000 input tokens and 500 output tokens costs $0.0135 at example prices.</figcaption>
-<figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <div class="walkthrough"><p><strong>How to read this.</strong> The top line names the token counts, and the middle lines multiply each count by its price. The bottom line scales one call to one million calls. Only two levers exist: fewer tokens or fewer calls.</p></div>
 <h2 id="11-token-efficiency-and-prompt-optimization">02. Token efficiency and prompt optimization</h2>
 <p>You do not pay for tokens that you do not send.</p>
@@ -1482,7 +1519,7 @@ With caching (first call writes cache, rest hit):
 <p class="ch-next" style="color:var(--muted);font-size:.95em;margin:1.4rem 0 .4rem"><strong>Next:</strong> semantic caching. Skip the call completely.</p>
 <figure><img src="assets/img/ste100/aip-prompt-caching.svg" alt="Prompt caching stores the static prefix so later turns pay only for new tokens" loading="lazy">
 <figcaption>Prompt caching stores the static prefix once, so later turns pay only for new tokens.</figcaption>
-<figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <div class="walkthrough"><p><strong>How to read this.</strong> Turn one pays full price. The cache stores the unchanging start of the prompt, and later turns reuse it. It works only when the prompt start never changes.</p></div>
 <h2 id="12-semantic-caching">04. Semantic caching</h2>
 <p>Do not call the model if you know the answer already.</p>
@@ -1513,12 +1550,12 @@ With semantic cache at 60% hit rate:
 <p class="ch-next" style="color:var(--muted);font-size:.95em;margin:1.4rem 0 .4rem"><strong>Next:</strong> Tune retrieval. Make the chunks in the prompt smaller.</p>
 <figure><img src="assets/img/ste100/aip-semantic-cache.svg" alt="Semantic cache returns a cached answer when a similar question was asked before" loading="lazy">
 <figcaption>Semantic caching returns a cached answer for a question like one asked before.</figcaption>
-<figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <div class="walkthrough"><p><strong>How to read this.</strong> The system embeds the new question and compares it to cached pairs. Above the similarity line, the cached answer returns with no model call. Below the line, the model runs, caches the pair, and you set the line with real traffic.</p></div>
 <h2 id="05-retrieval-tuning-fewer-better-chunks">05. Retrieval tuning: fewer, better chunks</h2>
 <p>Retrieved context is usually the biggest part of a retrieval prompt. Tune it before you pay for it.</p>
 <figure><img src="assets/img/mermaid/82-token-budget.svg" alt="Token budget per request: the system prompt is fixed cost, retrieved context is the biggest lever, summarize old history, cap max output tokens" loading="lazy"><figcaption>The system has a token budget per request. The system prompt is a fixed cost. Retrieved context is the biggest lever. The system summarizes conversation history. User input is small. The system caps max output tokens.</figcaption>
-<figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <h3>Every chunk is input tokens</h3>
 <p>A RAG application gets document chunks. It puts them into the prompt. The model can then answer from your data. (RAG, retrieval-augmented generation, is in Domain 1.</p><p>Chunking strategies and embeddings are also there.) Each chunk costs input tokens on every call. The usual idea is to get many chunks. For example, ten chunks of 500 tokens "to be safe" is 5,000 tokens. This is before the user asks anything.</p><p>Also, extra chunks are not just expensive. They are noisy. Chunks that are not relevant distract the model. Quality goes down. The cost goes up. This chapter answers that problem.</p>
 <p>Retrieval tuning means using the fewest context tokens. These tokens must still contain the answer. There are four ways to do this. Start with the cheapest.</p>
@@ -1573,12 +1610,12 @@ Cascaded (router cost negligible):
 <p class="ch-next" style="color:var(--muted);font-size:.95em;margin:1.4rem 0 .4rem"><strong>Next:</strong> Fine-tuning puts behavior into the weights.</p>
 <figure><img src="assets/img/ste100/aip-cascade-router.svg" alt="Cascade router sends easy questions to the small model and hard ones to the flagship" loading="lazy">
 <figcaption>A cascade router sends easy questions to the small model and hard ones to the flagship.</figcaption>
-<figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <div class="walkthrough"><p><strong>How to read this.</strong> The router reads each question. Easy questions go left to the cheap model, and hard questions go right to the flagship. Prove the small model matches quality first.</p></div>
 <h2 id="07-fine-tuning-a-small-model-for-your-workload">07. Fine-tuning a small model for your workload</h2>
 <p>The same narrow task runs millions of times. Stop renting the flagship's generality. Put the behavior into a small model.</p>
 <figure><img src="assets/img/mermaid/90-fine-tune-economics.svg" alt="Fine-tuning economics: a flagship model at high per-call cost versus a fine-tuned small model trained once on labeled examples and served cheaply at scale" loading="lazy"><figcaption>Fine-tuning economics: the flagship costs more per call. This is because you rent its generality. A small model fine-tuned on your task examples costs once to train and little per call.</figcaption>
-<figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <h3>The most expensive lever, for the most repeated work</h3>
 <p>Fine-tuning trains a model on your labeled examples. A behavior becomes part of the weights. It is not instructions repeated in every prompt. Supervised fine-tuning uses prompt-and-response pairs. These are for a support tone, a classification task, or a response format.</p><p>Distillation trains a small, cheap student model. It imitates a large teacher model. It does this for your one narrow task. This gives near-teacher quality at student cost. The full mechanics, continued pre-training, imported models, and LoRA (low-rank) adapters are in Domain 1, Chapter 8. This chapter is only about when the economics justify it.</p>
 <p>Cascading (Topic 06) still leaves the hard part of traffic on the flagship. Some workloads carry a giant system prompt on every call. This enforces a consistent tone or format. A 40-page style guide costs tokens on every one of 50 million monthly calls.</p><p>The model still changes. Fine-tuning exists for this exact shape. It is a narrow, repeated behavior. Consistency matters. The per-call cost of instructions never ends.</p>
@@ -1611,7 +1648,7 @@ prompt work wins without any training.
 <p>Users judge speed by the first token. They do not judge speed by the last token.</p>
 <h3>Perceived latency is the metric that matters</h3>
 <figure><img src="assets/img/density/d4-perceived-latency.svg" alt="Perceived latency: streaming shows tokens from the first second while non-streaming shows nothing until the end" loading="lazy"><figcaption>Perceived latency: streaming shows tokens from the first second while non-streaming shows nothing until the end</figcaption>
-<figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <div class="walkthrough"><p><strong>How to read this.</strong> Two timelines. Top: silence, then the whole answer; the red line marks time to first token at the end. Bottom: the green bar starts near the left, tokens arriving early. Takeaway: total durations are similar; perceived speed is entirely about when the user sees something.</p></div>
 <p>Streaming sends the model's response token by token. It sends tokens as the model makes them. It does not wait for the full response.</p><p>It does not send the full response at one time. Use ConverseStream or InvokeModelWithResponseStream. Your application receives a stream of events. It shows each token when the token arrives.</p><p>Time to first token (TTFT) is the delay. It is the delay before the first token appears. Total latency is the delay until the last token. Streaming does not change total latency. It changes perceived latency. Users feel perceived latency.</p>
 <p>A 500-token answer can take 15 seconds to make completely. A blank screen for 15 seconds feels broken. The first words in 1 second feel instant. The rest of the words flow after the first words. The total time is the same.</p><p>Chat products succeed or fail based on this perception. Streaming also lets you start work early. Start rendering. Start text-to-speech. Detect a refusal before the full response is complete.</p>
@@ -1645,7 +1682,7 @@ Switching to a lightweight model at 60 tokens/sec:
 <p class="ch-next" style="color:var(--muted);font-size:.95em;margin:1.4rem 0 .4rem"><strong>Next:</strong> batch inference. It costs half price for work that can wait.</p>
 <figure><img src="assets/img/ste100/aip-latency-vs-throughput.svg" alt="Latency is time to first token; throughput is tokens per second; streaming improves perceived speed" loading="lazy">
 <figcaption>Latency is time to the first token, throughput is tokens per second, and streaming improves what the user feels.</figcaption>
-<figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <div class="walkthrough"><p><strong>How to read this.</strong> The left box is what the user waits for, and the right box is what the meter measures. The bottom box shows streaming: tokens appear as they arrive. Always stream for chat.</p></div>
 <h2 id="03-batch-inference">09. Batch inference</h2>
 <p>Get half-price inference for work that can wait.</p>
@@ -1676,9 +1713,10 @@ Batch (50% discount):
 <p class="ch-next" style="color:var(--muted);font-size:.95em;margin:1.4rem 0 .4rem"><strong>Next:</strong> This is provisioned throughput. It is reserved capacity for the steady baseline.</p>
 <figure><img src="assets/img/ste100/aip-batch-vs-provisioned.svg" alt="Batch inference versus provisioned throughput trade-offs" loading="lazy">
 <figcaption>Batch is cheap and slow, provisioned is fixed-price and fast, and the workload shape picks the winner.</figcaption>
-<figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <div class="walkthrough"><p><strong>How to read this.</strong> The left box is batch: up to half price, hours of latency, offline only. The right box is the provisioned tier: fixed dollars per hour with guaranteed capacity. Steady big load earns provisioned, and spiky offline work earns batch.</p></div>
 <h2 id="04-provisioned-throughput">10. Provisioned Throughput</h2>
+<p>As you learned in <a href="volume-d2-implementation-integration.html">D2</a>, you can reserve model capacity. This section covers when that reservation pays off.</p>
 <p>Reserve capacity when you need steady traffic. Reserve capacity when you need latency guarantees. These are more important than the price per token.</p>
 <h3>Buying certainty by the hour</h3>
 <p>Provisioned Throughput (PT) is reserved inference capacity on Bedrock. You buy model units. Each unit has a fixed amount of processing capacity for one model. You buy units for a commitment term.</p><p>The common terms are 1 month or 6 months. You pay an hourly rate for each unit for the full term. You pay if you use it or not. Your requests go to your provisioned model. This gives you dedicated capacity.</p><p>You get consistent latency. You get no throttling from shared on-demand quotas. You get a guaranteed throughput floor. Use CreateProvisionedModelThroughput to make it. You get a provisioned model ARN (Amazon Resource Name). Invocations must use that ARN to use the reserved capacity.</p>
@@ -1717,7 +1755,7 @@ Option C: PT only when the baseline is big enough.
 <h3>One identifier, many regions</h3>
 <p>An inference profile is a Bedrock routing identifier. It sends your request to a model in one of several regions. It does not limit you to one region. Profiles have geographic prefixes: us., eu., apac., and global.</p><p>(plus us-gov. for GovCloud regions). You call a profile ID. For example, us.anthropic.claude-haiku-4-5-20251001-v1:0 (this is an example name). Bedrock routes the request across regions. The model must be available in these regions.</p><p>Bedrock picks one region with capacity. If one region throttles, the profile can fail over to another region. You call the profile ID. Do not call the bare model ID. Converse accepts the profile as a model identifier or ARN. InvokeModel takes the profile ID.</p>
 <p>Two problems cause this. First, models are not in every region. Quotas are different for each region. An application in one region can reach that region's quota limit. Another region can be idle. Second, regional outages happen.</p><p>Inference profiles pool capacity across regions. They provide automatic failover. Your code does not manage region lists. Without them, every team builds retry logic across regions. This is operational overhead. The exam wants you to avoid this overhead.</p>
-<p>You choose a profile scope. The scope is a data-residency decision. "us." keeps data in US regions. "eu." keeps data in Europe. "global." can send data anywhere. A compliance rule says, "data must stay in the EU." This makes "global." wrong.</p><p>It makes "eu." right. Your code sends the profile ID as the model identifier. Bedrock's routing layer chooses a destination region with available capacity. The source region of the profile manages quotas. Your throttling limits follow the profile. They do not follow each destination region separately.</p><p>Traffic stays on the AWS backbone. It encrypts during transit. Cross-region here does not mean the public internet. Failover is automatic for capacity errors. A throttled request in one region retries in another profile region. This is transparent to your code.</p>
+<p>You choose a profile scope. The scope is a data-residency decision. "us." keeps data in US regions. "eu." keeps data in Europe. "global." can send data anywhere. A compliance rule says, "data must stay in the EU." This makes "global." wrong.</p><p>It makes "eu." right. Your code sends the profile ID as the model identifier. Bedrock's routing layer chooses a destination region with available capacity. The source region of the profile manages quotas. Your throttling limits follow the profile. They do not follow each destination region separately.</p><p>Two profile types exist. System-defined profiles are prebuilt by AWS. They route across regions. You create application profiles yourself. An application profile wraps one region or one system-defined profile. It adds tags and CloudWatch usage metrics. Finance uses tags for cost allocation per team. Finance uses metrics for usage reports. The exam twist is "track cost per team." The answer is an application profile with tags. It is not a new system-defined profile.</p><p>Traffic stays on the AWS backbone. It encrypts during transit. Cross-region here does not mean the public internet. Failover is automatic for capacity errors. A throttled request in one region retries in another profile region. This is transparent to your code.</p>
 <p>These are example quota numbers. Your application needs 500 requests per minute. This is for a model. The model's per-region on-demand quota is 200 RPM. This is in each of three US regions.</p>
 <pre><code>Single region:  200 RPM quota  -&gt;  throttled at 40% of needed load.
 us. profile:    3 regions pooled -&gt; effective capacity up to ~600 RPM,
@@ -1735,7 +1773,7 @@ Cost: identical per-token rates. The profile is a routing feature,
 <p class="ch-next" style="color:var(--muted);font-size:.95em;margin:1.4rem 0 .4rem"><strong>Next:</strong> rate limits, throttling, and retries.</p>
 <figure><img src="assets/img/ste100/aip-cross-region-routing.svg" alt="Inference profile routes the request to a region with capacity" loading="lazy">
 <figcaption>An inference profile sends each request to a region with capacity.</figcaption>
-<figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <div class="walkthrough"><p><strong>How to read this.</strong> Your app calls the profile. The profile picks a region that has room. If one region throttles, traffic fails over, and you pay the price of the region that serves you.</p></div>
 <h2 id="07-rate-limits-quotas-and-throttling-with-retries">12. Rate limits, quotas, and throttling with retries</h2>
 <p>Every API has a speed limit. Production code respects it. It does not crash into it.</p>
@@ -1767,7 +1805,7 @@ With provisioned throughput sized for 150 RPM + on-demand overflow:
 <p class="ch-next" style="color:var(--muted);font-size:.95em;margin:1.4rem 0 .4rem"><strong>Next:</strong> CloudWatch metrics, the dashboard.</p>
 <figure><img src="assets/img/ste100/aip-throttle-backoff.svg" alt="Throttled requests retry with exponential backoff and jitter" loading="lazy">
 <figcaption>A throttled request waits longer each time, with jitter, then retries.</figcaption>
-<figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <div class="walkthrough"><p><strong>How to read this.</strong> The 429 box starts the wait. The backoff box doubles the delay: 1s, 2s, 4s, with jitter, then the retry runs. Two quotas exist: requests per minute and tokens per minute.</p></div>
 <h2 id="09-cloudwatch-metrics-for-bedrock">13. CloudWatch metrics for Bedrock</h2>
 <p>You cannot make better what you cannot see. These four metrics are the dashboard.</p>
@@ -1798,7 +1836,7 @@ response size limits. NOT a capacity problem: throttles are flat.
 <p class="ch-next" style="color:var(--muted);font-size:.95em;margin:1.4rem 0 .4rem"><strong>Next:</strong> invocation logging and X-Ray tracing. This shows what happened and how much time it took.</p>
 <figure><img src="assets/img/ste100/aip-observability.svg" alt="Observability trio: CloudWatch metrics, invocation logs, X-Ray traces" loading="lazy">
 <figcaption>Metrics show what moved, logs show why, and traces show where it slowed.</figcaption>
-<figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <div class="walkthrough"><p><strong>How to read this.</strong> CloudWatch holds the numbers: tokens, invocations, latency. Invocation logs hold the full prompt and answer, and X-Ray holds the path from app to model. Sample the logs instead of storing every prompt forever.</p></div>
 <h2 id="10-model-invocation-logging-and-x-ray-tracing">14. Model invocation logging and X-Ray tracing</h2>
 <p>Metrics show that something is wrong. Logs and traces show what is wrong.</p>
@@ -1871,7 +1909,7 @@ Apply the ladder:
 <p>Read the diagram. The SaaS cost-control diagram maps the same ladder onto a production SaaS architecture. Lean prompts and semantic caching are at the request edge. Routers send traffic to the correct model tier.</p><p>Batch jobs drain offline work. PT covers the steady baseline with on-demand overflow. A CloudWatch dashboard with budgets and anomaly detection watches the whole stack. The pattern is the same. Only the deployment shape changes.</p>
 <h3>The scenario shapes</h3>
 <figure><img src="assets/img/density/d4-scenario-shapes.svg" alt="The scenario shapes: each named constraint maps to its lever stack" loading="lazy"><figcaption>The scenario shapes: each named constraint maps to its lever stack</figcaption>
-<figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <div class="walkthrough"><p><strong>How to read this.</strong> Four cards: the exam's recurring scenario shapes with their answers. Takeaway: portfolio questions are a ladder walk, one cheapest fitting lever per component, and the most correct answer is usually a hybrid.</p></div>
 <ul>
 <li>Optimize under constraint. Token costs grow 30% each month. There is no UX degradation. Stack the free levers. Use prompt compression, caching, and caps. Re-verify quality with evaluation.</li>
@@ -1887,7 +1925,7 @@ Apply the ladder:
 <div class="callout num"><span class="callout-h">Where to go next</span><p>You have the full optimization ladder. Drill this volume's questions. Then continue to <a href="volume-d5-testing-validation.html"><strong>Volume D5: Testing and Validation</strong></a>.</p><p>This volume covers the evaluation discipline behind the ladder. It covers benchmark testing, human and LLM-based evaluation, A/B testing, troubleshooting, and CI/CD for GenAI. The question bank and figures below stay in this volume. This is your Domain 4 drill ground.</p></div>
 <figure><img src="assets/img/ste100/aip-cost-ladder.svg" alt="Cost ladder from cutting tokens to provisioned throughput" loading="lazy">
 <figcaption>The cost ladder lists savings from cheapest first to provisioned throughput last.</figcaption>
-<figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <div class="walkthrough"><p><strong>How to read this.</strong> Read top to bottom. Cut tokens, cache the prompt, cache answers, and right-size the model. Then fine-tune small, batch the slow work, provision only for steady load, and stop at the first win.</p></div>
 <h2 id="questions-topic-01-on-demand-pricing-and-token-economics">Questions: Topic 01, On-demand pricing and token economics</h2>
 <p>MCEasy A startup prototypes a chat feature. Daily usage is not predictable. It ranges from 50 to 5,000 requests. The CFO wants the lowest possible cost during the experiment. Which pricing model must the team use?</p>
@@ -1936,7 +1974,7 @@ Apply the ladder:
 <p><strong>Correct: A, C.</strong> A gives token metrics for each tenant. This helps with chargeback. C gives request and response data for each tenant. This helps when a tenant questions usage. This also helps when you must find the cause of a usage spike.</p>
 <p>B is wrong: A separate PT for each tenant uses too many resources. It does not measure usage. It is a capacity tool.</p><p>It is not a metering tool. D is wrong: Even splits do not depend on usage. They penalize tenants with low usage. E is wrong: Disabling metrics removes the visibility that the scenario needs.</p>
 <figure><img src="assets/img/mermaid/82-token-budget.svg" alt="Token budget per request: the system prompt is fixed cost, retrieved context is the biggest lever, summarize old history, cap max output tokens" loading="lazy"><figcaption>Token budget per request: the system prompt is fixed cost, retrieved context is the biggest lever, summarize old history, cap max output tokens.</figcaption>
-<figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <h2 id="questions-topic-11-token-efficiency">Questions: Topic 02, Token efficiency</h2>
 <p>MCEasy A chatbot sends the full 30-turn conversation history with every call. The history is 3,000 tokens on average. What is the simplest change to reduce input-token cost?</p>
 <p>A. Use the last 6 turns of history. Or summarize older turns.</p>
@@ -2356,7 +2394,7 @@ Caching cannot guarantee a 250-token generation finishes in 3 seconds.</p>
 <p>B is wrong. The base model ID shows throttling on the on-demand pool. But the scenario says no throttling. D is wrong.</p><p>Term length changes price. It does not change latency. E is wrong. Batch pricing is not related to PT latency.</p>
 <h2 id="questions-topic-05-inference-profiles-and-routing">Questions: Topic 11, Inference profiles and routing</h2>
 <figure><img src="assets/img/mermaid/84-latency-budget.svg" alt="Latency budget: pick a small fast model, stream the response, use prompt caching, and choose a region close to the user" loading="lazy"><figcaption>Latency budget: pick a small fast model, stream the response, use prompt caching, and choose a region close to the user.</figcaption>
-<figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <p>The MCEasy A model is in only two regions. The application needs automatic failover. This happens if one region throttles or has an outage. The application needs minimal code changes. What must the application call?</p>
 <p>A. The bare model ID in one region</p>
 <p>B. The inference profile ID (for example, with a us. prefix)</p>
@@ -2404,7 +2442,7 @@ Caching cannot guarantee a 250-token generation finishes in 3 seconds.</p>
 <p>B is wrong. Profiles do not route by complexity. C is wrong. PT reserves capacity.</p><p>It does not do complexity routing. It does not do regional failover. E is wrong. Batch is for offline use only.</p>
 <h2 id="questions-topic-07-rate-limits-quotas-retries">Questions: Topic 12, Rate limits, quotas, retries</h2>
 <figure><img src="assets/img/mermaid/80-quota-monitor.svg" alt="Quota monitoring: watch Bedrock quotas per model and region in CloudWatch, request increases before you hit limits, and retry with backoff and jitter" loading="lazy"><figcaption>Quota monitoring: watch Bedrock quotas per model and region in CloudWatch, request increases before you hit limits, and retry with backoff and jitter.</figcaption>
-<figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <p>MCEasy An application gets ThrottlingException errors during short traffic spikes. The spikes last less than one minute. What is the smallest correct fix?</p>
 <p>A. Buy provisioned throughput. </p>
 <p>B. Use SDK retries with exponential backoff and jitter. </p>
@@ -2452,7 +2490,7 @@ Caching cannot guarantee a 250-token generation finishes in 3 seconds.</p>
 <p>B is wrong: If you disable retries, transient throttles become errors for the user. C is wrong: Aggressive retries make a sustained overload worse. E is wrong: Zero backoff makes retry storms.</p>
 <h2 id="questions-topic-09-cloudwatch-metrics">Questions: Topic 13, CloudWatch metrics</h2>
 <figure><img src="assets/img/mermaid/81-cloudwatch-alarms.svg" alt="CloudWatch alarms for GenAI: metrics on latency, tokens, throttles, and errors feed alarms that page on-call or trigger auto-remediation" loading="lazy"><figcaption>CloudWatch alarms for GenAI: metrics on latency, tokens, throttles, and errors feed alarms that page on-call or trigger auto-remediation</figcaption>
-<figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <p>MCEasy A team wants to see token spend and throttling for Bedrock. They want near-real-time visibility. They want minimal custom work. Which service must they use?</p>
 <p>A. CloudTrail  </p>
 <p>B. CloudWatch metrics and alarms</p>
@@ -2500,7 +2538,7 @@ Caching cannot guarantee a 250-token generation finishes in 3 seconds.</p>
 <p>C is wrong: Slicing by model ID is correct. D is wrong: Alarming on throttles is correct. E is wrong: Anomaly detection on token bursts is the correct method.</p>
 <h2 id="questions-topic-10-invocation-logging-and-tracing">Questions: Topic 14, Invocation logging and tracing</h2>
 <figure><img src="assets/img/mermaid/83-invocation-logging.svg" alt="Invocation logging: log full prompts and responses for debugging and audit, or metadata only for privacy; guard logged PII" loading="lazy"><figcaption>Invocation logging: log full prompts and responses for debugging and audit, or metadata only for privacy; guard logged PII</figcaption>
-<figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <p>MCEasy A team must audit the exact prompts sent to a model. The team must audit the responses received. This is for debugging a cost spike. Which option must the team enable?</p>
 <p>A. CloudTrail data events  </p>
 <p>B. Bedrock model invocation logging to S3 or CloudWatch Logs  </p>
@@ -3178,6 +3216,73 @@ window.DS_MANIFEST = [
       }
     }
   });
+  /* ---------- 11. Scroll reveal + figure parallax (progressive enhancement) ----------
+     .reveal is added here (never in markup), so content is fully visible with
+     JS disabled. Respects prefers-reduced-motion. Parallax drift is a small
+     transform on plain figure images only; it never changes layout. ---------- */
+
+  (function () {
+    var reduceMotion = window.matchMedia &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    /* Scroll reveal: gentle rise-in on content blocks as they enter the viewport. */
+    var revealTargets = inner.querySelectorAll(
+      "figure, .pq, .exam-ask, .takeaway, .panel, .diagram-walkthrough, " +
+      ".table-wrap, .ladder, .cc-qa"
+    );
+    if (!reduceMotion && "IntersectionObserver" in window) {
+      var revealEls = Array.prototype.slice.call(revealTargets);
+      revealEls.forEach(function (el) { el.classList.add("reveal"); });
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (en) {
+          if (en.isIntersecting) {
+            en.target.classList.add("revealed");
+            io.unobserve(en.target);
+          }
+        });
+      }, { rootMargin: "0px 0px -8% 0px", threshold: 0.05 });
+      revealEls.forEach(function (el) { io.observe(el); });
+    }
+    /* reduceMotion or no IntersectionObserver: no .reveal class is added,
+       so every block stays fully visible. */
+
+    /* Figure parallax: gentle --px drift on plain figure images only
+       (.fig-light cards are excluded so the white plate never shows an edge). */
+    if (!reduceMotion) {
+      var pxFigs = [];
+      Array.prototype.forEach.call(
+        inner.querySelectorAll("figure:not(.fig-light)"),
+        function (fig) {
+          if (fig.querySelector("img")) {
+            fig.classList.add("ds-px");
+            pxFigs.push(fig);
+          }
+        }
+      );
+      var pxTicking = false;
+      function pxUpdate() {
+        var vh = window.innerHeight || 800;
+        pxFigs.forEach(function (fig) {
+          var img = fig.querySelector("img");
+          if (!img) return;
+          var r = img.getBoundingClientRect();
+          if (r.bottom < -160 || r.top > vh + 160) return; /* off-screen: skip */
+          var center = (r.top + r.height / 2) - vh / 2;
+          var drift = center * -0.015;
+          if (drift > 8) drift = 8;
+          if (drift < -8) drift = -8;
+          img.style.setProperty("--px", drift.toFixed(1) + "px");
+        });
+        pxTicking = false;
+      }
+      function pxRequest() {
+        if (!pxTicking) { pxTicking = true; window.requestAnimationFrame(pxUpdate); }
+      }
+      window.addEventListener("scroll", pxRequest, { passive: true });
+      window.addEventListener("resize", pxRequest);
+      pxUpdate();
+    }
+  })();
 })();
 
 </script>
