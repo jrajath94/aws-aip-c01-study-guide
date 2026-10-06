@@ -1167,6 +1167,42 @@ footer p{text-align:left}
   #ds-content .ds-site-footer,
   .ds-side-volumes { display: none !important; }
 }
+
+/* ==========================================================================
+   World-class upgrade (2026-10-05): scroll reveal + figure parallax.
+   Progressive enhancement: .reveal is added by JS only, so with JS disabled
+   every element stays fully visible. Parallax drift is transform-only (no
+   layout shift) and limited to plain figures; both honor
+   prefers-reduced-motion.
+   ========================================================================== */
+
+/* Scroll reveal: subtle rise-in. JS adds .reveal to content blocks; the
+   IntersectionObserver adds .revealed as each block enters the viewport. */
+.reveal {
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.reveal.revealed {
+  opacity: 1;
+  transform: none;
+}
+
+/* Figure parallax: gentle vertical drift on figure images (excludes
+   .fig-light cards so the white plate never shows an edge). The figure gets
+   overflow:hidden from JS when parallax activates, so the drift cannot
+   cause layout shift or edge bleed. */
+figure.ds-px { overflow: hidden; }
+figure.ds-px img {
+  transform: translateY(var(--px, 0px));
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal { opacity: 1; transform: none; transition: none; }
+  figure.ds-px img { transform: none; }
+  html { scroll-behavior: auto; }
+}
 .walkthrough{margin:.4rem 0 1.4rem;padding:.6rem .9rem;border-left:3px solid var(--accent,#4da3ff);background:var(--card,#141414);border-radius:0 8px 8px 0;font-size:.92rem;color:var(--muted,#a8a8a8)}
 .walkthrough strong{color:inherit}
 </style>
@@ -1425,7 +1461,7 @@ html.xp-js .xp-reveal.xp-in {
 <span id="9-invokemodel-provider-specifics-and-prompt-caching"></span>
 <p class="ch-next" style="border-top:1px solid var(--border);padding-top:1rem;margin-top:1.75rem"><strong>Next:</strong> Chapter 2, InvokeModel and provider specifics. Converse covers the common cases. The raw API covers everything else. It also covers prompt caching.</p>
 
-<figure><img src="assets/img/ste100/aip-converse-anatomy.svg" alt="Converse request anatomy: the nine fields and what each carries" loading="lazy"><figcaption>One request shape works across Claude, Llama, Titan, and Nova. Each row is one field. The red footer marks the limit: Converse is text-generation only.</figcaption></figure>
+<figure><img src="assets/img/ste100/aip-converse-anatomy.svg" alt="Converse request anatomy: the nine fields and what each carries" loading="lazy"><figcaption>One request shape works across Claude, Llama, Titan, and Nova. Each row is one field. The red footer marks the limit: Converse is text-generation only. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <h4 id="how-to-read-aip-convan">How to read this diagram</h4>
 <ol>
 <li>modelId names the model: a base ID, an inference profile, or a provisioned model ARN.</li>
@@ -1447,7 +1483,7 @@ html.xp-js .xp-reveal.xp-in {
 <p><strong>InvokeModel</strong> (and <code>InvokeModelWithResponseStream</code>) calls a model. It uses the provider's native request body. Claude needs <code>anthropic_version: "bedrock-2023-05-31"</code> and <code>max_tokens</code>. Llama, Titan, Mistral, and Cohere each have their own shapes.</p>
 <p>A wrong body returns <code>ValidationException</code> or a malformed-input error. This is the only Bedrock API that can generate embeddings. These are vectors for search. It uses embedding models like Titan Text Embeddings v2 or Cohere Embed.</p>
 <p>An <strong>embedding</strong> is a list of numbers. It captures a text's meaning. Texts with similar meaning get similar numbers. So, searching by meaning is searching for nearby numbers.</p>
-<figure><img src="assets/img/mermaid/15-vector-space.svg" alt="Vector space: an embedding model turns texts into lists of numbers; texts with similar meaning land close together, so 'How do I reset my password?' and 'Change my password please' cluster under account help while 'What is the refund policy?' sits apart under billing." loading="lazy"><figcaption>Vector space: an embedding model changes text into numbers. Similar meanings are close together. Two password phrasings are grouped under account help. The refund question is separate under billing. This is why meaning search is better than keyword search.</figcaption><figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<figure><img src="assets/img/mermaid/15-vector-space.svg" alt="Vector space: an embedding model turns texts into lists of numbers; texts with similar meaning land close together, so 'How do I reset my password?' and 'Change my password please' cluster under account help while 'What is the refund policy?' sits apart under billing." loading="lazy"><figcaption>Vector space: an embedding model changes text into numbers. Similar meanings are close together. Two password phrasings are grouped under account help. The refund question is separate under billing. This is why meaning search is better than keyword search.</figcaption><figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <p>How to read this diagram</p>
 <ol>
 <li>Read the three text boxes on the left. There are two password questions phrased differently. There is one refund question.</li>
@@ -1523,7 +1559,7 @@ html.xp-js .xp-reveal.xp-in {
 <span id="10-long-running-and-non-interactive-inference-async-and-batch"></span>
 <p class="ch-next" style="border-top:1px solid var(--border);padding-top:1rem;margin-top:1.75rem"><strong>Next:</strong> Chapter 3, Asynchronous and batch inference. Synchronous calls are handled. Now the work that nobody waits for.</p>
 
-<figure><img src="assets/img/ste100/aip-prompt-cache-hit.svg" alt="Prompt caching: a cache hit skips the repeated static prefix" loading="lazy"><figcaption>Put the long unchanging text first and mark the boundary with cachePoint. Later calls with the same prefix reuse the cached processing. The exam verb is repeated prefix.</figcaption></figure>
+<figure><img src="assets/img/ste100/aip-prompt-cache-hit.svg" alt="Prompt caching: a cache hit skips the repeated static prefix" loading="lazy"><figcaption>Put the long unchanging text first and mark the boundary with cachePoint. Later calls with the same prefix reuse the cached processing. The exam verb is repeated prefix. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <h4 id="how-to-read-aip-cache">How to read this diagram</h4>
 <ol>
 <li>The green box is a cache hit. Same static prefix plus a cachePoint means Bedrock skips recomputation. Lower cost and lower latency.</li>
@@ -1540,7 +1576,7 @@ html.xp-js .xp-reveal.xp-in {
 <p class="ch-bridge" style="border-left:3px solid var(--accent);padding:.55rem 1rem;background:var(--surface);border-radius:0 8px 8px 0;margin:1.1rem 0">This chapter covers asynchronous invocation and batch inference. These use the same models. They use a different contract.</p>
 
 <figure><img src="assets/img/mermaid/03-sync-async-decision.svg" alt="Sync vs async decision: interactive requests use synchronous InvokeModel/Converse (streaming for long responses); latency-tolerant work uses batch inference (~50% cheaper) or async invocation (S3 in, S3 out)." loading="lazy"><figcaption>Make a decision between synchronous and asynchronous. Interactive requests use synchronous InvokeModel/Converse. Use streaming for long responses. Latency-tolerant work uses batch inference.</figcaption>
-<figcaption>This is about 50% cheaper. Or use asynchronous invocation. This uses S3 for input and S3 for output.</figcaption><figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure><p>Not every model call needs an answer now. Asynchronous invocation and batch inference trade latency for cost and scale.</p>
+<figcaption>This is about 50% cheaper. Or use asynchronous invocation. This uses S3 for input and S3 for output.</figcaption><figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure><p>Not every model call needs an answer now. Asynchronous invocation and batch inference trade latency for cost and scale.</p>
 <p><strong>Asynchronous invocation</strong>: You submit a request. You get a job ID. The model processes the request in the background. You poll for completion. Or you get a notification. Use this for single requests that take minutes.</p>
 <p>No user waits for these requests. <strong>Batch inference</strong>: You put many prompts in S3. Use JSONL. Put one request per line. Submit one batch job. Bedrock processes them over hours. It writes the results to S3.</p>
 <p>This is about 50% cheaper than on-demand. Use this for large non-interactive workloads. Examples are nightly summarization, bulk classification, and evaluation datasets. Compare this with <strong>real-time inference</strong> (Converse, InvokeModel).</p>
@@ -1655,7 +1691,7 @@ print(&quot;batch job finished with status:&quot;, status)
 <span id="14-prompt-management-engineering-discipline-for-prompts"></span>
 <p class="ch-next" style="border-top:1px solid var(--border);padding-top:1rem;margin-top:1.75rem"><strong>Next:</strong> Chapter 4, Prompt management. The call contracts are settled. Now, the prompt itself becomes an engineered artifact.</p>
 
-<figure><img src="assets/img/ste100/aip-async-batch-decision.svg" alt="Sync, async, or batch: the answer depends on who waits" loading="lazy"><figcaption>Interactive work uses sync inference at full price. One slow call with nobody waiting uses async invocation. Bulk non-interactive work uses batch inference at roughly half the price.</figcaption></figure>
+<figure><img src="assets/img/ste100/aip-async-batch-decision.svg" alt="Sync, async, or batch: the answer depends on who waits" loading="lazy"><figcaption>Interactive work uses sync inference at full price. One slow call with nobody waiting uses async invocation. Bulk non-interactive work uses batch inference at roughly half the price. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <h4 id="how-to-read-aip-asyncbatch">How to read this diagram</h4>
 <ol>
 <li>SYNC is interactive. Converse or InvokeModel, milliseconds to seconds, full price. A user waits for the answer.</li>
@@ -1669,7 +1705,7 @@ print(&quot;batch job finished with status:&quot;, status)
 <p class="ch-bridge" style="border-left:3px solid var(--accent);padding:.55rem 1rem;background:var(--surface);border-radius:0 8px 8px 0;margin:1.1rem 0"><strong>Why this comes next.</strong> Inference mechanics are settled. These are sync, streaming, async, and batch. Now, the input itself becomes the engineering object. Prompts are code. This chapter gives them versions, variants, and discipline.</p>
 
 <figure><img src="assets/img/mermaid/69-prompt-management.svg" alt="Prompt management lifecycle: author the prompt, keep immutable versions, test variants, deploy by version ARN, monitor quality, iterate" loading="lazy"><figcaption>This is the prompt management lifecycle. Author the prompt. Keep immutable versions. Test variants.</figcaption>
-<figcaption>Deploy by version ARN. Monitor quality. Iterate.</figcaption><figcaption class="credit"><em>Prompt management lifecycle: author the prompt, keep immutable versions, test variants, deploy by version ARN, monitor quality, iterate</em></figcaption></figure><p>Prompts are code. Prompt Management gives them versions, variants, and variables. So, marketing can change tone without an engineering deploy.</p>
+<figcaption>Deploy by version ARN. Monitor quality. Iterate.</figcaption><figcaption class="credit"><em>Prompt management lifecycle: author the prompt, keep immutable versions, test variants, deploy by version ARN, monitor quality, iterate</em> Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure><p>Prompts are code. Prompt Management gives them versions, variants, and variables. So, marketing can change tone without an engineering deploy.</p>
 <p><strong>Bedrock Prompt Management</strong> stores prompts as managed AWS resources. It does not store them as strings in application code.</p>
 <p><strong>Variables</strong>: <code>{{variable}}</code> placeholders are filled at runtime. Examples are customer name and ticket text. <strong>Variants</strong>: These are alternate versions of a prompt. Use them for A/B testing. Examples are formal tone versus friendly tone. <strong>Versions</strong>: These are immutable snapshots. You edit a draft.</p>
 <p>Then, you publish a version. Rollback means to point at an older version. There is no extra charge. You pay only for the model tokens that the prompt generates.</p>
@@ -1735,7 +1771,7 @@ print(&quot;batch job finished with status:&quot;, status)
 
 <p class="ch-next" style="border-top:1px solid var(--border);padding-top:1rem;margin-top:1.75rem"><strong>Next:</strong> Chapter 5, Knowledge Bases. Prompts carry instructions. Now, learn the facts behind them. This is grounding answers in your documents.</p>
 
-<figure><img src="assets/img/ste100/aip-prompt-lifecycle-ops.svg" alt="Prompt lifecycle in operations: author, version, variant, deploy by ARN, monitor, iterate" loading="lazy"><figcaption>Prompts are code. Immutable versions give you rollback. Variants give you A/B tests. The app calls prompts by name and version ARN, so wording changes stop being engineering deploys.</figcaption></figure>
+<figure><img src="assets/img/ste100/aip-prompt-lifecycle-ops.svg" alt="Prompt lifecycle in operations: author, version, variant, deploy by ARN, monitor, iterate" loading="lazy"><figcaption>Prompts are code. Immutable versions give you rollback. Variants give you A/B tests. The app calls prompts by name and version ARN, so wording changes stop being engineering deploys. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <h4 id="how-to-read-aip-plops">How to read this diagram</h4>
 <ol>
 <li>Author the prompt with {{variable}} placeholders and draft freely.</li>
@@ -1748,6 +1784,7 @@ print(&quot;batch job finished with status:&quot;, status)
 </ol>
 
 <h2 id="5-knowledge-bases-grounding-answers-in-your-documents">5. Knowledge Bases: grounding answers in your documents</h2>
+<p>As you learned in <a href="volume-d1-foundation-models.html">D1</a>, chunking and embeddings turn documents into vectors. Knowledge Bases runs that pipeline for you.</p>
 <p class="ch-bridge" style="border-left:3px solid var(--accent);padding:.55rem 1rem;background:var(--surface);border-radius:0 8px 8px 0;margin:1.1rem 0"><strong>Why this comes next.</strong> You can call the model. You can version your prompts. But the model's knowledge still ends at its training cutoff. Your private documents are not visible to it. This chapter answers where facts come from. They come from Knowledge Bases, the grounding layer.</p>
 
 <p>A model only knows what it learned in training. Your users ask about your documents. Retrieval is the connection between the two.</p>
@@ -1761,7 +1798,7 @@ print(&quot;batch job finished with status:&quot;, status)
 <p>Second, only the relevant passages must enter the prompt. The whole library must not enter the prompt. A typical chunk is a few hundred tokens. There is overlap between neighbors. This prevents cutting a sentence in half.</p>
 <p>A <strong>vector store</strong> is a database. It holds the embeddings. It finds the nearest embeddings to a query vector. It does this fast and at scale.</p>
 <p>The system stores each chunk's text next to its vector. It also stores source metadata. This metadata includes the document name and page. This allows answers to cite their sources.</p>
-<figure><img src="assets/img/mermaid/103-vector-stores.svg" alt="Vector store options for a Bedrock knowledge base: OpenSearch Serverless for managed AWS-native search, Aurora with pgvector for Postgres shops, S3 Vectors for low-ops cheap storage, or an external SaaS like Pinecone for cross-cloud use." loading="lazy"><figcaption>These are vector store options for a Bedrock knowledge base. Use OpenSearch Serverless for the managed AWS-native path. Use Aurora with pgvector for Postgres shops. Use S3 Vectors for cheap, low-operations storage. Use an external SaaS for cross-cloud setups.</figcaption><figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<figure><img src="assets/img/mermaid/103-vector-stores.svg" alt="Vector store options for a Bedrock knowledge base: OpenSearch Serverless for managed AWS-native search, Aurora with pgvector for Postgres shops, S3 Vectors for low-ops cheap storage, or an external SaaS like Pinecone for cross-cloud use." loading="lazy"><figcaption>These are vector store options for a Bedrock knowledge base. Use OpenSearch Serverless for the managed AWS-native path. Use Aurora with pgvector for Postgres shops. Use S3 Vectors for cheap, low-operations storage. Use an external SaaS for cross-cloud setups.</figcaption><figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <p>How to read this diagram</p>
 <ol>
 <li>Start at the diamond. The question is which vector store backs the knowledge base.</li>
@@ -1771,7 +1808,7 @@ print(&quot;batch job finished with status:&quot;, status)
 </ol>
 <p>The pipeline has two phases. <strong>Ingest</strong> runs offline. It runs when documents change. Documents go in. Chunks come out. Embed each chunk. Store the vectors, the text, and the metadata. <strong>Query</strong> runs online.</p>
 <p>It runs for each question. Embed the question. Vector-search the top-k nearest chunks. Build the prompt. The prompt includes the question, the chunks, and an instruction to cite sources. The model answers with citations.</p>
-<figure><img src="assets/img/mermaid/13-kb-sources-retrieval.svg" alt="Knowledge base flow: documents from S3, the web, or databases are chunked and embedded into a vector store; a user question is embedded, matched against the store, and the top chunks return with citations." loading="lazy"><figcaption>This is the Knowledge Base flow. Documents from S3, the web, or databases are chunked. The system embeds the chunks into a vector store. A user question is embedded. The system matches the question against the store. The system returns the top chunks with citations.</figcaption><figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<figure><img src="assets/img/mermaid/13-kb-sources-retrieval.svg" alt="Knowledge base flow: documents from S3, the web, or databases are chunked and embedded into a vector store; a user question is embedded, matched against the store, and the top chunks return with citations." loading="lazy"><figcaption>This is the Knowledge Base flow. Documents from S3, the web, or databases are chunked. The system embeds the chunks into a vector store. A user question is embedded. The system matches the question against the store. The system returns the top chunks with citations.</figcaption><figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <p>How to read this diagram</p>
 <ol>
 <li>Read the top row from left to right. Documents from S3, the web, or databases go into Bedrock Knowledge Bases. The Knowledge Base chunks the documents. It embeds the chunks into the vector store. This is ingest. It runs offline.</li>
@@ -1797,7 +1834,7 @@ print(&quot;batch job finished with status:&quot;, status)
 <p>RAG does not train the model.</p>
 <p>The model's weights never change. Documents are read at query time. This is why a Knowledge Base sync updates answers in minutes with no retraining. "Teach the model our documents" means retrieval. "Change the model's weights" means fine-tuning. Fine-tuning is in Domain 1.</p></div>
 
-<figure><img src="assets/img/mermaid/100-rag-kb-arch.svg" alt="End-to-end RAG architecture: docs in S3 are ingested (chunk plus embed) into a vector store; a user query retrieves top-k chunks; the Converse API generates the final cited answer." loading="lazy"><figcaption>This is the end-to-end RAG architecture. Documents in S3 are ingested (chunked and embedded) into a vector store. A user query retrieves the top-k chunks. The Converse API generates the final cited answer.</figcaption><figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<figure><img src="assets/img/mermaid/100-rag-kb-arch.svg" alt="End-to-end RAG architecture: docs in S3 are ingested (chunk plus embed) into a vector store; a user query retrieves top-k chunks; the Converse API generates the final cited answer." loading="lazy"><figcaption>This is the end-to-end RAG architecture. Documents in S3 are ingested (chunked and embedded) into a vector store. A user query retrieves the top-k chunks. The Converse API generates the final cited answer.</figcaption><figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <p>How to read this diagram.</p>
 <ol>
 <li>Read from left to right in two lanes. The top lane is ingest. Documents are in S3. They are chunked and embedded. They go into the vector store. It runs on a schedule.</li>
@@ -1879,13 +1916,14 @@ print(&quot;batch job finished with status:&quot;, status)
 <p class="ch-next" style="border-top:1px solid var(--border);padding-top:1rem;margin-top:1.75rem"><strong>Next:</strong> Chapter 6, Bedrock Agents. Answers are grounded. Now we discuss actions: the anatomy of an agent.</p>
 
 <h2 id="6-bedrock-agents-anatomy-of-an-agent">6. Bedrock Agents: Anatomy of an Agent</h2>
+<p>As you learned in <a href="volume-d1-foundation-models.html">D1</a>, a foundation model takes a prompt and returns a completion. An agent wraps that loop with tools, memory, and a plan.</p>
 <p class="ch-bridge" style="border-left:3px solid var(--accent);padding:.55rem 1rem;background:var(--surface);border-radius:0 8px 8px 0;margin:1.1rem 0"><strong>Why this comes next.</strong> Knowledge Bases let the model answer from your documents. They do not let it act. They do not allow API calls. They do not allow database writes.</p>
 <p class="ch-bridge" style="border-left:3px solid var(--accent);padding:.55rem 1rem;background:var(--surface);border-radius:0 8px 8px 0;margin:1.1rem 0">They do not allow multi-step plans. This chapter introduces the action dimension. This is the anatomy of a Bedrock Agent.</p>
 
-<figure class="fig-light"><img src="assets/img/internet/aws-blog-bedrock-portfolio-assessment.jpg" alt="AWS reference architecture: a Bedrock migration assistant agent with knowledge bases, action groups, and Lambda tools" loading="lazy"><figcaption>This is an AWS reference architecture. It shows a Bedrock migration assistant agent. It has knowledge bases, action groups, and Lambda tools.</figcaption><figcaption class="credit">Source: AWS Blog / AWS Solutions Guidance. Saved locally in September 2026.</figcaption></figure>
-<figure><img src="assets/img/mermaid/02-agent-orchestration.svg" alt="Bedrock Agent orchestration loop: the agent reasons, pulls grounding from a Knowledge Base when needed, invokes action groups (Lambda) for tools and APIs, and returns a final response with trace and Guardrails." loading="lazy"><figcaption>This describes the Bedrock Agent orchestration loop. The agent reasons. It pulls grounding from a Knowledge Base when it needs it. It invokes action groups (Lambda) for tools and APIs. It returns a final response with a trace and Guardrails.</figcaption><figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure>
+<figure class="fig-light"><img src="assets/img/internet/aws-blog-bedrock-portfolio-assessment.jpg" alt="AWS reference architecture: a Bedrock migration assistant agent with knowledge bases, action groups, and Lambda tools" loading="lazy"><figcaption>This is an AWS reference architecture. It shows a Bedrock migration assistant agent. It has knowledge bases, action groups, and Lambda tools.</figcaption><figcaption class="credit">Source: AWS Blog / AWS Solutions Guidance. Saved locally in September 2026. Reused in the AWS AIP-C01 Study Guide.</figcaption></figure>
+<figure><img src="assets/img/mermaid/02-agent-orchestration.svg" alt="Bedrock Agent orchestration loop: the agent reasons, pulls grounding from a Knowledge Base when needed, invokes action groups (Lambda) for tools and APIs, and returns a final response with trace and Guardrails." loading="lazy"><figcaption>This describes the Bedrock Agent orchestration loop. The agent reasons. It pulls grounding from a Knowledge Base when it needs it. It invokes action groups (Lambda) for tools and APIs. It returns a final response with a trace and Guardrails.</figcaption><figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 
-<figure class="fig-light"><img src="assets/img/internet/img-09.png" alt="Automating tasks with Agents for Amazon Bedrock: the agent&#x27;s prompt anatomy (conversation history, action groups, task, instructions), the ReAct orchestration loop, Knowledge Bases for grounding, and action groups calling Lambda-backed APIs." loading="lazy"><figcaption>This describes automating tasks with Agents for Amazon Bedrock. It includes the agent's prompt anatomy (conversation history, action groups, task, instructions). It also includes the ReAct orchestration loop. It includes Knowledge Bases for grounding. It includes action groups that call Lambda-backed APIs.</figcaption><figcaption class="credit">Source: AWS Solutions Guidance architecture diagram. Accessed via image search in September 2026.</figcaption></figure><p>An agent is a Foundation Model. It includes instructions, tools, and memory. Bedrock Agents is the managed way to build an agent.</p>
+<figure class="fig-light"><img src="assets/img/internet/img-09.png" alt="Automating tasks with Agents for Amazon Bedrock: the agent&#x27;s prompt anatomy (conversation history, action groups, task, instructions), the ReAct orchestration loop, Knowledge Bases for grounding, and action groups calling Lambda-backed APIs." loading="lazy"><figcaption>This describes automating tasks with Agents for Amazon Bedrock. It includes the agent's prompt anatomy (conversation history, action groups, task, instructions). It also includes the ReAct orchestration loop. It includes Knowledge Bases for grounding. It includes action groups that call Lambda-backed APIs.</figcaption><figcaption class="credit">Source: AWS Solutions Guidance architecture diagram. Accessed via image search in September 2026. Reused in the AWS AIP-C01 Study Guide.</figcaption></figure><p>An agent is a Foundation Model. It includes instructions, tools, and memory. Bedrock Agents is the managed way to build an agent.</p>
 <p>A <strong>foundation model (FM)</strong> is a large AI model. It is trained on broad data. You access it through an API. Amazon Bedrock is the managed service that hosts Foundation Models. A <strong>Bedrock Agent</strong> adds four things to a Foundation Model. It adds an <strong>agent instruction</strong>.</p>
 <p>This is a system-level prompt that tells the agent its role and how to behave. It adds <strong>action groups</strong>. These are the tools the agent can call. Each action group runs code in a Lambda function or calls an external API described by an OpenAPI schema. It adds a <strong>knowledge base (KB)</strong>. This is attached retrieval.</p>
 <p>It makes your documents searchable. Chapter 5 covers this. It adds <strong>guardrails</strong>. These are safety filters applied to inputs and outputs.</p>
@@ -2025,7 +2063,7 @@ print(&quot;&quot;.join(answer))
 </tr>
 </tbody>
 </table></div>
-<figure><img src="assets/img/mermaid/17-agents-production.svg" alt="Bedrock Agents production patterns: agent nodes connected to Lambda, S3, DynamoDB, API Gateway, and a Knowledge Base" loading="lazy"><figcaption>Bedrock Agents production patterns: Agent nodes connect to Lambda, S3, DynamoDB, API Gateway, and a Knowledge Base.</figcaption><figcaption class="credit"><em>Bedrock Agents production patterns: agent nodes connected to Lambda, S3, DynamoDB, API Gateway, and a Knowledge Base</em></figcaption></figure>
+<figure><img src="assets/img/mermaid/17-agents-production.svg" alt="Bedrock Agents production patterns: agent nodes connected to Lambda, S3, DynamoDB, API Gateway, and a Knowledge Base" loading="lazy"><figcaption>Bedrock Agents production patterns: Agent nodes connect to Lambda, S3, DynamoDB, API Gateway, and a Knowledge Base.</figcaption><figcaption class="credit"><em>Bedrock Agents production patterns: agent nodes connected to Lambda, S3, DynamoDB, API Gateway, and a Knowledge Base</em> Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <p>Read this diagram. It is a vendor overview graphic.</p>It is not a precise schematic. Treat it as a map of which services cluster around a production agent.</li>
 <li>Find the central agent nodes. Everything connects through them. This matches the orchestration loop in the ASCII figure above.</li>
 <li>Note the surrounding services. Lambda is for tools. S3 is for documents. DynamoDB is for session state. API Gateway is the front door. A Knowledge Base is for grounding.</li>
@@ -2312,7 +2350,7 @@ print(&quot;&quot;.join(answer))
 <span id="4-lambda-integration-patterns-sync-async-streaming-timeouts-concurrency"></span>
 <p class="ch-next" style="border-top:1px solid var(--border);padding-top:1rem;margin-top:1.75rem"><strong>Next:</strong> Chapter 9, Lambda integration patterns. The GenAI blocks are complete. Now, the compute your code runs on.</p>
 
-<figure><img src="assets/img/ste100/aip-holy-trinity.svg" alt="The holy trinity: the agent acts, the knowledge base grounds, the guardrails protect" loading="lazy"><figcaption>The orchestrator sits in the middle. The knowledge base gives grounded answers with citations. Action groups give the agent tools. Guardrails filter inputs and outputs with six controls.</figcaption></figure>
+<figure><img src="assets/img/ste100/aip-holy-trinity.svg" alt="The holy trinity: the agent acts, the knowledge base grounds, the guardrails protect" loading="lazy"><figcaption>The orchestrator sits in the middle. The knowledge base gives grounded answers with citations. Action groups give the agent tools. Guardrails filter inputs and outputs with six controls. Source: not recorded for this figure. AWS AIP-C01 Study Guide.</figcaption></figure>
 <h4 id="how-to-read-aip-trinity">How to read this diagram</h4>
 <ol>
 <li>The top box is the orchestrator: the Bedrock Agent. It plans, calls tools, and answers.</li>
@@ -2323,11 +2361,11 @@ print(&quot;&quot;.join(answer))
 </ol>
 
 <h2 id="9-lambda-integration-patterns-sync-async-streaming-timeouts-concurrency">9. Lambda integration patterns: sync, async, streaming, timeouts, concurrency</h2>
-<figure><img src="assets/img/density/d2-lambda-timeout.svg" alt="Lambda timeouts: budget the whole chain under 15 minutes; sync, async, and streaming each fit a different wait pattern" loading="lazy"><figcaption>Budget the Lambda timeouts. The whole chain must finish in less than 15 minutes. Sync, async, and streaming each use a different wait pattern.</figcaption><figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure><div class="walkthrough"><strong>How to read this.</strong> Three boxes show the three invocation modes. The footer shows the limit: 15 minutes per Lambda. The main point: A pipeline that waits for humans or has long chains belongs in Step Functions Standard. It does not belong in one Lambda.</div>
+<figure><img src="assets/img/density/d2-lambda-timeout.svg" alt="Lambda timeouts: budget the whole chain under 15 minutes; sync, async, and streaming each fit a different wait pattern" loading="lazy"><figcaption>Budget the Lambda timeouts. The whole chain must finish in less than 15 minutes. Sync, async, and streaming each use a different wait pattern.</figcaption><figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure><div class="walkthrough"><strong>How to read this.</strong> Three boxes show the three invocation modes. The footer shows the limit: 15 minutes per Lambda. The main point: A pipeline that waits for humans or has long chains belongs in Step Functions Standard. It does not belong in one Lambda.</div>
 <p class="ch-bridge" style="border-left:3px solid var(--accent);padding:.55rem 1rem;background:var(--surface);border-radius:0 8px 8px 0;margin:1.1rem 0"><strong>Why this comes next.</strong> The GenAI building blocks are ready. These include calls, grounding, and agents. Now, the question is about your code. Where does the connection run?</p>
 <p class="ch-bridge" style="border-left:3px solid var(--accent);padding:.55rem 1rem;background:var(--surface);border-radius:0 8px 8px 0;margin:1.1rem 0">This chapter explains Lambda integration patterns. These are the invocations, timeouts, and concurrency rules. They decide if your system survives.</p>
 
-<figure><img src="assets/img/mermaid/63-lambda-patterns.svg" alt="Lambda integration patterns: synchronous invoke for request-response, asynchronous for fire-and-forget, response streaming for token streams" loading="lazy"><figcaption>Lambda integration patterns: synchronous invoke for request-response, asynchronous for fire-and-forget, response streaming for token streams</figcaption><figcaption class="credit"><em>Lambda integration patterns: synchronous invoke for request-response, asynchronous for fire-and-forget, response streaming for token streams</em></figcaption></figure><p>Lambda connects GenAI on AWS. How you invoke it decides if your application handles real traffic.</p>
+<figure><img src="assets/img/mermaid/63-lambda-patterns.svg" alt="Lambda integration patterns: synchronous invoke for request-response, asynchronous for fire-and-forget, response streaming for token streams" loading="lazy"><figcaption>Lambda integration patterns: synchronous invoke for request-response, asynchronous for fire-and-forget, response streaming for token streams</figcaption><figcaption class="credit"><em>Lambda integration patterns: synchronous invoke for request-response, asynchronous for fire-and-forget, response streaming for token streams</em> Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure><p>Lambda connects GenAI on AWS. How you invoke it decides if your application handles real traffic.</p>
 <p><strong>AWS Lambda</strong> runs your code without servers. You upload a function. AWS runs it when triggered. AWS bills per millisecond. Three invocation modes are important. <strong>Synchronous (RequestResponse)</strong>: The caller waits for the result. Use this for APIs where the user waits for the response. <strong>Asynchronous (Event)</strong>: Lambda puts the event in a queue.</p>
 <p>It returns immediately. Use this for fire-and-forget tasks. An example is processing an uploaded file. <strong>Streaming responses</strong>: Lambda streams partial output back as it is produced. It uses <code>ResponseStream</code>. Use this for token-by-token model output. The user sees text appear immediately.The default regional quota is 1,000. <strong>Reserved concurrency</strong> guarantees capacity for one function. <strong>Provisioned concurrency</strong> keeps instances ready to prevent cold starts.</p>
 <p>Model calls are slow and happen in bursts. A chat application has idle seconds. Then it has a spike of 500 users. Lambda scales to zero. It bursts on demand.</p>
@@ -2425,7 +2463,7 @@ COLD STARTS
 <span id="5-api-gateway-in-front-of-bedrock"></span>
 <p class="ch-next" style="border-top:1px solid var(--border);padding-top:1rem;margin-top:1.75rem"><strong>Next:</strong> Chapter 10, API Gateway. Lambda runs the logic. Now, the stable entry point has authentication and traffic control.</p>
 
-<figure><img src="assets/img/ste100/aip-lambda-invoke-choice.svg" alt="Lambda invocation modes: sync, async, and response streaming" loading="lazy"><figcaption>Match the mode to the wait pattern. Sync waits, async fires and forgets, streaming flows tokens live. The red footer is the ceiling: 15 minutes per Lambda.</figcaption></figure>
+<figure><img src="assets/img/ste100/aip-lambda-invoke-choice.svg" alt="Lambda invocation modes: sync, async, and response streaming" loading="lazy"><figcaption>Match the mode to the wait pattern. Sync waits, async fires and forgets, streaming flows tokens live. The red footer is the ceiling: 15 minutes per Lambda. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <h4 id="how-to-read-aip-lambdachoice">How to read this diagram</h4>
 <ol>
 <li>SYNC, RequestResponse: the caller waits for the result. Use it for APIs where the user waits on the response.</li>
@@ -2507,7 +2545,7 @@ COLD STARTS
 <span id="6-step-functions-orchestration-of-genai-workflows"></span>
 <p class="ch-next" style="border-top:1px solid var(--border);padding-top:1rem;margin-top:1.75rem"><strong>Next:</strong> Chapter 11, Step Functions. The text serves single requests. The text now serves long multi-step workflows. These workflows last longer than the 15-minute Lambda ceiling.</p>
 
-<figure><img src="assets/img/ste100/aip-gateway-front-door.svg" alt="API Gateway in front of Bedrock: one stable URL with auth and throttling" loading="lazy"><figcaption>The client calls one URL that never changes. The gateway handles auth, throttling, usage plans, and validation. A Lambda behind it calls Bedrock. Never call Bedrock straight from the client.</figcaption></figure>
+<figure><img src="assets/img/ste100/aip-gateway-front-door.svg" alt="API Gateway in front of Bedrock: one stable URL with auth and throttling" loading="lazy"><figcaption>The client calls one URL that never changes. The gateway handles auth, throttling, usage plans, and validation. A Lambda behind it calls Bedrock. Never call Bedrock straight from the client. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <h4 id="how-to-read-aip-gateway">How to read this diagram</h4>
 <ol>
 <li>The client calls one stable URL. The gateway is the front door.</li>
@@ -2520,9 +2558,9 @@ COLD STARTS
 <h2 id="11-step-functions-orchestration-of-genai-workflows">11. Step Functions Orchestration of GenAI Workflows</h2>
 <p class="ch-bridge" style="border-left:3px solid var(--accent);padding:.55rem 1rem;background:var(--surface);border-radius:0 8px 8px 0;margin:1.1rem 0"><strong>Why this comes next.</strong> Lambda handles one request at a time. Some workflows span hours. They need human approvals. Lambda's 15-minute limit cannot hold them. This chapter covers Step Functions orchestration. It is for long GenAI workflows.</p>
 
-<figure><img src="assets/img/mermaid/65-sfn-orchestration.svg" alt="Step Functions orchestration: a state machine calls Bedrock, branches on confidence, routes low-confidence work to human review, then finishes" loading="lazy"><figcaption>This is Step Functions orchestration. A state machine calls Bedrock. It branches on confidence. It routes low-confidence work to human review. Then it finishes.</figcaption><figcaption class="credit"><em>Step Functions orchestration: a state machine calls Bedrock, branches on confidence, routes low-confidence work to human review, then finishes</em></figcaption></figure>
+<figure><img src="assets/img/mermaid/65-sfn-orchestration.svg" alt="Step Functions orchestration: a state machine calls Bedrock, branches on confidence, routes low-confidence work to human review, then finishes" loading="lazy"><figcaption>This is Step Functions orchestration. A state machine calls Bedrock. It branches on confidence. It routes low-confidence work to human review. Then it finishes.</figcaption><figcaption class="credit"><em>Step Functions orchestration: a state machine calls Bedrock, branches on confidence, routes low-confidence work to human review, then finishes</em> Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <figure class="fig-light"><img src="assets/img/internet/img-11.png" alt="Agent routing pattern: a user request flows through an SDK, a router, and an intent router that dispatches to specialist agents, each with action groups backed by Lambda functions or external APIs." loading="lazy"><figcaption>This is an agent routing pattern. A user request flows through an SDK. It goes through a router. It goes through an intent router.</figcaption>
-<figcaption>The intent router dispatches to specialist agents. Each agent has action groups. Lambda functions or external APIs back these action groups.</figcaption><figcaption class="credit">This information comes from AWS Prescriptive Guidance (agentic AI patterns). It was found via image search in September 2026.</figcaption></figure><p>Lambda cannot wait. Step Functions can wait. If a GenAI workflow has waits, approvals, branches, or retries, use Step Functions.</p>
+<figcaption>The intent router dispatches to specialist agents. Each agent has action groups. Lambda functions or external APIs back these action groups.</figcaption><figcaption class="credit">This information comes from AWS Prescriptive Guidance (agentic AI patterns). It was found via image search in September 2026. Reused in the AWS AIP-C01 Study Guide.</figcaption></figure><p>Lambda cannot wait. Step Functions can wait. If a GenAI workflow has waits, approvals, branches, or retries, use Step Functions.</p>
 <p><strong>AWS Step Functions</strong> is a visual workflow orchestrator. You define a <strong>state machine</strong>. This is a sequence of steps. It can call a Lambda. It can call Bedrock. It can wait.</p>
 <p>It can ask a human. It can branch on a condition. It is written in a JSON-based language. There are two types. <strong>Standard workflows</strong> executions can run up to one year. They support exactly-once semantics. They charge per state transition.</p>
 <p>Use them for long GenAI pipelines with approvals. <strong>Express workflows</strong> has a maximum duration of 5 minutes. It has high throughput. It has at-least-once semantics. It is cheaper per run. Use it for short, high-volume orchestration.</p>
@@ -2645,7 +2683,7 @@ COLD STARTS
 <p class="ch-bridge" style="border-left:3px solid var(--accent);padding:.55rem 1rem;background:var(--surface);border-radius:0 8px 8px 0;margin:1.1rem 0"><strong>Why this comes next.</strong> Step Functions orchestrate workflows. You start these workflows. The other part of production is workflows that start themselves. They start when data arrives.</p>
 <p class="ch-bridge" style="border-left:3px solid var(--accent);padding:.55rem 1rem;background:var(--surface);border-radius:0 8px 8px 0;margin:1.1rem 0">This chapter covers event-driven pipelines. These pipelines use S3 events and EventBridge routing. They also use Bedrock Data Automation.</p>
 
-<figure class="fig-light"><img src="assets/img/internet/aws-agentic-data-exploration-arch.png" alt="AWS reference architecture: S3 events flow through SQS and Lambda into Bedrock Knowledge Bases, Neptune, and OpenSearch for agentic data exploration" loading="lazy"><figcaption>This is an AWS reference architecture. S3 events flow through SQS and Lambda. They go into Bedrock Knowledge Bases, Neptune, and OpenSearch. This allows agentic data exploration.</figcaption><figcaption class="credit">This information comes from the AWS Blog and AWS Solutions Guidance. It was saved locally in September 2026.</figcaption></figure><p>Files land in S3. Events fire. Pipelines wake up. This is how GenAI processes data. No one clicks a button.</p>
+<figure class="fig-light"><img src="assets/img/internet/aws-agentic-data-exploration-arch.png" alt="AWS reference architecture: S3 events flow through SQS and Lambda into Bedrock Knowledge Bases, Neptune, and OpenSearch for agentic data exploration" loading="lazy"><figcaption>This is an AWS reference architecture. S3 events flow through SQS and Lambda. They go into Bedrock Knowledge Bases, Neptune, and OpenSearch. This allows agentic data exploration.</figcaption><figcaption class="credit">This information comes from the AWS Blog and AWS Solutions Guidance. It was saved locally in September 2026. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure><p>Files land in S3. Events fire. Pipelines wake up. This is how GenAI processes data. No one clicks a button.</p>
 <p><strong>Amazon S3</strong> (Simple Storage Service) stores objects. It stores files, documents, videos, and model outputs. <strong>Amazon EventBridge</strong> is a serverless event bus. It receives events. It routes events to targets based on rules. Lambda and Step Functions work with <strong>Amazon EventBridge</strong>.</p>
 <p>They make the standard event-driven GenAI pipeline. An S3 upload emits an event. EventBridge routes the event. Processing starts automatically. Supporting services are <strong>SQS</strong> (Simple Queue Service), <strong>SNS</strong> (Simple Notification Service), and <strong>EventBridge Pipes</strong>. <strong>SQS</strong> buffers events.</p>
 <p>It controls the processing rate. <strong>SNS</strong> sends out notifications. <strong>EventBridge Pipes</strong> connects a source to a target. It can filter and enrich data. It needs no code.</p>
@@ -2750,7 +2788,7 @@ COLD STARTS
 <p class="ch-next" style="border-top:1px solid var(--border);padding-top:1rem;margin-top:1.75rem"><strong>Next:</strong> Chapter 13, Model deployment strategies. Data-driven pipelines run. Now consider where the model runs and how you pay for capacity.</p>
 
 <h2 id="13-model-deployment-strategies-on-demand-provisioned-throughput-sagemaker-cascading">13. Model deployment strategies: on-demand, Provisioned Throughput, SageMaker, cascading</h2>
-<figure><img src="assets/img/density/d2-deploy-cascade.svg" alt="The cascade behind prompt routers: a router sends simple requests to the cheap model and escalates only complex ones to the flagship" loading="lazy"><figcaption>The cascade behind prompt routers: a router sends simple requests to the cheap model. It escalates only complex requests to the flagship.</figcaption><figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure><div class="walkthrough"><strong>How to read this.</strong> Left to right: cheap model, router, flagship. The footer explains why it works. Most traffic is simple. So most tokens bill cheap. Takeaway: measure the traffic split on a golden dataset. Do this before you trust the savings.</div>
+<figure><img src="assets/img/density/d2-deploy-cascade.svg" alt="The cascade behind prompt routers: a router sends simple requests to the cheap model and escalates only complex ones to the flagship" loading="lazy"><figcaption>The cascade behind prompt routers: a router sends simple requests to the cheap model. It escalates only complex requests to the flagship.</figcaption><figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure><div class="walkthrough"><strong>How to read this.</strong> Left to right: cheap model, router, flagship. The footer explains why it works. Most traffic is simple. So most tokens bill cheap. Takeaway: measure the traffic split on a golden dataset. Do this before you trust the savings.</div>
 <p class="ch-bridge" style="border-left:3px solid var(--accent);padding:.55rem 1rem;background:var(--surface);border-radius:0 8px 8px 0;margin:1.1rem 0"><strong>Why this comes next.</strong> Your workloads run. Where does the model itself run? How do you survive a traffic spike without wasting money? This chapter covers deployment.</p>
 <p class="ch-bridge" style="border-left:3px solid var(--accent);padding:.55rem 1rem;background:var(--surface);border-radius:0 8px 8px 0;margin:1.1rem 0">It covers on-demand. It covers Provisioned Throughput. It covers SageMaker. It covers cascading.The exam's favorite answer is usually a hybrid.</p>
 <p>Where the model runs decides your latency, your bill, and whether you survive peak.</p>
@@ -2853,8 +2891,8 @@ COLD STARTS
 <h2 id="14-enterprise-integration-legacy-systems-secure-access-and-the-genai-gateway">14. Enterprise integration: legacy systems, secure access, and the GenAI gateway</h2>
 <p class="ch-bridge" style="border-left:3px solid var(--accent);padding:.55rem 1rem;background:var(--surface);border-radius:0 8px 8px 0;margin:1.1rem 0"><strong>Why this comes next.</strong> You can deploy and scale. The enterprise asks harder questions. These questions include legacy systems, per-team access, secure networking, and one gateway for the company. This chapter shows how to fit Bedrock into the enterprise.</p>
 
-<figure><img src="assets/img/mermaid/67-enterprise-integration.svg" alt="Enterprise integration: the corporate app stays in its VPC, reaches Bedrock through a PrivateLink VPC endpoint, with IAM roles, CloudTrail audit, and KMS encryption" loading="lazy"><figcaption>This is enterprise integration. The corporate application stays in its VPC. It reaches Bedrock through a PrivateLink VPC endpoint. It has IAM roles. It has CloudTrail audit. It has KMS encryption.</figcaption><figcaption class="credit"><em>Enterprise integration: the corporate app stays in its VPC, reaches Bedrock through a PrivateLink VPC endpoint, with IAM roles, CloudTrail audit, and KMS encryption</em></figcaption></figure>
-<figure class="fig-light"><img src="assets/img/internet/img-08.png" alt="Enterprise GenAI reference architecture: WAF and CloudFront in front, Cognito auth, API Gateway and Lambda backend, Bedrock Converse API and Knowledge Bases for RAG" loading="lazy"><figcaption>This is an enterprise GenAI reference architecture. It has WAF and CloudFront in front. It has Cognito authentication. It has API Gateway and Lambda backend. It has Bedrock Converse API and Knowledge Bases for RAG.</figcaption><figcaption class="credit">Source: web image search. Saved locally September 2026.</figcaption></figure><p>Enterprises do not start greenfield. GenAI must connect to legacy systems. It must respect enterprise identity. It must pass through one governed front door.</p>
+<figure><img src="assets/img/mermaid/67-enterprise-integration.svg" alt="Enterprise integration: the corporate app stays in its VPC, reaches Bedrock through a PrivateLink VPC endpoint, with IAM roles, CloudTrail audit, and KMS encryption" loading="lazy"><figcaption>This is enterprise integration. The corporate application stays in its VPC. It reaches Bedrock through a PrivateLink VPC endpoint. It has IAM roles. It has CloudTrail audit. It has KMS encryption.</figcaption><figcaption class="credit"><em>Enterprise integration: the corporate app stays in its VPC, reaches Bedrock through a PrivateLink VPC endpoint, with IAM roles, CloudTrail audit, and KMS encryption</em> Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
+<figure class="fig-light"><img src="assets/img/internet/img-08.png" alt="Enterprise GenAI reference architecture: WAF and CloudFront in front, Cognito auth, API Gateway and Lambda backend, Bedrock Converse API and Knowledge Bases for RAG" loading="lazy"><figcaption>This is an enterprise GenAI reference architecture. It has WAF and CloudFront in front. It has Cognito authentication. It has API Gateway and Lambda backend. It has Bedrock Converse API and Knowledge Bases for RAG.</figcaption><figcaption class="credit">Source: web image search. Saved locally September 2026. Reused in the AWS AIP-C01 Study Guide.</figcaption></figure><p>Enterprises do not start greenfield. GenAI must connect to legacy systems. It must respect enterprise identity. It must pass through one governed front door.</p>
 <p><strong>Legacy integration</strong> connecting GenAI to existing systems. This is a Java property manager. This is an on-prem database. It uses APIs, webhooks, or event-driven sync. API-based is for request/response. Event-driven (EventBridge, SQS) is for loose coupling.</p>
 <p><strong>Secure access</strong> identity federation. Corporate login works on AWS. RBAC (role-based access control) is for models and data. Least-privilege IAM means each component only touches what it needs.</p>
 <p><strong>GenAI gateway</strong> This is a centralized abstraction layer. It is for all model access. One team runs it. Every application calls through it. It adds policy enforcement.</p>
@@ -2934,8 +2972,8 @@ COLD STARTS
 <h2 id="15-application-patterns-chatbots-copilots-qa-over-docs-and-bedrock-data-automation">15. Application patterns: chatbots, copilots, Q&amp;A over documents, and Bedrock Data Automation</h2>
 <p class="ch-bridge" style="border-left:3px solid var(--accent);padding:.55rem 1rem;background:var(--surface);border-radius:0 8px 8px 0;margin:1.1rem 0"><strong>Why this comes next.</strong> The infrastructure is complete. Now, consider the shapes users see. These are chatbots, copilots, Q and A over documents, and document automation. This chapter shows the application patterns AWS expects you to know.</p>
 
-<figure><img src="assets/img/mermaid/68-app-patterns.svg" alt="Application patterns: chat uses Converse with history, summarization uses long context, classification uses a small fast model, extraction uses tool calling" loading="lazy"><figcaption>These are application patterns. Chat uses Converse with history. Summarization uses long context. Classification uses a small fast model. Extraction uses tool calling.</figcaption><figcaption class="credit"><em>Application patterns: chat uses Converse with history, summarization uses long context, classification uses a small fast model, extraction uses tool calling</em></figcaption></figure>
-<figure class="fig-light"><img src="assets/img/internet/aws-blog-bedrock-kendra-assistant.png" alt="AWS reference architecture: an AI assistant built on Bedrock with a Kendra index, a Streamlit app, and LLM-generated responses" loading="lazy"><figcaption>This is an AWS reference architecture. It is an AI assistant. It is built on Bedrock. It has a Kendra index. It has a Streamlit application. It has LLM-generated responses.</figcaption><figcaption class="credit">Source: AWS Blog / AWS Solutions Guidance. Saved locally September 2026.</figcaption></figure><p>Three application shapes cover most GenAI products. Data Automation feeds all of them. It gives structured content from messy files.</p>
+<figure><img src="assets/img/mermaid/68-app-patterns.svg" alt="Application patterns: chat uses Converse with history, summarization uses long context, classification uses a small fast model, extraction uses tool calling" loading="lazy"><figcaption>These are application patterns. Chat uses Converse with history. Summarization uses long context. Classification uses a small fast model. Extraction uses tool calling.</figcaption><figcaption class="credit"><em>Application patterns: chat uses Converse with history, summarization uses long context, classification uses a small fast model, extraction uses tool calling</em> Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
+<figure class="fig-light"><img src="assets/img/internet/aws-blog-bedrock-kendra-assistant.png" alt="AWS reference architecture: an AI assistant built on Bedrock with a Kendra index, a Streamlit app, and LLM-generated responses" loading="lazy"><figcaption>This is an AWS reference architecture. It is an AI assistant. It is built on Bedrock. It has a Kendra index. It has a Streamlit application. It has LLM-generated responses.</figcaption><figcaption class="credit">Source: AWS Blog / AWS Solutions Guidance. Saved locally September 2026. Reused in the AWS AIP-C01 Study Guide.</figcaption></figure><p>Three application shapes cover most GenAI products. Data Automation feeds all of them. It gives structured content from messy files.</p>
 <div class="table-wrap"><table>
 <thead>
 <tr>
@@ -3034,7 +3072,7 @@ COLD STARTS
 <span id="15-embedding-bedrock-in-existing-apps-sdks-retries-and-reliability"></span>
 <p class="ch-next" style="border-top:1px solid var(--border);padding-top:1rem;margin-top:1.75rem"><strong>Next:</strong> This is Chapter 16. It is about embedding Bedrock in existing applications. The patterns are known. Now, complete the last mile. Use SDKs, retries, and reliability.</p>
 
-<figure><img src="assets/img/ste100/aip-chatbot-stack.svg" alt="Chatbot stack: conversation state in DynamoDB, facts from the knowledge base" loading="lazy"><figcaption>API Gateway fronts the chat. Lambda runs the handler. Bedrock Converse streams the answer. History lives in DynamoDB keyed by session ID. The knowledge base grounds the facts.</figcaption></figure>
+<figure><img src="assets/img/ste100/aip-chatbot-stack.svg" alt="Chatbot stack: conversation state in DynamoDB, facts from the knowledge base" loading="lazy"><figcaption>API Gateway fronts the chat. Lambda runs the handler. Bedrock Converse streams the answer. History lives in DynamoDB keyed by session ID. The knowledge base grounds the facts. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <h4 id="how-to-read-aip-chatbot">How to read this diagram</h4>
 <ol>
 <li>API Gateway exposes REST plus WebSocket. The chat front door.</li>
@@ -3045,7 +3083,7 @@ COLD STARTS
 <li>Bold rule: conversation state lives in DynamoDB, not S3. S3 is document storage, not session state. A distractor that stores chat sessions in S3 fails on latency and access pattern.</li>
 </ol>
 
-<figure><img src="assets/img/ste100/aip-data-automation.svg" alt="Bedrock Data Automation: messy files become structured content for the apps" loading="lazy"><figcaption>Data Automation is the content refinery behind the applications. It turns PDFs, scans, and audio into structured text, tables, and fields that feed chatbots, copilots, and Q and A over docs.</figcaption></figure>
+<figure><img src="assets/img/ste100/aip-data-automation.svg" alt="Bedrock Data Automation: messy files become structured content for the apps" loading="lazy"><figcaption>Data Automation is the content refinery behind the applications. It turns PDFs, scans, and audio into structured text, tables, and fields that feed chatbots, copilots, and Q and A over docs. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <h4 id="how-to-read-aip-dataauto">How to read this diagram</h4>
 <ol>
 <li>The red box is the input: messy files. PDFs, scans, audio, video. Unstructured.</li>
@@ -3056,7 +3094,7 @@ COLD STARTS
 </ol>
 
 <h2 id="16-embedding-bedrock-in-existing-apps-sdks-retries-and-reliability">16. Embed Bedrock in existing applications: SDKs, retries, and reliability</h2>
-<figure><img src="assets/img/density/d2-retry-backoff.svg" alt="Retries: exponential backoff with jitter; 1s, then 2s, then 4s, never a tight loop" loading="lazy"><figcaption>Use exponential backoff with jitter for retries. Wait 1 second. Then wait 2 seconds. Then wait 4 seconds. Do not use a tight loop.</figcaption><figcaption class="credit"><em>Generated diagram for this guide.</em></figcaption></figure><div class="walkthrough"><strong>How to read this.</strong> The top box names the signal: throttle. Then wait. The waits double with jitter. Jitter stops a fleet from retrying in lockstep. Provisioned Throughput solves sustained throttles. More retries do not solve sustained throttles.</div>
+<figure><img src="assets/img/density/d2-retry-backoff.svg" alt="Retries: exponential backoff with jitter; 1s, then 2s, then 4s, never a tight loop" loading="lazy"><figcaption>Use exponential backoff with jitter for retries. Wait 1 second. Then wait 2 seconds. Then wait 4 seconds. Do not use a tight loop.</figcaption><figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure><div class="walkthrough"><strong>How to read this.</strong> The top box names the signal: throttle. Then wait. The waits double with jitter. Jitter stops a fleet from retrying in lockstep. Provisioned Throughput solves sustained throttles. More retries do not solve sustained throttles.</div>
 <p class="ch-bridge" style="border-left:3px solid var(--accent);padding:.55rem 1rem;background:var(--surface);border-radius:0 8px 8px 0;margin:1.1rem 0"><strong>Why this comes next.</strong> One mile remains: the code that already exists. SDKs, retries, throttles, structured output, the reliability layer between your app and Bedrock. This chapter closes the volume. It is at the last mile.Production traffic needs retries, backoff, fallbacks, and traces.</p>
 <p>The <strong>AWS SDK</strong> (boto3 in Python, and equivalents in every major language) is how applications call Bedrock. There are two clients. <code>bedrock-runtime</code> is for inference (Converse, InvokeModel). <code>bedrock-agent-runtime</code> is for agents. Reliability patterns are around those calls. <strong>exponential backoff with jitter</strong> (If a throttle occurs, wait 1 second. Then wait 2 seconds. Then wait 4 seconds. Add random jitter to each wait.</p>
 <p>This prevents a fleet of clients from retrying at the same time. Use fallback models. If the primary model throttles or errors, retry with a smaller model. Or retry with a different model.Or serve a cached response. This is graceful degradation). <strong>timeouts and circuit breakers</strong> (Limit how long you wait. Stop calling a failing dependency after N failures.</p>
@@ -3126,7 +3164,7 @@ COLD STARTS
 
 <div class="callout num"><span class="callout-h">Where to go next</span><p>Volume D3, Domain 3: Safety, Security, and Governance (volume-d3-safety-security-governance.html). Domain 2 wired the building blocks into applications. Domain 3 answers what keeps them safe. This includes Guardrails in depth, IAM and VPC for Bedrock, encryption, audit trails, and responsible AI governance. The master trap list and question bank below stay in this volume. They are your Domain 2 drill ground.</p></div>
 
-<figure><img src="assets/img/ste100/aip-resilience-stack.svg" alt="Reliability stack: SDK, scoped role, backoff with jitter, fallback, validated output" loading="lazy"><figcaption>Four layers between your app and Bedrock. Call through the SDK with a scoped IAM role. Retry with exponential backoff and jitter. Fix sustained throttles structurally. Parse and validate every structured output.</figcaption></figure>
+<figure><img src="assets/img/ste100/aip-resilience-stack.svg" alt="Reliability stack: SDK, scoped role, backoff with jitter, fallback, validated output" loading="lazy"><figcaption>Four layers between your app and Bedrock. Call through the SDK with a scoped IAM role. Retry with exponential backoff and jitter. Fix sustained throttles structurally. Parse and validate every structured output. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <h4 id="how-to-read-aip-resil">How to read this diagram</h4>
 <ol>
 <li>Layer 1: the SDK plus a scoped IAM role. bedrock-runtime handles inference. bedrock-agent-runtime handles agents. Least privilege, no keys in code.</li>
@@ -4802,6 +4840,73 @@ window.DS_MANIFEST = [
       }
     }
   });
+  /* ---------- 11. Scroll reveal + figure parallax (progressive enhancement) ----------
+     .reveal is added here (never in markup), so content is fully visible with
+     JS disabled. Respects prefers-reduced-motion. Parallax drift is a small
+     transform on plain figure images only; it never changes layout. ---------- */
+
+  (function () {
+    var reduceMotion = window.matchMedia &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    /* Scroll reveal: gentle rise-in on content blocks as they enter the viewport. */
+    var revealTargets = inner.querySelectorAll(
+      "figure, .pq, .exam-ask, .takeaway, .panel, .diagram-walkthrough, " +
+      ".table-wrap, .ladder, .cc-qa"
+    );
+    if (!reduceMotion && "IntersectionObserver" in window) {
+      var revealEls = Array.prototype.slice.call(revealTargets);
+      revealEls.forEach(function (el) { el.classList.add("reveal"); });
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (en) {
+          if (en.isIntersecting) {
+            en.target.classList.add("revealed");
+            io.unobserve(en.target);
+          }
+        });
+      }, { rootMargin: "0px 0px -8% 0px", threshold: 0.05 });
+      revealEls.forEach(function (el) { io.observe(el); });
+    }
+    /* reduceMotion or no IntersectionObserver: no .reveal class is added,
+       so every block stays fully visible. */
+
+    /* Figure parallax: gentle --px drift on plain figure images only
+       (.fig-light cards are excluded so the white plate never shows an edge). */
+    if (!reduceMotion) {
+      var pxFigs = [];
+      Array.prototype.forEach.call(
+        inner.querySelectorAll("figure:not(.fig-light)"),
+        function (fig) {
+          if (fig.querySelector("img")) {
+            fig.classList.add("ds-px");
+            pxFigs.push(fig);
+          }
+        }
+      );
+      var pxTicking = false;
+      function pxUpdate() {
+        var vh = window.innerHeight || 800;
+        pxFigs.forEach(function (fig) {
+          var img = fig.querySelector("img");
+          if (!img) return;
+          var r = img.getBoundingClientRect();
+          if (r.bottom < -160 || r.top > vh + 160) return; /* off-screen: skip */
+          var center = (r.top + r.height / 2) - vh / 2;
+          var drift = center * -0.015;
+          if (drift > 8) drift = 8;
+          if (drift < -8) drift = -8;
+          img.style.setProperty("--px", drift.toFixed(1) + "px");
+        });
+        pxTicking = false;
+      }
+      function pxRequest() {
+        if (!pxTicking) { pxTicking = true; window.requestAnimationFrame(pxUpdate); }
+      }
+      window.addEventListener("scroll", pxRequest, { passive: true });
+      window.addEventListener("resize", pxRequest);
+      pxUpdate();
+    }
+  })();
 })();
 
 </script>
