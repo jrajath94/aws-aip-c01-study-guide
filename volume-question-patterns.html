@@ -1167,6 +1167,42 @@ footer p{text-align:left}
   #ds-content .ds-site-footer,
   .ds-side-volumes { display: none !important; }
 }
+
+/* ==========================================================================
+   World-class upgrade (2026-10-05): scroll reveal + figure parallax.
+   Progressive enhancement: .reveal is added by JS only, so with JS disabled
+   every element stays fully visible. Parallax drift is transform-only (no
+   layout shift) and limited to plain figures; both honor
+   prefers-reduced-motion.
+   ========================================================================== */
+
+/* Scroll reveal: subtle rise-in. JS adds .reveal to content blocks; the
+   IntersectionObserver adds .revealed as each block enters the viewport. */
+.reveal {
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.reveal.revealed {
+  opacity: 1;
+  transform: none;
+}
+
+/* Figure parallax: gentle vertical drift on figure images (excludes
+   .fig-light cards so the white plate never shows an edge). The figure gets
+   overflow:hidden from JS when parallax activates, so the drift cannot
+   cause layout shift or edge bleed. */
+figure.ds-px { overflow: hidden; }
+figure.ds-px img {
+  transform: translateY(var(--px, 0px));
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal { opacity: 1; transform: none; transition: none; }
+  figure.ds-px img { transform: none; }
+  html { scroll-behavior: auto; }
+}
 </style>
 <style>
 /* Hallmark · pre-emit critique: P5 H4 E5 S4 R5 V5
@@ -1299,13 +1335,13 @@ html.xp-js .xp-reveal.xp-in {
 <p>This guide has 81 original practice questions. The questions are from all five domains. They use the question patterns that AWS uses. There are 3 matching questions, 63 multiple choice questions, 12 multiple response questions, and 3 ordering questions. Each question shows the trap that AWS set. We mark the correct answer on each option list. Last verified against AWS documentation: 2026-09-28.</p>
 <h2 id="how-aws-asks-the-6-question-patterns">
 
-<figure><img src="assets/img/ste100/aip-six-patterns.svg" alt="The six question patterns: constraint extraction, most correct, ordering, vocabulary precision, managed-first ladder, wrong-plane distractors" loading="lazy"><figcaption>The six question patterns AWS reuses. Learn the moves and the scenarios stop mattering.</figcaption><figcaption class="credit">Drawn for this volume.</figcaption></figure>
+<figure><img src="assets/img/ste100/aip-six-patterns.svg" alt="The six question patterns: constraint extraction, most correct, ordering, vocabulary precision, managed-first ladder, wrong-plane distractors" loading="lazy"><figcaption>The six question patterns AWS reuses. Learn the moves and the scenarios stop mattering.</figcaption><figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 How AWS Asks: the 6 question patterns</h2>
 <p>AWS uses a small set of question moves many times. Learn the moves. Then the scenarios do not matter.</p>
 <h3 id="pattern-1-constraint-extraction">Pattern 1: Constraint extraction</h3>
-<figure><img src="assets/img/custom/pat1-constraints.svg" alt="Five-step constraint extraction: read the stem, underline constraints, read the options, eliminate violators, pick the survivor" loading="lazy"><figcaption>Pattern 1: First, extract 2 to 4 hard constraints. Then remove any option that does not meet one constraint.</figcaption><figcaption class="credit">Drawn for this volume.</figcaption></figure>
+<figure><img src="assets/img/custom/pat1-constraints.svg" alt="Five-step constraint extraction: read the stem, underline constraints, read the options, eliminate violators, pick the survivor" loading="lazy"><figcaption>Pattern 1: First, extract 2 to 4 hard constraints. Then remove any option that does not meet one constraint.</figcaption><figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 
-<figure><img src="assets/img/ste100/aip-pattern1-worked.svg" alt="Worked constraint extraction: three constraints from the stem eliminate three options and leave the RAG survivor" loading="lazy"><figcaption>Pattern 1, worked on a real bank question. Three hard constraints kill three options and leave one survivor.</figcaption><figcaption class="credit">Drawn for this volume.</figcaption></figure>
+<figure><img src="assets/img/ste100/aip-pattern1-worked.svg" alt="Worked constraint extraction: three constraints from the stem eliminate three options and leave the RAG survivor" loading="lazy"><figcaption>Pattern 1, worked on a real bank question. Three hard constraints kill three options and leave one survivor.</figcaption><figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 
 <p><strong>How to read this diagram.</strong></p>
 <div class="diagram-walkthrough"><ol>
@@ -1319,16 +1355,16 @@ How AWS Asks: the 6 question patterns</h2>
 <p class="note"><strong>Why this chapter comes next.</strong> You extract the constraints. The next pattern selects between the options that meet the constraints. It finds the most correct option, not only a correct option.</p>
 <p>Each stem has 2 to 4 hard constraints. Examples are cost, latency, no ML team, no redeploy, region lock. The correct answer is the only option that meets ALL constraints. Underline each constraint before you read the options. Then remove any option that does not meet one constraint.</p>
 <h3 id="pattern-2-most-correct-not-merely-correct">Pattern 2: MOST correct, not merely correct</h3>
-<figure><img src="assets/img/custom/pat2-most-correct.svg" alt="Tiebreaker order: managed over custom, cheaper over pricier, simpler over complex, AWS-native over third-party" loading="lazy"><figcaption>Pattern 2: Two options will work. Apply the tiebreakers in order.</figcaption><figcaption class="credit">Drawn for this volume.</figcaption></figure>
+<figure><img src="assets/img/custom/pat2-most-correct.svg" alt="Tiebreaker order: managed over custom, cheaper over pricier, simpler over complex, AWS-native over third-party" loading="lazy"><figcaption>Pattern 2: Two options will work. Apply the tiebreakers in order.</figcaption><figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 
-<figure><img src="assets/img/ste100/aip-tiebreakers.svg" alt="Pattern 2 tiebreakers in order: managed over custom, cheaper, simpler, AWS-native" loading="lazy"><figcaption>Pattern 2 tiebreakers in order. Stop at the first one that separates the two working options.</figcaption><figcaption class="credit">Drawn for this volume.</figcaption></figure>
+<figure><img src="assets/img/ste100/aip-tiebreakers.svg" alt="Pattern 2 tiebreakers in order: managed over custom, cheaper, simpler, AWS-native" loading="lazy"><figcaption>Pattern 2 tiebreakers in order. Stop at the first one that separates the two working options.</figcaption><figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 
 <p class="note"><strong>Why this chapter comes next.</strong> You select the winner. Pattern 3 checks a different error. It checks steps in the wrong order.</p>
 <p>Two or three options will work. The tiebreakers select the winner in this order. Prefer managed service over custom build. Prefer cheaper over more expensive at the same quality. Prefer simpler architecture over complex architecture. Prefer AWS-native over third-party. If you cannot decide, ask this question: Which option would an AWS solutions architect defend in a review?</p>
 <h3 id="pattern-3-ordering-and-lifecycle">Pattern 3: Ordering and lifecycle</h3>
-<figure><img src="assets/img/custom/pat3-ordering.svg" alt="Lifecycle chains: configure then prepare then test; select a model before customizing it; scope the problem before building" loading="lazy"><figcaption>Pattern 3: Any option that reverses a lifecycle dependency is wrong. Fix the first and last steps.</figcaption><figcaption class="credit">Drawn for this volume.</figcaption></figure>
+<figure><img src="assets/img/custom/pat3-ordering.svg" alt="Lifecycle chains: configure then prepare then test; select a model before customizing it; scope the problem before building" loading="lazy"><figcaption>Pattern 3: Any option that reverses a lifecycle dependency is wrong. Fix the first and last steps.</figcaption><figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 
-<figure><img src="assets/img/ste100/aip-lifecycle-chains.svg" alt="Lifecycle chains: agent configure prepare test, select model before customizing, scope before building" loading="lazy"><figcaption>Pattern 3. Lifecycle order never changes. Any option that inverts it is wrong on sight.</figcaption><figcaption class="credit">Drawn for this volume.</figcaption></figure>
+<figure><img src="assets/img/ste100/aip-lifecycle-chains.svg" alt="Lifecycle chains: agent configure prepare test, select model before customizing, scope before building" loading="lazy"><figcaption>Pattern 3. Lifecycle order never changes. Any option that inverts it is wrong on sight.</figcaption><figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 
 <p><strong>How to read this diagram.</strong></p>
 <div class="diagram-walkthrough"><ol>
@@ -1342,23 +1378,23 @@ How AWS Asks: the 6 question patterns</h2>
 <p class="note"><strong>Why this chapter comes next.</strong> You verify the order. Pattern 4 tests if you know which lever solves which problem. This is vocabulary precision.</p>
 <p>Follow the real service lifecycle. First, configure. Then, prepare. After that, test. Select a model before you customize it. Scope before you build. An option that changes the lifecycle order is incorrect.</p>
 <h3 id="pattern-4-vocabulary-precision">Pattern 4: Vocabulary precision.</h3>
-<figure><img src="assets/img/custom/pat4-vocab.svg" alt="Five precise terms: inference profile, prompt router, Provisioned Throughput, ApplyGuardrail, returnControl" loading="lazy"><figcaption>Pattern 4: Two options can sound similar. The difference is one precise term. Learn these five terms well.</figcaption><figcaption class="credit">Drawn for this volume.</figcaption></figure>
+<figure><img src="assets/img/custom/pat4-vocab.svg" alt="Five precise terms: inference profile, prompt router, Provisioned Throughput, ApplyGuardrail, returnControl" loading="lazy"><figcaption>Pattern 4: Two options can sound similar. The difference is one precise term. Learn these five terms well.</figcaption><figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 
-<figure><img src="assets/img/ste100/aip-vocab-five.svg" alt="Five precise terms: inference profile, prompt router, Provisioned Throughput, ApplyGuardrail, returnControl" loading="lazy"><figcaption>Pattern 4. Five precise terms decide the close options. Learn them cold.</figcaption><figcaption class="credit">Drawn for this volume.</figcaption></figure>
+<figure><img src="assets/img/ste100/aip-vocab-five.svg" alt="Five precise terms: inference profile, prompt router, Provisioned Throughput, ApplyGuardrail, returnControl" loading="lazy"><figcaption>Pattern 4. Five precise terms decide the close options. Learn them cold.</figcaption><figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 
 <p class="note"><strong>Why this chapter comes next.</strong> Terms are precise. Pattern 5 is the default approach. Use managed services first. Climb the ladder only as far as necessary.</p>
 <p>AWS tests your knowledge of solutions for problems. An inference profile is a routing ID. It works across regions. It gives a model better availability. It gives higher effective quotas. Call the profile ID. Do not call the bare model ID. A prompt router (Bedrock's model router) sends each request to a cheap model or a flagship model. It bases this on prompt complexity. Provisioned Throughput reserves model capacity. You pay for it by the hour. It has latency guarantees. ApplyGuardrail runs a guardrail. It is a standalone policy check on any text. It works outside a model call. returnControl pauses an agent. It gives control back to your code. This is the hook for human approval gates. If two options sound similar, the difference is one precise term.</p>
 <h3 id="pattern-5-managed-first-and-the-ladder">Pattern 5: Managed-first and the ladder.</h3>
-<figure><img src="assets/img/custom/pat5-ladder.svg" alt="Managed-first ladder: prompt engineering, RAG, agents, fine-tuning, with cost and effort rising at each rung" loading="lazy"><figcaption>Pattern 5: Climb only until you meet the requirement. Training directly fails the overhead filter.</figcaption><figcaption class="credit">Drawn for this volume.</figcaption></figure>
+<figure><img src="assets/img/custom/pat5-ladder.svg" alt="Managed-first ladder: prompt engineering, RAG, agents, fine-tuning, with cost and effort rising at each rung" loading="lazy"><figcaption>Pattern 5: Climb only until you meet the requirement. Training directly fails the overhead filter.</figcaption><figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 
-<figure><img src="assets/img/ste100/aip-ladder-cost.svg" alt="Managed-first ladder as rising cost and effort: prompt engineering, RAG, agents, fine-tuning, train from scratch" loading="lazy"><figcaption>Pattern 5. Cost and effort rise with each rung. Stop at the cheapest rung that works.</figcaption><figcaption class="credit">Drawn for this volume.</figcaption></figure>
+<figure><img src="assets/img/ste100/aip-ladder-cost.svg" alt="Managed-first ladder as rising cost and effort: prompt engineering, RAG, agents, fine-tuning, train from scratch" loading="lazy"><figcaption>Pattern 5. Cost and effort rise with each rung. Stop at the cheapest rung that works.</figcaption><figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 
 <p class="note"><strong>Why this chapter comes next.</strong> You climb the ladder. The last pattern names the distractors directly. These are real services that do the wrong job.</p>
 <p>Use the managed service by default. Climb the capability ladder only until you meet the requirement. Use prompt engineering. Then, use RAG. After that, use agents. Then, use fine-tuning. Options that go directly to training or custom builds fail the overhead filter.</p>
 <h3 id="pattern-6-wrong-plane-distractors">Pattern 6: Wrong-plane distractors.</h3>
-<figure><img src="assets/img/custom/pat6-wrong-plane.svg" alt="Four wrong-plane pairs: Guardrails offered for text extraction, knowledge base for live API calls, CloudFormation for runtime config, encryption for network isolation" loading="lazy"><figcaption>Pattern 6: These are real services that do the wrong job. Ask if the service's actual job is the job the stem needs.</figcaption><figcaption class="credit">Drawn for this volume.</figcaption></figure>
+<figure><img src="assets/img/custom/pat6-wrong-plane.svg" alt="Four wrong-plane pairs: Guardrails offered for text extraction, knowledge base for live API calls, CloudFormation for runtime config, encryption for network isolation" loading="lazy"><figcaption>Pattern 6: These are real services that do the wrong job. Ask if the service's actual job is the job the stem needs.</figcaption><figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 
-<figure><img src="assets/img/ste100/aip-wrong-plane.svg" alt="Four wrong-plane distractors: guardrails for extraction, knowledge base for APIs, CloudFormation for runtime config, encryption for isolation" loading="lazy"><figcaption>Pattern 6. Real services doing the wrong job. Ask whether the service's actual job is the job the stem needs.</figcaption><figcaption class="credit">Drawn for this volume.</figcaption></figure>
+<figure><img src="assets/img/ste100/aip-wrong-plane.svg" alt="Four wrong-plane distractors: guardrails for extraction, knowledge base for APIs, CloudFormation for runtime config, encryption for isolation" loading="lazy"><figcaption>Pattern 6. Real services doing the wrong job. Ask whether the service's actual job is the job the stem needs.</figcaption><figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 
 <p><strong>How to read this diagram.</strong></p>
 <div class="diagram-walkthrough"><ol>
@@ -1372,7 +1408,7 @@ How AWS Asks: the 6 question patterns</h2>
 <p>Distractors name real services that do the wrong job. For example, Guardrails for extraction. Knowledge bases for live API calls. CloudFormation for runtime configuration. Encryption for network isolation. Ask this for every option: Is this service's actual job the job the stem needs?</p>
 
 
-<figure><img src="assets/img/mermaid/100-patterns-six.svg" alt="The six question patterns: constraint extraction, MOST correct, ordering, vocabulary precision, managed-first ladder, wrong-plane distractors" loading="lazy"><figcaption>The six question patterns are a checklist. Run every stem through all six patterns. Do this before you select an answer.</figcaption><figcaption class="credit">Drawn for this volume.</figcaption></figure>
+<figure><img src="assets/img/mermaid/100-patterns-six.svg" alt="The six question patterns: constraint extraction, MOST correct, ordering, vocabulary precision, managed-first ladder, wrong-plane distractors" loading="lazy"><figcaption>The six question patterns are a checklist. Run every stem through all six patterns. Do this before you select an answer.</figcaption><figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 
 <div class="callout"><p><strong>Terms you will meet.</strong> Read this one time. Every question below uses only these meanings.</p>
 <ul>
@@ -1409,7 +1445,7 @@ How AWS Asks: the 6 question patterns</h2>
 
 <p class="note">Next: The exam surface. This shows what each domain tests and its weight. <strong></strong></p>
 <h2 id="exam-surface-what-each-domain-really-tests">Exam surface: what each domain really tests</h2>
-<figure><img src="assets/img/custom/pat-exam-surface.svg" alt="Domain weights and test surfaces: D1 at 31 percent, D2 at 26, D3 at 20, D4 at 12, D5 at 11, each with its tested skills" loading="lazy"><figcaption>Exam surface: Weight decides study time. The test surface decides what to memorize.</figcaption><figcaption class="credit">Drawn for this volume.</figcaption></figure>
+<figure><img src="assets/img/custom/pat-exam-surface.svg" alt="Domain weights and test surfaces: D1 at 31 percent, D2 at 26, D3 at 20, D4 at 12, D5 at 11, each with its tested skills" loading="lazy"><figcaption>Exam surface: Weight decides study time. The test surface decides what to memorize.</figcaption><figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <p class="note">Why this chapter comes next: The six patterns describe how AWS asks questions. The next question is what AWS asks about. This is each domain's real test surface and its exam weight. <strong></strong></p>
 <div class="table-wrap"><table>
 <thead>
@@ -1450,9 +1486,9 @@ How AWS Asks: the 6 question patterns</h2>
 <p class="note"><strong>Next:</strong> Tactics. Learn how to attack each question format, from multiple choice to ordering.</p>
 <h2 id="tactics-how-to-attack-each-format">
 
-<figure><img src="assets/img/ste100/aip-format-tactics.svg" alt="Attack plans: multiple choice eliminates violators, multiple response evaluates options alone, ordering anchors first and last, matching pairs the most distinctive first" loading="lazy"><figcaption>One attack plan per question format. Constraints come before options in all four.</figcaption><figcaption class="credit">Drawn for this volume.</figcaption></figure>
+<figure><img src="assets/img/ste100/aip-format-tactics.svg" alt="Attack plans: multiple choice eliminates violators, multiple response evaluates options alone, ordering anchors first and last, matching pairs the most distinctive first" loading="lazy"><figcaption>One attack plan per question format. Constraints come before options in all four.</figcaption><figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 Tactics: how to attack each format</h2>
-<figure><img src="assets/img/custom/pat-tactics.svg" alt="Attack plan per question format: multiple choice, multiple response, ordering, matching, plus the 2.4-minute time rule" loading="lazy"><figcaption>Extract constraints first. Evaluate each option alone. Anchor the first and last steps. Match the most distinctive pair first.</figcaption><figcaption class="credit">Drawn for this volume.</figcaption></figure>
+<figure><img src="assets/img/custom/pat-tactics.svg" alt="Attack plan per question format: multiple choice, multiple response, ordering, matching, plus the 2.4-minute time rule" loading="lazy"><figcaption>Extract constraints first. Evaluate each option alone. Anchor the first and last steps. Match the most distinctive pair first.</figcaption><figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <p class="note"><strong>Why this chapter comes next.</strong> You know the patterns and the surface. This section is the attack plan per question format: multiple choice, multiple response, ordering, and matching.</p>
 <ul>
 <li><strong>Multiple choice:</strong> Extract constraints first. Then eliminate options. Never pick an option that violates a stated constraint. This is true even if the option sounds complex.</li>
@@ -1461,7 +1497,7 @@ Tactics: how to attack each format</h2>
 <li><strong>Matching:</strong> Match the most distinctive pair first. This shrinks the field. Then match the next pair. Never match by vague association. Each pair has one precise mechanism.</li>
 <li><strong>Time management:</strong> You have 75 questions in 180 minutes. This is about 2.4 minutes per question. If an option violates a constraint, eliminate it and move on.</li>
 
-<figure><img src="assets/img/ste100/aip-time-budget.svg" alt="Time budget: 2.4 minutes per question; easy under 90 seconds, medium on pace, hard capped at 4 minutes" loading="lazy"><figcaption>Time budget: 2.4 minutes per question. Bank the easy ones fast and cap the hard ones.</figcaption><figcaption class="credit">Drawn for this volume.</figcaption></figure>
+<figure><img src="assets/img/ste100/aip-time-budget.svg" alt="Time budget: 2.4 minutes per question; easy under 90 seconds, medium on pace, hard capped at 4 minutes" loading="lazy"><figcaption>Time budget: 2.4 minutes per question. Bank the easy ones fast and cap the hard ones.</figcaption><figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 
 <p><strong>How to read this diagram.</strong></p>
 <div class="diagram-walkthrough"><ol>
@@ -1476,10 +1512,10 @@ Tactics: how to attack each format</h2>
 <p class="note"><strong>Next:</strong> This is the trap catalog. AWS reuses 30 distractors. We name and defuse them.</p>
 <h2 id="trap-catalog-the-30-traps-aws-reuses">
 
-<figure><img src="assets/img/ste100/aip-trap-families.svg" alt="Thirty traps in five families: distractor services, absolute wording, associate-level answers, reversed causality, missed constraints" loading="lazy"><figcaption>The 30 traps in five families. Name each one on sight.</figcaption><figcaption class="credit">Drawn for this volume.</figcaption></figure>
+<figure><img src="assets/img/ste100/aip-trap-families.svg" alt="Thirty traps in five families: distractor services, absolute wording, associate-level answers, reversed causality, missed constraints" loading="lazy"><figcaption>The 30 traps in five families. Name each one on sight.</figcaption><figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 Trap catalog: the 30 traps AWS reuses</h2>
 <p class="note"><strong>Why this chapter comes next.</strong> Tactics tell you how to attack. The trap catalog tells you what attacks you. AWS reuses 30 distractors. You can name each one on sight.</p>
-<figure><img src="assets/img/mermaid/85-trap-catalog.svg" alt="The 30 exam traps: distractor services, absolute wording, associate-level answers, reversed causality, and missed constraints in the stem" loading="lazy"><figcaption>The 30 exam traps: distractor services, absolute wording, associate-level answers, reversed causality, and missed constraints in the stem</figcaption><figcaption class="credit"><em>The 30 exam traps: distractor services, absolute wording, associate-level answers, reversed causality, and missed constraints in the stem</em></figcaption></figure>
+<figure><img src="assets/img/mermaid/85-trap-catalog.svg" alt="The 30 exam traps: distractor services, absolute wording, associate-level answers, reversed causality, and missed constraints in the stem" loading="lazy"><figcaption>The 30 exam traps: distractor services, absolute wording, associate-level answers, reversed causality, and missed constraints in the stem</figcaption><figcaption class="credit"><em>The 30 exam traps: distractor services, absolute wording, associate-level answers, reversed causality, and missed constraints in the stem</em> Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <ol>
 <li><strong>Lambda 15-minute timeout:</strong> Any option with a Lambda waiting, sleeping, or polling for a long task fails. Go async or use Step Functions.</li>
 <li><strong>Custom code vs managed:</strong> The stem says no ML team or least effort. Custom builds lose to Bedrock managed features.</li>
@@ -1515,7 +1551,7 @@ Trap catalog: the 30 traps AWS reuses</h2>
 <p class="note"><strong>Next:</strong> D1 questions. Develop and optimize GenAI apps. This is the heaviest domain.</p>
 <h2 id="D1">D1: Develop and Optimize GenAI Apps with Bedrock</h2>
 <p class="note"><strong>Why this chapter comes next.</strong> You learned patterns. You cataloged traps. The question banks start with D1. This is the heaviest domain at 31 percent. It is about developing and optimizing GenAI apps.</p>
-<figure><img src="assets/img/mermaid/86-pattern-d1.svg" alt="D1 question pattern: if the stem mentions data you do not have, the answer is RAG; if it mentions behavior change, fine-tuning; otherwise prompt engineering or model choice" loading="lazy"><figcaption>D1 question pattern: if the stem mentions data you do not have, the answer is RAG; if it mentions behavior change, fine-tuning; otherwise prompt engineering or model choice</figcaption><figcaption class="credit"><em>D1 question pattern: if the stem mentions data you do not have, the answer is RAG; if it mentions behavior change, fine-tuning; otherwise prompt engineering or model choice</em></figcaption></figure>
+<figure><img src="assets/img/mermaid/86-pattern-d1.svg" alt="D1 question pattern: if the stem mentions data you do not have, the answer is RAG; if it mentions behavior change, fine-tuning; otherwise prompt engineering or model choice" loading="lazy"><figcaption>D1 question pattern: if the stem mentions data you do not have, the answer is RAG; if it mentions behavior change, fine-tuning; otherwise prompt engineering or model choice</figcaption><figcaption class="credit"><em>D1 question pattern: if the stem mentions data you do not have, the answer is RAG; if it mentions behavior change, fine-tuning; otherwise prompt engineering or model choice</em> Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <p>Q1</p>
 <p>Easy</p>
 <p>Multiple choice</p>
@@ -1870,7 +1906,7 @@ Trap catalog: the 30 traps AWS reuses</h2>
 <p class="note"><strong>Next:</strong> D2 questions. Agents, tools, and workflow automation.</p>
 <h2 id="D2">D2: Agents, Tools, and Workflow Automation</h2>
 <p class="note"><strong>Why this chapter comes next.</strong> D1 tested app building. D2 tests the next layer: agents, tools, and workflow automation.</p>
-<figure><img src="assets/img/mermaid/87-pattern-d2.svg" alt="D2 question pattern: multi-step tasks with tools point to Bedrock Agents; workflows with approvals point to Step Functions; simple calls point to the Converse API" loading="lazy"><figcaption>D2 question pattern: multi-step tasks with tools point to Bedrock Agents; workflows with approvals point to Step Functions; simple calls point to the Converse API</figcaption><figcaption class="credit"><em>D2 question pattern: multi-step tasks with tools point to Bedrock Agents; workflows with approvals point to Step Functions; simple calls point to the Converse API</em></figcaption></figure>
+<figure><img src="assets/img/mermaid/87-pattern-d2.svg" alt="D2 question pattern: multi-step tasks with tools point to Bedrock Agents; workflows with approvals point to Step Functions; simple calls point to the Converse API" loading="lazy"><figcaption>D2 question pattern: multi-step tasks with tools point to Bedrock Agents; workflows with approvals point to Step Functions; simple calls point to the Converse API</figcaption><figcaption class="credit"><em>D2 question pattern: multi-step tasks with tools point to Bedrock Agents; workflows with approvals point to Step Functions; simple calls point to the Converse API</em> Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <p>Q26</p>
 <p>Easy</p>
 <p>Multiple choice</p>
@@ -2184,7 +2220,7 @@ Trap catalog: the 30 traps AWS reuses</h2>
 <p class="note"><strong>Next:</strong> D3 questions. Learn about Responsible AI, guardrails, and evaluation.</p>
 <h2 id="D3">D3: Responsible AI, Guardrails, and Evaluation</h2>
 <p class="note"><strong>Why this chapter is next.</strong> D2 gave your applications hands. D3 keeps them safe. It uses responsible AI, guardrails, and evaluation.</p>
-<figure><img src="assets/img/mermaid/88-pattern-d3.svg" alt="D3 question pattern: harmful content risk means Guardrails; PII in data means the sensitive information filter; otherwise IAM, KMS, and VPC controls" loading="lazy"><figcaption>D3 question pattern: harmful content risk means Guardrails; PII in data means the sensitive information filter; otherwise IAM, KMS, and VPC controls</figcaption><figcaption class="credit"><em>D3 question pattern: harmful content risk means Guardrails; PII in data means the sensitive information filter; otherwise IAM, KMS, and VPC controls</em></figcaption></figure>
+<figure><img src="assets/img/mermaid/88-pattern-d3.svg" alt="D3 question pattern: harmful content risk means Guardrails; PII in data means the sensitive information filter; otherwise IAM, KMS, and VPC controls" loading="lazy"><figcaption>D3 question pattern: harmful content risk means Guardrails; PII in data means the sensitive information filter; otherwise IAM, KMS, and VPC controls</figcaption><figcaption class="credit"><em>D3 question pattern: harmful content risk means Guardrails; PII in data means the sensitive information filter; otherwise IAM, KMS, and VPC controls</em> Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <p>Q48</p>
 <p>Easy</p>
 <p>Multiple choice</p>
@@ -2422,7 +2458,7 @@ Trap catalog: the 30 traps AWS reuses</h2>
 <p class="note"><strong>Next:</strong> D4 questions. These questions are about customization, training, and cost.</p>
 <h2 id="D4">D4: FM Customization and Training</h2>
 <p class="note"><strong>Why this chapter comes next.</strong> D3 covers safety. D4 covers how to make models your own and how to run them at low cost. This includes customization, training, and cost.</p>
-<figure><img src="assets/img/mermaid/89-pattern-d4.svg" alt="D4 question pattern: cost concerns point to batch, caching, or smaller models; latency concerns point to streaming or provisioned throughput" loading="lazy"><figcaption>D4 question pattern: cost concerns point to batch, caching, or smaller models; latency concerns point to streaming or provisioned throughput</figcaption><figcaption class="credit"><em>D4 question pattern: cost concerns point to batch, caching, or smaller models; latency concerns point to streaming or provisioned throughput</em></figcaption></figure>
+<figure><img src="assets/img/mermaid/89-pattern-d4.svg" alt="D4 question pattern: cost concerns point to batch, caching, or smaller models; latency concerns point to streaming or provisioned throughput" loading="lazy"><figcaption>D4 question pattern: cost concerns point to batch, caching, or smaller models; latency concerns point to streaming or provisioned throughput</figcaption><figcaption class="credit"><em>D4 question pattern: cost concerns point to batch, caching, or smaller models; latency concerns point to streaming or provisioned throughput</em> Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <p>Q64</p>
 <p>Easy</p>
 <p>Multiple choice</p>
@@ -2560,7 +2596,7 @@ Trap catalog: the 30 traps AWS reuses</h2>
 <p class="note"><strong>Next:</strong> D5 questions. Security, governance, and monitoring.</p>
 <h2 id="D5">D5: Security, Governance, and Monitoring</h2>
 <p class="note"><strong>Why this chapter comes next.</strong> This is the last domain bank: security, governance, and monitoring. These controls keep everything else honest.</p>
-<figure><img src="assets/img/mermaid/90-pattern-d5.svg" alt="D5 question pattern: security incidents mean CloudTrail and invocation logs; quality concerns mean model evaluation; otherwise CloudWatch monitoring" loading="lazy"><figcaption>D5 question pattern: security incidents mean CloudTrail and invocation logs; quality concerns mean model evaluation; otherwise CloudWatch monitoring</figcaption><figcaption class="credit"><em>D5 question pattern: security incidents mean CloudTrail and invocation logs; quality concerns mean model evaluation; otherwise CloudWatch monitoring</em></figcaption></figure>
+<figure><img src="assets/img/mermaid/90-pattern-d5.svg" alt="D5 question pattern: security incidents mean CloudTrail and invocation logs; quality concerns mean model evaluation; otherwise CloudWatch monitoring" loading="lazy"><figcaption>D5 question pattern: security incidents mean CloudTrail and invocation logs; quality concerns mean model evaluation; otherwise CloudWatch monitoring</figcaption><figcaption class="credit"><em>D5 question pattern: security incidents mean CloudTrail and invocation logs; quality concerns mean model evaluation; otherwise CloudWatch monitoring</em> Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <p>Q74</p>
 <p>Easy</p>
 <p>Multiple choice</p>
@@ -3275,6 +3311,73 @@ window.DS_MANIFEST = [
       }
     }
   });
+  /* ---------- 11. Scroll reveal + figure parallax (progressive enhancement) ----------
+     .reveal is added here (never in markup), so content is fully visible with
+     JS disabled. Respects prefers-reduced-motion. Parallax drift is a small
+     transform on plain figure images only; it never changes layout. ---------- */
+
+  (function () {
+    var reduceMotion = window.matchMedia &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    /* Scroll reveal: gentle rise-in on content blocks as they enter the viewport. */
+    var revealTargets = inner.querySelectorAll(
+      "figure, .pq, .exam-ask, .takeaway, .panel, .diagram-walkthrough, " +
+      ".table-wrap, .ladder, .cc-qa"
+    );
+    if (!reduceMotion && "IntersectionObserver" in window) {
+      var revealEls = Array.prototype.slice.call(revealTargets);
+      revealEls.forEach(function (el) { el.classList.add("reveal"); });
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (en) {
+          if (en.isIntersecting) {
+            en.target.classList.add("revealed");
+            io.unobserve(en.target);
+          }
+        });
+      }, { rootMargin: "0px 0px -8% 0px", threshold: 0.05 });
+      revealEls.forEach(function (el) { io.observe(el); });
+    }
+    /* reduceMotion or no IntersectionObserver: no .reveal class is added,
+       so every block stays fully visible. */
+
+    /* Figure parallax: gentle --px drift on plain figure images only
+       (.fig-light cards are excluded so the white plate never shows an edge). */
+    if (!reduceMotion) {
+      var pxFigs = [];
+      Array.prototype.forEach.call(
+        inner.querySelectorAll("figure:not(.fig-light)"),
+        function (fig) {
+          if (fig.querySelector("img")) {
+            fig.classList.add("ds-px");
+            pxFigs.push(fig);
+          }
+        }
+      );
+      var pxTicking = false;
+      function pxUpdate() {
+        var vh = window.innerHeight || 800;
+        pxFigs.forEach(function (fig) {
+          var img = fig.querySelector("img");
+          if (!img) return;
+          var r = img.getBoundingClientRect();
+          if (r.bottom < -160 || r.top > vh + 160) return; /* off-screen: skip */
+          var center = (r.top + r.height / 2) - vh / 2;
+          var drift = center * -0.015;
+          if (drift > 8) drift = 8;
+          if (drift < -8) drift = -8;
+          img.style.setProperty("--px", drift.toFixed(1) + "px");
+        });
+        pxTicking = false;
+      }
+      function pxRequest() {
+        if (!pxTicking) { pxTicking = true; window.requestAnimationFrame(pxUpdate); }
+      }
+      window.addEventListener("scroll", pxRequest, { passive: true });
+      window.addEventListener("resize", pxRequest);
+      pxUpdate();
+    }
+  })();
 })();
 
 </script>
