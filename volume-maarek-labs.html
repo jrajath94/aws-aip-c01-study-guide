@@ -1167,6 +1167,42 @@ footer p{text-align:left}
   #ds-content .ds-site-footer,
   .ds-side-volumes { display: none !important; }
 }
+
+/* ==========================================================================
+   World-class upgrade (2026-10-05): scroll reveal + figure parallax.
+   Progressive enhancement: .reveal is added by JS only, so with JS disabled
+   every element stays fully visible. Parallax drift is transform-only (no
+   layout shift) and limited to plain figures; both honor
+   prefers-reduced-motion.
+   ========================================================================== */
+
+/* Scroll reveal: subtle rise-in. JS adds .reveal to content blocks; the
+   IntersectionObserver adds .revealed as each block enters the viewport. */
+.reveal {
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.reveal.revealed {
+  opacity: 1;
+  transform: none;
+}
+
+/* Figure parallax: gentle vertical drift on figure images (excludes
+   .fig-light cards so the white plate never shows an edge). The figure gets
+   overflow:hidden from JS when parallax activates, so the drift cannot
+   cause layout shift or edge bleed. */
+figure.ds-px { overflow: hidden; }
+figure.ds-px img {
+  transform: translateY(var(--px, 0px));
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal { opacity: 1; transform: none; transition: none; }
+  figure.ds-px img { transform: none; }
+  html { scroll-behavior: auto; }
+}
 </style>
 <style>
 /* Hallmark · pre-emit critique: P5 H4 E5 S4 R5 V5
@@ -1299,13 +1335,14 @@ html.xp-js .xp-reveal.xp-in {
 <p>Maarek labs and practical patterns</p>
 <h2 id="how-to-use-this-volume">How to use this volume</h2>
 <p>Do the labs. Each chapter is one lab from the course lab pack. This volume rewrites the labs in plain words. Each chapter has the same structure. It shows what the lab teaches. It shows when to use it in production.</p><p> It shows how it works internally. It has an architecture diagram with a numbered walkthrough. It shows the exam angles and traps. It has one practice question with full explanations.</p>
-<figure><img src="assets/img/mermaid/98-labs-ladder.svg" alt="Chapter climb map: nine labs ordered from simplest to hardest, each naming its prerequisites" loading="lazy"><figcaption>The chapter climb: nine labs from simplest to hardest, each rung naming what it assumes. Read in order; later labs build on earlier ones.</figcaption><figcaption class="credit">Drawn for this volume.</figcaption></figure>
+<figure><img src="assets/img/mermaid/98-labs-ladder.svg" alt="Chapter climb map: nine labs ordered from simplest to hardest, each naming its prerequisites" loading="lazy"><figcaption>The chapter climb: nine labs from simplest to hardest, each rung naming what it assumes. Read in order; later labs build on earlier ones.</figcaption><figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <p>The code here is for teaching. It is new for this volume. It is not copied from the course files. The lab sources are course material. This volume explains the concepts in its own words.</p>
 <p>Check the facts. AWS service names, features, model IDs, and API shapes in this volume are correct. The team checked them against live AWS documents on <strong>2026-09-28</strong>. The page marks items it did not check UNVERIFIED inline. Limits and defaults can change. Check the documents when you build.</p>
 <h2 id="1-lab-strands-agent-with-custom-tools">1. Lab: Strands agent with custom tools</h2>
-<figure><img src="assets/img/custom/lab1-loop-cost.svg" alt="Five sequential model calls with growing token bars: each tool call is another model invocation and the history grows each turn" loading="lazy"><figcaption>The loop has a cost: five tool calls on a 2,000-token context is roughly five invocations, not one. History grows each turn.</figcaption><figcaption class="credit">Drawn for this volume.</figcaption></figure>
+<p>As you learned in <a href="volume-d2-implementation-integration.html">D2</a>, an agent chains tools to finish a task. This lab makes your hands do it.</p>
+<figure><img src="assets/img/custom/lab1-loop-cost.svg" alt="Five sequential model calls with growing token bars: each tool call is another model invocation and the history grows each turn" loading="lazy"><figcaption>The loop has a cost: five tool calls on a 2,000-token context is roughly five invocations, not one. History grows each turn.</figcaption><figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <figure><img src="assets/img/ste100/aip-strands-vs-bedrock.svg" alt="Strands versus Bedrock Agents: Strands is the code-first open-source SDK, Bedrock Agents is the managed console experience" loading="lazy"><figcaption>Strands is the code-first open-source SDK. Bedrock Agents is the managed console experience. Pick by control needs.</figcaption>
-<figcaption class="credit"><em>Drawn for this volume.</em></figcaption></figure><p>How to read this diagram</p><ol><li>Left: Strands. You write the agent loop in code. You host it yourself.</li><li>Right: Bedrock Agents. AWS hosts the loop. You configure it.</li><li>Bottom: the exam line. Code control means Strands. Managed means Bedrock Agents.</li></ol>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure><p>How to read this diagram</p><ol><li>Left: Strands. You write the agent loop in code. You host it yourself.</li><li>Right: Bedrock Agents. AWS hosts the loop. You configure it.</li><li>Bottom: the exam line. Code control means Strands. Managed means Bedrock Agents.</li></ol>
 <p>Build a working agent with a few lines of Python. Use one model, a tool list, a system prompt, and a custom function. The model can call this function.</p>
 <p class="prereq"><strong>Prerequisites:</strong> None. This is the start. It has one model, some tools, and the agent loop. This lab defines all of them.</p>
 <h3 id="what-this-lab-teaches">What this lab teaches</h3>
@@ -1313,7 +1350,7 @@ html.xp-js .xp-reveal.xp-in {
 <p>The agent loop is the main idea. A single model call cannot use tools alone. So, the loop runs the cycle. Send the prompt to the model. The model replies with text or a request to call a tool. The SDK runs the tool.</p><p> It returns the result to the model. Repeat until the model gives a final answer. Strands is model-driven. The model decides at each step if it needs a tool and which tool.</p>
 <p>A custom tool is a plain Python function. It has the <code>@tool</code> decorator. The docstring becomes the tool description. The model reads this description to decide what to call. The type hints become the input schema. The docstring is routing logic, not documentation.</p><p> A vague docstring, like "utility function", makes tool selection random.</p>
 <figure><img src="assets/img/ste100/aip-tool-anatomy.svg" alt="Strands tool anatomy: the docstring becomes the tool description and type hints become the input schema" loading="lazy"><figcaption>A Strands tool has three parts. The docstring becomes the tool description. The type hints become the input schema. The function body does the work.</figcaption>
-<figcaption class="credit"><em>Drawn for this volume.</em></figcaption></figure><p>How to read this diagram</p><ol><li>Top: the docstring. The model reads it to decide when to call the tool.</li><li>Middle: the type hints. They become the input schema.</li><li>Bottom: the body. It runs when the model calls the tool.</li></ol>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure><p>How to read this diagram</p><ol><li>Top: the docstring. The model reads it to decide when to call the tool.</li><li>Middle: the type hints. They become the input schema.</li><li>Bottom: the body. It runs when the model calls the tool.</li></ol>
 <p>The <code>strands-agents-tools</code> package has ready-made tools. These include a calculator and a current-time tool. So, a lab agent uses built-in tools and custom tools. The <code>callback_handler</code> controls streaming output. Set it to <code>None</code> to stop intermediate steps.</p>
 <h3 id="why-it-exists-when-you-would-use-it-in-production">Why it exists: when you use it in production</h3>
 <p>Without a framework, each team writes the same loop. They parse the model's tool request blocks. They validate arguments. They execute code. They format results. They handle errors.</p><p> They track conversation state. Most agent bugs are in that loop. Strands manages the loop. Your code is only the business logic, which is the tools themselves.</p>
@@ -1412,9 +1449,9 @@ print(agent(&quot;How many words are in 'cloud nine'?&quot;))
 <p>D is wrong. Models cannot reliably "call URLs from the system prompt." Tool use needs a real tool interface with schemas. It does not need prompt text. This distractor tests if you confuse prompt content with tool definitions.</p>
 <p class="note"><strong>Next:</strong> Lab 2 trades the agent's freedom for determinism. It chains prompts into a Bedrock Flows pipeline.</p>
 <h2 id="2-lab-bedrock-flows-from-json">2. Lab: Bedrock Flows from JSON</h2>
-<figure><img src="assets/img/custom/lab2-flow-lifecycle.svg" alt="Flow lifecycle: DRAFT to PrepareFlow to an immutable Version N to the prod alias" loading="lazy"><figcaption>DRAFT, version, alias: prompt edits never move production traffic by accident. If the agent ignores a change, the DRAFT was never prepared.</figcaption><figcaption class="credit">Drawn for this volume.</figcaption></figure>
+<figure><img src="assets/img/custom/lab2-flow-lifecycle.svg" alt="Flow lifecycle: DRAFT to PrepareFlow to an immutable Version N to the prod alias" loading="lazy"><figcaption>DRAFT, version, alias: prompt edits never move production traffic by accident. If the agent ignores a change, the DRAFT was never prepared.</figcaption><figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <figure><img src="assets/img/ste100/aip-flow-json.svg" alt="Bedrock Flows JSON: prompt, Lambda, knowledge base, and condition nodes wired in a fixed sequence" loading="lazy"><figcaption>A Bedrock Flow is JSON. Prompt, Lambda, knowledge base, and condition nodes are wired in a fixed sequence.</figcaption>
-<figcaption class="credit"><em>Drawn for this volume.</em></figcaption></figure><p>How to read this diagram</p><ol><li>Read top to bottom. Each box is a node.</li><li>Arrows show the fixed path. The path never changes at runtime.</li><li>The condition node branches on an expression.</li></ol>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure><p>How to read this diagram</p><ol><li>Read top to bottom. Each box is a node.</li><li>Arrows show the fixed path. The path never changes at runtime.</li><li>The condition node branches on an expression.</li></ol>
 <p class="note"><strong>Why this chapter comes next.</strong> Lab 1 built an agent. The agent reasons freely. Some workflows must not use the model's judgment. They must run the same steps every time. This lab trades the agent's freedom.</p><p class="note"> It creates a deterministic prompt pipeline.</p>
 <p>Chain prompts into a deterministic pipeline. The lab's prompt list becomes a real flow definition. It has nodes, connections, and conditions.</p>
 <p class="prereq"><strong>Prerequisites:</strong> None. You define the flow as JSON. No agent code is necessary.</p>
@@ -1512,9 +1549,9 @@ print(agent(&quot;How many words are in 'cloud nine'?&quot;))
 <p>D is wrong. Its premise is false. Chaining prompts is the main use case for Flows. Step Functions would be the answer if the scenario needed human approvals. Step Functions would be the answer if the scenario needed cross-service waits. The scenario does not need these.</p>
 <p class="note"><strong>Next:</strong> Lab 3 goes from one worker to many workers. A classifier routes each request to the correct specialist.</p>
 <h2 id="3-lab-multi-agent-squad-routing">3. Lab: Multi-agent squad routing</h2>
-<figure><img src="assets/img/custom/lab3-classifier-rules.svg" alt="Good versus overlapping agent descriptions: mutually exclusive routing rules route cleanly, overlapping ones are a coin flip" loading="lazy"><figcaption>The classifier reads descriptions, not code. Overlapping descriptions make routing a coin flip; a tiny model at temperature 0 keeps it cheap and reproducible.</figcaption><figcaption class="credit">Drawn for this volume.</figcaption></figure>
+<figure><img src="assets/img/custom/lab3-classifier-rules.svg" alt="Good versus overlapping agent descriptions: mutually exclusive routing rules route cleanly, overlapping ones are a coin flip" loading="lazy"><figcaption>The classifier reads descriptions, not code. Overlapping descriptions make routing a coin flip; a tiny model at temperature 0 keeps it cheap and reproducible.</figcaption><figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <figure><img src="assets/img/ste100/aip-squad-routing.svg" alt="Agent Squad routing: a classifier picks one specialist agent per request. Adding a specialty means registering one more agent" loading="lazy"><figcaption>One classifier routes each request. It picks one specialist agent. Adding a specialty means registering one more agent.</figcaption>
-<figcaption class="credit"><em>Drawn for this volume.</em></figcaption></figure><p>How to read this diagram</p><ol><li>Top: the request arrives.</li><li>Middle: the classifier reads the request and picks one specialist.</li><li>Bottom: the specialist answers. It has its own tools.</li></ol>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure><p>How to read this diagram</p><ol><li>Top: the request arrives.</li><li>Middle: the classifier reads the request and picks one specialist.</li><li>Bottom: the specialist answers. It has its own tools.</li></ol>
 <p class="note"><strong>Why this chapter comes next.</strong> Labs 1 and 2 each built one worker. Real systems need several specialists behind one entry point. This lab adds the classifier. The classifier routes each request to the correct specialist agent.</p>
 <p>Use one entry point. Use many specialist agents. A classifier reads each request. It routes the request to the correct specialist.</p>
 <p class="prereq"><strong>Prerequisites:</strong> Chapter 1 (the Strands agent with a custom tool). This lab registers the Strands agent as a specialist.</p>
@@ -1622,9 +1659,9 @@ print(response.metadata.agent_name)   # which specialist was picked
 <p>D is wrong. Combining specialists removes tool isolation. It makes the prompt a bottleneck. The scenario needs specialist routing. The exam rewards the orchestrator pattern more than the mega-prompt.</p>
 <p class="note"><strong>Next:</strong> Lab 4 puts the stable front door in front. This is API Gateway and Lambda as the Bedrock front end.</p>
 <h2 id="4-lab-lambda-as-bedrock-front-end">4. Lab: Lambda as Bedrock front end</h2>
-<figure><img src="assets/img/custom/lab4-trio.svg" alt="Lambda holds the routing logic, API Gateway holds the endpoint, AppConfig holds the model id; CloudFormation and hardcoded ids are the distractors" loading="lazy"><figcaption>Switch models without redeploys: Lambda routes, API Gateway fronts, AppConfig holds the model id. CloudFormation changes are deployments, so it fails the constraint.</figcaption><figcaption class="credit">Drawn for this volume.</figcaption></figure>
+<figure><img src="assets/img/custom/lab4-trio.svg" alt="Lambda holds the routing logic, API Gateway holds the endpoint, AppConfig holds the model id; CloudFormation and hardcoded ids are the distractors" loading="lazy"><figcaption>Switch models without redeploys: Lambda routes, API Gateway fronts, AppConfig holds the model id. CloudFormation changes are deployments, so it fails the constraint.</figcaption><figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <figure><img src="assets/img/ste100/aip-frontend-vs-direct.svg" alt="Lambda front end versus direct SDK call: direct is fastest, the front end adds auth, throttling, and model switching" loading="lazy"><figcaption>A direct SDK call is fastest. A Lambda front end adds auth, throttling, and model switching.</figcaption>
-<figcaption class="credit"><em>Drawn for this volume.</em></figcaption></figure><p>How to read this diagram</p><ol><li>Left path: direct call. The app calls Bedrock. Nothing is in between.</li><li>Right path: Lambda front end. API Gateway and Lambda sit in front.</li><li>Bottom: production needs the front end. Demos can call direct.</li></ol>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure><p>How to read this diagram</p><ol><li>Left path: direct call. The app calls Bedrock. Nothing is in between.</li><li>Right path: Lambda front end. API Gateway and Lambda sit in front.</li><li>Bottom: production needs the front end. Demos can call direct.</li></ol>
 <p class="note"><strong>Why this chapter comes next.</strong> Labs 1 to 3 ran on your laptop. Production needs a stable front door first. This lab puts API Gateway and Lambda in front of Bedrock calls. This is the serving path that every later lab uses.</p>
 <p>Put a stable HTTP front door in front of your model calls. Use API Gateway for the endpoint. Use Lambda for the logic.</p>
 <p class="prereq"><strong>Prerequisites:</strong> You need only basic AWS knowledge. This lab introduces Lambda, API Gateway, and AppConfig from the start.</p>
@@ -1717,10 +1754,10 @@ def lambda_handler(event, context):
 <p>E is wrong. A stack update is a deployment. This directly breaks the no-redeploy rule. This is the CloudFormation trap for runtime configuration.</p>
 <p class="note"><strong>Next:</strong> Lab 5 changes Lambda. It becomes the agent's hands. It uses the action-group contract.</p>
 <h2 id="5-lab-lambda-as-agent-action">5. Lab: Lambda as agent action</h2>
-<figure><img src="assets/img/custom/lab5-prepare-trap.svg" alt="Diagnostic flowchart: when the agent ignores a new action group, check PrepareAgent first, then the alias, then IAM and the schema" loading="lazy"><figcaption>The single most common agent bug: the DRAFT was never prepared, or the alias still points at the old version.</figcaption><figcaption class="credit">Drawn for this volume.</figcaption></figure>
+<figure><img src="assets/img/custom/lab5-prepare-trap.svg" alt="Diagnostic flowchart: when the agent ignores a new action group, check PrepareAgent first, then the alias, then IAM and the schema" loading="lazy"><figcaption>The single most common agent bug: the DRAFT was never prepared, or the alias still points at the old version.</figcaption><figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <p class="note"><strong>Why this chapter comes next.</strong> Lab 4 showed Lambda serving the client. Now change it. Lambda becomes the agent's hands. This is the exact request and response contract. Bedrock Agents use this contract to call your code.</p>
 <figure><img src="assets/img/ste100/aip-action-contract.svg" alt="Lambda action function contract: parameters arrive as a list of name-value dicts, the response echoes the request fields with the result" loading="lazy"><figcaption>The action contract is exact. Parameters arrive as name-value dicts. The response echoes the request fields with the result.</figcaption>
-<figcaption class="credit"><em>Drawn for this volume.</em></figcaption></figure><p>How to read this diagram</p><ol><li>Left: the request. It carries messageVersion, actionGroup, function, and parameters.</li><li>Right: the response. It echoes the same fields and adds the result in responseBody.</li><li>Bottom: a wrong field name means the action fails.</li></ol>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure><p>How to read this diagram</p><ol><li>Left: the request. It carries messageVersion, actionGroup, function, and parameters.</li><li>Right: the response. It echoes the same fields and adds the result in responseBody.</li><li>Bottom: a wrong field name means the action fails.</li></ol>
 <p>Give a Bedrock Agent real hands. The lab's weather function shows the exact event the agent sends. It also shows the exact response the agent expects.</p>
 <p class="prereq"><strong>Prerequisites:</strong> Chapter 4 (Lambda handlers and the proxy response shape). Action-group Lambdas reuse that shape.</p>
 <h3 id="what-this-lab-teaches">What this lab teaches</h3>
@@ -1830,12 +1867,12 @@ def lambda_handler(event, context):
 <h2 id="6-lab-agentcore-runtime-deployment">6. Lab: AgentCore Runtime deployment</h2>
 <p class="note"><strong>Why this chapter comes next.</strong> Your agent works on a local computer. The agent has hands. This lab ships the agent. Containerize the agent. Satisfy the runtime contract.</p>
 <figure><img src="assets/img/ste100/aip-agentcore-routes.svg" alt="AgentCore Runtime container contract: POST invocations runs the agent, GET ping is the health check. The platform supplies sessions, memory, identity, and traces" loading="lazy"><figcaption>The container contract is fixed. POST /invocations runs the agent. GET /ping is the health check. The platform supplies sessions, memory, identity, and traces.</figcaption>
-<figcaption class="credit"><em>Drawn for this volume.</em></figcaption></figure><p>How to read this diagram</p><ol><li>POST /invocations: the platform sends the request here.</li><li>GET /ping: the platform checks this for health.</li><li>Sides: the platform adds sessions, memory, identity, and traces.</li></ol><p class="note"> Let AgentCore host the agent with sessions, memory, and identity.</p>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure><p>How to read this diagram</p><ol><li>POST /invocations: the platform sends the request here.</li><li>GET /ping: the platform checks this for health.</li><li>Sides: the platform adds sessions, memory, identity, and traces.</li></ol><p class="note"> Let AgentCore host the agent with sessions, memory, and identity.</p>
 <p>Take the laptop agent. Ship the agent. Containerize the agent. Satisfy the runtime contract. Let AgentCore host the agent with sessions, tools, memory, and identity.</p>
 <p class="prereq"><strong>Prerequisites:</strong> Chapter 1 has the Strands agent. You containerize this agent. Chapter 5 introduced the Bedrock Agents. You migrate from these agents.</p>
 <h3 id="what-this-lab-teaches">What this lab teaches</h3>
 <p>Amazon Bedrock AgentCore is the managed platform. It runs agents in production. It has five parts. You must name these parts. <strong>Runtime</strong> is serverless hosting for your agent container. <strong>Gateway</strong> changes your APIs and Lambda functions into MCP-compatible tools.</p><p> MCP is the Model Context Protocol. This is the standard interface. Agents use this interface to call tools. <strong>Memory</strong> is managed short-term and long-term agent context. <strong>Identity</strong> is agent authentication. It gives access to third-party applications.</p><p> <strong>Observability</strong> is tracing and monitoring with OpenTelemetry. The lab focuses on Runtime. It packages the Strands agent from chapter 1. It makes a container that AgentCore can host.</p>
-<figure><img src="assets/img/mermaid/99-labs-agentcore.svg" alt="AgentCore five components: Runtime hosts your container; Gateway, Memory, Identity, and Observability are platform services" loading="lazy"><figcaption>AgentCore has five parts: Runtime hosts your container; Gateway, Memory, Identity, and Observability are platform services the agent calls.</figcaption><figcaption class="credit">Drawn for this volume.</figcaption></figure>
+<figure><img src="assets/img/mermaid/99-labs-agentcore.svg" alt="AgentCore five components: Runtime hosts your container; Gateway, Memory, Identity, and Observability are platform services" loading="lazy"><figcaption>AgentCore has five parts: Runtime hosts your container; Gateway, Memory, Identity, and Observability are platform services the agent calls.</figcaption><figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <p>The Runtime speaks to your container. It uses plain HTTP. It has a fixed contract. Listen on port 8080. Answer <code>POST /invocations</code> with your agent logic. Answer <code>GET /ping</code> as a health check.</p><p> The <code>bedrock-agentcore</code> Python SDK provides <code>BedrockAgentCoreApp</code>. This is a small wrapper. It implements this contract for you. You mark one function with <code>@app.entrypoint</code>. It receives the JSON payload from each <code>/invocations</code> call.</p>
 <h3 id="why-it-exists-when-you-would-use-it-in-production">Why it exists: when you would use it in production</h3>
 <p>A laptop agent has no sessions. It has no scaling. It has no safe credential handling. It has no audit trail. AgentCore gives you managed sessions. The platform keeps a session alive across calls.</p><p> It can keep the session warm for background work. It gives a standard way to show tools through Gateway. This is instead of hand-wiring each integration. It gives memory that lives longer than any single container. The exam cares about the migration story. Migrate from Bedrock Agents (chapter 5) to AgentCore.</p><p> Do this when you need framework freedom. This includes Strands, LangGraph, and CrewAI. Do this without giving up managed hosting.</p>
@@ -1930,9 +1967,9 @@ if __name__ == &quot;__main__&quot;:
 <p>D is wrong. The premise is false. Runtime hosts any-framework agents. This is its purpose. The Bedrock-Agents-to-AgentCore migration path exists for teams. These teams started managed.</p><p> They need framework freedom. The reverse path does not exist.</p>
 <p class="note"><strong>Next:</strong> Lab 7 covers the infrastructure. This includes KMS, X-Ray, SQS, and the foundations.</p>
 <h2 id="7-supporting-labs-kms-x-ray-sqs-and-foundations">7. Supporting labs: KMS, X-Ray, SQS, and foundations</h2>
-<figure><img src="assets/img/custom/lab7-xray-trace.svg" alt="X-Ray trace of an 8-second agent run broken into segments: the model call dominates, and CloudTrail is audit logging, not performance tracing" loading="lazy"><figcaption>Where did the 8 seconds go: X-Ray traces latency across calls, Logs Insights holds prompt forensics, CloudTrail is audit logging, not performance tracing.</figcaption><figcaption class="credit">Drawn for this volume.</figcaption></figure>
+<figure><img src="assets/img/custom/lab7-xray-trace.svg" alt="X-Ray trace of an 8-second agent run broken into segments: the model call dominates, and CloudTrail is audit logging, not performance tracing" loading="lazy"><figcaption>Where did the 8 seconds go: X-Ray traces latency across calls, Logs Insights holds prompt forensics, CloudTrail is audit logging, not performance tracing.</figcaption><figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <figure><img src="assets/img/ste100/aip-envelope-encryption.svg" alt="KMS envelope encryption: a data key encrypts the data locally, the KMS key encrypts the data key, and every KMS use is logged" loading="lazy"><figcaption>Envelope encryption uses two keys. A data key encrypts the data locally. The KMS key encrypts the data key. Every KMS use is logged.</figcaption>
-<figcaption class="credit"><em>Drawn for this volume.</em></figcaption></figure><p>How to read this diagram</p><ol><li>Step one: KMS makes a data key.</li><li>Step two: the data key encrypts the data. KMS encrypts the data key.</li><li>Step three: CloudTrail logs every KMS use.</li></ol>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure><p>How to read this diagram</p><ol><li>Step one: KMS makes a data key.</li><li>Step two: the data key encrypts the data. KMS encrypts the data key.</li><li>Step three: CloudTrail logs every KMS use.</li></ol>
 <p class="note"><strong>Why this chapter comes next.</strong> The agents are built and deployed. This chapter covers the infrastructure under the agents. This includes encryption, tracing, messaging, and the building blocks. Every GenAI architecture uses these building blocks.</p>
 <p>The remaining lab files map to their exam roles. These roles are encryption, tracing, messaging, and the building blocks under every GenAI architecture.</p>
 <p class="prereq"><strong>Prerequisites:</strong> There are no prerequisites. These are the service building blocks. Other chapters use these building blocks.</p>
@@ -1997,9 +2034,9 @@ if __name__ == &quot;__main__&quot;:
 <p>E is wrong. Raw unstructured text breaks tables across chunks. Structure extraction before chunking keeps retrieval quality high.</p>
 <p class="note"><strong>Next:</strong> Lab 8 codifies the stack as CDK. This changes click-ops to repeatable infrastructure.</p>
 <h2 id="8-lab-cdk-for-genai-infrastructure">8. Lab: CDK for GenAI infrastructure</h2>
-<figure><img src="assets/img/custom/lab8-construct-tree.svg" alt="CDK construct tree: App to Stack to Lambda, DynamoDB, and API Gateway constructs, synthesized to a CloudFormation template and reviewed with cdk diff" loading="lazy"><figcaption>Code becomes a tree, the tree becomes a template. Review cdk diff every time: a small change can replace a database.</figcaption><figcaption class="credit">Drawn for this volume.</figcaption></figure>
+<figure><img src="assets/img/custom/lab8-construct-tree.svg" alt="CDK construct tree: App to Stack to Lambda, DynamoDB, and API Gateway constructs, synthesized to a CloudFormation template and reviewed with cdk diff" loading="lazy"><figcaption>Code becomes a tree, the tree becomes a template. Review cdk diff every time: a small change can replace a database.</figcaption><figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <figure><img src="assets/img/ste100/aip-cdk-diff.svg" alt="CDK deployment flow: write constructs, synth to a CloudFormation template, review the diff, then deploy" loading="lazy"><figcaption>CDK turns code into infrastructure. Write constructs. Synth to a CloudFormation template. Review the diff. Then deploy.</figcaption>
-<figcaption class="credit"><em>Drawn for this volume.</em></figcaption></figure><p>How to read this diagram</p><ol><li>Step one: write constructs in code.</li><li>Step two: cdk synth builds the CloudFormation template.</li><li>Step three: cdk diff shows the change. Review it before deploy.</li></ol>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure><p>How to read this diagram</p><ol><li>Step one: write constructs in code.</li><li>Step two: cdk synth builds the CloudFormation template.</li><li>Step three: cdk diff shows the change. Review it before deploy.</li></ol>
 <p class="note"><strong>Why this chapter comes next.</strong> Lab 4's serving path was built by hand. This lab codifies the full GenAI stack in CDK. This makes it repeatable, reviewable, and auditable.</p>
 <p>Define the whole GenAI stack in a real programming language. Let it compile to CloudFormation.</p>
 <p class="prereq"><strong>Prerequisites:</strong> Read Chapter 4. This chapter shows the serving path. Read Chapter 7. This chapter shows the services.</p>
@@ -2087,8 +2124,8 @@ fnRole.addToPolicy(new iam.PolicyStatement({
 <h2 id="9-lab-cicd-with-eval-gates">9. Lab: CI/CD with eval gates</h2>
 <p class="note"><strong>Why this chapter is next.</strong> The stack is now code. The last gap is change safety. This lab reviews prompts and models. It evaluates them. It uses canary rollout before they go to production.</p>
 <figure><img src="assets/img/ste100/aip-evalgate-decision.svg" alt="CI CD eval gate: the candidate is scored against the golden dataset. Above the threshold it deploys, below it the build fails" loading="lazy"><figcaption>The gate decides every change. The candidate is scored against the golden dataset. Above the threshold it deploys. Below it the build fails.</figcaption>
-<figcaption class="credit"><em>Drawn for this volume.</em></figcaption></figure><p>How to read this diagram</p><ol><li>Left: the candidate prompt or model enters the gate.</li><li>Middle: it is scored on the golden dataset.</li><li>Right: above the threshold it deploys. Below it the build fails.</li></ol>
-<figure><img src="assets/img/internet/img-33.webp" alt="Prompt CI/CD: prompts live in a source file or registry, pass code review and evaluation, then roll out through staging and canary traffic to production with version tags." loading="lazy"><figcaption>Prompt CI/CD: prompts live in a source file or registry, pass code review and evaluation, then roll out through staging and canary traffic to production with version tags.</figcaption><figcaption class="credit">Source: Third-party MLOps guide, via image search Sept 2026.</figcaption></figure>
+<figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure><p>How to read this diagram</p><ol><li>Left: the candidate prompt or model enters the gate.</li><li>Middle: it is scored on the golden dataset.</li><li>Right: above the threshold it deploys. Below it the build fails.</li></ol>
+<figure><img src="assets/img/internet/img-33.webp" alt="Prompt CI/CD: prompts live in a source file or registry, pass code review and evaluation, then roll out through staging and canary traffic to production with version tags." loading="lazy"><figcaption>Prompt CI/CD: prompts live in a source file or registry, pass code review and evaluation, then roll out through staging and canary traffic to production with version tags.</figcaption><figcaption class="credit">Source: Third-party MLOps guide, via image search Sept 2026. Reused in the AWS AIP-C01 Study Guide.</figcaption></figure>
 <p>Ship prompt and model changes like code. Use pipeline stages, build specifications, and an evaluation gate. This gate blocks bad releases.</p>
 <p class="prereq"><strong>Prerequisites:</strong> Read Chapter 2 and Chapter 5. These chapters show the flows and agents. The pipeline shifts their aliases. Read Chapter 7. This chapter shows RAG and the evaluation vocabulary.</p>
 <h3 id="what-this-lab-teaches">What this lab teaches you</h3>
@@ -2786,6 +2823,73 @@ window.DS_MANIFEST = [
       }
     }
   });
+  /* ---------- 11. Scroll reveal + figure parallax (progressive enhancement) ----------
+     .reveal is added here (never in markup), so content is fully visible with
+     JS disabled. Respects prefers-reduced-motion. Parallax drift is a small
+     transform on plain figure images only; it never changes layout. ---------- */
+
+  (function () {
+    var reduceMotion = window.matchMedia &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    /* Scroll reveal: gentle rise-in on content blocks as they enter the viewport. */
+    var revealTargets = inner.querySelectorAll(
+      "figure, .pq, .exam-ask, .takeaway, .panel, .diagram-walkthrough, " +
+      ".table-wrap, .ladder, .cc-qa"
+    );
+    if (!reduceMotion && "IntersectionObserver" in window) {
+      var revealEls = Array.prototype.slice.call(revealTargets);
+      revealEls.forEach(function (el) { el.classList.add("reveal"); });
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (en) {
+          if (en.isIntersecting) {
+            en.target.classList.add("revealed");
+            io.unobserve(en.target);
+          }
+        });
+      }, { rootMargin: "0px 0px -8% 0px", threshold: 0.05 });
+      revealEls.forEach(function (el) { io.observe(el); });
+    }
+    /* reduceMotion or no IntersectionObserver: no .reveal class is added,
+       so every block stays fully visible. */
+
+    /* Figure parallax: gentle --px drift on plain figure images only
+       (.fig-light cards are excluded so the white plate never shows an edge). */
+    if (!reduceMotion) {
+      var pxFigs = [];
+      Array.prototype.forEach.call(
+        inner.querySelectorAll("figure:not(.fig-light)"),
+        function (fig) {
+          if (fig.querySelector("img")) {
+            fig.classList.add("ds-px");
+            pxFigs.push(fig);
+          }
+        }
+      );
+      var pxTicking = false;
+      function pxUpdate() {
+        var vh = window.innerHeight || 800;
+        pxFigs.forEach(function (fig) {
+          var img = fig.querySelector("img");
+          if (!img) return;
+          var r = img.getBoundingClientRect();
+          if (r.bottom < -160 || r.top > vh + 160) return; /* off-screen: skip */
+          var center = (r.top + r.height / 2) - vh / 2;
+          var drift = center * -0.015;
+          if (drift > 8) drift = 8;
+          if (drift < -8) drift = -8;
+          img.style.setProperty("--px", drift.toFixed(1) + "px");
+        });
+        pxTicking = false;
+      }
+      function pxRequest() {
+        if (!pxTicking) { pxTicking = true; window.requestAnimationFrame(pxUpdate); }
+      }
+      window.addEventListener("scroll", pxRequest, { passive: true });
+      window.addEventListener("resize", pxRequest);
+      pxUpdate();
+    }
+  })();
 })();
 
 </script>
