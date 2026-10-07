@@ -1347,8 +1347,8 @@ html.xp-js .xp-reveal.xp-in {
 <h1 id="domain-2-implementation-and-integration">Domain 2: Implementation and Integration</h1>
 <p>Domain 1 was design. Domain 2 is the build. This includes agents, APIs, and the plumbing. This plumbing turns a model into a product.</p>
 <h2 id="how-to-use-this-volume">How to use this volume</h2>
-<p>This is zero to one. Every chapter assumes no prior GenAI knowledge. Terms are defined when first used. Acronyms are expanded when first used.</p>
-<p>This is flowing exposition. Each topic reads as one clean pass. The core idea is first. Then the mechanism.</p>
+<p>This is zero to one. Every chapter assumes no prior GenAI knowledge. The guide defines terms when first used. The guide expands acronyms when first used.</p>
+<p>This exposition flows. Each topic reads as one clean pass. The core idea is first. Then the mechanism.</p>
 <p>Then the numbers. Then the traps AWS sets. Diagrams are at each step with a read-through. Trap callouts have an amber tag.</p>
 <p>This is instructor style. For every service: Here is the service. Here is how AWS will ask. Here is the trap. Trap callouts have an amber tag.</p>
 <p>This is exam style. AWS asks scenario questions. The questions have 3 to 6 sentences and hard constraints. The correct answer satisfies every constraint. Each distractor violates exactly one constraint. Train yourself to map each constraint to one architectural decision.</p>
@@ -1373,7 +1373,7 @@ html.xp-js .xp-reveal.xp-in {
 <p>A travel assistant defines 4 tools with <code>toolConfig</code>. The tools are search flights, search hotels, check weather, and convert currency. A user asks for a weekend plan. Turn 1: The model returns 2 <code>toolUse</code> blocks in one response.</p>
 <p>The blocks are for flights and hotels. The app runs both in parallel. This is 2 Lambda invocations. Each invocation takes 1.2 seconds.</p>
 <p>Turn 2: The app sends both <code>toolResult</code> blocks. The model returns a weather <code>toolUse</code>. Turn 3: The model returns the final itinerary text. This is a total of 3 Converse calls. This is a total of 3 tool executions.</p>
-<p>This is one user-visible answer. The token cost roughly triples. This is because every turn resends the conversation history and tool schemas. This is compared to a no-tool call.</p>
+<p>This is one user-visible answer. The token cost roughly triples. This is because every turn resends the conversation history and tool schemas. The guide compares this to a no-tool call.</p>
 <div class="exam-ask"><p>Trap</p>
 <p>Converse cannot do embeddings.</p>
 <p>The exam asks, "generate embeddings for a vector store." The exam offers Converse as a distractor. Embeddings need <code>InvokeModel</code> with an embedding model. Examples are Titan Text Embeddings and Cohere Embed. Converse is only for text generation. Memorize this as a one-line rule.</p></div>
@@ -1381,7 +1381,7 @@ html.xp-js .xp-reveal.xp-in {
 <div class="exam-ask"><p>Common misunderstanding</p>
 <p>The model never executes tools.</p>
 <p>Beginners think the model calls the Lambda. This is not true. The model outputs a structured request (<code>toolUse</code>). Your application runs the code.</p>
-<p>Your application returns the result (<code>toolResult</code>). If a scenario says "the model directly updated the database," the architecture is wrong. The application layer is missing.</p></div>
+<p>Your application returns the result (<code>toolResult</code>). If a scenario says "the model directly updated the database," the architecture is wrong. The application layer is absent.</p></div>
 
 <figure><img src="assets/img/mermaid/22-converse-tool-use-seq.svg" alt="Converse API tool-use loop sequence: app sends messages plus toolConfig, API returns toolUse block, app runs Lambda tool, app sends toolResult back, API returns final text" loading="lazy"><figcaption>This is the Converse API tool-use loop sequence: The app sends messages and toolConfig. The API returns a toolUse block. The app runs the Lambda tool. The app sends the toolResult back. The API returns the final text.[PROCEDURAL] Step 1: Your app sends the conversation. Your app sends <code>toolConfig</code> that describes available tools.</li>
 <li>The API returns a <code>toolUse</code> block. The model does not run anything. The model only asks.</li>
@@ -1451,7 +1451,7 @@ html.xp-js .xp-reveal.xp-in {
 <ol>
 <li>Read the request from top to bottom. modelId is first. Then system. Then the messages array carries the conversation.</li>
 <li>Note the document and image content blocks. They are inside a user message. Attachments travel in the conversation itself.</li>
-<li>The assistant and user toolUse and toolResult entries show the multi-turn tool loop. It is encoded as ordinary messages.</li>
+<li>The assistant and user toolUse and toolResult entries show the multi-turn tool loop. The system encodes it as ordinary messages.</li>
 <li>The bottom block is the configuration surface. inferenceConfig is for sampling. toolConfig is for tools. guardrailConfig is for safety. cachePoint is for cost.</li>
 <li>The decision rule at the very bottom is the exam shortcut. Multi-provider tool use means Converse. Embeddings mean InvokeModel.</li>
 </ol>
@@ -1473,7 +1473,7 @@ html.xp-js .xp-reveal.xp-in {
 <li>additionalModelRequestFields is the escape hatch for provider-only parameters Converse does not natively support.</li>
 <li>cachePoint marks where prompt caching starts. outputConfig requests structured output as a JSON schema.</li>
 <li>Swap the model ID and the code stays the same. That is the whole point of the unified API.</li>
-<li>Limit in red: Converse cannot do embeddings. Embedding models are called through InvokeModel.</li>
+<li>Limit in red: Converse cannot do embeddings. You call embedding models through InvokeModel.</li>
 </ol>
 
 <h2 id="2-invokemodel-provider-specifics-and-prompt-caching">2. InvokeModel, provider specifics, and prompt caching</h2>
@@ -1482,30 +1482,30 @@ html.xp-js .xp-reveal.xp-in {
 <figure><img src="assets/img/mermaid/106-invokemodel-caching.svg" alt="InvokeModel versus Converse versus prompt caching: new code uses the Converse API, legacy uses InvokeModel, and repeated static prefixes get prompt caching" loading="lazy"><figcaption>InvokeModel versus Converse versus prompt caching: new code uses the Converse API. Legacy code uses InvokeModel. Repeated static prefixes get prompt caching.It uses provider-specific bodies. It uses embeddings. It gives access to every exotic parameter. Prompt caching is the cost lever for repeated prefixes.</p>
 <p><strong>InvokeModel</strong> (and <code>InvokeModelWithResponseStream</code>) calls a model. It uses the provider's native request body. Claude needs <code>anthropic_version: "bedrock-2023-05-31"</code> and <code>max_tokens</code>. Llama, Titan, Mistral, and Cohere each have their own shapes.</p>
 <p>A wrong body returns <code>ValidationException</code> or a malformed-input error. This is the only Bedrock API that can generate embeddings. These are vectors for search. It uses embedding models like Titan Text Embeddings v2 or Cohere Embed.</p>
-<p>An <strong>embedding</strong> is a list of numbers. It captures a text's meaning. Texts with similar meaning get similar numbers. So, searching by meaning is searching for nearby numbers.</p>
-<figure><img src="assets/img/mermaid/15-vector-space.svg" alt="Vector space: an embedding model turns texts into lists of numbers; texts with similar meaning land close together, so 'How do I reset my password?' and 'Change my password please' cluster under account help while 'What is the refund policy?' sits apart under billing." loading="lazy"><figcaption>Vector space: an embedding model changes text into numbers. Similar meanings are close together. Two password phrasings are grouped under account help. The refund question is separate under billing. This is why meaning search is better than keyword search.</figcaption><figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
+<p>An <strong>embedding</strong> is a list of numbers. It captures a text's meaning. Texts with similar meaning get similar numbers. So, searching by meaning means searching for nearby numbers.</p>
+<figure><img src="assets/img/mermaid/15-vector-space.svg" alt="Vector space: an embedding model turns texts into lists of numbers; texts with similar meaning land close together, so 'How do I reset my password?' and 'Change my password please' cluster under account help while 'What is the refund policy?' sits apart under billing." loading="lazy"><figcaption>Vector space: an embedding model changes text into numbers. Similar meanings are close together. The diagram groups two password phrasings under account help. The refund question is separate under billing. This is why meaning search is better than keyword search.</figcaption> <figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <p>How to read this diagram</p>
 <ol>
 <li>Read the three text boxes on the left. There are two password questions phrased differently. There is one refund question.</li>
 <li>Follow each into the embedding model. Text becomes a list of numbers. This is 1,024 numbers for Titan Embed.</li>
 <li>In vector space, the two password texts are close together. The refund text is far away. Closeness means similar meaning.</li>
-<li>The main point is the mechanism behind retrieval. A question's numbers are compared against every chunk's numbers. The nearest chunks win.</li>
+<li>The main point is the mechanism behind retrieval. The system compares a question's numbers against every chunk's numbers. The nearest chunks win.</li>
 </ol>
 <p class="ch-bridge-inline" style="color:var(--muted);margin:1.1rem 0"><em>Embeddings are the first job InvokeModel does that Converse cannot. The second is about cost: when the same long prefix repeats on every call, you should not pay full price for it twice.</em></p>
 
-<p><strong>Prompt caching</strong> reuses the computation for a repeated prompt prefix. You mark a <code>cachePoint</code> (Converse) or <code>cache_control</code> (InvokeModel). On the next call with the same prefix, Bedrock does not recompute it. It bills cached input tokens at a discount. This is supported on Claude 3.5 and newer. It is also supported on Nova models.</p>
+<p><strong>Prompt caching</strong> reuses the computation for a repeated prompt prefix. You mark a <code>cachePoint</code> (Converse) or <code>cache_control</code> (InvokeModel). On the next call with the same prefix, Bedrock does not recompute it. It bills cached input tokens at a discount. Claude 3.5 and newer support this. Nova models also support it.</p>
 <p>Minimum token thresholds apply per model. These are in the order of thousands of tokens. The cache TTL (time to live) is 5 minutes by default. A 1-hour TTL is available on supported models. A cache write costs extra one time. Reads are cheap.</p>
 <p>These are two different problems. InvokeModel exists because providers innovate faster than any unified API. New sampling parameters, new modalities, and embeddings all appear here first. Prompt caching exists because real applications resend the same large system prompt. They resend few-shot examples or documents on every call. Recomputing a 20,000-token prefix on each of 10,000 daily calls is pure waste.</p>
-<p><strong>InvokeModel body</strong>: You serialize the provider's JSON yourself. The exam's classic bug is sending a Claude body to a Llama model. Or forgetting <code>anthropic_version</code>. The error is always a validation error. It is never a model-quality problem.</p>
+<p><strong>InvokeModel body</strong>: You serialize the provider's JSON yourself. The exam's classic bug: sending a Claude body to a Llama model. Or forgetting <code>anthropic_version</code>. The error is always a validation error. It is never a model-quality problem.</p>
 <p><strong>Cache matching</strong>: The prefix must match exactly. It must match token for token. This is from the start of the prompt up to the cache point. One changed character in the system prompt makes the cache invalid.</p>
 <p>Put volatile content after the cache point. This includes user questions and timestamps. Put stable content before the cache point. This includes instructions, examples, and documents.</p>
 <p><strong>Cache economics</strong>: The first call writes the cache. This is a write surcharge. Subsequent calls with the same prefix read it within the TTL. This costs about 10% of the input price.</p>
 <p>This is an illustrative discount. The exact pricing changes. You need enough repeat calls within the TTL window to break even.</p>
 <p><strong>TTL behavior</strong>: Each cache hit extends the 5-minute TTL. Steady traffic keeps the cache warm indefinitely. Spiky traffic with gaps over 5 minutes pays a rewrite on every spike.</p>
-<p>A support bot sends a 12,000-token system prompt on every call. This includes policy documents and 20 few-shot examples. It also sends a 200-token user question. Every call is billed in the same way.</p>
+<p>A support bot sends a 12,000-token system prompt on every call. This includes policy documents and 20 few-shot examples. It also sends a 200-token user question. The service bills every call in the same way.</p>
 <div class="eq" style="text-align:center;margin:1.25rem 0;padding:.8rem 1rem;background:var(--surface);border:1px solid var(--border);border-radius:8px;font-size:1.05rem"><i>cost per call</i> = <i>input tokens</i> × <i>price per input token</i></div>
-<p class="eq-where" style="font-size:.92rem;margin:-.6rem 0 1.25rem"><i>input tokens</i> is the number of tokens sent on one call. <i>price per input token</i> is the cost in dollars per token at the published price.</p>
-<p><strong>Worked example (illustrative).</strong> Without caching, the cost is $3 per million input tokens. This is $0.000003 each. The cost is 12,200 × $0.000003 = $0.0366 per call. With caching, the prefix is cached. This is 12,000 cached tokens at 10% price ($0.0036). Plus 200 fresh tokens ($0.0006).</p>
+<p class="eq-where" style="font-size:.92rem;margin:-.6rem 0 1.25rem"><i>Input tokens</i> number of tokens sent on one call. <i>Price per input token</i> cost in dollars per token at the published price.</p>
+<p><strong>Worked example (illustrative).</strong> Without caching, the cost is $3 per million input tokens. This is $0.000003 each. The cost is 12,200 × $0.000003 = $0.0366 per call. With caching, the system caches the prefix. This is 12,000 cached tokens at 10% price ($0.0036).</p><p>Plus 200 fresh tokens ($0.0006).</p>
 <p>This is about $0.0042 per call. This is about an 8x saving. At 50,000 calls per day, that is $1,830 versus $210 per day. The catch: if the policy documents change hourly, and traffic gaps are more than the TTL, rewrites remove the savings. A stable prefix plus steady traffic is the best case for caching.</p>
 <div class="exam-ask"><p>Trap</p>
 <p>Prompt caching versus Provisioned Throughput.</p>
@@ -1547,8 +1547,8 @@ html.xp-js .xp-reveal.xp-in {
 <p>Cache-point placement rules and the InvokeModel versus Converse decision table.</p>
 <p>How to read this diagram</p>
 <ol>
-<li>The top block: without caching, the 12,000-token system prompt is billed at full price on every call. Multiply by the call volume. This shows the waste.</li>
-<li>The middle block: the cache point splits the prompt. Everything before the cache point is cached. It is billed at the discount rate on repeats.</li>
+<li>The top block: without caching, the service bills the 12,000-token system prompt at full price on every call. Multiply by the call volume. This shows the waste.</li>
+<li>The middle block: the cache point splits the prompt. The system caches everything before the cache point. The service bills it at the discount rate on repeats.</li>
 <li>Rules 1 and 2 are engineering rules. They need an exact match. They need stable content before the point.</li>
 <li>Rules 3 and 4 are about economics. They cover TTL behavior. They cover the write surcharge that needs repeat volume.</li>
 <li>The decision table below is the exam shortcut. Embeddings always mean InvokeModel. Multi-provider tool use always means Converse.</li>
@@ -1557,9 +1557,9 @@ html.xp-js .xp-reveal.xp-in {
 <p>This is a repeated-input cost problem. A smaller model changes quality. Scenario: "Claude-specific sampling parameter is not in Converse." Correct: Use InvokeModel with the native body.</p></div>
 
 <span id="10-long-running-and-non-interactive-inference-async-and-batch"></span>
-<p class="ch-next" style="border-top:1px solid var(--border);padding-top:1rem;margin-top:1.75rem"><strong>Next:</strong> Chapter 3, Asynchronous and batch inference. Synchronous calls are handled. Now the work that nobody waits for.</p>
+<p class="ch-next" style="border-top:1px solid var(--border);padding-top:1rem;margin-top:1.75rem"><strong>Next:</strong> Chapter 3, Asynchronous and batch inference. The system handles synchronous calls. Now the work that nobody waits for.</p>
 
-<figure><img src="assets/img/ste100/aip-prompt-cache-hit.svg" alt="Prompt caching: a cache hit skips the repeated static prefix" loading="lazy"><figcaption>Put the long unchanging text first and mark the boundary with cachePoint. Later calls with the same prefix reuse the cached processing. The exam verb is repeated prefix. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
+<figure><img src="assets/img/ste100/aip-prompt-cache-hit.svg" alt="Prompt caching: a cache hit skips the repeated static prefix" loading="lazy"><figcaption>Put the long unchanging text first and mark the boundary with cachePoint. Later calls with the same prefix reuse the cached processing. The exam verb: repeated prefix. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <h4 id="how-to-read-aip-cache">How to read this diagram</h4>
 <ol>
 <li>The green box is a cache hit. Same static prefix plus a cachePoint means Bedrock skips recomputation. Lower cost and lower latency.</li>
@@ -1576,9 +1576,9 @@ html.xp-js .xp-reveal.xp-in {
 <p class="ch-bridge" style="border-left:3px solid var(--accent);padding:.55rem 1rem;background:var(--surface);border-radius:0 8px 8px 0;margin:1.1rem 0">This chapter covers asynchronous invocation and batch inference. These use the same models. They use a different contract.</p>
 
 <figure><img src="assets/img/mermaid/03-sync-async-decision.svg" alt="Sync vs async decision: interactive requests use synchronous InvokeModel/Converse (streaming for long responses); latency-tolerant work uses batch inference (~50% cheaper) or async invocation (S3 in, S3 out)." loading="lazy"><figcaption>Make a decision between synchronous and asynchronous. Interactive requests use synchronous InvokeModel/Converse. Use streaming for long responses. Latency-tolerant work uses batch inference.</figcaption>
-<figcaption>This is about 50% cheaper. Or use asynchronous invocation. This uses S3 for input and S3 for output.</figcaption><figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure><p>Not every model call needs an answer now. Asynchronous invocation and batch inference trade latency for cost and scale.</p>
+<figcaption>This is about 50% cheaper. Or use asynchronous invocation. This uses S3 for input and S3 for output.</figcaption> <figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure><p>Not every model call needs an answer now. Asynchronous invocation and batch inference trade latency for cost and scale.</p>
 <p><strong>Asynchronous invocation</strong>: You submit a request. You get a job ID. The model processes the request in the background. You poll for completion. Or you get a notification. Use this for single requests that take minutes.</p>
-<p>No user waits for these requests. <strong>Batch inference</strong>: You put many prompts in S3. Use JSONL. Put one request per line. Submit one batch job. Bedrock processes them over hours. It writes the results to S3.</p>
+<p>No user waits for these requests. <strong>Batch inference</strong>: You put many prompts in S3. Use JSONL. Put one request per line. Submit one batch job. Bedrock processes them over hours.</p><p>It writes the results to S3.</p>
 <p>This is about 50% cheaper than on-demand. Use this for large non-interactive workloads. Examples are nightly summarization, bulk classification, and evaluation datasets. Compare this with <strong>real-time inference</strong> (Converse, InvokeModel).</p>
 <p>These take milliseconds to seconds. They cost full price. Use them for interactive tasks.</p>
 <p>Interactive capacity is expensive. It must be ready instantly. If your workload can wait hours, do not pay for instant capacity. Batch jobs run on spare capacity.</p>
@@ -1597,11 +1597,11 @@ html.xp-js .xp-reveal.xp-in {
 <p>Input file size has a cap. The maximum number of records per job has a cap. Not every model supports batch processing. Check the documentation for each model at build time.</p>
 <p>A media company summarizes 200,000 articles per night. Each article has an average of 800 input tokens. Each article has an average of 150 output tokens. The cost per night follows one formula.</p>
 <div class="eq" style="text-align:center;margin:1.25rem 0;padding:.8rem 1rem;background:var(--surface);border:1px solid var(--border);border-radius:8px;font-size:1.05rem"><i>cost per night</i> = <i>articles</i> × (<i>input tokens per article</i> × <i>input price</i> + <i>output tokens per article</i> × <i>output price</i>)</div>
-<p class="eq-where" style="font-size:.92rem;margin:-.6rem 0 1.25rem"><i>articles</i> is the number of records processed per night. <i>input/output tokens per article</i> is the average number of tokens per record. <i>input/output price</i> is the cost in dollars per token.</p>
-<p>The cost is <strong>Worked example (illustrative, on-demand pricing).</strong> 200,000 × (800 × $0.000003 + 150 × $0.000015) = 200,000 × ($0.0024 + $0.00225) = $930 per night. Batch processing costs about 50% less. This is about $465 per night. This saves about $170,000 per year.</p>
+<p class="eq-where" style="font-size:.92rem;margin:-.6rem 0 1.25rem"><i>Articles</i> number of records processed per night. <i>Input/output tokens per article</i> average number of tokens per record. <i>Input/output price</i> cost in dollars per token.</p>
+<p>The cost follows this <strong>worked example (illustrative, on-demand pricing)</strong>: 200,000 × (800 × $0.000003 + 150 × $0.000015) = 200,000 × ($0.0024 + $0.00225) = $930 per night. Batch processing costs about 50% less. This is about $465 per night. This saves about $170,000 per year.</p>
 <p>Batch processing is correct because summaries are necessary by 6 AM. Instant summaries are not necessary. If editors need summaries in less than 10 seconds, batch processing is not correct. This is true even with the cost savings.</p>
 <p>Walk through the code below. The code submits a batch inference job with boto3. It pairs with the sync/async decision diagram above. Read it in three steps.</p>
-<p>Build the control-plane client. Batch jobs are managed resources. So, they live on "bedrock." They do not live on "bedrock-runtime." Call <code>create_model_invocation_job</code> with the model ARN, the S3 input URI, and the S3 output URI. Then, poll the job status until it completes.</p>
+<p>Build the control-plane client. AWS manages batch jobs as resources. So, they live on "bedrock." They do not live on "bedrock-runtime." Call <code>create_model_invocation_job</code> with the model ARN, the S3 input URI, and the S3 output URI. Then, poll the job status until it completes.</p>
 <pre><code>import boto3, time
 
 # WHAT: the Bedrock CONTROL-PLANE client. Batch jobs are managed resources
@@ -1644,12 +1644,12 @@ print(&quot;batch job finished with status:&quot;, status)
 <p>Batch is many prompts from S3. Async is one slow prompt that nobody waits on. Streaming is tokens to a waiting user.</p>
 <div class="exam-ask"><p>Trap</p>
 <p>Batch is not a latency tool.</p>
-<p>The exam offers batch inference for "sub-3-second responses" as a distractor. Batch latency is measured in hours. This is the decision rule. Interactive and fast means real-time.</p>
+<p>The exam offers batch inference for "sub-3-second responses" as a distractor. The service measures batch latency in hours. This is the decision rule. Interactive and fast means real-time.</p>
 <p>Add Provisioned Throughput for guarantees. Non-interactive and hours-OK means batch. The scenario's latency sentence decides. The cost sentence does not decide.</p></div>
 
 <div class="exam-ask"><p>Common misunderstanding</p>
 <p>Async invocation is not streaming.</p>
-<p>Streaming delivers tokens to a waiting user in real time. Async delivers a complete result later to storage. "User watches the answer appear" is streaming. Use ConverseStream and WebSockets. "Job runs for 10 minutes, nobody waits" is async.</p></div>
+<p>Streaming delivers tokens to a waiting user in real time. Async delivers a complete result later to storage. "User watches the answer appear" means streaming. Use ConverseStream and WebSockets. "Job runs for 10 minutes, nobody waits" is async.</p></div>
 <pre><code>INFERENCE LATENCY LADDER (pick by the latency sentence)
 
   REAL-TIME (Converse / InvokeModel)
@@ -1689,7 +1689,7 @@ print(&quot;batch job finished with status:&quot;, status)
 <p>Scenario: Do one 10-minute analysis per upload. The user does not wait. Correct solution: Use async invocation with S3 output and polling.</p></div>
 
 <span id="14-prompt-management-engineering-discipline-for-prompts"></span>
-<p class="ch-next" style="border-top:1px solid var(--border);padding-top:1rem;margin-top:1.75rem"><strong>Next:</strong> Chapter 4, Prompt management. The call contracts are settled. Now, the prompt itself becomes an engineered artifact.</p>
+<p class="ch-next" style="border-top:1px solid var(--border);padding-top:1rem;margin-top:1.75rem"><strong>Next:</strong> Chapter 4, Prompt management. The guide settles the call contracts. Now, the prompt itself becomes an engineered artifact.</p>
 
 <figure><img src="assets/img/ste100/aip-async-batch-decision.svg" alt="Sync, async, or batch: the answer depends on who waits" loading="lazy"><figcaption>Interactive work uses sync inference at full price. One slow call with nobody waiting uses async invocation. Bulk non-interactive work uses batch inference at roughly half the price. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <h4 id="how-to-read-aip-asyncbatch">How to read this diagram</h4>
@@ -1702,12 +1702,12 @@ print(&quot;batch job finished with status:&quot;, status)
 </ol>
 
 <h2 id="4-prompt-management-engineering-discipline-for-prompts">4. Prompt management: engineering discipline for prompts</h2>
-<p class="ch-bridge" style="border-left:3px solid var(--accent);padding:.55rem 1rem;background:var(--surface);border-radius:0 8px 8px 0;margin:1.1rem 0"><strong>Why this comes next.</strong> Inference mechanics are settled. These are sync, streaming, async, and batch. Now, the input itself becomes the engineering object. Prompts are code. This chapter gives them versions, variants, and discipline.</p>
+<p class="ch-bridge" style="border-left:3px solid var(--accent);padding:.55rem 1rem;background:var(--surface);border-radius:0 8px 8px 0;margin:1.1rem 0"><strong>Why this comes next.</strong> The guide settles inference mechanics. These are sync, streaming, async, and batch. Now, the input itself becomes the engineering object. Prompts are code. This chapter gives them versions, variants, and discipline.</p>
 
-<figure><img src="assets/img/mermaid/69-prompt-management.svg" alt="Prompt management lifecycle: author the prompt, keep immutable versions, test variants, deploy by version ARN, monitor quality, iterate" loading="lazy"><figcaption>This is the prompt management lifecycle. Author the prompt. Keep immutable versions. Test variants.</figcaption>
-<figcaption>Deploy by version ARN. Monitor quality. Iterate.</figcaption><figcaption class="credit"><em>Prompt management lifecycle: author the prompt, keep immutable versions, test variants, deploy by version ARN, monitor quality, iterate</em> Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure><p>Prompts are code. Prompt Management gives them versions, variants, and variables. So, marketing can change tone without an engineering deploy.</p>
+<figure><img src="assets/img/mermaid/69-prompt-management.svg" alt="Prompt management lifecycle: author the prompt, keep immutable versions, test variants, deploy by version ARN, monitor quality, iterate." loading="lazy"><figcaption>This is the prompt management lifecycle. Author the prompt. Keep immutable versions. Test variants.</figcaption>
+<figcaption>Deploy by version ARN. Monitor quality. Iterate.</figcaption> <figcaption class="credit"><em>Prompt management lifecycle: author the prompt, keep immutable versions, test variants, deploy by version ARN, monitor quality, iterate.</em> Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure><p>Prompts are code. Prompt Management gives them versions, variants, and variables. So, marketing can change tone without an engineering deploy.</p>
 <p><strong>Bedrock Prompt Management</strong> stores prompts as managed AWS resources. It does not store them as strings in application code.</p>
-<p><strong>Variables</strong>: <code>{{variable}}</code> placeholders are filled at runtime. Examples are customer name and ticket text. <strong>Variants</strong>: These are alternate versions of a prompt. Use them for A/B testing. Examples are formal tone versus friendly tone. <strong>Versions</strong>: These are immutable snapshots. You edit a draft.</p>
+<p><strong>Variables</strong>: the system fills <code>{{variable}}</code> placeholders at runtime. Examples are customer name and ticket text. <strong>Variants</strong>: These are alternate versions of a prompt. Use them for A/B testing. Examples are formal tone versus friendly tone. <strong>Versions</strong>: These are immutable snapshots.</p><p>You edit a draft.</p>
 <p>Then, you publish a version. Rollback means to point at an older version. There is no extra charge. You pay only for the model tokens that the prompt generates.</p>
 <p><strong>Prompt Flows</strong> (the visual builder) chains prompts into multi-step workflows. It uses conditions. This builds prompt-centric logic without code.</p>
 <p><strong>Prompt engineering</strong> is the craft itself. This includes system prompts, few-shot examples, chain-of-thought, and structured output.</p>
@@ -1716,12 +1716,12 @@ print(&quot;batch job finished with status:&quot;, status)
 <p>This is the prompt lifecycle, in order:</p>
 <ol>
 <li><strong>Create</strong> a prompt resource. Give it a name. Give it a default variant. Give it <code>{{variables}}</code>.</li>
-<li><strong>Call</strong> it from your application. Use GetPrompt. Or reference it in a Flow or agent. Use the prompt name, version, and variable values. Bedrock renders the template. Variables are substituted. Then, the rendered text goes to the model. This is exactly as if you hardcoded it.</li>
+<li><strong>Call</strong> it from your application. Use GetPrompt. Or reference it in a Flow or agent. Use the prompt name, version, and variable values. Bedrock renders the template. The system substitutes variables.</li><li>Then, the rendered text goes to the model. This is exactly as if you hardcoded it.</li>
 <li><strong>Test</strong> a new tone by creating a variant. Split the traffic.</li>
 <li><strong>Ship</strong> it by publishing a new version. Update the alias.</li>
 <li><strong>Revert</strong> by pointing back at the old version.</li>
 </ol>
-<p>There are no code changes at any step. Governance is included. CloudTrail logs every prompt retrieval for audit. CloudWatch tracks which version serves traffic for regression detection. Approval workflows control publishing.</p>
+<p>There are no code changes at any step. The design includes governance. CloudTrail logs every prompt retrieval for audit. CloudWatch tracks which version serves traffic for regression detection. Approval workflows control publishing.</p>
 <p>A support application has 15 prompts. Marketing changes the greeting tone three times per month. If hardcoded, this means three deploys per month. Each deploy has a two-hour change window. Each deploy has a regression risk.</p>
 <p>This is six engineering hours each month. If managed, marketing edits the draft variant in the console. It runs 100 test conversations against a golden set. It publishes version 7. This means zero deploys.</p>
 <p>This means zero engineering hours. It has a full audit trail. The exam often uses this exact situation. "Frequent non-engineer changes, no redeploys" is always Prompt Management.</p>
@@ -1769,7 +1769,7 @@ print(&quot;batch job finished with status:&quot;, status)
 <p>This still needs a deploy to make a change. Do not use Bedrock Agents. Agents are for dynamic tool use. Agents are not for prompt versioning. Scenario: Analysts build a three-stage prompt chain with branching.</p>
 <p>Correct solution: Use Prompt Flows. Distractor: Do not use Step Functions. Step Functions are correct for approvals and waits. Step Functions are not correct for no-code prompt chains.</p></div>
 
-<p class="ch-next" style="border-top:1px solid var(--border);padding-top:1rem;margin-top:1.75rem"><strong>Next:</strong> Chapter 5, Knowledge Bases. Prompts carry instructions. Now, learn the facts behind them. This is grounding answers in your documents.</p>
+<p class="ch-next" style="border-top:1px solid var(--border);padding-top:1rem;margin-top:1.75rem"><strong>Next:</strong> Chapter 5, Knowledge Bases. Prompts carry instructions. Now, learn the facts behind them. This means grounding answers in your documents.</p>
 
 <figure><img src="assets/img/ste100/aip-prompt-lifecycle-ops.svg" alt="Prompt lifecycle in operations: author, version, variant, deploy by ARN, monitor, iterate" loading="lazy"><figcaption>Prompts are code. Immutable versions give you rollback. Variants give you A/B tests. The app calls prompts by name and version ARN, so wording changes stop being engineering deploys. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <h4 id="how-to-read-aip-plops">How to read this diagram</h4>
@@ -1785,45 +1785,45 @@ print(&quot;batch job finished with status:&quot;, status)
 
 <h2 id="5-knowledge-bases-grounding-answers-in-your-documents">5. Knowledge Bases: grounding answers in your documents</h2>
 <p>As you learned in <a href="volume-d1-foundation-models.html">D1</a>, chunking and embeddings turn documents into vectors. Knowledge Bases runs that pipeline for you.</p>
-<p class="ch-bridge" style="border-left:3px solid var(--accent);padding:.55rem 1rem;background:var(--surface);border-radius:0 8px 8px 0;margin:1.1rem 0"><strong>Why this comes next.</strong> You can call the model. You can version your prompts. But the model's knowledge still ends at its training cutoff. Your private documents are not visible to it. This chapter answers where facts come from. They come from Knowledge Bases, the grounding layer.</p>
+<p class="ch-bridge" style="border-left:3px solid var(--accent);padding:.55rem 1rem;background:var(--surface);border-radius:0 8px 8px 0;margin:1.1rem 0"><strong>Why this comes next.</strong> You can call the model. You can version your prompts. But the model's knowledge still ends at its training cutoff. Your private documents are not visible to it. This chapter answers where facts come from.</p><p>They come from Knowledge Bases, the grounding layer.</p>
 
 <p>A model only knows what it learned in training. Your users ask about your documents. Retrieval is the connection between the two.</p>
 <p>Training has a cutoff. It knows nothing private. When answers must come from your documents, there are three options. Fine-tune the model on the documents. This is slow and expensive. It becomes old the day a document changes.</p>
 <p>Paste the documents into the prompt. This works for one page. It fails for ten thousand pages. This is because prompts have size limits. Every call re-pays for the tokens. The pasted copy becomes old.</p>
 <p>Retrieve at query time. Fetch only the relevant passages when the user asks the question. This is fresh. You pay per query. There is no retraining. For "answers must come from our documents," the exam's answer is almost always retrieval.</p>
-<p><strong>Retrieval</strong> means to find the passages in your documents that are important for a question. Do this when the user asks the question. <strong>RAG (retrieval-augmented generation)</strong> means to retrieve first, then generate. The system pastes the retrieved passages into the model's prompt. So, the answer is based on your data. The order is fixed. It is always retrieve, then generate.</p>
+<p><strong>Retrieval</strong> means to find the passages in your documents that are important for a question. Do this when the user asks the question. <strong>RAG (retrieval-augmented generation)</strong> means to retrieve first, then generate. The system pastes the retrieved passages into the model's prompt. So, your data forms the basis of the answer. The order stays fixed.</p><p>It is always retrieve, then generate.</p>
 <p>Keyword search is not enough for this. "How do I reset my password" and "change my credentials" have almost no common words. But they mean the same thing. Keyword search misses the second phrasing.</p>
 <p>Meaning-based search finds it. Meaning-based search runs on embeddings (Chapter 2). Similar meanings produce similar numbers. So, "find the relevant passages" becomes "find the nearest numbers."</p>
 <p><strong>Chunking</strong> means to split documents into small passages. Do this before you embed them. There are two reasons. First, an embedding captures one passage's meaning well. It captures a whole manual's meaning badly.</p>
 <p>Second, only the relevant passages must enter the prompt. The whole library must not enter the prompt. A typical chunk is a few hundred tokens. There is overlap between neighbors. This prevents cutting a sentence in half.</p>
 <p>A <strong>vector store</strong> is a database. It holds the embeddings. It finds the nearest embeddings to a query vector. It does this fast and at scale.</p>
 <p>The system stores each chunk's text next to its vector. It also stores source metadata. This metadata includes the document name and page. This allows answers to cite their sources.</p>
-<figure><img src="assets/img/mermaid/103-vector-stores.svg" alt="Vector store options for a Bedrock knowledge base: OpenSearch Serverless for managed AWS-native search, Aurora with pgvector for Postgres shops, S3 Vectors for low-ops cheap storage, or an external SaaS like Pinecone for cross-cloud use." loading="lazy"><figcaption>These are vector store options for a Bedrock knowledge base. Use OpenSearch Serverless for the managed AWS-native path. Use Aurora with pgvector for Postgres shops. Use S3 Vectors for cheap, low-operations storage. Use an external SaaS for cross-cloud setups.</figcaption><figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
+<figure><img src="assets/img/mermaid/103-vector-stores.svg" alt="Vector store options for a Bedrock knowledge base: OpenSearch Serverless for managed AWS-native search, Aurora with pgvector for Postgres shops, S3 Vectors for low-ops cheap storage, or an external SaaS like Pinecone for cross-cloud use." loading="lazy"><figcaption>These are vector store options for a Bedrock knowledge base. Use OpenSearch Serverless for the managed AWS-native path. Use Aurora with pgvector for Postgres shops. Use S3 Vectors for cheap, low-operations storage. Use an external SaaS for cross-cloud setups.</figcaption> <figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <p>How to read this diagram</p>
 <ol>
 <li>Start at the diamond. The question is which vector store backs the knowledge base.</li>
-<li>Each branch matches an operations reality. These realities are managed AWS-native, existing Postgres, cost-first, or cross-cloud.</li>
-<li>The exam default is OpenSearch Serverless. It is managed. It scales to zero. It handles filters and vectors.</li>
+<li>Each branch matches an operations reality. The design manages these realities AWS-native, existing Postgres, cost-first, or cross-cloud.</li>
+<li>The exam default is OpenSearch Serverless. AWS manages it. It scales to zero. It handles filters and vectors.</li>
 <li>The brand is not the main point. The vector store is a separate choice. The embedding model is a separate choice. The chunking strategy is a separate choice.</li>
 </ol>
-<p>The pipeline has two phases. <strong>Ingest</strong> runs offline. It runs when documents change. Documents go in. Chunks come out. Embed each chunk. Store the vectors, the text, and the metadata. <strong>Query</strong> runs online.</p>
+<p>The pipeline has two phases. <strong>Ingest</strong> runs offline. It runs when documents change. Documents go in. Chunks come out. Embed each chunk.</p><p>Store the vectors, the text, and the metadata. <strong>Query</strong> runs online.</p>
 <p>It runs for each question. Embed the question. Vector-search the top-k nearest chunks. Build the prompt. The prompt includes the question, the chunks, and an instruction to cite sources. The model answers with citations.</p>
-<figure><img src="assets/img/mermaid/13-kb-sources-retrieval.svg" alt="Knowledge base flow: documents from S3, the web, or databases are chunked and embedded into a vector store; a user question is embedded, matched against the store, and the top chunks return with citations." loading="lazy"><figcaption>This is the Knowledge Base flow. Documents from S3, the web, or databases are chunked. The system embeds the chunks into a vector store. A user question is embedded. The system matches the question against the store. The system returns the top chunks with citations.</figcaption><figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
+<figure><img src="assets/img/mermaid/13-kb-sources-retrieval.svg" alt="Knowledge base flow: documents from S3, the web, or databases are chunked and embedded into a vector store; a user question is embedded, matched against the store, and the top chunks return with citations." loading="lazy"><figcaption>This is the Knowledge Base flow. The system chunks documents from S3, the web, or databases. The system embeds the chunks into a vector store. The system embeds a user question. The system matches the question against the store. The system returns the top chunks with citations.</figcaption> <figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <p>How to read this diagram</p>
 <ol>
 <li>Read the top row from left to right. Documents from S3, the web, or databases go into Bedrock Knowledge Bases. The Knowledge Base chunks the documents. It embeds the chunks into the vector store. This is ingest. It runs offline.</li>
-<li>Read the bottom row. The user question is embedded. The system matches the question against the same vector store. This is a query. It runs for each question.</li>
+<li>Read the bottom row. The system embeds the user question. The system matches the question against the same vector store. This is a query. It runs for each question.</li>
 <li>The output is top-k retrieval with citations. This includes chunks plus source metadata. It is ready to paste into a prompt.</li>
 <li>The shape to memorize is the split. There is one offline write path. There is one online read path. There is one shared vector store.</li>
 </ol>
 <p><strong>Amazon Bedrock Knowledge Bases</strong> is the managed version of both phases. You point it at a data source. This is usually an S3 bucket. You select a chunking strategy (fixed-size, hierarchical, semantic) and an embedding model.</p>
 <p>It syncs on a schedule. New files in S3 become searchable with no code. This is the exam's default answer for "ground answers in our documents."</p>
-<p>There are two query APIs. <strong>RetrieveAndGenerate</strong>: This is one managed call. Bedrock retrieves, builds the prompt, generates, and returns the answer with citations. <strong>Retrieve</strong>: This returns only the chunks. You build the prompt and call Converse yourself. Choose Retrieve when you need control. This includes your own reranking step, a custom prompt template, or a strict citation format that the managed call does not offer.</p>
-<p>Four controls determine retrieval quality. <strong>Top-k</strong>: This is how many chunks return. Too few chunks starves the answer. Too many chunks dilutes it with noise. <strong>Score threshold</strong>: This drops weak matches below a similarity floor. <strong>Metadata filters</strong>: This restricts the search to one team's documents or one date range. <strong>Reranking</strong>: This is a second pass. It re-orders the candidates by relevance.</p>
+<p>There are two query APIs. <strong>RetrieveAndGenerate</strong>: This is one managed call. Bedrock retrieves, builds the prompt, generates, and returns the answer with citations. <strong>Retrieve</strong>: This returns only the chunks. You build the prompt and call Converse yourself. Choose Retrieve when you need control.</p><p>This includes your own reranking step, a custom prompt template, or a strict citation format that the managed call does not offer.</p>
+<p>Four controls determine retrieval quality. <strong>Top-k</strong>: This is how many chunks return. Too few chunks starves the answer. Too many chunks dilutes it with noise. <strong>Score threshold</strong>: This drops weak matches below a similarity floor. <strong>Metadata filters</strong>: This restricts the search to one team's documents or one date range.</p><p><strong>Reranking</strong>: This is a second pass. It re-orders the candidates by relevance.</p>
 <p>Retrieval quality determines the answer. Irrelevant chunks result in confident but wrong answers. When answers are wrong, fix chunking and embeddings first. A bigger model that reads the wrong passages just writes wrong answers more fluently.</p>
-<div class="eq" style="text-align:center;margin:1.25rem 0;padding:.8rem 1rem;background:var(--surface);border:1px solid var(--border);border-radius:8px;font-size:1.05rem"><i>context tokens</i> is approximately <i>top_k</i> multiplied by <i>tokens per chunk</i>. <i>cost per answer</i> is approximately <i>context tokens</i> multiplied by <i>input price</i>.</div>
-<p class="eq-where" style="font-size:.92rem;margin:-.6rem 0 1.25rem"><i>top_k</i> is the chunks retrieved per query. <i>tokens per chunk</i> is the tokens in each retrieved chunk. <i>input price</i> is the dollars per input token.</p>
-<p>A support corpus holds 8,000 articles. Each article averages 600 tokens. This is 4.8 million tokens of source. It is chunked at 300 tokens with overlap. This is about 20,000 chunks. Each chunk becomes a 1,024-number vector.</p>
+<div class="eq" style="text-align:center;margin:1.25rem 0;padding:.8rem 1rem;background:var(--surface);border:1px solid var(--border);border-radius:8px;font-size:1.05rem"><i>Context tokens</i> approximately <i>top_k</i> multiplied by <i>tokens per chunk</i>. <i>Cost per answer</i> approximately <i>context tokens</i> multiplied by <i>input price</i>.</div>
+<p class="eq-where" style="font-size:.92rem;margin:-.6rem 0 1.25rem"><i>Top_k</i> chunks retrieved per query. <i>Tokens per chunk</i> tokens in each retrieved chunk. <i>Input price</i> dollars per input token.</p>
+<p>A support corpus holds 8,000 articles. Each article averages 600 tokens. This is 4.8 million tokens of source. The system chunks it at 300 tokens with overlap. This is about 20,000 chunks. Each chunk becomes a 1,024-number vector.</p>
 <p>One query embeds the question. This is a small call. It retrieves the top 5 chunks. This is about 1,500 tokens of context. It generates a 250-token cited answer.</p>
 <p>Grounding adds about 1,750 input tokens per call. This costs about half a cent per grounded answer at an example rate of $3 per million input tokens. Fine-tuning the same knowledge would cost much more. It would also become stale on the next document update.</p>
 <div class="exam-ask"><p>Trap</p>
@@ -1834,10 +1834,10 @@ print(&quot;batch job finished with status:&quot;, status)
 <p>RAG does not train the model.</p>
 <p>The model's weights never change. Documents are read at query time. This is why a Knowledge Base sync updates answers in minutes with no retraining. "Teach the model our documents" means retrieval. "Change the model's weights" means fine-tuning. Fine-tuning is in Domain 1.</p></div>
 
-<figure><img src="assets/img/mermaid/100-rag-kb-arch.svg" alt="End-to-end RAG architecture: docs in S3 are ingested (chunk plus embed) into a vector store; a user query retrieves top-k chunks; the Converse API generates the final cited answer." loading="lazy"><figcaption>This is the end-to-end RAG architecture. Documents in S3 are ingested (chunked and embedded) into a vector store. A user query retrieves the top-k chunks. The Converse API generates the final cited answer.</figcaption><figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
+<figure><img src="assets/img/mermaid/100-rag-kb-arch.svg" alt="End-to-end RAG architecture: docs in S3 are ingested (chunk plus embed) into a vector store; a user query retrieves top-k chunks; the Converse API generates the final cited answer." loading="lazy"><figcaption>This is the end-to-end RAG architecture. The system ingests documents in S3 (chunked and embedded) into a vector store. A user query retrieves the top-k chunks. The Converse API generates the final cited answer.</figcaption> <figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <p>How to read this diagram.</p>
 <ol>
-<li>Read from left to right in two lanes. The top lane is ingest. Documents are in S3. They are chunked and embedded. They go into the vector store. It runs on a schedule.</li>
+<li>Read from left to right in two lanes. The top lane is ingest. Documents are in S3. The system chunks and embeds them. They go into the vector store. It runs on a schedule.</li>
 <li>The bottom lane is the query. The user query retrieves the top-k chunks from the same store.</li>
 <li>Both lanes meet at the Converse API. The Converse API receives the question plus the retrieved context. It produces the cited answer.</li>
 <li>This picture shows the full pattern that the Knowledge Base chapter teaches. Ingest once. Retrieve per question. Generate with citations.</li>
@@ -1868,7 +1868,7 @@ print(&quot;batch job finished with status:&quot;, status)
 <p>How to read this diagram.</p>
 <ol>
 <li>The top block is ingest. Read it as a factory line. It runs whenever documents change. Documents become chunks. Chunks become vectors. Vectors land in the store with their text and metadata.</li>
-<li>The middle block is the query. It runs one time per question. The question is embedded. The nearest chunks are found. They join the prompt before generation.</li>
+<li>The middle block is the query. It runs one time per question. The system embeds the question. The nearest chunks are found. They join the prompt before generation.</li>
 <li>The Bedrock line maps the managed service onto the pipeline. S3 is the data source. You choose the chunking method. There are two query APIs.</li>
 <li>The quality ladder at the bottom is the debugging order. Chunking is first. The generation model is last. Memorize this order. It answers the "confident but wrong" questions.</li>
 </ol>
@@ -1910,22 +1910,22 @@ print(&quot;batch job finished with status:&quot;, status)
 </tbody>
 </table></div>
 <div class="exam-ask"><p>Consider this scenario: "Support answers must cite the current policy library. The library updates weekly." The correct solution is a Knowledge Base with an S3 data source. It needs a sync schedule and RetrieveAndGenerate with citations. Incorrect solutions include weekly fine-tuning. This is slow, expensive, and stale between runs.</p>
-<p>Another incorrect solution is pasting the library into the system prompt. This uses many tokens on every call and creates stale copies. A bigger model is also incorrect. It would still not see the private documents.</p></div>
+<p>Another incorrect solution: pasting the library into the system prompt. This uses many tokens on every call and creates stale copies. A bigger model is also incorrect. It would still not see the private documents.</p></div>
 
 <span id="1-bedrock-agents-anatomy-of-an-agent"></span>
-<p class="ch-next" style="border-top:1px solid var(--border);padding-top:1rem;margin-top:1.75rem"><strong>Next:</strong> Chapter 6, Bedrock Agents. Answers are grounded. Now we discuss actions: the anatomy of an agent.</p>
+<p class="ch-next" style="border-top:1px solid var(--border);padding-top:1rem;margin-top:1.75rem"><strong>Next:</strong> Chapter 6, Bedrock Agents. The system grounds answers. Now we discuss actions: the anatomy of an agent.</p>
 
 <h2 id="6-bedrock-agents-anatomy-of-an-agent">6. Bedrock Agents: Anatomy of an Agent</h2>
 <p>As you learned in <a href="volume-d1-foundation-models.html">D1</a>, a foundation model takes a prompt and returns a completion. An agent wraps that loop with tools, memory, and a plan.</p>
 <p class="ch-bridge" style="border-left:3px solid var(--accent);padding:.55rem 1rem;background:var(--surface);border-radius:0 8px 8px 0;margin:1.1rem 0"><strong>Why this comes next.</strong> Knowledge Bases let the model answer from your documents. They do not let it act. They do not allow API calls. They do not allow database writes.</p>
 <p class="ch-bridge" style="border-left:3px solid var(--accent);padding:.55rem 1rem;background:var(--surface);border-radius:0 8px 8px 0;margin:1.1rem 0">They do not allow multi-step plans. This chapter introduces the action dimension. This is the anatomy of a Bedrock Agent.</p>
 
-<figure class="fig-light"><img src="assets/img/internet/aws-blog-bedrock-portfolio-assessment.jpg" alt="AWS reference architecture: a Bedrock migration assistant agent with knowledge bases, action groups, and Lambda tools" loading="lazy"><figcaption>This is an AWS reference architecture. It shows a Bedrock migration assistant agent. It has knowledge bases, action groups, and Lambda tools.</figcaption><figcaption class="credit">Source: AWS Blog / AWS Solutions Guidance. Saved locally in September 2026. Reused in the AWS AIP-C01 Study Guide.</figcaption></figure>
-<figure><img src="assets/img/mermaid/02-agent-orchestration.svg" alt="Bedrock Agent orchestration loop: the agent reasons, pulls grounding from a Knowledge Base when needed, invokes action groups (Lambda) for tools and APIs, and returns a final response with trace and Guardrails." loading="lazy"><figcaption>This describes the Bedrock Agent orchestration loop. The agent reasons. It pulls grounding from a Knowledge Base when it needs it. It invokes action groups (Lambda) for tools and APIs. It returns a final response with a trace and Guardrails.</figcaption><figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
+<figure class="fig-light"><img src="assets/img/internet/aws-blog-bedrock-portfolio-assessment.jpg" alt="AWS reference architecture: a Bedrock migration assistant agent with knowledge bases, action groups, and Lambda tools" loading="lazy"><figcaption>This is an AWS reference architecture. It shows a Bedrock migration assistant agent. It has knowledge bases, action groups, and Lambda tools.</figcaption> <figcaption class="credit">Source: AWS Blog / AWS Solutions Guidance. Saved locally in September 2026. Reused in the AWS AIP-C01 Study Guide.</figcaption></figure>
+<figure><img src="assets/img/mermaid/02-agent-orchestration.svg" alt="Bedrock Agent orchestration loop: the agent reasons, pulls grounding from a Knowledge Base when needed, invokes action groups (Lambda) for tools and APIs, and returns a final response with trace and Guardrails." loading="lazy"><figcaption>This describes the Bedrock Agent orchestration loop. The agent reasons. It pulls grounding from a Knowledge Base when it needs it. It invokes action groups (Lambda) for tools and APIs. It returns a final response with a trace and Guardrails.</figcaption> <figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 
-<figure class="fig-light"><img src="assets/img/internet/img-09.png" alt="Automating tasks with Agents for Amazon Bedrock: the agent&#x27;s prompt anatomy (conversation history, action groups, task, instructions), the ReAct orchestration loop, Knowledge Bases for grounding, and action groups calling Lambda-backed APIs." loading="lazy"><figcaption>This describes automating tasks with Agents for Amazon Bedrock. It includes the agent's prompt anatomy (conversation history, action groups, task, instructions). It also includes the ReAct orchestration loop. It includes Knowledge Bases for grounding. It includes action groups that call Lambda-backed APIs.</figcaption><figcaption class="credit">Source: AWS Solutions Guidance architecture diagram. Accessed via image search in September 2026. Reused in the AWS AIP-C01 Study Guide.</figcaption></figure><p>An agent is a Foundation Model. It includes instructions, tools, and memory. Bedrock Agents is the managed way to build an agent.</p>
-<p>A <strong>foundation model (FM)</strong> is a large AI model. It is trained on broad data. You access it through an API. Amazon Bedrock is the managed service that hosts Foundation Models. A <strong>Bedrock Agent</strong> adds four things to a Foundation Model. It adds an <strong>agent instruction</strong>.</p>
-<p>This is a system-level prompt that tells the agent its role and how to behave. It adds <strong>action groups</strong>. These are the tools the agent can call. Each action group runs code in a Lambda function or calls an external API described by an OpenAPI schema. It adds a <strong>knowledge base (KB)</strong>. This is attached retrieval.</p>
+<figure class="fig-light"><img src="assets/img/internet/img-09.png" alt="Automating tasks with Agents for Amazon Bedrock: the agent&#x27;s prompt anatomy (conversation history, action groups, task, instructions), the ReAct orchestration loop, Knowledge Bases for grounding, and action groups calling Lambda-backed APIs." loading="lazy"><figcaption>This describes automating tasks with Agents for Amazon Bedrock. It includes the agent's prompt anatomy (conversation history, action groups, task, instructions). It also includes the ReAct orchestration loop. It includes Knowledge Bases for grounding. It includes action groups that call Lambda-backed APIs.</figcaption> <figcaption class="credit">Source: AWS Solutions Guidance architecture diagram. Accessed via image search in September 2026. Reused in the AWS AIP-C01 Study Guide.</figcaption></figure><p>An agent is a Foundation Model. It includes instructions, tools, and memory. Bedrock Agents is the managed way to build an agent.</p>
+<p>A <strong>foundation model (FM)</strong> is a large AI model. Training on broad data built it. You access it through an API. Amazon Bedrock is the managed service that hosts Foundation Models. A <strong>Bedrock Agent</strong> adds four things to a Foundation Model. It adds an <strong>agent instruction</strong>.</p>
+<p>This is a system-level prompt that tells the agent its role and how to behave. It adds <strong>action groups</strong>. These are the tools the agent can call. Each action group runs code in a Lambda function or calls an external API described by an OpenAPI schema. It adds a <strong>knowledge base (KB)</strong>. This means attached retrieval.</p>
 <p>It makes your documents searchable. Chapter 5 covers this. It adds <strong>guardrails</strong>. These are safety filters applied to inputs and outputs.</p>
 <p>Each agent also has an <strong>IAM role</strong>. IAM (Identity and Access Management) is how AWS controls permissions. The agent's role must grant permission to call the Foundation Model. It must also grant permission to call the Lambda functions behind its action groups and its Knowledge Base.</p>
 <p>A bare model can only answer from its training. A support bot must look up order status in a database. An HR bot must read policy documents and then file a ticket. Without agents, you build the reasoning loop manually. You send a prompt. You parse tool calls.</p>
@@ -1939,7 +1939,7 @@ print(&quot;batch job finished with status:&quot;, status)
 <li>The agent feeds the tool result back to the Foundation Model. It repeats this process until it has a final answer.</li>
 <li>The final answer streams or returns to the user. The session state is kept. The next turn remembers the current turn.</li>
 </ol>
-<p>Three lifecycle concepts are important for the exam. <strong>Prepare agent</strong>: You must run prepare-agent after any configuration change. This includes a new action group or a new instruction. This compiles your changes from DRAFT to PREPARED. If you skip this, the agent silently runs the old configuration. <strong>Alias</strong>: This is a named pointer to a prepared version. It is like a tag.</p>
+<p>Three lifecycle concepts are important for the exam. <strong>Prepare agent</strong>: You must run prepare-agent after any configuration change. This includes a new action group or a new instruction. This compiles your changes from DRAFT to PREPARED. If you skip this, the agent silently runs the old configuration. <strong>Alias</strong>: This is a named pointer to a prepared version.</p><p>It is like a tag.</p>
 <p>Production traffic uses an alias (for example, PROD). It never uses DRAFT. <strong>enableTrace</strong>: This is a flag on <code>invoke_agent</code>. It returns the agent's reasoning trace. This trace shows which tools the agent chose and why. This is the exam's transparency answer.</p>
 <p>This walkthrough shows how to start an agent turn. The code below uses boto3 (the AWS SDK for Python). It pairs with the orchestration diagram above. Read it in three steps.</p>
 <p>First, build the agent-runtime client. Then, call <code>invoke_agent</code> with the agent ID, the alias ID, a session ID, and the user's text. Then, read the streamed response events and print the final text.</p>
@@ -1987,12 +1987,12 @@ print(&quot;&quot;.join(answer))
 <p>Idle sessions expire after 600 seconds (10 minutes). This is the documented default. The sessions expire unless you continue to invoke them.</p>
 <p>This is an example of cost calculation. Each user turn uses an average of 3 agent steps. Each step uses about 1,500 input tokens and 300 output tokens. One turn costs:</p>
 <div class="eq" style="text-align:center;margin:1.25rem 0;padding:.8rem 1rem;background:var(--surface);border:1px solid var(--border);border-radius:8px;font-size:1.05rem"><i>cost per turn</i> = <i>steps</i> × (<i>input tokens per step</i> × <i>input price</i> + <i>output tokens per step</i> × <i>output price</i>)</div>
-<p class="eq-where" style="font-size:.92rem;margin:-.6rem 0 1.25rem"><i>steps</i> is the agent loop iterations per turn. <i>input/output tokens per step</i> is the average tokens per step. <i>input/output price</i> is the dollars per token.</p>
+<p class="eq-where" style="font-size:.92rem;margin:-.6rem 0 1.25rem"><i>Steps</i> agent loop iterations per turn. <i>Input/output tokens per step</i> average tokens per step. <i>Input/output price</i> dollars per token.</p>
 <p><strong>Worked example.</strong> costs $3 per million input tokens. It costs $15 per million output tokens. The cost is 4,500 × $0.000003 + 900 × $0.000015. This equals $0.0135 + $0.0135. The cost is about $0.027 per turn.</p>
 <p>The cost is about $2,700 per month for 100,000 turns. This cost is before any Lambda or Knowledge Base charges. Agent loops increase token use. This is why cost questions relate to agents.</p>
 <div class="exam-ask"><p>Trap</p>
 <p>The agent ignores the new action group bug.</p>
-<p>The exam's common agent bug is forgetting <code>prepare-agent</code> after a change. The configuration looks correct in the console. However, the agent runs the old <code>DRAFT</code>. The fix is always to prepare the agent and then test it. The exam describes this as "the agent behaves as if the new tool does not exist."</p></div>
+<p>The exam's common agent bug: forgetting <code>prepare-agent</code> after a change. The configuration looks correct in the console. However, the agent runs the old <code>DRAFT</code>. The fix is always to prepare the agent and then test it. The exam describes this as "the agent behaves as if the new tool does not exist."</p></div>
 
 <div class="exam-ask"><p>Common misunderstanding.</p>
 <p>An agent is not a chatbot.</p>
@@ -2022,7 +2022,7 @@ print(&quot;&quot;.join(answer))
   alias: PROD points at a prepared version (traffic goes here, never DRAFT)
   enableTrace: returns the reasoning trace for transparency/debugging
 </code></pre>
-<p>The Bedrock Agent orchestration loop: The agent alternates between the FM (reasoning) and action groups (acting). It does this until it reaches a final answer. Session memory is keyed by sessionId.</p>
+<p>The Bedrock Agent orchestration loop: The agent alternates between the FM (reasoning) and action groups (acting). It does this until it reaches a final answer. The system keys session memory by sessionId.</p>
 <p>How to read this diagram</p>
 <ol>
 <li>Start at the top left. The user app calls <code>invoke_agent</code> with a <code>sessionId</code>. The session ID gives the agent memory across turns.</li>
@@ -2063,7 +2063,7 @@ print(&quot;&quot;.join(answer))
 </tr>
 </tbody>
 </table></div>
-<figure><img src="assets/img/mermaid/17-agents-production.svg" alt="Bedrock Agents production patterns: agent nodes connected to Lambda, S3, DynamoDB, API Gateway, and a Knowledge Base" loading="lazy"><figcaption>Bedrock Agents production patterns: Agent nodes connect to Lambda, S3, DynamoDB, API Gateway, and a Knowledge Base.</figcaption><figcaption class="credit"><em>Bedrock Agents production patterns: agent nodes connected to Lambda, S3, DynamoDB, API Gateway, and a Knowledge Base</em> Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
+<figure><img src="assets/img/mermaid/17-agents-production.svg" alt="Bedrock Agents production patterns: agent nodes connected to Lambda, S3, DynamoDB, API Gateway, and a Knowledge Base." loading="lazy"><figcaption>Bedrock Agents production patterns: Agent nodes connect to Lambda, S3, DynamoDB, API Gateway, and a Knowledge Base.</figcaption> <figcaption class="credit"><em>Bedrock Agents production patterns: agent nodes connected to Lambda, S3, DynamoDB, API Gateway, and a Knowledge Base.</em> Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <p>Read this diagram. It is a vendor overview graphic.</p>It is not a precise schematic. Treat it as a map of which services cluster around a production agent.</li>
 <li>Find the central agent nodes. Everything connects through them. This matches the orchestration loop in the ASCII figure above.</li>
 <li>Note the surrounding services. Lambda is for tools. S3 is for documents. DynamoDB is for session state. API Gateway is the front door. A Knowledge Base is for grounding.</li>
@@ -2148,7 +2148,7 @@ print(&quot;&quot;.join(answer))
 </table></div>
 <p>Specialists beat generalists. A wealth-management assistant needs tax law. It needs investment research. It needs estate planning. One agent with 40 tools gets confused about which tool to use.</p>
 <p>Three specialist agents with 8 tools each are accurate. A supervisor coordinates them. The exam's canonical scenario is exactly this. "Specialist agents for tax, investments, and estate must collaborate. They must use tools.</p>
-<p>They must keep memory for weeks. They must get human approval over $100k."This must happen before the supervisor can use it. A DRAFT collaborator cannot be delegated to. The supervisor's instruction describes each collaborator's specialty. It describes when to delegate.</p>
+<p>They must keep memory for weeks. They must get human approval over $100k."This must happen before the supervisor can use it. You cannot delegate to a DRAFT collaborator. The supervisor's instruction describes each collaborator's specialty. It describes when to delegate.</p>
 <p>On a user message, the supervisor's FM decides. It can answer directly. It can delegate a subtask to a collaborator. The collaborator runs its own agent loop. It uses its tools and its KB.</p>
 <p>Then it returns a result to the supervisor. <strong>relay-conversation-history</strong> controls if the collaborator sees the full conversation. It controls if the collaborator sees only the subtask. Sharing everything costs tokens. Sharing nothing loses context.</p>
 <p>The supervisor composes the final answer. For risky actions, it hands off to a human-in-the-loop step. This is typically a Step Functions callback with a task token.</p>
@@ -2161,7 +2161,7 @@ print(&quot;&quot;.join(answer))
 <p>The exam will describe a supervisor "calling a collaborator through an action group." That is wrong. Action groups are agent-to-tool. Supervisor-to-collaborator uses the built-in multi-agent collaboration mechanism. Any option that wires agents together with action groups is a distractor.</p></div>
 
 <div class="exam-ask"><p>Common misunderstanding</p>
-<p>Collaborators must be prepared and aliased.</p>
+<p>You must prepare and alias collaborators.</p>
 <p>This is the same rule as Chapter 6, one level up. A supervisor cannot delegate to a DRAFT collaborator. The scenario says "the supervisor never delegates to the new agent." The fix is prepare plus alias. The fix is not more prompt engineering.</p></div>
 
 <figure><img src="assets/img/mermaid/18-multi-agent-supervisor.svg" alt="Multi-agent supervisor pattern: a supervisor agent delegates to tax, investments, and estate collaborator agents, with a Step Functions approval step" loading="lazy"><figcaption>A supervisor agent delegates to collaborator agents. These agents are tax, investments, and estate. There is a Step Functions approval step.The supervisor agent receives the user's request.</li>
@@ -2238,7 +2238,7 @@ print(&quot;&quot;.join(answer))
 <li>Read the supervisor box first. Its instruction names the three specialists. This is the delegation contract.</li>
 <li>Each collaborator box lists its alias. The alias is PROD, never DRAFT. Each box lists its tools. Each box lists its KB. Specialists stay narrow.</li>
 <li>The bottom box is the safety net. Risky actions wait on a Step Functions human approval. This can pause for days.</li>
-<li>The three RULE/LEVER lines are the exam payload. They are prepared plus aliased collaborators. They are built-in delegation. They are not action groups. They are history relay as the cost lever.</li>
+<li>The three RULE/LEVER lines are the exam payload. You prepare and alias them as collaborators. They mean built-in delegation. They are not action groups. They mean history relay as the cost lever.</li>
 </ol>
 <div class="exam-ask"><p>This is the canonical scenario: "Specialist agents for tax, investment, and estate must collaborate. They must use tools. They must keep memory for weeks. They require human approval over $100k." The correct combination is Strands plus Agent Squad for orchestration. MCP servers are for tools. DynamoDB is for weeks-long memory.</p>
 <p>Step Functions are for the approval. Distractors are Amazon Lex. Lex is a conversational UI. Lex is not autonomous orchestration. Other distractors are a single giant prompt or action groups between agents.</p></div>
@@ -2247,22 +2247,22 @@ print(&quot;&quot;.join(answer))
 <p class="ch-next" style="border-top:1px solid var(--border);padding-top:1rem;margin-top:1.75rem"><strong>Next:</strong> Chapter 8, the holy trinity. Agents collaborate. Now combine agents with Knowledge Bases and Guardrails. This is the exam's favorite stack.</p>
 
 <h2 id="8-agents-with-knowledge-bases-and-guardrails-the-holy-trinity">8. Agents with Knowledge Bases and Guardrails: the holy trinity</h2>
-<p class="ch-bridge" style="border-left:3px solid var(--accent);padding:.55rem 1rem;background:var(--surface);border-radius:0 8px 8px 0;margin:1.1rem 0"><strong>Why this comes next.</strong> You know agents, knowledge bases, and guardrails as separate tools. The exam's favorite scenario combines all three. An agent acts. The agent grounds its answers. The agent stays safe. This chapter covers the holy trinity together.</p>
+<p class="ch-bridge" style="border-left:3px solid var(--accent);padding:.55rem 1rem;background:var(--surface);border-radius:0 8px 8px 0;margin:1.1rem 0"><strong>Why this comes next.</strong> You know agents, knowledge bases, and guardrails as separate tools. The exam's favorite scenario combines all three. An agent acts. The agent grounds its answers. The agent stays safe.</p><p>This chapter covers the holy trinity together.</p>
 
-<figure><img src="assets/img/mermaid/70-kb-guardrails-agent.svg" alt="Agent with Knowledge Base and Guardrails: the orchestrator retrieves grounded context and calls action-group tools, with guardrail filters on both input and output" loading="lazy"><figcaption>Agent with Knowledge Base and Guardrails: The orchestrator retrieves grounded context. The orchestrator calls action-group tools. Guardrail filters are on input. Guardrail filters are on output.An agent acts. The agent is grounded in your data. The agent stays inside safety rails.</p>
+<figure><img src="assets/img/mermaid/70-kb-guardrails-agent.svg" alt="Agent with Knowledge Base and Guardrails: the orchestrator retrieves grounded context and calls action-group tools, with guardrail filters on both input and output" loading="lazy"><figcaption>Agent with Knowledge Base and Guardrails: The orchestrator retrieves grounded context. The orchestrator calls action-group tools. Guardrail filters are on input. Guardrail filters are on output.An agent acts. Your data grounds the agent. The agent stays inside safety rails.</p>
 <p>A <strong>knowledge base (KB)</strong> gives the agent retrieval-augmented generation. It searches your documents. The documents are in a vector store like OpenSearch Serverless. The agent answers with citations. A <strong>guardrail</strong> is a set of safety policies.</p>
 <p>Apply the policies to the agent's inputs. Apply the policies to the agent's outputs. You can apply them to both. There are six controls. These are content filters.</p>
-<p>These are denied topics. These are word filters. These are sensitive information filters. These are contextual grounding checks. These are automated reasoning checks.</p><p>Tool use without grounding causes facts to hallucinate. Grounding without safety leaks PII. Grounding without safety gives disallowed advice. The trinity covers the three failure modes at once.</p>
+<p>The policy denies these topics. These mean word filters. These mean sensitive information filters. These mean contextual grounding checks. These mean automated reasoning checks.</p><p>Tool use without grounding causes facts to hallucinate. Grounding without safety leaks PII. Grounding without safety gives disallowed advice. The trinity covers the three failure modes at once.</p>
 <p>The agent can act with action groups. The agent knows your data with a KB. The agent stays inside policy with guardrails. The exam treats this combination as the default production agent architecture.</p>
-<p>Inside one <code>invoke_agent</code> call, the agent's orchestration interleaves all three. The order is fixed.</p>
+<p>Inside one <code>invoke_agent</code> call, the agent's orchestration interleaves all three. The order stays fixed.</p>
 <ol>
 <li><strong>Input guardrail.</strong> The user message arrives and the input guardrail screens it first: blocked content stops here, before any model call.</li>
-<li><strong>Grounding.</strong> The agent decides if it needs facts. If yes, it queries the attached KB. The query is embedded. The vector store returns the top chunks. Those chunks enter the FM's context with source metadata.</li>
+<li><strong>Grounding.</strong> The agent decides if it needs facts. If yes, it queries the attached KB. The system embeds the query. The vector store returns the top chunks. Those chunks enter the FM's context with source metadata.</li>
 <li><strong>Reasoning and action.</strong> The FM reasons. It can call action-group tools. This is exactly as in topic 6.</li>
 <li><strong>Output guardrail.</strong> Before the final answer leaves, the output guardrail screens it. PII gets masked. Denied topics get blocked. Grounding checks verify claims against the retrieved chunks.</li>
 </ol>
-<p>Traces (<code>enableTrace</code>) show which KB chunks were used. They show which guardrail rules fired. This is how you debug issues. You can tell if "the answer was right but got blocked." Or if "the answer was wrong but passed."</p>
-<p>A policy assistant agent has a KB of 12,000 HR documents. Each document is chunked at about 300 tokens. This is about 3.6 million tokens of source. It has a guardrail with denied topics like "medical diagnosis." It also has PII masking for national ID numbers. A user asks about leave policy.</p>
+<p>Traces (<code>enableTrace</code>) show which KB chunks the system used. They show which guardrail rules fired. This is how you debug issues. You can tell if "the answer was right but got blocked." Or if "the answer was wrong but passed."</p>
+<p>A policy assistant agent has a KB of 12,000 HR documents. The system chunks each document at about 300 tokens. This is about 3.6 million tokens of source. It has a guardrail with denied topics like "medical diagnosis." It also has PII masking for national ID numbers. A user asks about leave policy.</p>
 <p>The KB retrieves 5 chunks. This is 1,500 tokens. The FM writes a 200-token answer. It cites two documents.</p>
 <p>The output guardrail masked one ID number. This number appeared in a retrieved chunk. Retrieval and masking added about 1,700 tokens to the call. This is about 10 times the tokens of the answer itself. Grounding is the main token cost driver in RAG agents. This is why cost questions often use this pattern.</p>
 <div class="exam-ask"><p>Trap</p>
@@ -2271,7 +2271,7 @@ print(&quot;&quot;.join(answer))
 
 <div class="exam-ask"><p>Common misunderstanding</p>
 <p>Denied topics versus content filters.</p>
-<p>Denied topics block subject areas. These areas are described in plain language. Examples are "investment advice" or "medical diagnosis." Content filters block toxicity categories. Examples are hate or violence. They block at specific severity levels.</p>
+<p>Denied topics block subject areas. The guide describes these areas in plain language. Examples are "investment advice" or "medical diagnosis." Content filters block toxicity categories. Examples are hate or violence. They block at specific severity levels.</p>
 <p>The scenario verb decides the type. "Prevent the model from discussing X" means denied topics. "Block profanity" means content filters. The exam swaps them in distractors.</p></div>
 <pre><code>THE HOLY TRINITY: AGENT + KB + GUARDRAILS
 
@@ -2307,7 +2307,7 @@ print(&quot;&quot;.join(answer))
 <p>One invoke_agent call combines all three. It has an input guardrail screen. It has a KB-grounded agent loop. It has an output guardrail screen.</p>
 <p>How to read this diagram</p>
 <ol>
-<li>Start at the top. The user question hits the input guardrail. This happens before any model or KB is touched. Attacks stop here.</li>
+<li>Start at the top. The user question hits the input guardrail. This happens before the system touches any model or KB. Attacks stop here.</li>
 <li>Move to the agent loop. When facts are necessary, the KB retrieves chunks. These chunks carry source metadata for citations.</li>
 <li>Move down to the output guardrail. It masks PII. It blocks denied topics. It checks grounding against the retrieved chunks.</li>
 <li>The debug rule at the bottom is the troubleshooting key. Use the trace to separate grounding failures from guardrail failures. Grounding failures are wrong but passed. Guardrail failures are right but blocked.</li>
@@ -2361,13 +2361,13 @@ print(&quot;&quot;.join(answer))
 </ol>
 
 <h2 id="9-lambda-integration-patterns-sync-async-streaming-timeouts-concurrency">9. Lambda integration patterns: sync, async, streaming, timeouts, concurrency</h2>
-<figure><img src="assets/img/density/d2-lambda-timeout.svg" alt="Lambda timeouts: budget the whole chain under 15 minutes; sync, async, and streaming each fit a different wait pattern" loading="lazy"><figcaption>Budget the Lambda timeouts. The whole chain must finish in less than 15 minutes. Sync, async, and streaming each use a different wait pattern.</figcaption><figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure><div class="walkthrough"><strong>How to read this.</strong> Three boxes show the three invocation modes. The footer shows the limit: 15 minutes per Lambda. The main point: A pipeline that waits for humans or has long chains belongs in Step Functions Standard. It does not belong in one Lambda.</div>
+<figure><img src="assets/img/density/d2-lambda-timeout.svg" alt="Lambda timeouts: budget the whole chain under 15 minutes; sync, async, and streaming each fit a different wait pattern" loading="lazy"><figcaption>Budget the Lambda timeouts. The whole chain must finish in less than 15 minutes. Sync, async, and streaming each use a different wait pattern.</figcaption> <figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure><div class="walkthrough"><strong>How to read this.</strong> Three boxes show the three invocation modes. The footer shows the limit: 15 minutes per Lambda. The main point: A pipeline that waits for humans or has long chains belongs in Step Functions Standard. It does not belong in one Lambda.</div>
 <p class="ch-bridge" style="border-left:3px solid var(--accent);padding:.55rem 1rem;background:var(--surface);border-radius:0 8px 8px 0;margin:1.1rem 0"><strong>Why this comes next.</strong> The GenAI building blocks are ready. These include calls, grounding, and agents. Now, the question is about your code. Where does the connection run?</p>
 <p class="ch-bridge" style="border-left:3px solid var(--accent);padding:.55rem 1rem;background:var(--surface);border-radius:0 8px 8px 0;margin:1.1rem 0">This chapter explains Lambda integration patterns. These are the invocations, timeouts, and concurrency rules. They decide if your system survives.</p>
 
-<figure><img src="assets/img/mermaid/63-lambda-patterns.svg" alt="Lambda integration patterns: synchronous invoke for request-response, asynchronous for fire-and-forget, response streaming for token streams" loading="lazy"><figcaption>Lambda integration patterns: synchronous invoke for request-response, asynchronous for fire-and-forget, response streaming for token streams</figcaption><figcaption class="credit"><em>Lambda integration patterns: synchronous invoke for request-response, asynchronous for fire-and-forget, response streaming for token streams</em> Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure><p>Lambda connects GenAI on AWS. How you invoke it decides if your application handles real traffic.</p>
-<p><strong>AWS Lambda</strong> runs your code without servers. You upload a function. AWS runs it when triggered. AWS bills per millisecond. Three invocation modes are important. <strong>Synchronous (RequestResponse)</strong>: The caller waits for the result. Use this for APIs where the user waits for the response. <strong>Asynchronous (Event)</strong>: Lambda puts the event in a queue.</p>
-<p>It returns immediately. Use this for fire-and-forget tasks. An example is processing an uploaded file. <strong>Streaming responses</strong>: Lambda streams partial output back as it is produced. It uses <code>ResponseStream</code>. Use this for token-by-token model output. The user sees text appear immediately.The default regional quota is 1,000. <strong>Reserved concurrency</strong> guarantees capacity for one function. <strong>Provisioned concurrency</strong> keeps instances ready to prevent cold starts.</p>
+<figure><img src="assets/img/mermaid/63-lambda-patterns.svg" alt="Lambda integration patterns: synchronous invoke for request-response, asynchronous for fire-and-forget, response streaming for token streams." loading="lazy"><figcaption>Lambda integration patterns: synchronous invoke for request-response, asynchronous for fire-and-forget, response streaming for token streams.</figcaption> <figcaption class="credit"><em>Lambda integration patterns: synchronous invoke for request-response, asynchronous for fire-and-forget, response streaming for token streams.</em> Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure><p>Lambda connects GenAI on AWS. How you invoke it decides if your application handles real traffic.</p>
+<p><strong>AWS Lambda</strong> runs your code without servers. You upload a function. AWS runs it when triggered. AWS bills per millisecond. Three invocation modes are important. <strong>Synchronous (RequestResponse)</strong>: The caller waits for the result.</p><p>Use this for APIs where the user waits for the response. <strong>Asynchronous (Event)</strong>: Lambda puts the event in a queue.</p>
+<p>It returns immediately. Use this for fire-and-forget tasks. An example is processing an uploaded file. <strong>Streaming responses</strong>: Lambda streams partial output back as the model produces it. It uses <code>ResponseStream</code>. Use this for token-by-token model output.</p><p>The user sees text appear immediately.The default regional quota is 1,000. <strong>Reserved concurrency</strong> guarantees capacity for one function. <strong>Provisioned concurrency</strong> keeps instances ready to prevent cold starts.</p>
 <p>Model calls are slow and happen in bursts. A chat application has idle seconds. Then it has a spike of 500 users. Lambda scales to zero. It bursts on demand.</p>
 <p>So, you pay nothing when idle. But a 15-minute limit means Lambda cannot host long waits. It cannot host approvals. It cannot host multi-hour batch jobs. Choosing the wrong invocation mode is the exam's favorite Lambda error.</p>
 <p><strong>Sync via API Gateway</strong>: The request thread stays open. API Gateway times out at 29 seconds for REST APIs. So, a synchronous Lambda behind it must finish. This includes the model call.</p>
@@ -2378,7 +2378,7 @@ print(&quot;&quot;.join(answer))
 <p>For GenAI, the model call usually takes much longer than the cold start. So, provisioned concurrency is rarely the solution. It is only the solution if the scenario requires strict latency service level agreements.</p>
 <p>A summarization API gets 10 requests per second at peak. Each model call takes 8 seconds. How many executions must run at the same time? The formula is:</p>
 <div class="eq" style="text-align:center;margin:1.25rem 0;padding:.8rem 1rem;background:var(--surface);border:1px solid var(--border);border-radius:8px;font-size:1.05rem"><i>concurrent executions</i> = <i>requests per second</i> × <i>seconds per request</i></div>
-<p class="eq-where" style="font-size:.92rem;margin:-.6rem 0 1.25rem"><i>requests per second</i> is the arrival rate at peak. <i>seconds per request</i> is the duration of each execution.</p>
+<p class="eq-where" style="font-size:.92rem;margin:-.6rem 0 1.25rem"><i>Requests per second</i> arrival rate at peak. <i>Seconds per request</i> duration of each execution.</p>
 <p><strong>Worked example.</strong> 10 multiplied by 8 equals 80 concurrent executions. This is less than the default of 1,000. This is acceptable. But if a Bedrock throttle slows calls to 60 seconds, the concurrency need becomes 600. This is still acceptable.</p>
 <p>But queuing starts. If traffic increases 20 times to 200 requests per second, and each takes 60 seconds, you need 12,000 concurrent executions. This will cause throttling. The exam solution is not to increase the Lambda limit first. The solution is backpressure and asynchronous processing.</p>
 <p>Put SQS in front. Let the queue absorb the spike. Process at a controlled rate. Tell the client to poll.</p>
@@ -2468,12 +2468,12 @@ COLD STARTS
 <ol>
 <li>SYNC, RequestResponse: the caller waits for the result. Use it for APIs where the user waits on the response.</li>
 <li>ASYNC, Event: Lambda queues the event and returns immediately. Use it for fire-and-forget work.</li>
-<li>RESPONSE STREAMING: tokens flow back as they are generated. Use it for long answers a user reads live.</li>
+<li>RESPONSE STREAMING: tokens flow back as the model generates them. Use it for long answers a user reads live.</li>
 <li>The red footer is the ceiling. One Lambda gets 15 minutes. A pipeline that waits on humans or long chains belongs in Step Functions Standard, not in one Lambda.</li>
 </ol>
 
 <h2 id="10-api-gateway-in-front-of-bedrock">10. API Gateway in front of Bedrock</h2>
-<p class="ch-bridge" style="border-left:3px solid var(--accent);padding:.55rem 1rem;background:var(--surface);border-radius:0 8px 8px 0;margin:1.1rem 0"><strong>Why this comes next.</strong> Lambda runs your logic. Users and frontends need a stable entry point. This entry point must have authentication. It must control the traffic. It must have one unchanging URL. This chapter explains API Gateway in front of Bedrock.</p>
+<p class="ch-bridge" style="border-left:3px solid var(--accent);padding:.55rem 1rem;background:var(--surface);border-radius:0 8px 8px 0;margin:1.1rem 0"><strong>Why this comes next.</strong> Lambda runs your logic. Users and frontends need a stable entry point. This entry point must have authentication. It must control the traffic. It must have one unchanging URL.</p><p>This chapter explains API Gateway in front of Bedrock.</p>
 
 <figure><img src="assets/img/mermaid/64-api-gateway-bedrock.svg" alt="API Gateway in front of Bedrock: client to API Gateway, Lambda authorizer, handler Lambda, then the Bedrock Converse API, with usage plans for throttling" loading="lazy"><figcaption>API Gateway is in front of Bedrock. The client sends a request to API Gateway. A Lambda authorizer checks the request. A handler Lambda processes the request. The handler Lambda calls the Bedrock Converse API. Usage plans control the traffic. API Gateway is the entry point.It has one stable endpoint. It controls the traffic. It provides authentication. It supports streaming. Bedrock is behind API Gateway.</p>
 <p><strong>Amazon API Gateway</strong> creates managed HTTP, REST, or WebSocket APIs. It provides many services for Bedrock. It gives a stable URL for your application. This URL does not change when you swap models. It controls the traffic.</p>
@@ -2489,7 +2489,7 @@ COLD STARTS
 <p><strong>Retries and timeouts</strong>: The gateway can retry idempotent integrations. The Lambda behind it implements exponential backoff on Bedrock throttles. (Refer to topic 16).</p>
 <p>A SaaS copilot serves 5,000 users. API Gateway throttling is set to 100 requests per second steady. It has a 200 burst per API key tier. The Lambda behind it calls Converse. It has a 4,000-token limit per request. The worst-case token burn follows one formula:</p>
 <div class="eq" style="text-align:center;margin:1.25rem 0;padding:.8rem 1rem;background:var(--surface);border:1px solid var(--border);border-radius:8px;font-size:1.05rem"><i>tokens per second</i> equals <i>requests per second</i> multiplied by <i>max tokens per request</i>.</div>
-<p class="eq-where" style="font-size:.92rem;margin:-.6rem 0 1.25rem"><i>requests per second</i> is the steady throttle rate. <i>max tokens per request</i> is the enforced per-request token limit.</p>
+<p class="eq-where" style="font-size:.92rem;margin:-.6rem 0 1.25rem"><i>Requests per second</i> steady throttle rate. <i>Max tokens per request</i> enforced per-request token limit.</p>
 <p><strong>Worked example.</strong> tokens per second equals 100 multiplied by 4,000. This is 400,000 tokens per second. The team maps this to their Bedrock quota. They set budget alerts.</p>
 <p>When a customer upgrades tiers, only the usage plan changes. No code deploys. No client updates.</p>
 <div class="exam-ask"><p>Trap</p>
@@ -2503,7 +2503,7 @@ COLD STARTS
 <figure><img src="assets/img/mermaid/19-converse-reference-arch.svg" alt="Reference architecture: API Gateway and Lambda in front of Bedrock Converse API, with WebSocket streaming, Cognito auth, Knowledge Bases, and DynamoDB conversation storage" loading="lazy"><figcaption>This is a reference architecture. It uses API Gateway and Lambda in front of the Bedrock Converse API. It has WebSocket streaming. It has Cognito authentication. It has Knowledge Bases. It has DynamoDB for conversation storage.Users reach a CloudFront frontend. It is behind WAF. Admins use a separate path.</li>
 <li>Follow the backend API box. Cognito authenticates. Then API Gateway routes to Lambda. Lambda calls the Bedrock Converse API. This is the synchronous path. It has a timeout limit.</li>
 <li>Follow the streaming response box. A second API Gateway is present. This time it is WebSocket. It pushes tokens as Lambda streams them from Bedrock. This is the path for long answers.</li>
-<li>Note the RAG source box. Lambda also queries Bedrock Knowledge Bases. OpenSearch Serverless backs these bases. So, answers are grounded.</li>
+<li>Note the RAG source box. Lambda also queries Bedrock Knowledge Bases. OpenSearch Serverless backs these bases. So, the system grounds answers.</li>
 <li>Note the bottom row. DynamoDB stores conversations. EventBridge Pipes exports them. Athena analyzes usage. Observability is part of the pattern.</li>
 </ol>
 <p>Per Component: What It Means, What Breaks</p>
@@ -2556,18 +2556,18 @@ COLD STARTS
 </ol>
 
 <h2 id="11-step-functions-orchestration-of-genai-workflows">11. Step Functions Orchestration of GenAI Workflows</h2>
-<p class="ch-bridge" style="border-left:3px solid var(--accent);padding:.55rem 1rem;background:var(--surface);border-radius:0 8px 8px 0;margin:1.1rem 0"><strong>Why this comes next.</strong> Lambda handles one request at a time. Some workflows span hours. They need human approvals. Lambda's 15-minute limit cannot hold them. This chapter covers Step Functions orchestration. It is for long GenAI workflows.</p>
+<p class="ch-bridge" style="border-left:3px solid var(--accent);padding:.55rem 1rem;background:var(--surface);border-radius:0 8px 8px 0;margin:1.1rem 0"><strong>Why this comes next.</strong> Lambda handles one request at a time. Some workflows span hours. They need human approvals. Lambda's 15-minute limit cannot hold them. This chapter covers Step Functions orchestration.</p><p>It is for long GenAI workflows.</p>
 
-<figure><img src="assets/img/mermaid/65-sfn-orchestration.svg" alt="Step Functions orchestration: a state machine calls Bedrock, branches on confidence, routes low-confidence work to human review, then finishes" loading="lazy"><figcaption>This is Step Functions orchestration. A state machine calls Bedrock. It branches on confidence. It routes low-confidence work to human review. Then it finishes.</figcaption><figcaption class="credit"><em>Step Functions orchestration: a state machine calls Bedrock, branches on confidence, routes low-confidence work to human review, then finishes</em> Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
+<figure><img src="assets/img/mermaid/65-sfn-orchestration.svg" alt="Step Functions orchestration: a state machine calls Bedrock, branches on confidence, routes low-confidence work to human review, then finishes." loading="lazy"><figcaption>This is Step Functions orchestration. A state machine calls Bedrock. It branches on confidence. It routes low-confidence work to human review. Then it finishes.</figcaption> <figcaption class="credit"><em>Step Functions orchestration: a state machine calls Bedrock, branches on confidence, routes low-confidence work to human review, then finishes.</em> Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
 <figure class="fig-light"><img src="assets/img/internet/img-11.png" alt="Agent routing pattern: a user request flows through an SDK, a router, and an intent router that dispatches to specialist agents, each with action groups backed by Lambda functions or external APIs." loading="lazy"><figcaption>This is an agent routing pattern. A user request flows through an SDK. It goes through a router. It goes through an intent router.</figcaption>
-<figcaption>The intent router dispatches to specialist agents. Each agent has action groups. Lambda functions or external APIs back these action groups.</figcaption><figcaption class="credit">This information comes from AWS Prescriptive Guidance (agentic AI patterns). It was found via image search in September 2026. Reused in the AWS AIP-C01 Study Guide.</figcaption></figure><p>Lambda cannot wait. Step Functions can wait. If a GenAI workflow has waits, approvals, branches, or retries, use Step Functions.</p>
+<figcaption>The intent router dispatches to specialist agents. Each agent has action groups. Lambda functions or external APIs back these action groups.</figcaption> <figcaption class="credit">This information comes from AWS Prescriptive Guidance (agentic AI patterns). It was found via image search in September 2026. Reused in the AWS AIP-C01 Study Guide.</figcaption></figure><p>Lambda cannot wait. Step Functions can wait. If a GenAI workflow has waits, approvals, branches, or retries, use Step Functions.</p>
 <p><strong>AWS Step Functions</strong> is a visual workflow orchestrator. You define a <strong>state machine</strong>. This is a sequence of steps. It can call a Lambda. It can call Bedrock. It can wait.</p>
-<p>It can ask a human. It can branch on a condition. It is written in a JSON-based language. There are two types. <strong>Standard workflows</strong> executions can run up to one year. They support exactly-once semantics. They charge per state transition.</p>
+<p>It can ask a human. It can branch on a condition. The author wrote it in a JSON-based language. There are two types. <strong>Standard workflows</strong> executions can run up to one year. They support exactly-once semantics.</p><p>They charge per state transition.</p>
 <p>Use them for long GenAI pipelines with approvals. <strong>Express workflows</strong> has a maximum duration of 5 minutes. It has high throughput. It has at-least-once semantics. It is cheaper per run. Use it for short, high-volume orchestration.</p>
 <p>GenAI work is rarely one call. A document pipeline classifies. It extracts. It validates. It routes for human review. Then it publishes.</p>
 <p>A Lambda trying to do that hits the 15-minute limit. It has no durable memory of its state if it crashes. Step Functions keeps the execution state durably. It survives failures. It retries with backoff. It can pause for days.</p>
 <p>It waits on a human. That pause is the killer feature. Callback patterns with <strong>task tokens</strong> let a workflow wait indefinitely. It waits for an approval click. Then it resumes exactly where it stopped.</p>
-<p>You define states. <strong>Task</strong> calls Lambda or Bedrock directly. It uses optimized integrations. <strong>Choice</strong> branches on output. <strong>Wait</strong> pauses. <strong>Parallel</strong> fans out. <strong>Map</strong> iterates over items. A human approval runs in four steps:</p>
+<p>You define states. <strong>Task</strong> calls Lambda or Bedrock directly. It uses optimized integrations. <strong>Choice</strong> branches on output. <strong>Wait</strong> pauses. <strong>Parallel</strong> fans out.</p><p><strong>Map</strong> iterates over items. A human approval runs in four steps:</p>
 <ol>
 <li>The state machine sends a message. This can be SNS, email, or Slack. The message contains a task token.</li>
 <li>It pauses with <code>waitForTaskToken</code>.</li>
@@ -2584,7 +2584,7 @@ COLD STARTS
 </ol>
 <p>A Lambda implementation is not possible. 6 hours is more than 15 minutes.</p>
 <div class="eq" style="text-align:center;margin:1.25rem 0;padding:.8rem 1rem;background:var(--surface);border:1px solid var(--border);border-radius:8px;font-size:1.05rem"><i>execution cost</i> equals <i>state transitions</i> multiplied by <i>price per transition</i>.</div>
-<p class="eq-where" style="font-size:.92rem;margin:-.6rem 0 1.25rem"><i>state transitions</i> is the number of states executed per run. <i>price per transition</i> is the dollars per state transition. This is $0.025 per 1,000 for Standard.</p>
+<p class="eq-where" style="font-size:.92rem;margin:-.6rem 0 1.25rem"><i>State transitions</i> number of states executed per run. <i>Price per transition</i> dollars per state transition. This is $0.025 per 1,000 for Standard.</p>
 <p><strong>Worked example.</strong> This is the 12-state claim pipeline. The pipeline processes 50,000 claims per month.</p>
 <ol>
 <li>Per execution: 12 multiplied by ($0.025 divided by 1,000) equals 12 multiplied by $0.000025, which equals $0.0003.</li>
@@ -2602,7 +2602,7 @@ COLD STARTS
 
 <figure><img src="assets/img/mermaid/20-sfn-approval-workflow.svg" alt="Step Functions GenAI approval workflow: invoke model, parse response, confidence check, human approval wait, publish result, with a retry loop on low confidence" loading="lazy"><figcaption>This is a Step Functions GenAI approval workflow. It invokes the model. It parses the response. It checks confidence. It waits for human approval. It publishes the result. It has a retry loop for low confidence. Read from left to right.Invoke the model. Then parse the response into a confidence score.</li>
 <li>The amber diamond is the gate. High confidence flows right to human approval. Then it publishes.</li>
-<li>The amber loop is labeled "low". It sends low-confidence results back for another attempt. In production, this loop has a max-attempts counter. This is a stopping condition. It cannot spin forever.</li>
+<li>The diagram labels the amber loop "low". It sends low-confidence results back for another attempt. In production, this loop has a max-attempts counter. This is a stopping condition. It cannot spin forever.</li>
 <li>The "Human approval (wait days)" box is a key Step Functions capability. The execution pauses durably. It uses a task token. It waits until a human clicks approve or reject. Lambda cannot do this.</li>
 </ol>
 <p>Per Component: What It Means, What Breaks</p>
@@ -2683,7 +2683,7 @@ COLD STARTS
 <p class="ch-bridge" style="border-left:3px solid var(--accent);padding:.55rem 1rem;background:var(--surface);border-radius:0 8px 8px 0;margin:1.1rem 0"><strong>Why this comes next.</strong> Step Functions orchestrate workflows. You start these workflows. The other part of production is workflows that start themselves. They start when data arrives.</p>
 <p class="ch-bridge" style="border-left:3px solid var(--accent);padding:.55rem 1rem;background:var(--surface);border-radius:0 8px 8px 0;margin:1.1rem 0">This chapter covers event-driven pipelines. These pipelines use S3 events and EventBridge routing. They also use Bedrock Data Automation.</p>
 
-<figure class="fig-light"><img src="assets/img/internet/aws-agentic-data-exploration-arch.png" alt="AWS reference architecture: S3 events flow through SQS and Lambda into Bedrock Knowledge Bases, Neptune, and OpenSearch for agentic data exploration" loading="lazy"><figcaption>This is an AWS reference architecture. S3 events flow through SQS and Lambda. They go into Bedrock Knowledge Bases, Neptune, and OpenSearch. This allows agentic data exploration.</figcaption><figcaption class="credit">This information comes from the AWS Blog and AWS Solutions Guidance. It was saved locally in September 2026. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure><p>Files land in S3. Events fire. Pipelines wake up. This is how GenAI processes data. No one clicks a button.</p>
+<figure class="fig-light"><img src="assets/img/internet/aws-agentic-data-exploration-arch.png" alt="AWS reference architecture: S3 events flow through SQS and Lambda into Bedrock Knowledge Bases, Neptune, and OpenSearch for agentic data exploration" loading="lazy"><figcaption>This is an AWS reference architecture. S3 events flow through SQS and Lambda. They go into Bedrock Knowledge Bases, Neptune, and OpenSearch. This allows agentic data exploration.</figcaption> <figcaption class="credit">This information comes from the AWS Blog and AWS Solutions Guidance. The team saved it locally in September 2026. Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure><p>Files land in S3. Events fire. Pipelines wake up. This is how GenAI processes data. No one clicks a button.</p>
 <p><strong>Amazon S3</strong> (Simple Storage Service) stores objects. It stores files, documents, videos, and model outputs. <strong>Amazon EventBridge</strong> is a serverless event bus. It receives events. It routes events to targets based on rules. Lambda and Step Functions work with <strong>Amazon EventBridge</strong>.</p>
 <p>They make the standard event-driven GenAI pipeline. An S3 upload emits an event. EventBridge routes the event. Processing starts automatically. Supporting services are <strong>SQS</strong> (Simple Queue Service), <strong>SNS</strong> (Simple Notification Service), and <strong>EventBridge Pipes</strong>. <strong>SQS</strong> buffers events.</p>
 <p>It controls the processing rate. <strong>SNS</strong> sends out notifications. <strong>EventBridge Pipes</strong> connects a source to a target. It can filter and enrich data. It needs no code.</p>
@@ -2696,7 +2696,7 @@ COLD STARTS
 <li>Lambda reads the file. It calls Bedrock Data Automation or a model for extraction. It writes structured output to another prefix or bucket.</li>
 <li>That write emits another event. This triggers the next stage.</li>
 </ol>
-<p>Each stage is decoupled. Each can scale and fail independently. For ordering or rate control, insert SQS between EventBridge and Lambda. Batch up to 10 messages per invocation.</p>
+<p>The design decouples each stage. Each can scale and fail independently. For ordering or rate control, insert SQS between EventBridge and Lambda. Batch up to 10 messages per invocation.</p>
 <p>Set visibility timeouts longer than the processing time. Attach a dead-letter queue for poison messages. S3 versioning keeps every version of every object. The exam pairs this with audit and rollback scenarios.</p>
 <p>A lender receives 10,000 mixed files per day (PDF, PPT, video). S3 event notifications fire per file. An EventBridge rule routes PDFs to the document-extraction state machine. It routes videos to the transcription path. Peak hour brings 2,000 files in 10 minutes. This is about 3.3 events per second.</p>
 <p>Lambda concurrency per file is acceptable. The Bedrock Data Automation async jobs queue behind service quotas. SQS buffers with a 5-minute visibility timeout. A poison PDF crashes extraction.</p>
@@ -2788,7 +2788,7 @@ COLD STARTS
 <p class="ch-next" style="border-top:1px solid var(--border);padding-top:1rem;margin-top:1.75rem"><strong>Next:</strong> Chapter 13, Model deployment strategies. Data-driven pipelines run. Now consider where the model runs and how you pay for capacity.</p>
 
 <h2 id="13-model-deployment-strategies-on-demand-provisioned-throughput-sagemaker-cascading">13. Model deployment strategies: on-demand, Provisioned Throughput, SageMaker, cascading</h2>
-<figure><img src="assets/img/density/d2-deploy-cascade.svg" alt="The cascade behind prompt routers: a router sends simple requests to the cheap model and escalates only complex ones to the flagship" loading="lazy"><figcaption>The cascade behind prompt routers: a router sends simple requests to the cheap model. It escalates only complex requests to the flagship.</figcaption><figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure><div class="walkthrough"><strong>How to read this.</strong> Left to right: cheap model, router, flagship. The footer explains why it works. Most traffic is simple. So most tokens bill cheap. Takeaway: measure the traffic split on a golden dataset. Do this before you trust the savings.</div>
+<figure><img src="assets/img/density/d2-deploy-cascade.svg" alt="The cascade behind prompt routers: a router sends simple requests to the cheap model and escalates only complex ones to the flagship" loading="lazy"><figcaption>The cascade behind prompt routers: a router sends simple requests to the cheap model. It escalates only complex requests to the flagship.</figcaption> <figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure><div class="walkthrough"><strong>How to read this.</strong> Left to right: cheap model, router, flagship. The footer explains why it works. Most traffic is simple. So most tokens bill cheap. Takeaway: measure the traffic split on a golden dataset.</div><div>Do this before you trust the savings.</div>
 <p class="ch-bridge" style="border-left:3px solid var(--accent);padding:.55rem 1rem;background:var(--surface);border-radius:0 8px 8px 0;margin:1.1rem 0"><strong>Why this comes next.</strong> Your workloads run. Where does the model itself run? How do you survive a traffic spike without wasting money? This chapter covers deployment.</p>
 <p class="ch-bridge" style="border-left:3px solid var(--accent);padding:.55rem 1rem;background:var(--surface);border-radius:0 8px 8px 0;margin:1.1rem 0">It covers on-demand. It covers Provisioned Throughput. It covers SageMaker. It covers cascading.The exam's favorite answer is usually a hybrid.</p>
 <p>Where the model runs decides your latency, your bill, and whether you survive peak.</p>
@@ -2808,7 +2808,7 @@ COLD STARTS
 </tr>
 <tr>
 <td><strong>Provisioned Throughput (PT)</strong></td>
-<td>You reserve model units for 1 to 6 month terms. You pay hourly. You get dedicated capacity. There is no throttling. Latency is stable. You must invoke the <strong>provisioned model ARN</strong>. Do not invoke the base model ID. If you invoke the base model ID, you silently stay on on-demand.</td>
+<td><p>You reserve model units for 1 to 6 month terms. You pay hourly. You get dedicated capacity. There is no throttling. Latency is stable. You must invoke the <strong>provisioned model ARN</strong>.</p><p>Do not invoke the base model ID. If you invoke the base model ID, you silently stay on on-demand.</p></td>
 <td>Steady high-volume traffic with strict latency.</td>
 </tr>
 <tr>
@@ -2825,8 +2825,8 @@ COLD STARTS
 </table></div>
 <p>No single deployment fits all traffic shapes. On-demand is cheap at low volume. It throttles at high volume. PT is cheap per unit at steady high volume. It is wasteful when idle.</p>
 <p>The exam rewards matching the deployment to the traffic shape. The most correct answer for mixed traffic is almost always a hybrid. Use PT for the predictable baseline. Use on-demand for the spikes.</p>
-<p><strong>PT mechanics</strong>: you purchase model units for a term. Each unit is a fixed throughput of tokens per minute. Your code must call the provisioned model identifier. The classic production bug, and a common exam scenario, is buying PT but still calling <code>invoke_model(modelId='anthropic.claude...')</code>.</p>
-<p>The purchase is ignored. Throttling continues. Money is wasted. The fix is one line: route to the provisioned ARN.</p>
+<p><strong>PT mechanics</strong>: you purchase model units for a term. Each unit is a fixed throughput of tokens per minute. Your code must call the provisioned model identifier. The classic production bug, and a common exam scenario, means buying PT but still calling <code>invoke_model(modelId='anthropic.claude...')</code>.</p>
+<p>The system ignores the purchase. Throttling continues. You waste money. The fix is one line: route to the provisioned ARN.</p>
 <p><strong>Hybrid routing</strong>: a Lambda checks current load or uses a simple rule. Baseline traffic goes to the provisioned ARN. Overflow goes to on-demand. CloudWatch <code>InvocationThrottles</code> metrics drive the overflow decision.</p>
 <p><strong>SageMaker real-time</strong>: you choose the instance type and count. Autoscaling adds instances on load. GPU instances are expensive. Cold starts on scale-from-zero hurt strict SLAs. Serverless inference is not correct for sustained high-throughput latency-sensitive work.</p>
 <p><strong>Cascading</strong>: the router can be a small classifier model. It can be a rules check (query length, keywords). It can be Bedrock's built-in prompt routers. Escalation criteria must be measurable. These criteria include a confidence score below a threshold or a complexity signal.</p>
@@ -2835,7 +2835,7 @@ COLD STARTS
 <p>The bill drops about 40% compared to peak-sized PT. The numbers are examples. The principle (PT for baseline, on-demand for peaks) is the exam answer.</p>
 <div class="exam-ask"><p>Trap</p>
 <p>Buying PT but calling the base model.</p>
-<p>The exam's signature deployment bug: "The team purchased Provisioned Throughput but still sees throttling. Code calls invoke_model with the base model ID." The fix is routing invocations to the provisioned model ARN. Increasing model units is the distractor. Capacity is not the bug. Routing is the bug.</p></div>
+<p>The exam's signature deployment bug: "The team purchased Provisioned Throughput but still sees throttling. Code calls invoke_model with the base model ID." The fix: routing invocations to the provisioned model ARN. Increasing model units is the distractor. Capacity is not the bug. Routing is the bug.</p></div>
 
 <div class="exam-ask"><p>Common misunderstanding</p>
 <p>PT is not a cost saver for spiky traffic.</p>
@@ -2880,7 +2880,7 @@ COLD STARTS
 <ol>
 <li>The table at the top is the decision tool. Match the traffic shape in the scenario to the deployment in the right column. Mixed baseline plus spikes means hybrid.</li>
 <li>The hybrid sketch shows the Lambda router. The router splits traffic. Steady baseline traffic goes to the provisioned ARN. Overflow traffic goes to on-demand.</li>
-<li>The one-line bug at the bottom is common on the exam. PT is purchased but unused. The code calls the base model ID. The fix is routing. Do not buy more units.</li>
+<li>The one-line bug at the bottom is common on the exam. You purchased PT but leave it unused. The code calls the base model ID. The fix: routing. Do not buy more units.</li>
 <li>The SageMaker branch is only for custom models or self-hosted models. It has real-time, async, and serverless options. These options match latency needs.</li>
 </ol>
 <div class="exam-ask"><p>Scenario: "2M requests per day baseline plus 10x Friday spikes, sub-3s latency." Correct answer: hybrid PT plus on-demand. Distractors: all-SageMaker with GPU autoscaling (cost, cold starts), EC2 sized for peak (idle waste), or pure PT (pays for peak all week). Scenario: "Bought PT, still throttled, code uses base model ID." Correct answer: route to the provisioned ARN. Distractor: buy more model units.</p></div>
@@ -2891,15 +2891,15 @@ COLD STARTS
 <h2 id="14-enterprise-integration-legacy-systems-secure-access-and-the-genai-gateway">14. Enterprise integration: legacy systems, secure access, and the GenAI gateway</h2>
 <p class="ch-bridge" style="border-left:3px solid var(--accent);padding:.55rem 1rem;background:var(--surface);border-radius:0 8px 8px 0;margin:1.1rem 0"><strong>Why this comes next.</strong> You can deploy and scale. The enterprise asks harder questions. These questions include legacy systems, per-team access, secure networking, and one gateway for the company. This chapter shows how to fit Bedrock into the enterprise.</p>
 
-<figure><img src="assets/img/mermaid/67-enterprise-integration.svg" alt="Enterprise integration: the corporate app stays in its VPC, reaches Bedrock through a PrivateLink VPC endpoint, with IAM roles, CloudTrail audit, and KMS encryption" loading="lazy"><figcaption>This is enterprise integration. The corporate application stays in its VPC. It reaches Bedrock through a PrivateLink VPC endpoint. It has IAM roles. It has CloudTrail audit. It has KMS encryption.</figcaption><figcaption class="credit"><em>Enterprise integration: the corporate app stays in its VPC, reaches Bedrock through a PrivateLink VPC endpoint, with IAM roles, CloudTrail audit, and KMS encryption</em> Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
-<figure class="fig-light"><img src="assets/img/internet/img-08.png" alt="Enterprise GenAI reference architecture: WAF and CloudFront in front, Cognito auth, API Gateway and Lambda backend, Bedrock Converse API and Knowledge Bases for RAG" loading="lazy"><figcaption>This is an enterprise GenAI reference architecture. It has WAF and CloudFront in front. It has Cognito authentication. It has API Gateway and Lambda backend. It has Bedrock Converse API and Knowledge Bases for RAG.</figcaption><figcaption class="credit">Source: web image search. Saved locally September 2026. Reused in the AWS AIP-C01 Study Guide.</figcaption></figure><p>Enterprises do not start greenfield. GenAI must connect to legacy systems. It must respect enterprise identity. It must pass through one governed front door.</p>
+<figure><img src="assets/img/mermaid/67-enterprise-integration.svg" alt="Enterprise integration: the corporate app stays in its VPC, reaches Bedrock through a PrivateLink VPC endpoint, with IAM roles, CloudTrail audit, and KMS encryption." loading="lazy"><figcaption>This is enterprise integration. The corporate application stays in its VPC. It reaches Bedrock through a PrivateLink VPC endpoint. It has IAM roles. It has CloudTrail audit. It has KMS encryption.</figcaption> <figcaption class="credit"><em>Enterprise integration: the corporate app stays in its VPC, reaches Bedrock through a PrivateLink VPC endpoint, with IAM roles, CloudTrail audit, and KMS encryption.</em> Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
+<figure class="fig-light"><img src="assets/img/internet/img-08.png" alt="Enterprise GenAI reference architecture: WAF and CloudFront in front, Cognito auth, API Gateway and Lambda backend, Bedrock Converse API and Knowledge Bases for RAG" loading="lazy"><figcaption>This is an enterprise GenAI reference architecture. It has WAF and CloudFront in front. It has Cognito authentication. It has API Gateway and Lambda backend. It has Bedrock Converse API and Knowledge Bases for RAG.</figcaption> <figcaption class="credit">Source: web image search. Saved locally September 2026. Reused in the AWS AIP-C01 Study Guide.</figcaption></figure><p>Enterprises do not start greenfield. GenAI must connect to legacy systems. It must respect enterprise identity. It must pass through one governed front door.</p>
 <p><strong>Legacy integration</strong> connecting GenAI to existing systems. This is a Java property manager. This is an on-prem database. It uses APIs, webhooks, or event-driven sync. API-based is for request/response. Event-driven (EventBridge, SQS) is for loose coupling.</p>
 <p><strong>Secure access</strong> identity federation. Corporate login works on AWS. RBAC (role-based access control) is for models and data. Least-privilege IAM means each component only touches what it needs.</p>
 <p><strong>GenAI gateway</strong> This is a centralized abstraction layer. It is for all model access. One team runs it. Every application calls through it. It adds policy enforcement.</p>
 <p>This means which models and which guardrails. It adds observability. This means who called what and token spend per team. It adds cost control in one place.</p>
 <p><strong>Outposts</strong> (AWS hardware on-prem) and <strong>Wavelength</strong> (AWS at the telecom edge) cover data-residency and ultra-low-latency constraints.</p>
 <p><strong>CI/CD for GenAI</strong> CodePipeline plus CodeBuild with automated tests. It has prompt regression tests. It has security scans. It has rollback.</p>
-<p>Models and prompts deploy like code. They are tested. They are reviewed. They are reversible.</p>
+<p>Models and prompts deploy like code. The team tests them. The team reviews them. The team can reverse them.</p>
 <p>Without a gateway, every team wires its own Bedrock calls. This means ten copies of retry logic. It means ten guardrail configurations that drift apart. No one knows the total token bill.</p>
 <p>Auditors find direct model access with no policy. The gateway is the enterprise answer. It helps to "consume FMs securely across the company." Without legacy patterns, GenAI stays a demo. It cannot touch the systems where the data lives.</p>
 <p>Applications call the gateway. The gateway is an API Gateway plus Lambda. Or it is a dedicated proxy service. Applications never call Bedrock directly. The gateway handles every call. It handles them in the same order.</p>
@@ -2911,7 +2911,7 @@ COLD STARTS
 </ol>
 <p>For legacy systems, the gateway or a Lambda adapter translates. The legacy Java application posts to a webhook. The adapter converts to a Converse call. The result returns in the legacy format.</p>
 <p>EventBridge decouples the rest. The legacy system emits events. GenAI consumers react.</p>
-<p>Multi-tenant data isolation is enforced at the IAM and resource level. Use one KB per tenant. Or use one KB per account. Do not use one shared KB with "please only answer about your hotel" in the prompt.</p>
+<p>The design enforces multi-tenant data isolation at the IAM and resource level. Use one KB per tenant. Or use one KB per account. Do not use one shared KB with "please only answer about your hotel" in the prompt.</p>
 <p>For CI/CD, prompt and configuration changes go through a pipeline. The pipeline has automated evaluation gates. A golden dataset must still pass. Then deploy with automatic rollback on regression.</p>
 <p>A hotel chain has 40 properties. Each property needs its own data isolation. Each property needs near-real-time availability. The design is 40 KBs. This is one KB per property.</p>
 <p>Each KB syncs from that property's system. IAM Identity Center permission sets scope each property's application to its own KB. The GenAI gateway enforces a 2,000-token-per-request cap. It logs per-property spend. A shared-KB design would need prompt-level filtering.</p>
@@ -2958,7 +2958,7 @@ COLD STARTS
 <p>How to read this diagram</p>
 <ol>
 <li>Start at the top. Tenant applications never touch Bedrock. They call the gateway. The gateway authenticates them. It uses the corporate identity provider.</li>
-<li>The three columns are the gateway's jobs. Policy is what is allowed. Observability is what happened and who pays. Abstraction is model swaps without client changes.</li>
+<li>The three columns are the gateway's jobs. Policy defines the allowed actions. Observability is what happened and who pays. Abstraction is model swaps without client changes.</li>
 <li>Below is the data plane. It has per-tenant KBs with IAM scoping. The "NOT shared" note is the exam rule.</li>
 <li>The legacy adapter shows the translation pattern. Webhooks come in. Converse calls go out. Legacy formats come back.</li>
 <li>The CI/CD line at the bottom is the deployment discipline. It has evaluation gates before deployment. It has automatic rollback after deployment.</li>
@@ -2967,13 +2967,13 @@ COLD STARTS
 <p>Or CloudTrail for data sync. CloudTrail is for audit. It is not a pipeline. This is a scenario: "Secure FM consumption across the enterprise." The correct answer is a centralized GenAI gateway. The distractor is: every team calls Bedrock directly with shared credentials.</p></div>
 
 <span id="13-application-patterns-chatbots-copilots-qa-over-docs-and-bedrock-data-automation"></span>
-<p class="ch-next" style="border-top:1px solid var(--border);padding-top:1rem;margin-top:1.75rem"><strong>Next:</strong> This is Chapter 15. It is about application patterns. The enterprise is wired. Now, consider the user-facing shapes. These are chatbots, copilots, Q and A, and document automation.</p>
+<p class="ch-next" style="border-top:1px solid var(--border);padding-top:1rem;margin-top:1.75rem"><strong>Next:</strong> This is Chapter 15. It is about application patterns. The enterprise has its wiring in place. Now, consider the user-facing shapes. These are chatbots, copilots, Q and A, and document automation.</p>
 
 <h2 id="15-application-patterns-chatbots-copilots-qa-over-docs-and-bedrock-data-automation">15. Application patterns: chatbots, copilots, Q&amp;A over documents, and Bedrock Data Automation</h2>
 <p class="ch-bridge" style="border-left:3px solid var(--accent);padding:.55rem 1rem;background:var(--surface);border-radius:0 8px 8px 0;margin:1.1rem 0"><strong>Why this comes next.</strong> The infrastructure is complete. Now, consider the shapes users see. These are chatbots, copilots, Q and A over documents, and document automation. This chapter shows the application patterns AWS expects you to know.</p>
 
-<figure><img src="assets/img/mermaid/68-app-patterns.svg" alt="Application patterns: chat uses Converse with history, summarization uses long context, classification uses a small fast model, extraction uses tool calling" loading="lazy"><figcaption>These are application patterns. Chat uses Converse with history. Summarization uses long context. Classification uses a small fast model. Extraction uses tool calling.</figcaption><figcaption class="credit"><em>Application patterns: chat uses Converse with history, summarization uses long context, classification uses a small fast model, extraction uses tool calling</em> Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
-<figure class="fig-light"><img src="assets/img/internet/aws-blog-bedrock-kendra-assistant.png" alt="AWS reference architecture: an AI assistant built on Bedrock with a Kendra index, a Streamlit app, and LLM-generated responses" loading="lazy"><figcaption>This is an AWS reference architecture. It is an AI assistant. It is built on Bedrock. It has a Kendra index. It has a Streamlit application. It has LLM-generated responses.</figcaption><figcaption class="credit">Source: AWS Blog / AWS Solutions Guidance. Saved locally September 2026. Reused in the AWS AIP-C01 Study Guide.</figcaption></figure><p>Three application shapes cover most GenAI products. Data Automation feeds all of them. It gives structured content from messy files.</p>
+<figure><img src="assets/img/mermaid/68-app-patterns.svg" alt="Application patterns: chat uses Converse with history, summarization uses long context, classification uses a small fast model, extraction uses tool calling." loading="lazy"><figcaption>These are application patterns. Chat uses Converse with history. Summarization uses long context. Classification uses a small fast model. Extraction uses tool calling.</figcaption> <figcaption class="credit"><em>Application patterns: chat uses Converse with history, summarization uses long context, classification uses a small fast model, extraction uses tool calling.</em> Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure>
+<figure class="fig-light"><img src="assets/img/internet/aws-blog-bedrock-kendra-assistant.png" alt="AWS reference architecture: an AI assistant built on Bedrock with a Kendra index, a Streamlit app, and LLM-generated responses" loading="lazy"><figcaption>This is an AWS reference architecture. It is an AI assistant. It is built on Bedrock. It has a Kendra index. It has a Streamlit application. It has LLM-generated responses.</figcaption> <figcaption class="credit">Source: AWS Blog / AWS Solutions Guidance. Saved locally September 2026. Reused in the AWS AIP-C01 Study Guide.</figcaption></figure><p>Three application shapes cover most GenAI products. Data Automation feeds all of them. It gives structured content from messy files.</p>
 <div class="table-wrap"><table>
 <thead>
 <tr>
@@ -2990,7 +2990,7 @@ COLD STARTS
 </tr>
 <tr>
 <td><strong>Copilot</strong></td>
-<td>This is an assistant. It is embedded inside an existing product. This can be a code editor, a CRM, or a document tool. It needs low latency, streaming, and context from the host application. It usually uses Converse with tool use. It works against the host's APIs.</td>
+<td>This is an assistant. The team embedded it inside an existing product. This can be a code editor, a CRM, or a document tool. It needs low latency, streaming, and context from the host application. It usually uses Converse with tool use. It works against the host's APIs.</td>
 <td>It optimizes latency inside another user interface.</td>
 </tr>
 <tr>
@@ -3000,7 +3000,7 @@ COLD STARTS
 </tr>
 <tr>
 <td><strong>Bedrock Data Automation (BDA)</strong></td>
-<td>This is the managed document-processing service. It extracts text, tables, and structure from documents, images, video, and audio. It has two output modes. One is standard output. This is a fixed schema. The other is a custom blueprint. You define the fields. It is async. The results are in S3.</td>
+<td><p>This is the managed document-processing service. It extracts text, tables, and structure from documents, images, video, and audio. It has two output modes. One is standard output. This is a fixed schema. The other is a custom blueprint.</p><p>You define the fields. It is async. The results are in S3.</p></td>
 <td>This is the exam's IDP (intelligent document processing) answer.</td>
 </tr>
 <tr>
@@ -3021,13 +3021,13 @@ COLD STARTS
 </tbody>
 </table></div>
 <p>Each shape optimizes different constraints. Chatbots optimize conversation state and streaming. Copilots optimize latency inside another user interface. Q and A over documents optimizes retrieval quality and citations.</p>
-<p>BDA exists because "read 10,000 mixed files a day" is not a prompt engineering problem. It is an extraction pipeline problem. Hand-rolling parsers for PDF, PPT, video, and audio is undifferentiated heavy lifting. AWS wants to remove this.</p>
-<p><strong>Chatbot session state</strong> DynamoDB stores messages. The messages are keyed by conversation ID. They have a TTL. The Lambda loads recent history.</p>
+<p>BDA exists because "read 10,000 mixed files a day" is not a prompt engineering problem. It is an extraction pipeline problem. Hand-rolling parsers for PDF, PPT, video, and audio means undifferentiated heavy lifting. AWS wants to remove this.</p>
+<p><strong>Chatbot session state</strong> DynamoDB stores messages. The system keys the messages by conversation ID. They have a TTL. The Lambda loads recent history.</p>
 <p>It loads it into the Converse messages array each turn. S3 is not correct here. S3 has higher latency. It has the wrong access pattern for per-turn reads.</p>
 <p><strong>Copilot context</strong> The host application injects current context. This is the open file. This is the selected ticket. It goes into the system prompt. It goes as document blocks. Streaming over WebSockets makes it feel instant.</p>
 <p><strong>Q and A over docs</strong> The KB handles chunking, embedding, and retrieval. For custom control, call Retrieve yourself. Build the prompt. Call Converse.</p>
 <p>This lets you add reranking. It lets you add custom prompt templates. It lets you add citation formatting.</p>
-<p><strong>BDA pipeline</strong> An S3 upload triggers the job. This is event-driven. See topic 12. BDA parses all four modalities.</p>
+<p><strong>BDA pipeline</strong> An S3 upload triggers the job. This uses an event-driven design. See topic 12. BDA parses all four modalities.</p>
 <p>It writes structured JSON to S3. This is per your blueprint. A downstream Lambda validates the data. It loads the data into the KB or database.</p>
 <p><strong>Troubleshooting hooks</strong> Use CloudWatch Logs Insights queries over prompt and response logs. X-Ray traces the multi-step call chain. The call chain goes from the gateway to Lambda, to Bedrock, to the KB. This shows which step is slow.</p>
 <p>A study-materials company processes 10,000 files per day. The files include video. BDA jobs average 45 seconds per file. Sequential processing will take 125 hours. 50 concurrent async jobs will take 2.5 hours. Blueprint extraction gives a fixed JSON schema per file type.</p>
@@ -3038,7 +3038,7 @@ COLD STARTS
 
 <div class="exam-ask"><p>Common misunderstanding</p>
 <p>Use DynamoDB for session state. Do not use S3.</p>
-<p>"Store chat history" points to DynamoDB. DynamoDB has millisecond reads. It has TTL expiry. It is keyed by conversation. S3 is for documents.</p>
+<p>"Store chat history" points to DynamoDB. DynamoDB has millisecond reads. It has TTL expiry. The system keys it by conversation. S3 is for documents.</p>
 <p>S3 is for backups. S3 is for batch outputs. The exam pairs S3-for-sessions with latency or cost pain. This is a distractor.</p></div>
 <pre><code>THREE APP SHAPES, ONE FEEDER PIPELINE
 
@@ -3094,11 +3094,11 @@ COLD STARTS
 </ol>
 
 <h2 id="16-embedding-bedrock-in-existing-apps-sdks-retries-and-reliability">16. Embed Bedrock in existing applications: SDKs, retries, and reliability</h2>
-<figure><img src="assets/img/density/d2-retry-backoff.svg" alt="Retries: exponential backoff with jitter; 1s, then 2s, then 4s, never a tight loop" loading="lazy"><figcaption>Use exponential backoff with jitter for retries. Wait 1 second. Then wait 2 seconds. Then wait 4 seconds. Do not use a tight loop.</figcaption><figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure><div class="walkthrough"><strong>How to read this.</strong> The top box names the signal: throttle. Then wait. The waits double with jitter. Jitter stops a fleet from retrying in lockstep. Provisioned Throughput solves sustained throttles. More retries do not solve sustained throttles.</div>
+<figure><img src="assets/img/density/d2-retry-backoff.svg" alt="Retries: exponential backoff with jitter; 1s, then 2s, then 4s, never a tight loop" loading="lazy"><figcaption>Use exponential backoff with jitter for retries. Wait 1 second. Then wait 2 seconds. Then wait 4 seconds. Do not use a tight loop.</figcaption> <figcaption class="credit">Source: original figure for the AWS AIP-C01 Study Guide.</figcaption></figure><div class="walkthrough"><strong>How to read this.</strong> The top box names the signal: throttle. Then wait. The waits double with jitter. Jitter stops a fleet from retrying in lockstep. Provisioned Throughput solves sustained throttles.</div><div>More retries do not solve sustained throttles.</div>
 <p class="ch-bridge" style="border-left:3px solid var(--accent);padding:.55rem 1rem;background:var(--surface);border-radius:0 8px 8px 0;margin:1.1rem 0"><strong>Why this comes next.</strong> One mile remains: the code that already exists. SDKs, retries, throttles, structured output, the reliability layer between your app and Bedrock. This chapter closes the volume. It is at the last mile.Production traffic needs retries, backoff, fallbacks, and traces.</p>
 <p>The <strong>AWS SDK</strong> (boto3 in Python, and equivalents in every major language) is how applications call Bedrock. There are two clients. <code>bedrock-runtime</code> is for inference (Converse, InvokeModel). <code>bedrock-agent-runtime</code> is for agents. Reliability patterns are around those calls. <strong>exponential backoff with jitter</strong> (If a throttle occurs, wait 1 second. Then wait 2 seconds. Then wait 4 seconds. Add random jitter to each wait.</p>
 <p>This prevents a fleet of clients from retrying at the same time. Use fallback models. If the primary model throttles or errors, retry with a smaller model. Or retry with a different model.Or serve a cached response. This is graceful degradation). <strong>timeouts and circuit breakers</strong> (Limit how long you wait. Stop calling a failing dependency after N failures.</p>
-<p>Fail fast until it recovers). <strong>X-Ray tracing</strong> (Use distributed traces across API Gateway to Lambda to Bedrock to KB. This lets you see which hop is slow). <strong>model invocation logging</strong> (Bedrock can log requests and responses to S3 or CloudWatch. This can be KMS-encrypted. This is for forensics. In compliance environments, restrict or disable it. Logs can contain PII).</p>
+<p>Fail fast until it recovers). <strong>X-Ray tracing</strong> (Use distributed traces across API Gateway to Lambda to Bedrock to KB. This lets you see which hop is slow). <strong>model invocation logging</strong> (Bedrock can log requests and responses to S3 or CloudWatch. KMS can encrypt this. This is for forensics. In compliance environments, restrict or disable it.</p><p>Logs can contain PII).</p>
 <p>Bedrock is a shared service with quotas. Throttles (<code>ThrottlingException</code>) are normal at scale. They are not bugs. An app without retries turns every throttle into a user-facing error.</p>
 <p>An app with naive retries (immediate, synchronized) turns one throttle into a retry storm. This makes it worse. The exam tests whether you build the disciplined version: backoff, jitter, fallback, and observability.</p>
 <p>The SDK signs every request with SigV4 using IAM credentials. Least-privilege IAM: the app's role allows only <code>bedrock:InvokeModel</code> on the specific model ARNs it needs, not <code>bedrock:*</code>.</p>
@@ -3169,7 +3169,7 @@ COLD STARTS
 <ol>
 <li>Layer 1: the SDK plus a scoped IAM role. bedrock-runtime handles inference. bedrock-agent-runtime handles agents. Least privilege, no keys in code.</li>
 <li>Layer 2: exponential backoff with jitter. On a throttle, wait 1 second, then 2, then 4, each plus random jitter. Jitter stops a fleet of clients retrying in lockstep.</li>
-<li>Layer 3: fallback, not endless retries. Sustained throttles are solved with Provisioned Throughput, not more retries. Route to a fallback model when the primary is sick.</li>
+<li>Layer 3: fallback, not endless retries. Provisioned Throughput solves sustained throttles, not more retries. Route to a fallback model when the primary is sick.</li>
 <li>Layer 4: parse and validate the structured output. Never trust model JSON blindly.</li>
 <li>Exam trap: never a tight retry loop. Backoff with jitter first, then a structural fix.</li>
 </ol>
@@ -3178,7 +3178,7 @@ COLD STARTS
 <p>These are the distractor patterns AWS reuses. If you can kill each one on sight, Domain 2 is yours.</p>
 <ol>
 <li><strong>Lambda for long waits or approvals</strong> The 15-minute ceiling means Step Functions Standard with task tokens.</li>
-<li><strong>Agent ignores new config</strong> This means prepare-agent was skipped. Prepare, then re-alias.</li>
+<li><strong>Agent ignores new config</strong> This means the team skipped prepare-agent. Prepare, then re-alias.</li>
 <li><strong>Agents talking via action groups</strong> This is not correct. Supervisor to collaborator is the built-in multi-agent mechanism.</li>
 <li><strong>DRAFT collaborator</strong> This cannot receive delegations. Prepared plus aliased only.</li>
 <li><strong>Converse for embeddings</strong> This is not correct. Embeddings need InvokeModel.</li>
@@ -3221,7 +3221,7 @@ COLD STARTS
 <li>C. Hardcoded provider SDKs per model</li>
 <li>D. A Bedrock Agent for each provider</li>
 </ul>
-<p><strong>B is correct.</strong> Converse gives one code path. This path has native tool use and inline guardrails across providers. A is not correct. Per-provider bodies make the code three times longer. They break the "same code" constraint. C is not correct.</p>
+<p><strong>B is correct.</strong> Converse gives one code path. This path has native tool use and inline guardrails across providers. A is not correct. Per-provider bodies make the code three times longer. They break the "same code" constraint.</p><p>C is not correct.</p>
 <p>Hardcoded SDKs are a maintenance burden. Converse removes this burden. D is not correct. Agents add orchestration overhead. This is a single-call need.</p>
 <p>Multiple choice · Hard</p>
 <p><strong>Q3.</strong> The model returns a toolUse block during a Converse tool-use loop. The block requests a database lookup. What executes the lookup?</p>
@@ -3289,14 +3289,14 @@ COLD STARTS
 <p><strong>B is correct.</strong> A repeated stable prefix is the textbook prompt-caching case. Cached input tokens cost a fraction of fresh ones. PT is a latency and throughput guarantee. It is not a repeated-input cost fix. This is wrong.</p>
 <p>Batch is for non-interactive hours-later workloads. This is wrong. A larger model raises cost. This is wrong.</p>
 <p>Multiple choice · Hard</p>
-<p><strong>Q9.</strong> Prompt caching is enabled. The cache hit rate is near zero. Logs show the system prompt includes a per-request timestamp. It is at the very start. What is the cause?</p>
+<p><strong>Q9.</strong> The team enables prompt caching. The cache hit rate is near zero. Logs show the system prompt includes a per-request timestamp. It is at the very start. What is the cause?</p>
 <ul>
 <li>A. The model does not support caching.</li>
 <li>B. The prefix never matches exactly. The timestamp changes it.</li>
 <li>C. The temperature is too high.</li>
 <li>D. The TTL is too long.</li>
 </ul>
-<p><strong>B is correct.</strong> Cache matching needs an exact token-for-token prefix. A leading timestamp invalidates it on every call. Move volatile content after the cache point to fix this. The feature is enabled. It is working.</p>
+<p><strong>B is correct.</strong> Cache matching needs an exact token-for-token prefix. A leading timestamp invalidates it on every call. Move volatile content after the cache point to fix this. The team enables the feature. It works.</p>
 <p>It is just never matching. This is wrong. Temperature affects sampling. It does not affect cache matching. This is wrong.</p>
 <p>A longer TTL would help hits. It would not hurt them. This is wrong.</p>
 <p>Multiple response: select TWO · Easy</p>
@@ -3359,7 +3359,7 @@ COLD STARTS
 <p><strong>Q15.</strong> A product manager proposes batch inference. The feature needs sub-3-second responses. The manager cites the 50% discount. What is the correct response?</p>
 <ul>
 <li>A. Approve. Batch with high concurrency meets 3 seconds.</li>
-<li>B. Reject. Batch latency is measured in hours. Use real-time inference with Provisioned Throughput for guarantees.</li>
+<li>B. Reject. The service measures batch latency in hours. Use real-time inference with Provisioned Throughput for guarantees.</li>
 <li>C. Approve. Larger batch files reduce latency.</li>
 <li>D. Use async single invocation instead for 3-second responses.</li>
 </ul>
@@ -3369,7 +3369,7 @@ COLD STARTS
 <p><strong>Q16.</strong> Which two items describe batch inference?</p>
 <ul>
 <li>A. Input and output travel via S3.</li>
-<li>B. Latency is measured in hours.</li>
+<li>B. The service measures latency in hours.</li>
 <li>C. Responses return in real time.</li>
 <li>D. It always costs full on-demand price.</li>
 <li>E. It needs a WebSocket connection.</li>
@@ -3419,7 +3419,7 @@ COLD STARTS
 <li>C. Aliases</li>
 <li>D. Cache points</li>
 </ul>
-<p><strong>B is correct.</strong> Variants are alternate prompt forms. They are for A/B comparison. Versions are immutable releases. They are not parallel alternatives. This is wrong. Aliases belong to agents.</p>
+<p><strong>B is correct.</strong> Variants are alternate prompt forms. They are for A/B comparison. Versions are immutable releases. They are not parallel alternatives. This is wrong.</p><p>Aliases belong to agents.</p>
 <p>They do not belong to prompts. This is wrong. Cache points are a cost feature. They are not a testing mechanism. This is wrong.</p>
 <p>Multiple choice · Hard</p>
 <p><strong>Q21.</strong> Yesterday's published prompt change caused regressions. What is the most correct rollback?</p>
@@ -3429,8 +3429,8 @@ COLD STARTS
 <li>C. Delete the prompt. Recreate it from memory.</li>
 <li>D. Deploy the application code again.</li>
 </ul>
-<p><strong>B is correct.</strong> Versions are immutable. Rollback is a pointer change to the last good version. It needs zero code deploy. Published versions cannot be edited in place. This is wrong. Deleting destroys history.</p>
-<p>It risks inaccuracy. This is wrong. The prompt is decoupled from code. No deploy is necessary. This is wrong.</p>
+<p><strong>B is correct.</strong> Versions are immutable. Rollback is a pointer change to the last good version. It needs zero code deploy. You cannot edit published versions in place. This is wrong.</p><p>Deleting destroys history.</p>
+<p>It risks inaccuracy. This is wrong. The design decouples the prompt from code. No deploy is necessary. This is wrong.</p>
 <p>Multiple response: select TWO · Easy</p>
 <p><strong>Q22.</strong> Which two statements about Bedrock Prompt Management are correct?</p>
 <ul>
@@ -3438,7 +3438,7 @@ COLD STARTS
 <li>B. Published versions are immutable snapshots.</li>
 <li>C. There is an extra charge per stored prompt.</li>
 <li>D. Prompts must remain hardcoded in application code.</li>
-<li>E. Versions can be edited after publishing.</li>
+<li>E. You can edit versions after publishing.</li>
 </ul>
 <p><strong>A and B are correct.</strong> Variables enable runtime substitution. Versions give immutable rollback points. There is no extra charge beyond model tokens. You pay only for model tokens. This is wrong.</p>
 <p>Decoupling from code is the point. This is wrong. Published versions are immutable. This is wrong.</p>
@@ -3484,7 +3484,7 @@ COLD STARTS
 <li>C. Raise the temperature.</li>
 <li>D. Add more guardrail filters.</li>
 </ul>
-<p><strong>B is correct.</strong> Off-topic chunks cause retrieval failure. This happens before generation. Chunking and embeddings control retrieval. A bigger model reads wrong passages. It writes wrong answers more fluently. This is wrong.</p>
+<p><strong>B is correct.</strong> Off-topic chunks cause retrieval failure. This happens before generation. Chunking and embeddings control retrieval. A bigger model reads wrong passages. It writes wrong answers more fluently.</p><p>This is wrong.</p>
 <p>Temperature controls randomness. It does not control retrieval. This is wrong. Guardrails filter outputs. They do not improve relevance. This is wrong.</p>
 <p>Multiple choice. Hard.</p>
 <p><strong>Q27.</strong> An application needs a custom reranking step. The step is over retrieved passages. The application needs a strict citation format. The managed API does not support this. Which KB query approach must the application use?</p>
@@ -3516,7 +3516,7 @@ COLD STARTS
 <li>D. A higher temperature</li>
 <li>E. A longer system prompt</li>
 </ul>
-<p><strong>A and B are correct.</strong> Chunking decides what a passage means. Embeddings decide how meaning is measured. Both are upstream of generation. C is incorrect. The generator cannot fix passages that were never retrieved.</p>
+<p><strong>A and B are correct.</strong> Chunking decides what a passage means. Embeddings decide how the system measures meaning. Both are upstream of generation. C is incorrect. The generator cannot fix passages that were never retrieved.</p>
 <p>D is incorrect. Temperature affects randomness. It does not affect retrieval. E is incorrect. Prompt length does not change vector similarity.</p>
 <p>Multiple response: select THREE. Hard.</p>
 <p><strong>Q30.</strong> A team designs a production Q and A system. The system uses 50,000 internal documents. Which THREE items belong in the design?</p>
@@ -3535,10 +3535,10 @@ COLD STARTS
 <p>Multiple choice. Easy.</p>
 <p><strong>Q31.</strong> A developer updates a Bedrock Agent's instruction. The developer wants to change its behavior. The agent continues to behave as before. What is the first item to check?</p>
 <ul>
-<li>A. Whether the Lambda function's memory was increased</li>
+<li>A. Whether the team increased the Lambda function's memory</li>
 <li>B. Whether prepare-agent was run after the change</li>
-<li>C. Whether the IAM role was rotated</li>
-<li>D. Whether the CloudFormation stack was redeployed</li>
+<li>C. Whether the team rotated the IAM role</li>
+<li>D. Whether the team redeployed the CloudFormation stack</li>
 </ul>
 <p><strong>B is correct.</strong> Configuration changes stay in DRAFT. Then prepare-agent compiles them to PREPARED. The agent silently runs the old configuration. A is incorrect. Lambda memory affects execution performance.</p>
 <p>It does not affect whether the agent sees the new instruction. C is incorrect. Rotating IAM credentials does not refresh agent configuration. D is incorrect. CloudFormation does not deploy Bedrock Agents for routine instruction changes.</p>
@@ -3550,7 +3550,7 @@ COLD STARTS
 <li>C. A Lambda function that calls InvokeModel with hardcoded answers</li>
 <li>D. Bedrock Guardrails with the policy documents as denied topics</li>
 </ul>
-<p><strong>B is correct.</strong> Action groups give the agent API-calling tools. The KB grounds answers in the policy documents. A is incorrect. Pasting the whole policy fails on large documents. It gives no tool use. C is incorrect.</p>
+<p><strong>B is correct.</strong> Action groups give the agent API-calling tools. The KB grounds answers in the policy documents. A is incorrect. Pasting the whole policy fails on large documents. It gives no tool use.</p><p>C is incorrect.</p>
 <p>Hardcoded answers cannot show live order status. D is incorrect. Guardrails filter content. They do not call APIs. They do not retrieve documents.</p>
 <p>Multiple choice. Hard.</p>
 <p><strong>Q33.</strong> Auditors need to see an agent's step-by-step reasoning. They need to see which tools it chose and why. They need this for every production invocation. Which approach meets this need with the least custom work?</p>
@@ -3571,7 +3571,7 @@ COLD STARTS
 <li>D. A SageMaker training job</li>
 <li>E. A CloudFront distribution</li>
 </ul>
-<p><strong>A and C are correct.</strong> Every agent has an instruction. Every agent has an IAM role. The IAM role scopes what the agent can call. B is incorrect. Agents are serverless. No EC2 is involved.</p>
+<p><strong>A and C are correct.</strong> Every agent has an instruction. Every agent has an IAM role. The IAM role scopes what the agent can call. B is incorrect. Agents are serverless.</p><p>The design uses no EC2.</p>
 <p>D is incorrect. Training is out of scope for Bedrock Agents. E is incorrect. CloudFront is a CDN. It is not an agent component.</p>
 <p>Multiple response: select TWO. Medium.</p>
 <p><strong>Q35.</strong> An agent received a new action group. But the agent behaves as if the tool does not exist. Which TWO steps fix this?</p>
@@ -3606,7 +3606,7 @@ COLD STARTS
 <li>C. By sending the collaborator an SQS message</li>
 <li>D. By invoking the collaborator's Lambda function directly</li>
 </ul>
-<p><strong>B is correct.</strong> Delegation is a built-in mechanism. You configure it in the supervisor's setup. It is not a tool call. A is incorrect. Action groups are agent-to-tool. They are not agent-to-agent.</p>
+<p><strong>B is correct.</strong> Delegation is a built-in mechanism. You configure it in the supervisor's setup. It is not a tool call. A is incorrect. Action groups are agent-to-tool.</p><p>They are not agent-to-agent.</p>
 <p>C is incorrect. SQS is a messaging queue. It is not the delegation path. D is incorrect. The supervisor talks to the collaborator agent. It does not talk to its underlying Lambda.</p>
 <p>Multiple choice. Medium.</p>
 <p><strong>Q38.</strong> A supervisor agent never delegates to a newly added collaborator. The supervisor's instruction names the collaborator correctly. What is the most probable cause?</p>
@@ -3616,7 +3616,7 @@ COLD STARTS
 <li>C. The supervisor needs an action group for the collaborator</li>
 <li>D. The collaborator's Lambda timeout is too short</li>
 </ul>
-<p><strong>B is correct.</strong> Collaborators must be PREPARED and ALIASED before the supervisor can delegate.
+<p><strong>B is correct.</strong> You must PREPARE and ALIAS collaborators before the supervisor can delegate.
 DRAFT collaborators are invisible to delegation. A is wrong: model size does not gate delegation. C is wrong: agent-to-agent delegation never uses action groups. D is wrong: a timeout would cause failures, not silent non-delegation.</p>
 <p>Multiple choice. Hard.</p>
 <p><strong>Q39.</strong> Specialist agents for tax, investments, and estate must collaborate. They must use tools. They must keep memory for weeks. They need human approval for actions over $100,000. Which combination is the correct one?</p>
@@ -3649,7 +3649,7 @@ DRAFT collaborators are invisible to delegation. A is wrong: model size does not
 <li>D. MCP replaces IAM for access control</li>
 <li>E. MCP is only for Bedrock Agents</li>
 </ul>
-<p><strong>A and C are correct.</strong> MCP standardizes how agents call tools. Simple MCP servers fit the Lambda model. Complex MCP servers use ECS. B is incorrect. Lambda and ECS both host MCP servers. EC2 is not necessary.</p>
+<p><strong>A and C are correct.</strong> MCP standardizes how agents call tools. Simple MCP servers fit the Lambda model. Complex MCP servers use ECS. B is incorrect. Lambda and ECS both host MCP servers.</p><p>EC2 is not necessary.</p>
 <p>D is incorrect. IAM still governs access. MCP does not replace IAM. E is incorrect. MCP is framework-agnostic.</p>
 <p>Multiple response: select THREE. Hard.</p>
 <p><strong>Q42.</strong> Which THREE items are necessary for a production multi-agent deployment?</p>
@@ -3661,7 +3661,7 @@ DRAFT collaborators are invisible to delegation. A is wrong: model size does not
 <li>E. Unlimited delegation depth between agents</li>
 </ul>
 <p><strong>A, B, and C are correct.</strong> Prepared collaborators and aliased collaborators are delegation prerequisites. History relay controls the token cost. Human approval gates risky actions. D is incorrect. Least privilege needs scoped roles for each agent.</p>
-<p>It does not need one admin role. E is incorrect. Unbounded delegation depth can cause runaway cost and loops. The depth must be bounded.</p>
+<p>It does not need one admin role. E is incorrect. Unbounded delegation depth can cause runaway cost and loops. You must bound the depth.</p>
 
 <span id="topic-3-agents-with-kb-and-guardrails"></span>
 <h3 id="topic-8-agents-with-kb-and-guardrails">Topic 8: Agents with KB and Guardrails</h3>
@@ -3684,7 +3684,7 @@ DRAFT collaborators are invisible to delegation. A is wrong: model size does not
 <li>C. Raise the temperature for more creativity</li>
 <li>D. Add more denied topics to the guardrail</li>
 </ul>
-<p><strong>B is correct.</strong> Irrelevant chunks mean the failure is in retrieval. The failure is in chunking, splitting context, or weak embeddings. It is not in generation. A is incorrect. A bigger model cannot fix bad input context. C is incorrect.</p>
+<p><strong>B is correct.</strong> Irrelevant chunks mean the failure is in retrieval. The failure is in chunking, splitting context, or weak embeddings. It is not in generation. A is incorrect. A bigger model cannot fix bad input context.</p><p>C is incorrect.</p>
 <p>Higher temperature increases randomness. This is the opposite of the fix. D is incorrect. Guardrails filter outputs. They do not improve retrieval relevance.</p>
 <p>Multiple choice · Hard</p>
 <p><strong>Q45.</strong> A children's tutoring agent must block profanity and violence in inputs. It must prevent harmful outputs. It must resist jailbreaks. It must ground facts in the curriculum. Which design is MOST correct?</p>
@@ -3694,7 +3694,7 @@ DRAFT collaborators are invisible to delegation. A is wrong: model size does not
 <li>C. Word filters alone on the output</li>
 <li>D. A larger model with a longer system prompt</li>
 </ul>
-<p><strong>B is correct.</strong> This is defense in depth. Input screening stops attacks early. Output screening catches harmful generations. The Knowledge Base grounds facts. A is incorrect. Base-model safety is never the complete answer for a sensitive audience.</p>
+<p><strong>B is correct.</strong> This is defense in depth. Input screening stops attacks early. Output screening catches harmful generations. The Knowledge Base grounds facts. A is incorrect.</p><p>Base-model safety is never the complete answer for a sensitive audience.</p>
 <p>C is incorrect. Word filters are exact-match lists. They miss paraphrases. They do nothing for grounding. D is incorrect. Model size does not provide policy enforcement or grounding.</p>
 <p>Multiple response: select TWO · Easy</p>
 <p><strong>Q46.</strong> Which TWO statements about guardrail controls are correct?</p>
@@ -3705,7 +3705,7 @@ DRAFT collaborators are invisible to delegation. A is wrong: model size does not
 <li>D. Guardrails extract key concepts from documents</li>
 <li>E. Denied topics match exact strings only</li>
 </ul>
-<p><strong>A and C are correct.</strong> Content filters handle toxicity at NONE, LOW, MEDIUM, or HIGH thresholds. Sensitive information filters detect more than 30 PII entity types. They use block or mask actions. B is incorrect. Word filters are exact-match blocklists. They are not entity detectors.</p>
+<p><strong>A and C are correct.</strong> Content filters handle toxicity at NONE, LOW, MEDIUM, or HIGH thresholds. Sensitive information filters detect more than 30 PII entity types. They use block or mask actions. B is incorrect. Word filters are exact-match blocklists.</p><p>They are not entity detectors.</p>
 <p>D is incorrect. Guardrails filter. They never extract. E is incorrect. Denied topics use natural-language definitions. They do not use exact strings.</p>
 <p>Multiple response: select TWO · Medium</p>
 <p><strong>Q47.</strong> An agent gives a correct, well-grounded answer. But the guardrail blocks the answer. Which TWO are the correct debugging steps?</p>
@@ -3750,17 +3750,17 @@ DRAFT collaborators are invisible to delegation. A is wrong: model size does not
 <li>C. Increase the Lambda memory to 10 GB</li>
 <li>D. Add provisioned concurrency to the function</li>
 </ul>
-<p><strong>B is correct.</strong> The failure is the API Gateway REST 29-second integration timeout. It is not Lambda. WebSockets support long-lived token streams. A is incorrect. Lambda already outlasts the 90 seconds. The gateway is the bottleneck.</p>
+<p><strong>B is correct.</strong> The failure is the API Gateway REST 29-second integration timeout. It is not Lambda. WebSockets support long-lived token streams. A is incorrect. Lambda already outlasts the 90 seconds.</p><p>The gateway is the bottleneck.</p>
 <p>C is incorrect. Memory does not extend the gateway timeout. D is incorrect. Provisioned concurrency fixes cold starts. It does not fix timeouts.</p>
 <p>Multiple choice · Hard</p>
-<p><strong>Q51.</strong> A synchronous API receives 200 requests per second at peak. Each request triggers a 60-second model call. Requests are throttled. What is the MOST correct architectural fix?</p>
+<p><strong>Q51.</strong> A synchronous API receives 200 requests per second at peak. Each request triggers a 60-second model call. The service throttles requests. What is the MOST correct architectural fix?</p>
 <ul>
 <li>A. Request a Lambda concurrency limit increase to 20,000</li>
 <li>B. Put an SQS queue in front and process asynchronously at a controlled rate</li>
 <li>C. Add provisioned concurrency to the Lambda function</li>
 <li>D. Switch to a larger foundation model</li>
 </ul>
-<p><strong>B is correct.</strong> 200 requests per second times 60 seconds needs 12,000 concurrent executions. Buffering with SQS absorbs the spike. It protects downstream quotas. A is incorrect. Raising the limit does not fix the downstream Bedrock throttle. It just moves the failure.</p>
+<p><strong>B is correct.</strong> 200 requests per second times 60 seconds needs 12,000 concurrent executions. Buffering with SQS absorbs the spike. It protects downstream quotas. A is incorrect. Raising the limit does not fix the downstream Bedrock throttle.</p><p>It just moves the failure.</p>
 <p>C is incorrect. Provisioned concurrency keeps functions warm. It does not create capacity. It does not survive 60-second synchronous waits well. D is incorrect. Model size is not related to concurrency throttling.</p>
 <p>Multiple response: select TWO · Easy</p>
 <p><strong>Q52.</strong> Which TWO are Lambda invocation modes?</p>
@@ -3771,7 +3771,7 @@ DRAFT collaborators are invisible to delegation. A is wrong: model size does not
 <li>D. SMTP push</li>
 <li>E. Carrier queue</li>
 </ul>
-<p><strong>A and B are correct.</strong> Lambda supports synchronous invocation. The caller waits. Lambda supports asynchronous invocation. The event is queued. A 202 is returned. C, D, and E are not Lambda invocation modes.</p>
+<p><strong>A and B are correct.</strong> Lambda supports synchronous invocation. The caller waits. Lambda supports asynchronous invocation. The system queues the event. The system returns a 202.</p><p>C, D, and E are not Lambda invocation modes.</p>
 <p>Multiple response: select TWO · Medium</p>
 <p><strong>Q53.</strong> A GenAI API faces 10x traffic spikes. Which TWO controls protect the API?</p>
 <ul>
@@ -3798,7 +3798,7 @@ DRAFT collaborators are invisible to delegation. A is wrong: model size does not
 <span id="topic-5-api-gateway-in-front-of-bedrock"></span>
 <h3 id="topic-10-api-gateway-in-front-of-bedrock">Topic 10: API Gateway in front of Bedrock</h3>
 <p>Multiple choice · Easy</p>
-<p><strong>Q55.</strong> A Lambda behind a REST API calls a model. The model takes 45 seconds. The call always fails at the same elapsed time. Which limit is firing?</p>
+<p><strong>Q55.</strong> A Lambda behind a REST API calls a model. The model takes 45 seconds. The call always fails at the same elapsed time. Which limit fires?</p>
 <ul>
 <li>A. The Lambda 15-minute timeout</li>
 <li>B. The API Gateway 29-second integration timeout</li>
@@ -3815,7 +3815,7 @@ DRAFT collaborators are invisible to delegation. A is wrong: model size does not
 <li>C. AppConfig for the model ID, Lambda for routing, API Gateway for a stable endpoint</li>
 <li>D. Hardcoded model IDs with a weekly deploy train</li>
 </ul>
-<p><strong>C is correct.</strong> AppConfig serves the model ID as runtime configuration. Lambda routes on the model ID. The gateway URL never changes for clients. A is incorrect. CloudFormation changes are deployments. This violates the no-redeploy constraint.</p>
+<p><strong>C is correct.</strong> AppConfig serves the model ID as runtime configuration. Lambda routes on the model ID. The gateway URL never changes for clients. A is incorrect. CloudFormation changes are deployments.</p><p>This violates the no-redeploy constraint.</p>
 <p>B is incorrect. EventBridge routes events. It does not hold configuration. D is incorrect. Hardcoding and deployments are exactly what the scenario forbids.</p>
 <p>Multiple choice · Hard</p>
 <p><strong>Q57.</strong> One enterprise customer uses too much of the shared Bedrock quota. This starves other tenants. Which fix is MOST correct?</p>
@@ -3947,7 +3947,7 @@ DRAFT collaborators are invisible to delegation. A is wrong: model size does not
 <li>C. S3 event notifications plus EventBridge routing to Bedrock Data Automation, with SQS buffering</li>
 <li>D. Bedrock Guardrails reading each file for extraction</li>
 </ul>
-<p><strong>C is correct.</strong> Events give instant decoupled reaction. Data Automation extracts from all four modalities. SQS absorbs bursts. Option A is wrong. Polling is slow and wasteful at this scale. Option B is wrong.</p>
+<p><strong>C is correct.</strong> Events give instant decoupled reaction. Data Automation extracts from all four modalities. SQS absorbs bursts. Option A is wrong. Polling is slow and wasteful at this scale.</p><p>Option B is wrong.</p>
 <p>CloudTrail is for audit. It is not a data trigger. Option D is wrong. Guardrails filter. They do not extract.</p>
 <p>Multiple choice · Hard</p>
 <p><strong>Q69.</strong> One malformed PDF crashes the extraction Lambda on every retry. This blocks the queue. What is the MOST correct fix?</p>
@@ -3957,7 +3957,7 @@ DRAFT collaborators are invisible to delegation. A is wrong: model size does not
 <li>C. Increase the Lambda memory to 10 GB</li>
 <li>D. Delete the SQS queue and recreate it</li>
 </ul>
-<p><strong>B is correct.</strong> A DLQ parks poison messages after N attempts. Healthy files continue to flow. The bad file can be inspected. Option A is wrong. Infinite retries block the queue forever.</p>
+<p><strong>B is correct.</strong> A DLQ parks poison messages after N attempts. Healthy files continue to flow. You can inspect the bad file. Option A is wrong. Infinite retries block the queue forever.</p>
 <p>Option C is wrong. Memory does not fix a malformed file. Option D is wrong. Recreating the queue loses all queued work.</p>
 <p>Multiple response: select TWO · Easy</p>
 <p><strong>Q70.</strong> Which TWO statements about EventBridge and SQS are correct?</p>
@@ -4003,7 +4003,7 @@ DRAFT collaborators are invisible to delegation. A is wrong: model size does not
 <li>C. 1 month to 6 months</li>
 <li>D. 1 year to 3 years</li>
 </ul>
-<p><strong>C is correct.</strong> PT is purchased in 1-month and 6-month commitments. Options A and B are wrong. No daily or weekly PT terms exist. Option D is wrong. Those are EC2 Savings Plan style terms. They are not PT terms.</p>
+<p><strong>C is correct.</strong> You purchase PT in 1-month and 6-month commitments. Options A and B are wrong. No daily or weekly PT terms exist. Option D is wrong. Those are EC2 Savings Plan style terms.</p><p>They are not PT terms.</p>
 <p>Multiple choice · Medium</p>
 <p><strong>Q74.</strong> An app serves a steady baseline of 20 requests per second. It has 10x Friday spikes. It has a sub-3-second latency SLA. Which deployment is MOST correct?</p>
 <ul>
@@ -4012,7 +4012,7 @@ DRAFT collaborators are invisible to delegation. A is wrong: model size does not
 <li>C. Pure on-demand for everything</li>
 <li>D. EC2 instances sized for the peak</li>
 </ul>
-<p><strong>B is correct.</strong> PT covers the predictable baseline. It has no throttling. On-demand absorbs spikes. It does not pay for peak capacity all week. Option A is wrong. Peak-sized PT wastes approximately 90% of capacity six days a week.</p>
+<p><strong>B is correct.</strong> PT covers the predictable baseline. It has no throttling. On-demand absorbs spikes. It does not pay for peak capacity all week. Option A is wrong.</p><p>Peak-sized PT wastes approximately 90% of capacity six days a week.</p>
 <p>Option C is wrong. Pure on-demand throttles every Friday. Option D is wrong. Fixed EC2 for peak is idle waste. It has no managed-model benefit.</p>
 <p>Multiple choice · Hard</p>
 <p><strong>Q75.</strong> A team purchased Provisioned Throughput. The team still sees throttling. Their code calls invoke_model with the base model ID. What is the fix?</p>
@@ -4044,7 +4044,7 @@ DRAFT collaborators are invisible to delegation. A is wrong: model size does not
 <li>D. Real-time endpoints for overnight batch jobs</li>
 <li>E. Async inference for sub-second chat</li>
 </ul>
-<p><strong>A and B are correct.</strong> Real-time with autoscaling gives strict latency. Async handles long jobs. No one waits for these jobs. Option C is wrong. Serverless inference has cold starts. It fits intermittent traffic.</p>
+<p><strong>A and B are correct.</strong> Real-time with autoscaling gives strict latency. Async handles long jobs. No one waits for these jobs. Option C is wrong. Serverless inference has cold starts.</p><p>It fits intermittent traffic.</p>
 <p>It does not fit sustained strict-latency load. Option D is wrong. Overnight batch jobs belong on batch inference. Option E is wrong. Async latency is minutes. It is not sub-second.</p>
 <p>Multiple response: select THREE · Hard</p>
 <p><strong>Q78.</strong> Which THREE describe a correct hybrid Provisioned Throughput design?</p>
@@ -4143,7 +4143,7 @@ DRAFT collaborators are invisible to delegation. A is wrong: model size does not
 <li>C. Amazon ElastiCache as the durable store.</li>
 <li>D. Amazon EBS volumes.</li>
 </ul>
-<p><strong>B is correct.</strong> DynamoDB gives millisecond keyed reads with TTL expiry. This matches per-turn session access. A is wrong. S3 has higher latency. It has the wrong access pattern for per-turn reads. C is wrong.</p>
+<p><strong>B is correct.</strong> DynamoDB gives millisecond keyed reads with TTL expiry. This matches per-turn session access. A is wrong. S3 has higher latency. It has the wrong access pattern for per-turn reads.</p><p>C is wrong.</p>
 <p>ElastiCache is temporary. It is not a durable session store. D is wrong. EBS is block storage for EC2. It is not a session store.</p>
 <p>This is a multiple choice question. This is a hard question.</p>
 <p><strong>Q87.</strong> A company must generate study materials from 10,000 files per day. The files include video. The company needs real-time collaboration on the outputs. Which combination is MOST correct?</p>
@@ -4153,7 +4153,7 @@ DRAFT collaborators are invisible to delegation. A is wrong: model size does not
 <li>C. Use manual uploads with nightly cron scripts.</li>
 <li>D. Use Kendra for extraction. Use S3 for sessions.</li>
 </ul>
-<p><strong>B is correct.</strong> Data Automation extracts from all four modalities. S3 versioning helps with collaboration on outputs. AppSync or DynamoDB provides the real-time layer. A is wrong. Agents do not version files. Guardrails do not extract data.</p>
+<p><strong>B is correct.</strong> Data Automation extracts from all four modalities. S3 versioning helps with collaboration on outputs. AppSync or DynamoDB provides the real-time layer. A is wrong. Agents do not version files.</p><p>Guardrails do not extract data.</p>
 <p>C is wrong. Manual uploads and cron cannot scale to 10,000 files per day. D is wrong. Kendra is enterprise search, not an extractor. S3 is wrong for session state.</p>
 <p>Select TWO responses. This is an easy question.</p>
 <p><strong>Q88.</strong> Which TWO statements about Bedrock Data Automation are correct?</p>
@@ -4186,7 +4186,7 @@ DRAFT collaborators are invisible to delegation. A is wrong: model size does not
 <li>D. Switch to a larger model. Keep retrieval as it is.</li>
 <li>E. Paste all documents into one giant prompt.</li>
 </ul>
-<p><strong>A, B, and C are correct.</strong> Chunking by document type and reranking improve retrieval quality. Citations make answers verifiable. D is wrong. A larger model cannot fix bad retrieval. E is wrong. Giant prompts increase cost and context limits too much.</p>
+<p><strong>A, B, and C are correct.</strong> Chunking by document type and reranking improve retrieval quality. Citations make answers verifiable. D is wrong. A larger model cannot fix bad retrieval. E is wrong.</p><p>Giant prompts increase cost and context limits too much.</p>
 
 <span id="topic-15-sdks-retries-and-reliability"></span>
 <h3 id="topic-16-sdks-retries-and-reliability">Topic 16: SDKs, Retries, and Reliability</h3>
@@ -4208,7 +4208,7 @@ DRAFT collaborators are invisible to delegation. A is wrong: model size does not
 <li>C. Check if the prompt is too long.</li>
 <li>D. Check if the Lambda memory is sufficient.</li>
 </ul>
-<p><strong>B is correct.</strong> AccessDeniedException appears when the model is not available in the region. This is misleading. Check region availability first. A is wrong. The policy looks correct.</p>
+<p><strong>B is correct.</strong> AccessDeniedException appears when the model is not available in the region. This misleads. Check region availability first. A is wrong. The policy looks correct.</p>
 <p>Rewriting it wastes the actual diagnostic step. C is wrong. Prompt length causes different errors. D is wrong. Lambda memory is not related to Bedrock access errors.</p>
 <p>This is a multiple choice question. This is a hard question.</p>
 <p><strong>Q93.</strong> Intermittent ThrottlingExceptions affect a checkout-time recommendation call. The call has a 2-second budget. Which design is MOST correct?</p>
@@ -4218,7 +4218,7 @@ DRAFT collaborators are invisible to delegation. A is wrong: model size does not
 <li>C. Buy Provisioned Throughput before any code change.</li>
 <li>D. Remove the timeout to let retries finish.</li>
 </ul>
-<p><strong>B is correct.</strong> Two bounded jittered retries fit the budget. A cached fallback keeps the user experience good when throttles continue. A is wrong. Tight loops can exceed the 2-second budget. They can also cause a storm. C is wrong.</p>
+<p><strong>B is correct.</strong> Two bounded jittered retries fit the budget. A cached fallback keeps the user experience good when throttles continue. A is wrong. Tight loops can exceed the 2-second budget. They can also cause a storm.</p><p>C is wrong.</p>
 <p>PT can come later. The code-level reliability fix comes first. It is cheaper to validate. D is wrong. Removing the timeout lets one slow call stop the checkout.</p>
 <p>Select TWO responses. This is an easy question.</p>
 <p><strong>Q94.</strong> Which TWO items are reliability basics for Bedrock calls?</p>
@@ -4234,11 +4234,11 @@ DRAFT collaborators are invisible to delegation. A is wrong: model size does not
 <p>Select TWO responses. This is a medium question.</p>
 <p><strong>Q95.</strong> Which TWO items correctly match Bedrock errors to their meaning?</p>
 <ul>
-<li>A. ValidationException means the request body is malformed.</li>
+<li>A. ValidationException means the request body has malformed syntax.</li>
 <li>B. ThrottlingException is normal at scale. It needs backoff.</li>
 <li>C. AccessDeniedException always means a bad IAM policy.</li>
 <li>D. 5xx errors mean the prompt was poorly written.</li>
-<li>E. ThrottlingException means the model is deprecated.</li>
+<li>E. ThrottlingException means AWS deprecated the model.</li>
 </ul>
 <p><strong>A and B are correct.</strong> Validation errors are request bugs. They often mean a wrong provider body. Throttles are normal at scale. Handle them with backoff. C is wrong.</p>
 <p>AccessDenied can mean the model is not available in the region. D is wrong. 5xx is a service-side issue. E is wrong. Throttling is about rate, not deprecation.</p>
