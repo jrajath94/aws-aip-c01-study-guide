@@ -1,0 +1,777 @@
+{
+ "schemaVersion": 1,
+ "itemId": "volume-d3-safety-security-governance",
+ "itemKind": "lesson",
+ "revision": "1c51896b3fcbb91a0c0559a4c5fb7e7b7291005e08052ef98df2dc4ce4b4ede2",
+ "sections": [
+  {
+   "anchor": "volume-d3-safety-security-governance-intro-p01",
+   "title": "1. What can go wrong: the four failures that built every control on this page",
+   "minutes": 8,
+   "endAnchor": "volume-d3-safety-security-governance-intro-end",
+   "blocks": [
+    {
+     "anchor": "volume-d3-safety-security-governance-intro-p02",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    },
+    {
+     "anchor": "volume-d3-safety-security-governance-intro-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "hallucination",
+     "definition": "Fluent, confident model text that is not true. Its sources do not support it.",
+     "anchor": "volume-d3-safety-security-governance-intro-fig01"
+    },
+    {
+     "term": "prompt injection",
+     "definition": "An instruction hidden in content the model reads, like a pasted document or tool output.",
+     "anchor": "volume-d3-safety-security-governance-intro-p11"
+    },
+    {
+     "term": "jailbreak",
+     "definition": "The direct version: the user tries to break the system prompt's rules.",
+     "anchor": "volume-d3-safety-security-governance-intro-fig01"
+    },
+    {
+     "term": "PII",
+     "definition": "Personal data that can identify a person: names, addresses, phone numbers, SSNs, card numbers.",
+     "anchor": "volume-d3-safety-security-governance-intro-fig01"
+    },
+    {
+     "term": "governance",
+     "definition": "The process to have a real answer when a regulator asks what happened.",
+     "anchor": "volume-d3-safety-security-governance-intro-fig01"
+    }
+   ],
+   "recall": [
+    {
+     "id": "volume-d3-safety-security-governance-intro-r1",
+     "question": "What are the four failures that built every control?",
+     "answer": "Hallucination, prompt injection and jailbreak, PII leaks, and harmful or off-brand outputs.",
+     "anchor": "volume-d3-safety-security-governance-intro-fig01"
+    },
+    {
+     "id": "volume-d3-safety-security-governance-intro-r2",
+     "question": "Why does RAG not stop hallucination?",
+     "answer": "The model can still misread a text chunk, combine two chunks, or fill a gap with a plausible invention.",
+     "anchor": "volume-d3-safety-security-governance-intro-p09"
+    },
+    {
+     "id": "volume-d3-safety-security-governance-intro-r3",
+     "question": "A chatbot says refunds take 3 to 5 days, but the policy document says 5 to 7 days. Which failure is this?",
+     "answer": "Hallucination: the answer sounded certain, but the source does not support it.",
+     "anchor": "volume-d3-safety-security-governance-intro-p06"
+    }
+   ]
+  },
+  {
+   "anchor": "ch1-board",
+   "title": "One policy object, six policies",
+   "minutes": 7,
+   "endAnchor": "ch1-board-end",
+   "blocks": [
+    {
+     "anchor": "ch1-board-p02",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    },
+    {
+     "anchor": "ch1-board-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "guardrail",
+     "definition": "A named configuration object in Bedrock holding your safety rules.",
+     "anchor": "ch1-board-p01"
+    },
+    {
+     "term": "denied topics",
+     "definition": "Subject areas the model must never discuss, configured in plain language.",
+     "anchor": "ch1-board-p02"
+    },
+    {
+     "term": "word filters",
+     "definition": "Exact-match blocklists for words and phrases.",
+     "anchor": "ch1-board-p02"
+    },
+    {
+     "term": "version",
+     "definition": "A frozen, unchangeable snapshot of the guardrail configuration. Production uses versions, never the draft.",
+     "anchor": "ch1-board-p06"
+    },
+    {
+     "term": "trace",
+     "definition": "Tells you which policy fired and why. Passed through guardrailConfig in the Converse API.",
+     "anchor": "ch1-board-p12"
+    }
+   ],
+   "recall": [
+    {
+     "id": "ch1-board-r1",
+     "question": "What are the six guardrail policies?",
+     "answer": "Content filters, denied topics, word filters, sensitive information filters, contextual grounding checks, and Automated Reasoning checks.",
+     "anchor": "ch1-board-p02"
+    },
+    {
+     "id": "ch1-board-r2",
+     "question": "What is the fixed evaluation sequence when a guardrail is attached?",
+     "answer": "First input evaluation, then model generation, then output evaluation.",
+     "anchor": "ch1-board-p09"
+    },
+    {
+     "id": "ch1-board-r3",
+     "question": "Why is the model's built-in safety training never the complete answer?",
+     "answer": "Foundation safety training does not know your product rules. Guardrails are your organization's specific policy, enforced on your terms.",
+     "anchor": "ch1-board-p23"
+    }
+   ]
+  },
+  {
+   "anchor": "2-where-guardrails-apply",
+   "title": "3. Where Guardrails apply",
+   "minutes": 6,
+   "endAnchor": "2-where-guardrails-apply-end",
+   "blocks": [
+    {
+     "anchor": "2-where-guardrails-apply-p02",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    },
+    {
+     "anchor": "2-where-guardrails-apply-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "ApplyGuardrail",
+     "definition": "The standalone API screening any text against a guardrail. No model is invoked.",
+     "anchor": "2-where-guardrails-apply-p07"
+    },
+    {
+     "term": "guardrailConfig",
+     "definition": "The Converse API field carrying the guardrail identifier, version, and trace setting.",
+     "anchor": "2-where-guardrails-apply-p04"
+    },
+    {
+     "term": "RetrieveAndGenerate",
+     "definition": "The Knowledge Base call whose final generated answer the guardrail evaluates.",
+     "anchor": "2-where-guardrails-apply-p12"
+    }
+   ],
+   "recall": [
+    {
+     "id": "2-where-guardrails-apply-r1",
+     "question": "What are the five attachment points?",
+     "answer": "Inline on model calls, standalone on any text, on Knowledge Base answers, on agent outputs, and inside prompt flows.",
+     "anchor": "2-where-guardrails-apply-p02"
+    },
+    {
+     "id": "2-where-guardrails-apply-r2",
+     "question": "A company runs a model on SageMaker and wants AWS-managed safety without moving the model. What do they use?",
+     "answer": "ApplyGuardrail on the prompt before sending it out, and on the answer when it returns.",
+     "anchor": "2-where-guardrails-apply-p09"
+    },
+    {
+     "id": "2-where-guardrails-apply-r3",
+     "question": "What is the gap in agent guardrail coverage?",
+     "answer": "It evaluates the user's input and the agent's final response, but not each intermediate tool call during reasoning.",
+     "anchor": "2-where-guardrails-apply-p14"
+    }
+   ]
+  },
+  {
+   "anchor": "3-content-filters-and-prompt-attack-detection",
+   "title": "4. Content filters and prompt attack detection",
+   "minutes": 6,
+   "endAnchor": "3-content-filters-and-prompt-attack-detection-end",
+   "blocks": [
+    {
+     "anchor": "3-content-filters-and-prompt-attack-detection-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    },
+    {
+     "anchor": "3-content-filters-and-prompt-attack-detection-p27",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "content filters",
+     "definition": "The toxicity screen: six fixed categories, each with a NONE, LOW, MEDIUM, HIGH dial.",
+     "anchor": "3-content-filters-and-prompt-attack-detection-p03"
+    },
+    {
+     "term": "prompt attack",
+     "definition": "The content filter category finding jailbreaks and prompt injections in inputs.",
+     "anchor": "3-content-filters-and-prompt-attack-detection-p04"
+    },
+    {
+     "term": "over-filtering",
+     "definition": "Setting every category to HIGH blocks good content and makes the product worse.",
+     "anchor": "3-content-filters-and-prompt-attack-detection-p12"
+    }
+   ],
+   "recall": [
+    {
+     "id": "3-content-filters-and-prompt-attack-detection-r1",
+     "question": "What are the six content filter categories?",
+     "answer": "Hate, insults, sexual, violence, misconduct, and prompt attack.",
+     "anchor": "3-content-filters-and-prompt-attack-detection-p04"
+    },
+    {
+     "id": "3-content-filters-and-prompt-attack-detection-r2",
+     "question": "A children's tutor must block violent and sexual content even when mild, and stop jailbreaks. How do you configure it?",
+     "answer": "Set violence, sexual, and prompt attack to HIGH on input and output. HIGH blocks even mild or borderline content.",
+     "anchor": "3-content-filters-and-prompt-attack-detection-p11"
+    },
+    {
+     "id": "3-content-filters-and-prompt-attack-detection-r3",
+     "question": "Content filters versus denied topics: which scenario verb points where?",
+     "answer": "Harmful content points to content filters. Must not discuss X points to denied topics.",
+     "anchor": "3-content-filters-and-prompt-attack-detection-p27"
+    }
+   ]
+  },
+  {
+   "anchor": "4-denied-topics-and-word-filters",
+   "title": "5. Denied topics and word filters",
+   "minutes": 6,
+   "endAnchor": "4-denied-topics-and-word-filters-end",
+   "blocks": [
+    {
+     "anchor": "4-denied-topics-and-word-filters-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    },
+    {
+     "anchor": "4-denied-topics-and-word-filters-p19",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "denied topic",
+     "definition": "A subject area the model must not discuss. It judges meaning and has no severity dial.",
+     "anchor": "4-denied-topics-and-word-filters-fig01"
+    },
+    {
+     "term": "word filter",
+     "definition": "A custom list of exact words and phrases. No fuzzy matching and no stemming.",
+     "anchor": "4-denied-topics-and-word-filters-fig01"
+    }
+   ],
+   "recall": [
+    {
+     "id": "4-denied-topics-and-word-filters-r1",
+     "question": "A banking chatbot must refuse medical diagnosis requests no matter how they are worded. Which control?",
+     "answer": "A denied topic defined in natural language as medical diagnosis. It judges meaning, so paraphrases fail too.",
+     "anchor": "4-denied-topics-and-word-filters-p19"
+    },
+    {
+     "id": "4-denied-topics-and-word-filters-r2",
+     "question": "A brand assistant must never say Project Falcon or CompetitorX. Which control?",
+     "answer": "A word filter with the exact strings. Exact-match filters are precise and deterministic.",
+     "anchor": "4-denied-topics-and-word-filters-p10"
+    },
+    {
+     "id": "4-denied-topics-and-word-filters-r3",
+     "question": "Why does a word filter fail for investment advice?",
+     "answer": "Paraphrase defeats exact matching. You should put your savings in tech stocks has no listed words but is still advice.",
+     "anchor": "4-denied-topics-and-word-filters-p05"
+    }
+   ]
+  },
+  {
+   "anchor": "5-sensitive-information-filters-and-the-pii-pipeline",
+   "title": "6. Sensitive information filters and the PII pipeline",
+   "minutes": 5,
+   "endAnchor": "5-sensitive-information-filters-and-the-pii-pipeline-end",
+   "blocks": [
+    {
+     "anchor": "5-sensitive-information-filters-and-the-pii-pipeline-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    },
+    {
+     "anchor": "5-sensitive-information-filters-and-the-pii-pipeline-ol01",
+     "kind": "steps",
+     "reveal": "stepwise"
+    },
+    {
+     "anchor": "5-sensitive-information-filters-and-the-pii-pipeline-p14",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "sensitive information filter",
+     "definition": "A guardrail policy finding PII by entity type, with BLOCK or MASK per type.",
+     "anchor": "5-sensitive-information-filters-and-the-pii-pipeline-p03"
+    },
+    {
+     "term": "Macie",
+     "definition": "Discovers PII at rest in S3. It does not work in the request path.",
+     "anchor": "5-sensitive-information-filters-and-the-pii-pipeline-ol01"
+    },
+    {
+     "term": "Comprehend",
+     "definition": "Real-time PII detection in text. It is the text service, not the vision service.",
+     "anchor": "5-sensitive-information-filters-and-the-pii-pipeline-ol01"
+    },
+    {
+     "term": "MASK",
+     "definition": "Replaces the PII value with a placeholder so the text continues.",
+     "anchor": "5-sensitive-information-filters-and-the-pii-pipeline-p01"
+    },
+    {
+     "term": "BLOCK",
+     "definition": "Refuses the whole request or response. Use it when the data must not go through the system.",
+     "anchor": "5-sensitive-information-filters-and-the-pii-pipeline-p01"
+    }
+   ],
+   "recall": [
+    {
+     "id": "5-sensitive-information-filters-and-the-pii-pipeline-r1",
+     "question": "What is the exam's PII trio for customer conversations with minimal custom work?",
+     "answer": "Macie to find PII at rest, Comprehend for real-time detection, and Guardrails sensitive information filters at inference.",
+     "anchor": "5-sensitive-information-filters-and-the-pii-pipeline-p14"
+    },
+    {
+     "id": "5-sensitive-information-filters-and-the-pii-pipeline-r2",
+     "question": "When do you use BLOCK versus MASK?",
+     "answer": "BLOCK when the data must not go through the system, like a public demo chatbot. MASK when the surrounding text is still useful, like my card ending in XXXX was charged twice.",
+     "anchor": "5-sensitive-information-filters-and-the-pii-pipeline-p07"
+    },
+    {
+     "id": "5-sensitive-information-filters-and-the-pii-pipeline-r3",
+     "question": "Why is Macie as a real-time filter a trap?",
+     "answer": "Macie finds PII at rest in S3 and does not work in the request path. Real-time detection is Comprehend. Inference-time enforcement is Guardrails.",
+     "anchor": "5-sensitive-information-filters-and-the-pii-pipeline-p21"
+    }
+   ]
+  },
+  {
+   "anchor": "6-contextual-grounding-checks-and-automated-reasoning-checks",
+   "title": "7. Contextual grounding checks and Automated Reasoning checks",
+   "minutes": 7,
+   "endAnchor": "6-contextual-grounding-checks-and-automated-reasoning-checks-end",
+   "blocks": [
+    {
+     "anchor": "6-contextual-grounding-checks-and-automated-reasoning-checks-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    },
+    {
+     "anchor": "6-contextual-grounding-checks-and-automated-reasoning-checks-p01",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "contextual grounding",
+     "definition": "Asks whether the source text supports the answer. Scores 0 to 1 against a threshold.",
+     "anchor": "6-contextual-grounding-checks-and-automated-reasoning-checks-fig02"
+    },
+    {
+     "term": "Automated Reasoning",
+     "definition": "Asks whether the answer violates a formal policy. Deterministic logic, detect mode only.",
+     "anchor": "6-contextual-grounding-checks-and-automated-reasoning-checks-fig01"
+    },
+    {
+     "term": "detect mode",
+     "definition": "Automated Reasoning returns findings like VALID or INVALID but never blocks by itself.",
+     "anchor": "6-contextual-grounding-checks-and-automated-reasoning-checks-p18"
+    }
+   ],
+   "recall": [
+    {
+     "id": "6-contextual-grounding-checks-and-automated-reasoning-checks-r1",
+     "question": "What is the most important distinction in Domain 3?",
+     "answer": "Contextual grounding asks if the source supports the answer. Automated Reasoning asks if the answer violates a formal policy.",
+     "anchor": "6-contextual-grounding-checks-and-automated-reasoning-checks-p01"
+    },
+    {
+     "id": "6-contextual-grounding-checks-and-automated-reasoning-checks-r2",
+     "question": "A RAG bot invents facts not in the documents, versus a bot breaks the formal $500 refund rule. Which check for each?",
+     "answer": "Invented facts need contextual grounding. A broken formal rule needs Automated Reasoning.",
+     "anchor": "6-contextual-grounding-checks-and-automated-reasoning-checks-p25"
+    },
+    {
+     "id": "6-contextual-grounding-checks-and-automated-reasoning-checks-r3",
+     "question": "Why does grounding not verify truth?",
+     "answer": "It verifies support against the source you supplied. If the retrieved chunks are wrong, a perfectly grounded answer repeats them with confidence.",
+     "anchor": "6-contextual-grounding-checks-and-automated-reasoning-checks-p10"
+    }
+   ]
+  },
+  {
+   "anchor": "7-defense-in-depth-injection-and-jailbreak-defense",
+   "title": "8. Defense in depth: injection and jailbreak defense",
+   "minutes": 6,
+   "endAnchor": "7-defense-in-depth-injection-and-jailbreak-defense-end",
+   "blocks": [
+    {
+     "anchor": "7-defense-in-depth-injection-and-jailbreak-defense-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    },
+    {
+     "anchor": "7-defense-in-depth-injection-and-jailbreak-defense-p09",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "indirect injection",
+     "definition": "The attack comes from a tool output, retrieved chunk, or web page. The user is innocent.",
+     "anchor": "7-defense-in-depth-injection-and-jailbreak-defense-p05"
+    },
+    {
+     "term": "defense in depth",
+     "definition": "Stacking independent layers so an attack must survive every layer to succeed.",
+     "anchor": "7-defense-in-depth-injection-and-jailbreak-defense-fig02"
+    },
+    {
+     "term": "post-processor",
+     "definition": "The Lambda layer enforcing business rules on the response after the guardrail.",
+     "anchor": "7-defense-in-depth-injection-and-jailbreak-defense-p11"
+    }
+   ],
+   "recall": [
+    {
+     "id": "7-defense-in-depth-injection-and-jailbreak-defense-r1",
+     "question": "What are the four layers of the exam's defense-in-depth stack, in order?",
+     "answer": "The Comprehend pre-filter, Bedrock Guardrails, the Lambda post-processor, and the API response filter at the edge.",
+     "anchor": "7-defense-in-depth-injection-and-jailbreak-defense-p13"
+    },
+    {
+     "id": "7-defense-in-depth-injection-and-jailbreak-defense-r2",
+     "question": "Why is a claim of preventing all prompt injection always wrong?",
+     "answer": "Prompt attack detection is probabilistic and pattern-based. Absolute claims about probabilistic defenses are always wrong.",
+     "anchor": "7-defense-in-depth-injection-and-jailbreak-defense-p24"
+    },
+    {
+     "id": "7-defense-in-depth-injection-and-jailbreak-defense-r3",
+     "question": "An agent reads untrusted web pages and follows injected instructions. Which layers are missing?",
+     "answer": "Post-processing and human approval on actions. The input filter cannot see poisoned page content.",
+     "anchor": "7-defense-in-depth-injection-and-jailbreak-defense-p26"
+    }
+   ]
+  },
+  {
+   "anchor": "8-the-data-security-plane",
+   "title": "9. The data security plane",
+   "minutes": 11,
+   "endAnchor": "8-the-data-security-plane-end",
+   "blocks": [
+    {
+     "anchor": "8-the-data-security-plane-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    },
+    {
+     "anchor": "8-the-data-security-plane-p14",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "least privilege",
+     "definition": "Each identity gets only the permissions it needs, nothing more.",
+     "anchor": "8-the-data-security-plane-p06"
+    },
+    {
+     "term": "CMK",
+     "definition": "Customer managed key: a KMS key you create and control, with rotation and revocation.",
+     "anchor": "8-the-data-security-plane-p16"
+    },
+    {
+     "term": "PrivateLink",
+     "definition": "VPC interface endpoints that keep Bedrock API traffic off the public internet.",
+     "anchor": "8-the-data-security-plane-p02"
+    },
+    {
+     "term": "CloudTrail",
+     "definition": "The audit log: who called which API and when. Metadata only, no prompt content.",
+     "anchor": "8-the-data-security-plane-fig01"
+    },
+    {
+     "term": "model invocation logging",
+     "definition": "The content log: actual prompts and responses, opt-in, sent to S3 or CloudWatch.",
+     "anchor": "8-the-data-security-plane-p42"
+    },
+    {
+     "term": "data residency",
+     "definition": "Where data can be. Region choice satisfies it. Encryption does not.",
+     "anchor": "8-the-data-security-plane-p31"
+    }
+   ],
+   "recall": [
+    {
+     "id": "8-the-data-security-plane-r1",
+     "question": "Complete the plane summary: IAM controls who, KMS encrypts what, ...?",
+     "answer": "VPC isolates where, and logs prove it all.",
+     "anchor": "8-the-data-security-plane-p14"
+    },
+    {
+     "id": "8-the-data-security-plane-r2",
+     "question": "A European bank needs all customer data to stay in the EU and proposes cross-region inference for resilience. What is wrong?",
+     "answer": "Cross-region inference moves prompt and response data across regions, breaking the residency rule. KMS encryption does not fix geography.",
+     "anchor": "8-the-data-security-plane-p35"
+    },
+    {
+     "id": "8-the-data-security-plane-r3",
+     "question": "Which identity used the model last Tuesday, versus what did users ask? Which log answers each?",
+     "answer": "CloudTrail answers who did what. Model invocation logging answers what was said.",
+     "anchor": "8-the-data-security-plane-p41"
+    }
+   ]
+  },
+  {
+   "anchor": "9-governance-and-compliance",
+   "title": "10. Governance and compliance",
+   "minutes": 7,
+   "endAnchor": "9-governance-and-compliance-end",
+   "blocks": [
+    {
+     "anchor": "9-governance-and-compliance-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    },
+    {
+     "anchor": "9-governance-and-compliance-ol01",
+     "kind": "steps",
+     "reveal": "stepwise"
+    },
+    {
+     "anchor": "9-governance-and-compliance-p28",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "model card",
+     "definition": "A structured, versioned document: intended use, limits, training data, evaluation results. Documentation, not a control.",
+     "anchor": "9-governance-and-compliance-p01"
+    },
+    {
+     "term": "data lineage",
+     "definition": "The recorded chain from source data to the generated answer.",
+     "anchor": "9-governance-and-compliance-p08"
+    },
+    {
+     "term": "NIST AI Risk Management Framework",
+     "definition": "The AI risk framework example: Govern, Map, Measure, and Manage in a continuous cycle.",
+     "anchor": "9-governance-and-compliance-p25"
+    },
+    {
+     "term": "AWS Artifact",
+     "definition": "Where AWS publishes its compliance proof for the shared responsibility model.",
+     "anchor": "9-governance-and-compliance-p27"
+    }
+   ],
+   "recall": [
+    {
+     "id": "9-governance-and-compliance-r1",
+     "question": "The regulator asks which data made a specific RAG answer. What is the lineage chain?",
+     "answer": "Stored citations link the answer to chunks, chunks map to versioned documents through metadata tags, documents map to Glue catalog sources, and CloudTrail shows who asked.",
+     "anchor": "9-governance-and-compliance-p13"
+    },
+    {
+     "id": "9-governance-and-compliance-r2",
+     "question": "Why is evaluating once before launch never enough?",
+     "answer": "Fairness and safety drift as the world changes. The exam wants continuous monitoring with alerts, not a one-time check.",
+     "anchor": "9-governance-and-compliance-p30"
+    },
+    {
+     "id": "9-governance-and-compliance-r3",
+     "question": "What is the exam's trap about compliance services?",
+     "answer": "No AWS service makes you compliant. Compliance is controls, proof, and process. The correct answer is always the mapping.",
+     "anchor": "9-governance-and-compliance-p28"
+    }
+   ]
+  },
+  {
+   "anchor": "10-responsible-ai-evaluation-and-agent-governance",
+   "title": "11. Responsible AI, evaluation, and agent governance",
+   "minutes": 10,
+   "endAnchor": "10-responsible-ai-evaluation-and-agent-governance-end",
+   "blocks": [
+    {
+     "anchor": "10-responsible-ai-evaluation-and-agent-governance-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    },
+    {
+     "anchor": "10-responsible-ai-evaluation-and-agent-governance-ol01",
+     "kind": "steps",
+     "reveal": "stepwise"
+    },
+    {
+     "anchor": "10-responsible-ai-evaluation-and-agent-governance-p11",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "transparency",
+     "definition": "You can inspect and explain the system's decisions: traces, confidence signals, and citations.",
+     "anchor": "10-responsible-ai-evaluation-and-agent-governance-p01"
+    },
+    {
+     "term": "SageMaker Clarify",
+     "definition": "The AWS service providing bias metrics for fairness measurement.",
+     "anchor": "10-responsible-ai-evaluation-and-agent-governance-ol01"
+    },
+    {
+     "term": "human in the loop",
+     "definition": "A person reviews the system's action and approves it before it takes effect.",
+     "anchor": "10-responsible-ai-evaluation-and-agent-governance-p06"
+    },
+    {
+     "term": "task token",
+     "definition": "What Step Functions issues and waits on while the human reviewer decides.",
+     "anchor": "10-responsible-ai-evaluation-and-agent-governance-fig03"
+    },
+    {
+     "term": "approval workflow",
+     "definition": "Step Functions issues a task token and waits. The workflow resumes only on human approval.",
+     "anchor": "10-responsible-ai-evaluation-and-agent-governance-p15"
+    }
+   ],
+   "recall": [
+    {
+     "id": "10-responsible-ai-evaluation-and-agent-governance-r1",
+     "question": "What are the three forms of transparency?",
+     "answer": "Reasoning traces, confidence signals like grounding and retrieval scores, and evidence with source attribution through citations.",
+     "anchor": "10-responsible-ai-evaluation-and-agent-governance-p02"
+    },
+    {
+     "id": "10-responsible-ai-evaluation-and-agent-governance-r2",
+     "question": "The agent issues refunds and some need manager approval. What is the correct design?",
+     "answer": "Use the action group approval flow: return control to the application before execution, and route the decision through human approval.",
+     "anchor": "10-responsible-ai-evaluation-and-agent-governance-ask02"
+    },
+    {
+     "id": "10-responsible-ai-evaluation-and-agent-governance-r3",
+     "question": "What is the evaluation trio, and how is it used over time?",
+     "answer": "Programmatic, LLM-as-a-judge, and human. Run it once as a gate before launch, then run it on schedule as monitoring.",
+     "anchor": "10-responsible-ai-evaluation-and-agent-governance-p32"
+    }
+   ]
+  },
+  {
+   "anchor": "11-question-bank",
+   "title": "12. Question bank",
+   "minutes": 41,
+   "endAnchor": "11-question-bank-end",
+   "blocks": [
+    {
+     "anchor": "11-question-bank-p01",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "multiple response",
+     "definition": "Select every correct option. There is no partial credit.",
+     "anchor": "11-question-bank-p01"
+    },
+    {
+     "term": "distractor",
+     "definition": "Each wrong option, with an explanation of why it is wrong.",
+     "anchor": "11-question-bank-p02"
+    }
+   ],
+   "recall": [
+    {
+     "id": "11-question-bank-r1",
+     "question": "How is the question bank structured?",
+     "answer": "Six questions per topic: three multiple choice and three multiple response, each in easy, medium, and hard. Every question explains the correct answer and why each distractor is wrong.",
+     "anchor": "11-question-bank-p01"
+    },
+    {
+     "id": "11-question-bank-r2",
+     "question": "Q2.1: the team edits denied topics and wants review before production is affected. What must they do?",
+     "answer": "Publish the edits as version 4 and move production traffic to version 4 after review. Versions are immutable snapshots.",
+     "anchor": "11-question-bank-p04"
+    },
+    {
+     "id": "11-question-bank-r3",
+     "question": "Q7.3: the grounding threshold is high, answers are well supported, but the opening hours are wrong. Diagnosis and fix?",
+     "answer": "Grounding checks fidelity to the source, not truth. The source document is old. Fix it by updating the knowledge base documents and adding lineage metadata with ingestion dates.",
+     "anchor": "11-question-bank-p154"
+    }
+   ]
+  },
+  {
+   "anchor": "12-cheat-sheet-and-glossary",
+   "title": "13. Cheat sheet and glossary",
+   "minutes": 6,
+   "endAnchor": "12-cheat-sheet-and-glossary-end",
+   "blocks": [
+    {
+     "anchor": "12-cheat-sheet-and-glossary-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    },
+    {
+     "anchor": "12-cheat-sheet-and-glossary-takeaway01",
+     "kind": "summary",
+     "reveal": "fade"
+    },
+    {
+     "anchor": "12-cheat-sheet-and-glossary-p04",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "safety control ladder",
+     "definition": "Climb in order: prompt design, Guardrails, IAM and network controls, evaluation, human review. Stop at the cheapest step that works.",
+     "anchor": "12-cheat-sheet-and-glossary-p02"
+    },
+    {
+     "term": "scenario verb",
+     "definition": "The phrase in the question that decides the control: block harmful content versus must not discuss X.",
+     "anchor": "12-cheat-sheet-and-glossary-table02"
+    }
+   ],
+   "recall": [
+    {
+     "id": "12-cheat-sheet-and-glossary-r1",
+     "question": "What is the safety control ladder?",
+     "answer": "Use prompt design, then Guardrails, then IAM and network controls, then evaluation, then human review. Climb in order and stop at the cheapest step that satisfies the constraint.",
+     "anchor": "12-cheat-sheet-and-glossary-takeaway01"
+    },
+    {
+     "id": "12-cheat-sheet-and-glossary-r2",
+     "question": "What is the master trap list for Domain 3?",
+     "answer": "Denied topics, content filters, word filters, and PII filters are different, so match the scenario verb. Grounding checks source fidelity, Automated Reasoning checks policy logic, CloudTrail audits, and invocation logging records content.",
+     "anchor": "12-cheat-sheet-and-glossary-p04"
+    }
+   ]
+  }
+ ]
+}

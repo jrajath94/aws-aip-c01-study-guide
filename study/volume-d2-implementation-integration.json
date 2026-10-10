@@ -1,0 +1,1164 @@
+{
+ "schemaVersion": 1,
+ "itemId": "volume-d2-implementation-integration",
+ "itemKind": "lesson",
+ "revision": "91a96218ba1c302aac90094cf47e04a6eaf52360f1925db0f7b0ae9347242f3f",
+ "sections": [
+  {
+   "anchor": "volume-d2-implementation-integration-intro-p01",
+   "title": "Domain 2: Implementation and Integration",
+   "minutes": 1,
+   "endAnchor": "volume-d2-implementation-integration-intro-end",
+   "blocks": [
+    {
+     "anchor": "volume-d2-implementation-integration-intro-p02",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "agents",
+     "definition": "Programs that call models and tools, remember context, and carry out multi-step work.",
+     "anchor": "volume-d2-implementation-integration-intro-p02"
+    },
+    {
+     "term": "plumbing",
+     "definition": "The APIs, integrations, and infrastructure that turn a model into a working product.",
+     "anchor": "volume-d2-implementation-integration-intro-p02"
+    }
+   ],
+   "recall": [
+    {
+     "id": "volume-d2-implementation-integration-intro-r1",
+     "question": "What is the difference between Domain 1 and Domain 2?",
+     "answer": "Domain 1 was design. Domain 2 is the build: agents, APIs, and the plumbing that turn a model into a product.",
+     "anchor": "volume-d2-implementation-integration-intro-p02"
+    }
+   ]
+  },
+  {
+   "anchor": "how-to-use-this-volume",
+   "title": "How to use this volume",
+   "minutes": 1,
+   "endAnchor": "how-to-use-this-volume-end",
+   "blocks": [
+    {
+     "anchor": "how-to-use-this-volume-p05",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "scenario questions",
+     "definition": "AWS exam questions of 3 to 6 sentences with hard constraints you must satisfy.",
+     "anchor": "how-to-use-this-volume-p05"
+    },
+    {
+     "term": "distractor",
+     "definition": "A wrong answer choice that violates exactly one constraint of the scenario.",
+     "anchor": "how-to-use-this-volume-p05"
+    }
+   ],
+   "recall": [
+    {
+     "id": "how-to-use-this-volume-r1",
+     "question": "How do you pick the right answer on an AWS scenario question?",
+     "answer": "Map each constraint to one architectural choice. The correct answer satisfies every constraint, and each distractor violates exactly one.",
+     "anchor": "how-to-use-this-volume-p05"
+    }
+   ]
+  },
+  {
+   "anchor": "1-the-converse-api-one-interface-for-every-model",
+   "title": "1. The Converse API: one interface for every model",
+   "minutes": 7,
+   "endAnchor": "1-the-converse-api-one-interface-for-every-model-end",
+   "blocks": [
+    {
+     "anchor": "1-the-converse-api-one-interface-for-every-model-p03",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    },
+    {
+     "anchor": "1-the-converse-api-one-interface-for-every-model-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "Converse",
+     "definition": "The unified Bedrock inference API with one request shape for Claude, Llama, Titan, and Nova.",
+     "anchor": "1-the-converse-api-one-interface-for-every-model-p02"
+    },
+    {
+     "term": "toolConfig",
+     "definition": "The Converse field that describes each tool's name, description, and input schema.",
+     "anchor": "1-the-converse-api-one-interface-for-every-model-p04"
+    },
+    {
+     "term": "toolUse",
+     "definition": "The model's structured request block asking your application to run a named tool.",
+     "anchor": "1-the-converse-api-one-interface-for-every-model-ol01"
+    },
+    {
+     "term": "toolResult",
+     "definition": "The block your application sends back with the outcome of a tool execution.",
+     "anchor": "1-the-converse-api-one-interface-for-every-model-ol01"
+    },
+    {
+     "term": "modelId",
+     "definition": "The Converse field naming the model: a base ID, an inference profile, or a provisioned model ARN.",
+     "anchor": "1-the-converse-api-one-interface-for-every-model-p04"
+    }
+   ],
+   "recall": [
+    {
+     "id": "1-the-converse-api-one-interface-for-every-model-r1",
+     "question": "Why is Converse better than InvokeModel for multi-provider apps?",
+     "answer": "Converse has one request shape across providers, so the model ID becomes a configuration value and switching models needs no code rewrite.",
+     "anchor": "1-the-converse-api-one-interface-for-every-model-p05"
+    },
+    {
+     "id": "1-the-converse-api-one-interface-for-every-model-r2",
+     "question": "In the Converse tool-use loop, who runs the tool?",
+     "answer": "Your application runs the code and returns a toolResult. The model only emits a structured toolUse request and never executes code.",
+     "anchor": "1-the-converse-api-one-interface-for-every-model-p16"
+    },
+    {
+     "id": "1-the-converse-api-one-interface-for-every-model-r3",
+     "question": "Why can Converse not generate embeddings?",
+     "answer": "Converse is text generation only. Embeddings need InvokeModel with an embedding model like Titan Text Embeddings.",
+     "anchor": "1-the-converse-api-one-interface-for-every-model-p14"
+    }
+   ]
+  },
+  {
+   "anchor": "2-invokemodel-provider-specifics-and-prompt-caching",
+   "title": "2. InvokeModel, provider specifics, and prompt caching",
+   "minutes": 7,
+   "endAnchor": "2-invokemodel-provider-specifics-and-prompt-caching-end",
+   "blocks": [
+    {
+     "anchor": "2-invokemodel-provider-specifics-and-prompt-caching-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    },
+    {
+     "anchor": "2-invokemodel-provider-specifics-and-prompt-caching-p09",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "InvokeModel",
+     "definition": "The raw Bedrock API that takes each provider's native request body and supports embeddings.",
+     "anchor": "2-invokemodel-provider-specifics-and-prompt-caching-p01"
+    },
+    {
+     "term": "embedding",
+     "definition": "A list of numbers capturing a text's meaning; similar meanings get similar numbers for search.",
+     "anchor": "2-invokemodel-provider-specifics-and-prompt-caching-p01"
+    },
+    {
+     "term": "prompt caching",
+     "definition": "Reusing the computation for a repeated prompt prefix so later calls bill cached tokens at a discount.",
+     "anchor": "2-invokemodel-provider-specifics-and-prompt-caching-p01"
+    },
+    {
+     "term": "TTL",
+     "definition": "Time to live: 5 minutes by default for a cache, with a 1-hour option on supported models.",
+     "anchor": "2-invokemodel-provider-specifics-and-prompt-caching-p08"
+    },
+    {
+     "term": "ValidationException",
+     "definition": "The error a wrong provider body returns; always a request bug, never a model bug.",
+     "anchor": "2-invokemodel-provider-specifics-and-prompt-caching-p03"
+    }
+   ],
+   "recall": [
+    {
+     "id": "2-invokemodel-provider-specifics-and-prompt-caching-r1",
+     "question": "When must you use InvokeModel instead of Converse?",
+     "answer": "Use InvokeModel for provider-native features Converse cannot express: embeddings, the newest sampling parameters, and provider-specific bodies.",
+     "anchor": "2-invokemodel-provider-specifics-and-prompt-caching-p09"
+    },
+    {
+     "id": "2-invokemodel-provider-specifics-and-prompt-caching-r2",
+     "question": "What breaks prompt caching?",
+     "answer": "The prefix must match exactly, token for token, up to the cache point. One changed character invalidates the cache, so put volatile content after it.",
+     "anchor": "2-invokemodel-provider-specifics-and-prompt-caching-p11"
+    },
+    {
+     "id": "2-invokemodel-provider-specifics-and-prompt-caching-r3",
+     "question": "How does prompt caching save money?",
+     "answer": "The first call pays a write surcharge. Later calls with the same prefix read cached tokens at about 10 percent of the input price within the TTL.",
+     "anchor": "2-invokemodel-provider-specifics-and-prompt-caching-p13"
+    }
+   ]
+  },
+  {
+   "anchor": "3-long-running-and-non-interactive-inference-async-and-batch",
+   "title": "3. Long-running and non-interactive inference: asynchronous and batch",
+   "minutes": 8,
+   "endAnchor": "3-long-running-and-non-interactive-inference-async-and-batch-end",
+   "blocks": [
+    {
+     "anchor": "3-long-running-and-non-interactive-inference-async-and-batch-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    },
+    {
+     "anchor": "3-long-running-and-non-interactive-inference-async-and-batch-p03",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "asynchronous invocation",
+     "definition": "Submit one request, get a job ID, and poll or get notified when the background result lands in S3.",
+     "anchor": "3-long-running-and-non-interactive-inference-async-and-batch-p02"
+    },
+    {
+     "term": "batch inference",
+     "definition": "One job that processes many prompts from S3 over hours at about half the on-demand price.",
+     "anchor": "3-long-running-and-non-interactive-inference-async-and-batch-p02"
+    },
+    {
+     "term": "streaming",
+     "definition": "Delivering tokens to a waiting user in real time through ConverseStream and WebSockets.",
+     "anchor": "3-long-running-and-non-interactive-inference-async-and-batch-fig01"
+    },
+    {
+     "term": "invocation ARN",
+     "definition": "The identifier returned by start_async_invoke for tracking one async request.",
+     "anchor": "3-long-running-and-non-interactive-inference-async-and-batch-p12"
+    },
+    {
+     "term": "Provisioned Throughput",
+     "definition": "Reserved model capacity for steady baselines with latency and throughput guarantees.",
+     "anchor": "3-long-running-and-non-interactive-inference-async-and-batch-p25"
+    }
+   ],
+   "recall": [
+    {
+     "id": "3-long-running-and-non-interactive-inference-async-and-batch-r1",
+     "question": "When is batch inference the right choice?",
+     "answer": "When no one waits for individual results and hours of latency are fine, like nightly summarization. Batch costs about 50 percent less.",
+     "anchor": "3-long-running-and-non-interactive-inference-async-and-batch-p17"
+    },
+    {
+     "id": "3-long-running-and-non-interactive-inference-async-and-batch-r2",
+     "question": "How do async, batch, and streaming differ?",
+     "answer": "Batch is many prompts from S3 over hours. Async is one slow prompt nobody waits on with the result in S3. Streaming sends tokens to a waiting user.",
+     "anchor": "3-long-running-and-non-interactive-inference-async-and-batch-p20"
+    },
+    {
+     "id": "3-long-running-and-non-interactive-inference-async-and-batch-r3",
+     "question": "Why can batch inference not serve sub-3-second responses?",
+     "answer": "Batch latency is measured in hours by design. No batch tuning reaches 3 seconds, so interactive latency needs real-time inference.",
+     "anchor": "3-long-running-and-non-interactive-inference-async-and-batch-p23"
+    }
+   ]
+  },
+  {
+   "anchor": "4-prompt-management-engineering-discipline-for-prompts",
+   "title": "4. Prompt management: engineering discipline for prompts",
+   "minutes": 5,
+   "endAnchor": "4-prompt-management-engineering-discipline-for-prompts-end",
+   "blocks": [
+    {
+     "anchor": "4-prompt-management-engineering-discipline-for-prompts-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    },
+    {
+     "anchor": "4-prompt-management-engineering-discipline-for-prompts-p02",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "variants",
+     "definition": "Alternate prompt forms for A/B comparison, such as formal versus friendly tone.",
+     "anchor": "4-prompt-management-engineering-discipline-for-prompts-p01"
+    },
+    {
+     "term": "versions",
+     "definition": "Immutable prompt releases; rollback means pointing at an older version.",
+     "anchor": "4-prompt-management-engineering-discipline-for-prompts-p01"
+    },
+    {
+     "term": "Prompt Flows",
+     "definition": "The no-code visual builder that chains prompts into multi-step workflows with branching.",
+     "anchor": "4-prompt-management-engineering-discipline-for-prompts-p07"
+    },
+    {
+     "term": "prompt engineering",
+     "definition": "The craft of system prompts, few-shot examples, chain-of-thought, and structured output.",
+     "anchor": "4-prompt-management-engineering-discipline-for-prompts-p08"
+    }
+   ],
+   "recall": [
+    {
+     "id": "4-prompt-management-engineering-discipline-for-prompts-r1",
+     "question": "Variants or versions: which is for A/B testing and which for rollback?",
+     "answer": "Variants compare alternatives side by side. Versions are immutable releases, and rollback means pointing at an older version.",
+     "anchor": "4-prompt-management-engineering-discipline-for-prompts-p17"
+    },
+    {
+     "id": "4-prompt-management-engineering-discipline-for-prompts-r2",
+     "question": "How does Prompt Management differ from prompt caching?",
+     "answer": "Management organizes prompts with versions, variants, and no redeploys. Caching makes repeated prompts cheaper. Change-frequency points to Management.",
+     "anchor": "4-prompt-management-engineering-discipline-for-prompts-p22"
+    }
+   ]
+  },
+  {
+   "anchor": "5-knowledge-bases-grounding-answers-in-your-documents",
+   "title": "5. Knowledge Bases: grounding answers in your documents",
+   "minutes": 9,
+   "endAnchor": "5-knowledge-bases-grounding-answers-in-your-documents-end",
+   "blocks": [
+    {
+     "anchor": "5-knowledge-bases-grounding-answers-in-your-documents-p07",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    },
+    {
+     "anchor": "5-knowledge-bases-grounding-answers-in-your-documents-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "RAG",
+     "definition": "Retrieval-augmented generation: retrieve first, then generate, pasting retrieved passages into the prompt.",
+     "anchor": "5-knowledge-bases-grounding-answers-in-your-documents-p08"
+    },
+    {
+     "term": "chunking",
+     "definition": "Splitting documents into small passages before embedding so each embedding captures one meaning.",
+     "anchor": "5-knowledge-bases-grounding-answers-in-your-documents-p01"
+    },
+    {
+     "term": "vector store",
+     "definition": "The database holding chunk embeddings plus text and source metadata for nearest-vector search.",
+     "anchor": "5-knowledge-bases-grounding-answers-in-your-documents-p14"
+    },
+    {
+     "term": "RetrieveAndGenerate",
+     "definition": "The one managed Knowledge Base call that retrieves, builds the prompt, generates, and cites.",
+     "anchor": "5-knowledge-bases-grounding-answers-in-your-documents-p23"
+    },
+    {
+     "term": "top-k",
+     "definition": "How many chunks return from the vector search; too few starves the answer, too many adds noise.",
+     "anchor": "5-knowledge-bases-grounding-answers-in-your-documents-p19"
+    },
+    {
+     "term": "embeddings",
+     "definition": "Meaning-vectors from text; similar meanings produce similar numbers for nearest-vector search.",
+     "anchor": "5-knowledge-bases-grounding-answers-in-your-documents-p01"
+    }
+   ],
+   "recall": [
+    {
+     "id": "5-knowledge-bases-grounding-answers-in-your-documents-r1",
+     "question": "What are the two phases of the RAG pipeline?",
+     "answer": "Ingest runs offline when documents change: chunk, embed, store. Query runs online per question: embed the question, search top-k, generate with citations.",
+     "anchor": "5-knowledge-bases-grounding-answers-in-your-documents-p17"
+    },
+    {
+     "id": "5-knowledge-bases-grounding-answers-in-your-documents-r2",
+     "question": "A RAG system gives confident but wrong answers. What do you fix first?",
+     "answer": "Fix retrieval: the chunking strategy, the embedding model, and top-k. A bigger model cannot rescue passages that were never retrieved.",
+     "anchor": "5-knowledge-bases-grounding-answers-in-your-documents-p34"
+    },
+    {
+     "id": "5-knowledge-bases-grounding-answers-in-your-documents-r3",
+     "question": "When should you use Retrieve instead of RetrieveAndGenerate?",
+     "answer": "Use Retrieve when you need your own reranking step, a custom prompt template, or a strict citation format the managed call lacks.",
+     "anchor": "5-knowledge-bases-grounding-answers-in-your-documents-p24"
+    }
+   ]
+  },
+  {
+   "anchor": "6-bedrock-agents-anatomy-of-an-agent",
+   "title": "6. Bedrock Agents: Anatomy of an Agent",
+   "minutes": 10,
+   "endAnchor": "6-bedrock-agents-anatomy-of-an-agent-end",
+   "blocks": [
+    {
+     "anchor": "6-bedrock-agents-anatomy-of-an-agent-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    },
+    {
+     "anchor": "6-bedrock-agents-anatomy-of-an-agent-p05",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "action groups",
+     "definition": "The tools an agent can call, each running Lambda code or an external API from an OpenAPI schema.",
+     "anchor": "6-bedrock-agents-anatomy-of-an-agent-fig01"
+    },
+    {
+     "term": "prepare-agent",
+     "definition": "The call that compiles agent configuration changes from DRAFT to PREPARED.",
+     "anchor": "6-bedrock-agents-anatomy-of-an-agent-p12"
+    },
+    {
+     "term": "enableTrace",
+     "definition": "The invoke_agent flag returning the agent's reasoning trace for transparency and debugging.",
+     "anchor": "6-bedrock-agents-anatomy-of-an-agent-p14"
+    },
+    {
+     "term": "sessionId",
+     "definition": "The invoke_agent key that gives the agent memory across turns in a conversation.",
+     "anchor": "6-bedrock-agents-anatomy-of-an-agent-ol01"
+    },
+    {
+     "term": "agent instruction",
+     "definition": "The system-level prompt telling the agent its role and how to behave.",
+     "anchor": "6-bedrock-agents-anatomy-of-an-agent-p05"
+    }
+   ],
+   "recall": [
+    {
+     "id": "6-bedrock-agents-anatomy-of-an-agent-r1",
+     "question": "You changed an agent's configuration but it behaves as before. What is wrong?",
+     "answer": "The change stays in DRAFT until you run prepare-agent. Prepare the agent, test it, then repoint the alias at the prepared version.",
+     "anchor": "6-bedrock-agents-anatomy-of-an-agent-p27"
+    },
+    {
+     "id": "6-bedrock-agents-anatomy-of-an-agent-r2",
+     "question": "What four things does a Bedrock Agent add to a foundation model?",
+     "answer": "An agent instruction, action groups for tools, a knowledge base for grounding, and guardrails for safety, plus an IAM role.",
+     "anchor": "6-bedrock-agents-anatomy-of-an-agent-p06"
+    },
+    {
+     "id": "6-bedrock-agents-anatomy-of-an-agent-r3",
+     "question": "How do auditors see an agent's step-by-step reasoning?",
+     "answer": "Set enableTrace on invoke_agent. It returns the orchestration trace showing which tools the agent chose and why.",
+     "anchor": "6-bedrock-agents-anatomy-of-an-agent-p13"
+    }
+   ]
+  },
+  {
+   "anchor": "7-multi-agent-collaboration-supervisor-collaborators-and-open-frameworks",
+   "title": "7. Multi-agent collaboration: supervisor, collaborators, and open frameworks",
+   "minutes": 6,
+   "endAnchor": "7-multi-agent-collaboration-supervisor-collaborators-and-open-frameworks-end",
+   "blocks": [
+    {
+     "anchor": "7-multi-agent-collaboration-supervisor-collaborators-and-open-frameworks-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    },
+    {
+     "anchor": "7-multi-agent-collaboration-supervisor-collaborators-and-open-frameworks-p07",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "supervisor",
+     "definition": "The agent that routes subtasks to specialists and composes the final answer.",
+     "anchor": "7-multi-agent-collaboration-supervisor-collaborators-and-open-frameworks-p02"
+    },
+    {
+     "term": "collaborator",
+     "definition": "A full specialist agent with its own instruction, action groups, and knowledge base.",
+     "anchor": "7-multi-agent-collaboration-supervisor-collaborators-and-open-frameworks-fig01"
+    },
+    {
+     "term": "relay-conversation-history",
+     "definition": "The setting controlling how much conversation context a collaborator sees; it trades tokens for context.",
+     "anchor": "7-multi-agent-collaboration-supervisor-collaborators-and-open-frameworks-p10"
+    },
+    {
+     "term": "Strands Agents",
+     "definition": "The open-source, code-first SDK for building agents in Python.",
+     "anchor": "7-multi-agent-collaboration-supervisor-collaborators-and-open-frameworks-fig01"
+    },
+    {
+     "term": "human-in-the-loop",
+     "definition": "A Step Functions approval step that gates risky agent actions above a threshold.",
+     "anchor": "7-multi-agent-collaboration-supervisor-collaborators-and-open-frameworks-p11"
+    }
+   ],
+   "recall": [
+    {
+     "id": "7-multi-agent-collaboration-supervisor-collaborators-and-open-frameworks-r1",
+     "question": "How does a supervisor talk to its collaborators?",
+     "answer": "Through the built-in supervisor and collaborator delegation mechanism, never through action groups, which are agent-to-tool only.",
+     "anchor": "7-multi-agent-collaboration-supervisor-collaborators-and-open-frameworks-p17"
+    },
+    {
+     "id": "7-multi-agent-collaboration-supervisor-collaborators-and-open-frameworks-r2",
+     "question": "Why must you prepare and alias collaborators?",
+     "answer": "A supervisor cannot delegate to a DRAFT collaborator. When the supervisor never delegates, the fix is prepare plus alias.",
+     "anchor": "7-multi-agent-collaboration-supervisor-collaborators-and-open-frameworks-p20"
+    },
+    {
+     "id": "7-multi-agent-collaboration-supervisor-collaborators-and-open-frameworks-r3",
+     "question": "What is the cost risk in multi-agent delegation?",
+     "answer": "Token cost scales with delegation depth and history relay. A 20-turn session can carry 40,000 tokens, so tune relay-conversation-history.",
+     "anchor": "7-multi-agent-collaboration-supervisor-collaborators-and-open-frameworks-p14"
+    }
+   ]
+  },
+  {
+   "anchor": "8-agents-with-knowledge-bases-and-guardrails-the-holy-trinity",
+   "title": "8. Agents with Knowledge Bases and Guardrails: the holy trinity",
+   "minutes": 6,
+   "endAnchor": "8-agents-with-knowledge-bases-and-guardrails-the-holy-trinity-end",
+   "blocks": [
+    {
+     "anchor": "8-agents-with-knowledge-bases-and-guardrails-the-holy-trinity-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    },
+    {
+     "anchor": "8-agents-with-knowledge-bases-and-guardrails-the-holy-trinity-p07",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "denied topics",
+     "definition": "Subject areas blocked in plain language, such as investment advice or medical diagnosis.",
+     "anchor": "8-agents-with-knowledge-bases-and-guardrails-the-holy-trinity-ol01"
+    },
+    {
+     "term": "content filters",
+     "definition": "Guardrail controls blocking toxicity categories like hate or violence at severity thresholds.",
+     "anchor": "8-agents-with-knowledge-bases-and-guardrails-the-holy-trinity-p04"
+    },
+    {
+     "term": "input guardrail",
+     "definition": "The guardrail screen that checks the user message before any model call.",
+     "anchor": "8-agents-with-knowledge-bases-and-guardrails-the-holy-trinity-ol01"
+    },
+    {
+     "term": "PII",
+     "definition": "Personally identifiable information that sensitive information filters can block or mask.",
+     "anchor": "8-agents-with-knowledge-bases-and-guardrails-the-holy-trinity-p06"
+    },
+    {
+     "term": "enableTrace",
+     "definition": "The invoke_agent flag whose traces show which KB chunks were used and which guardrail rules fired.",
+     "anchor": "8-agents-with-knowledge-bases-and-guardrails-the-holy-trinity-p09"
+    }
+   ],
+   "recall": [
+    {
+     "id": "8-agents-with-knowledge-bases-and-guardrails-the-holy-trinity-r1",
+     "question": "In one invoke_agent call, what is the fixed order of the trinity?",
+     "answer": "Input guardrail screens the user message first, then the KB-grounded agent loop runs, then the output guardrail screens the final answer.",
+     "anchor": "8-agents-with-knowledge-bases-and-guardrails-the-holy-trinity-p08"
+    },
+    {
+     "id": "8-agents-with-knowledge-bases-and-guardrails-the-holy-trinity-r2",
+     "question": "Do guardrails extract content from documents?",
+     "answer": "No. Guardrails filter content. Extraction is Bedrock Data Automation or a KB with the right chunking.",
+     "anchor": "8-agents-with-knowledge-bases-and-guardrails-the-holy-trinity-p13"
+    }
+   ]
+  },
+  {
+   "anchor": "9-lambda-integration-patterns-sync-async-streaming-timeouts-concurrency",
+   "title": "9. Lambda integration patterns: sync, async, streaming, timeouts, concurrency",
+   "minutes": 7,
+   "endAnchor": "9-lambda-integration-patterns-sync-async-streaming-timeouts-concurrency-end",
+   "blocks": [
+    {
+     "anchor": "9-lambda-integration-patterns-sync-async-streaming-timeouts-concurrency-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    },
+    {
+     "anchor": "9-lambda-integration-patterns-sync-async-streaming-timeouts-concurrency-p04",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "RequestResponse",
+     "definition": "Synchronous Lambda invocation where the caller waits for the result.",
+     "anchor": "9-lambda-integration-patterns-sync-async-streaming-timeouts-concurrency-p04"
+    },
+    {
+     "term": "Event",
+     "definition": "Asynchronous Lambda invocation: Lambda queues the event and returns immediately.",
+     "anchor": "9-lambda-integration-patterns-sync-async-streaming-timeouts-concurrency-p05"
+    },
+    {
+     "term": "reserved concurrency",
+     "definition": "Capacity guaranteed for one function so critical work always has room.",
+     "anchor": "9-lambda-integration-patterns-sync-async-streaming-timeouts-concurrency-p07"
+    },
+    {
+     "term": "provisioned concurrency",
+     "definition": "Warm instances kept ready to remove cold starts, billed even when idle.",
+     "anchor": "9-lambda-integration-patterns-sync-async-streaming-timeouts-concurrency-p07"
+    },
+    {
+     "term": "dead-letter queue",
+     "definition": "The queue that catches events after Lambda's retries are exhausted.",
+     "anchor": "9-lambda-integration-patterns-sync-async-streaming-timeouts-concurrency-p12"
+    }
+   ],
+   "recall": [
+    {
+     "id": "9-lambda-integration-patterns-sync-async-streaming-timeouts-concurrency-r1",
+     "question": "A chatbot streams 90-second answers and users see timeouts, but the Lambda timeout is 5 minutes. What is the real limit?",
+     "answer": "The API Gateway REST 29-second integration timeout. The fix is WebSockets or async with polling, not a bigger Lambda timeout.",
+     "anchor": "9-lambda-integration-patterns-sync-async-streaming-timeouts-concurrency-p21"
+    },
+    {
+     "id": "9-lambda-integration-patterns-sync-async-streaming-timeouts-concurrency-r2",
+     "question": "How do you size concurrency for a GenAI API?",
+     "answer": "Concurrent executions equal requests per second times seconds per request. Ten requests per second at 8 seconds each needs 80 concurrent executions.",
+     "anchor": "9-lambda-integration-patterns-sync-async-streaming-timeouts-concurrency-p16"
+    },
+    {
+     "id": "9-lambda-integration-patterns-sync-async-streaming-timeouts-concurrency-r3",
+     "question": "Can a Lambda wait for human approval?",
+     "answer": "No. Lambda caps at 15 minutes, so use Step Functions Standard with waitForTaskToken for approvals and long waits.",
+     "anchor": "9-lambda-integration-patterns-sync-async-streaming-timeouts-concurrency-p23"
+    }
+   ]
+  },
+  {
+   "anchor": "10-api-gateway-in-front-of-bedrock",
+   "title": "10. API Gateway in front of Bedrock",
+   "minutes": 6,
+   "endAnchor": "10-api-gateway-in-front-of-bedrock-end",
+   "blocks": [
+    {
+     "anchor": "10-api-gateway-in-front-of-bedrock-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    },
+    {
+     "anchor": "10-api-gateway-in-front-of-bedrock-p07",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "usage plans",
+     "definition": "Per-client tiers that set rate limits and throttle each API key on the gateway.",
+     "anchor": "10-api-gateway-in-front-of-bedrock-fig01"
+    },
+    {
+     "term": "Lambda authorizer",
+     "definition": "A Lambda function that validates the caller's token before the request reaches the handler.",
+     "anchor": "10-api-gateway-in-front-of-bedrock-fig01"
+    },
+    {
+     "term": "29-second",
+     "definition": "The API Gateway REST integration timeout that kills long model calls regardless of the Lambda timeout.",
+     "anchor": "10-api-gateway-in-front-of-bedrock-p09"
+    },
+    {
+     "term": "AppConfig",
+     "definition": "The service holding the model ID as runtime configuration so Lambda can switch models without redeploys.",
+     "anchor": "10-api-gateway-in-front-of-bedrock-p07"
+    },
+    {
+     "term": "throttling",
+     "definition": "Per-route and per-API-key limits that protect Bedrock quotas from one noisy client.",
+     "anchor": "10-api-gateway-in-front-of-bedrock-p11"
+    }
+   ],
+   "recall": [
+    {
+     "id": "10-api-gateway-in-front-of-bedrock-r1",
+     "question": "Why put API Gateway in front of Bedrock instead of calling Bedrock from clients?",
+     "answer": "The gateway URL stays fixed so model changes never touch clients, and it adds central throttling, authentication, and per-client rate control.",
+     "anchor": "10-api-gateway-in-front-of-bedrock-p07"
+    },
+    {
+     "id": "10-api-gateway-in-front-of-bedrock-r2",
+     "question": "How do you switch between Claude, Titan, and Llama without redeploying clients or code?",
+     "answer": "AppConfig holds the model ID as runtime configuration, Lambda routes on it, and API Gateway gives clients one stable URL.",
+     "anchor": "10-api-gateway-in-front-of-bedrock-p25"
+    }
+   ]
+  },
+  {
+   "anchor": "11-step-functions-orchestration-of-genai-workflows",
+   "title": "11. Step Functions Orchestration of GenAI Workflows",
+   "minutes": 7,
+   "endAnchor": "11-step-functions-orchestration-of-genai-workflows-end",
+   "blocks": [
+    {
+     "anchor": "11-step-functions-orchestration-of-genai-workflows-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    },
+    {
+     "anchor": "11-step-functions-orchestration-of-genai-workflows-p09",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "state machine",
+     "definition": "The sequence of steps Step Functions runs: tasks, choices, waits, and parallel branches.",
+     "anchor": "11-step-functions-orchestration-of-genai-workflows-fig01"
+    },
+    {
+     "term": "Standard workflows",
+     "definition": "Step Functions type running up to one year with exactly-once semantics for long GenAI pipelines.",
+     "anchor": "11-step-functions-orchestration-of-genai-workflows-p05"
+    },
+    {
+     "term": "Express workflows",
+     "definition": "Step Functions type capped at 5 minutes with at-least-once semantics for short, high-volume runs.",
+     "anchor": "11-step-functions-orchestration-of-genai-workflows-p07"
+    },
+    {
+     "term": "waitForTaskToken",
+     "definition": "The callback pattern that pauses an execution until an approval click resumes it.",
+     "anchor": "11-step-functions-orchestration-of-genai-workflows-ol01"
+    },
+    {
+     "term": "circuit breakers",
+     "definition": "Choice states that check failure counts or confidence scores and route to a fallback.",
+     "anchor": "11-step-functions-orchestration-of-genai-workflows-p13"
+    },
+    {
+     "term": "stopping conditions",
+     "definition": "A counter or max-iterations Choice guard that ends agent-style loops before they burn budget.",
+     "anchor": "11-step-functions-orchestration-of-genai-workflows-p14"
+    }
+   ],
+   "recall": [
+    {
+     "id": "11-step-functions-orchestration-of-genai-workflows-r1",
+     "question": "A workflow must pause 48 hours for manager approval, then resume. What do you use?",
+     "answer": "Step Functions Standard with waitForTaskToken. The approver's click calls SendTaskSuccess or SendTaskFailure and the execution resumes.",
+     "anchor": "11-step-functions-orchestration-of-genai-workflows-p30"
+    },
+    {
+     "id": "11-step-functions-orchestration-of-genai-workflows-r2",
+     "question": "When do you use Standard versus Express?",
+     "answer": "Standard runs up to one year with exactly-once semantics for approvals and waits. Express caps at 5 minutes with at-least-once semantics for short high-volume work.",
+     "anchor": "11-step-functions-orchestration-of-genai-workflows-p05"
+    },
+    {
+     "id": "11-step-functions-orchestration-of-genai-workflows-r3",
+     "question": "How do you stop a pipeline from retrying a failing model call forever?",
+     "answer": "Add a Choice state as a circuit breaker with a max-attempts stopping condition that routes to a fallback.",
+     "anchor": "11-step-functions-orchestration-of-genai-workflows-p31"
+    }
+   ]
+  },
+  {
+   "anchor": "12-s3-plus-eventbridge-event-driven-genai-pipelines",
+   "title": "12. S3 and EventBridge: Event-Driven GenAI Pipelines",
+   "minutes": 5,
+   "endAnchor": "12-s3-plus-eventbridge-event-driven-genai-pipelines-end",
+   "blocks": [
+    {
+     "anchor": "12-s3-plus-eventbridge-event-driven-genai-pipelines-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    },
+    {
+     "anchor": "12-s3-plus-eventbridge-event-driven-genai-pipelines-p08",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "ObjectCreated",
+     "definition": "The S3 event notification fired when a file lands, routed by EventBridge to processing.",
+     "anchor": "12-s3-plus-eventbridge-event-driven-genai-pipelines-ol01"
+    },
+    {
+     "term": "EventBridge Pipes",
+     "definition": "The no-code connector that filters and enriches data between an event source and a target.",
+     "anchor": "12-s3-plus-eventbridge-event-driven-genai-pipelines-p05"
+    },
+    {
+     "term": "dead-letter queue",
+     "definition": "The queue that parks poison messages after a bounded number of failures for inspection.",
+     "anchor": "12-s3-plus-eventbridge-event-driven-genai-pipelines-p11"
+    },
+    {
+     "term": "S3 versioning",
+     "definition": "Keeping every version of every object for audit and rollback.",
+     "anchor": "12-s3-plus-eventbridge-event-driven-genai-pipelines-p11"
+    },
+    {
+     "term": "visibility timeout",
+     "definition": "The window a message stays hidden while processing; set it longer than the processing time.",
+     "anchor": "12-s3-plus-eventbridge-event-driven-genai-pipelines-p11"
+    }
+   ],
+   "recall": [
+    {
+     "id": "12-s3-plus-eventbridge-event-driven-genai-pipelines-r1",
+     "question": "Why is CloudTrail the wrong trigger for file-arrival processing?",
+     "answer": "CloudTrail records API calls for audit. S3 event notifications plus EventBridge move data. Match the tool to the plane: audit versus data flow.",
+     "anchor": "12-s3-plus-eventbridge-event-driven-genai-pipelines-p15"
+    },
+    {
+     "id": "12-s3-plus-eventbridge-event-driven-genai-pipelines-r2",
+     "question": "One malformed PDF crashes extraction on every retry and blocks the queue. What is the fix?",
+     "answer": "Route to a dead-letter queue after a bounded number of attempts. Healthy files keep flowing and the bad file can be inspected.",
+     "anchor": "12-s3-plus-eventbridge-event-driven-genai-pipelines-p13"
+    }
+   ]
+  },
+  {
+   "anchor": "13-model-deployment-strategies-on-demand-provisioned-throughput-sagemaker-cascading",
+   "title": "13. Model deployment strategies: on-demand, Provisioned Throughput, SageMaker, cascading",
+   "minutes": 6,
+   "endAnchor": "13-model-deployment-strategies-on-demand-provisioned-throughput-sagemaker-cascading-end",
+   "blocks": [
+    {
+     "anchor": "13-model-deployment-strategies-on-demand-provisioned-throughput-sagemaker-cascading-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    },
+    {
+     "anchor": "13-model-deployment-strategies-on-demand-provisioned-throughput-sagemaker-cascading-p07",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "Provisioned Throughput",
+     "definition": "Reserved model units for 1 to 6 month terms with dedicated capacity and no throttling.",
+     "anchor": "13-model-deployment-strategies-on-demand-provisioned-throughput-sagemaker-cascading-p02"
+    },
+    {
+     "term": "on-demand inference",
+     "definition": "Pay-per-token inference on shared capacity for spiky, experimental, or unpredictable traffic.",
+     "anchor": "13-model-deployment-strategies-on-demand-provisioned-throughput-sagemaker-cascading-table02"
+    },
+    {
+     "term": "hybrid",
+     "definition": "The exam-favorite pattern: Provisioned Throughput for the baseline plus on-demand for spikes.",
+     "anchor": "13-model-deployment-strategies-on-demand-provisioned-throughput-sagemaker-cascading-p02"
+    },
+    {
+     "term": "cascading",
+     "definition": "A router sending simple requests to a cheap model and escalating only complex ones to the flagship.",
+     "anchor": "13-model-deployment-strategies-on-demand-provisioned-throughput-sagemaker-cascading-p02"
+    },
+    {
+     "term": "SageMaker",
+     "definition": "Self-hosting for custom models with real-time endpoints, autoscaling, and async inference.",
+     "anchor": "13-model-deployment-strategies-on-demand-provisioned-throughput-sagemaker-cascading-p02"
+    }
+   ],
+   "recall": [
+    {
+     "id": "13-model-deployment-strategies-on-demand-provisioned-throughput-sagemaker-cascading-r1",
+     "question": "The team bought Provisioned Throughput but still sees throttling. What is the likely bug?",
+     "answer": "The code calls invoke_model with the base model ID instead of the provisioned model ARN. Route to the provisioned ARN to fix it.",
+     "anchor": "13-model-deployment-strategies-on-demand-provisioned-throughput-sagemaker-cascading-p16"
+    },
+    {
+     "id": "13-model-deployment-strategies-on-demand-provisioned-throughput-sagemaker-cascading-r2",
+     "question": "2M requests per day, a steady baseline, 10x Friday spikes, and a sub-3s SLA. What deployment?",
+     "answer": "Hybrid: buy Provisioned Throughput for the baseline and route Friday overflow to on-demand. Pure on-demand throttles and peak-sized PT wastes capacity.",
+     "anchor": "13-model-deployment-strategies-on-demand-provisioned-throughput-sagemaker-cascading-p14"
+    }
+   ]
+  },
+  {
+   "anchor": "14-enterprise-integration-legacy-systems-secure-access-and-the-genai-gateway",
+   "title": "14. Enterprise integration: legacy systems, secure access, and the GenAI gateway",
+   "minutes": 6,
+   "endAnchor": "14-enterprise-integration-legacy-systems-secure-access-and-the-genai-gateway-end",
+   "blocks": [
+    {
+     "anchor": "14-enterprise-integration-legacy-systems-secure-access-and-the-genai-gateway-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    },
+    {
+     "anchor": "14-enterprise-integration-legacy-systems-secure-access-and-the-genai-gateway-p11",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "GenAI gateway",
+     "definition": "The centralized front door for all model access with policy, observability, and cost control.",
+     "anchor": "14-enterprise-integration-legacy-systems-secure-access-and-the-genai-gateway-p05"
+    },
+    {
+     "term": "RBAC",
+     "definition": "Role-based access control for which teams and roles can use which models and data.",
+     "anchor": "14-enterprise-integration-legacy-systems-secure-access-and-the-genai-gateway-p04"
+    },
+    {
+     "term": "PrivateLink",
+     "definition": "The VPC endpoint that lets a corporate app reach Bedrock without crossing the public internet.",
+     "anchor": "14-enterprise-integration-legacy-systems-secure-access-and-the-genai-gateway-fig01"
+    },
+    {
+     "term": "IAM Identity Center",
+     "definition": "The service whose permission sets scope each tenant's application to its own resources.",
+     "anchor": "14-enterprise-integration-legacy-systems-secure-access-and-the-genai-gateway-p18"
+    },
+    {
+     "term": "Outposts",
+     "definition": "AWS hardware on-prem for data-residency and ultra-low-latency constraints.",
+     "anchor": "14-enterprise-integration-legacy-systems-secure-access-and-the-genai-gateway-p07"
+    }
+   ],
+   "recall": [
+    {
+     "id": "14-enterprise-integration-legacy-systems-secure-access-and-the-genai-gateway-r1",
+     "question": "How do you isolate 40 hotel properties' data in one GenAI assistant?",
+     "answer": "Use one knowledge base per property with IAM Identity Center permission sets. Prompts are not access control, so never use one shared KB with prompt-level isolation.",
+     "anchor": "14-enterprise-integration-legacy-systems-secure-access-and-the-genai-gateway-p19"
+    },
+    {
+     "id": "14-enterprise-integration-legacy-systems-secure-access-and-the-genai-gateway-r2",
+     "question": "What three jobs does a GenAI gateway do?",
+     "answer": "Enforce policy on which models and guardrails, provide observability and per-team cost attribution, and abstract model swaps without client changes.",
+     "anchor": "14-enterprise-integration-legacy-systems-secure-access-and-the-genai-gateway-p23"
+    }
+   ]
+  },
+  {
+   "anchor": "15-application-patterns-chatbots-copilots-qa-over-docs-and-bedrock-data-automation",
+   "title": "15. Application patterns: chatbots, copilots, Q&amp;A over documents, and Bedrock Data Automation",
+   "minutes": 7,
+   "endAnchor": "15-application-patterns-chatbots-copilots-qa-over-docs-and-bedrock-data-automation-end",
+   "blocks": [
+    {
+     "anchor": "15-application-patterns-chatbots-copilots-qa-over-docs-and-bedrock-data-automation-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    },
+    {
+     "anchor": "15-application-patterns-chatbots-copilots-qa-over-docs-and-bedrock-data-automation-p02",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "BDA",
+     "definition": "Bedrock Data Automation: the managed service extracting text, tables, and structure from documents, images, video, and audio.",
+     "anchor": "15-application-patterns-chatbots-copilots-qa-over-docs-and-bedrock-data-automation-table02"
+    },
+    {
+     "term": "DynamoDB",
+     "definition": "The store for chatbot session state: millisecond keyed reads with TTL expiry per conversation.",
+     "anchor": "15-application-patterns-chatbots-copilots-qa-over-docs-and-bedrock-data-automation-table02"
+    },
+    {
+     "term": "Q Business",
+     "definition": "The Amazon Q chat assistant for employees over company wikis and tickets.",
+     "anchor": "15-application-patterns-chatbots-copilots-qa-over-docs-and-bedrock-data-automation-p04"
+    },
+    {
+     "term": "Q Developer",
+     "definition": "The Amazon Q IDE assistant for code generation and refactoring.",
+     "anchor": "15-application-patterns-chatbots-copilots-qa-over-docs-and-bedrock-data-automation-p04"
+    },
+    {
+     "term": "Amplify",
+     "definition": "The declarative UI framework for building chat front ends on AWS.",
+     "anchor": "15-application-patterns-chatbots-copilots-qa-over-docs-and-bedrock-data-automation-p04"
+    }
+   ],
+   "recall": [
+    {
+     "id": "15-application-patterns-chatbots-copilots-qa-over-docs-and-bedrock-data-automation-r1",
+     "question": "Where does chatbot conversation state live: DynamoDB or S3?",
+     "answer": "DynamoDB, keyed by conversation ID with TTL. S3 has higher latency and the wrong access pattern for per-turn reads.",
+     "anchor": "15-application-patterns-chatbots-copilots-qa-over-docs-and-bedrock-data-automation-p07"
+    },
+    {
+     "id": "15-application-patterns-chatbots-copilots-qa-over-docs-and-bedrock-data-automation-r2",
+     "question": "Q Business or Q Developer: which is the IDE coding assistant?",
+     "answer": "Q Developer is for developers needing code generation and refactoring in the IDE. Q Business is the chat assistant over company data.",
+     "anchor": "15-application-patterns-chatbots-copilots-qa-over-docs-and-bedrock-data-automation-p17"
+    }
+   ]
+  },
+  {
+   "anchor": "16-embedding-bedrock-in-existing-apps-sdks-retries-and-reliability",
+   "title": "16. Embed Bedrock in existing applications: SDKs, retries, and reliability",
+   "minutes": 6,
+   "endAnchor": "16-embedding-bedrock-in-existing-apps-sdks-retries-and-reliability-end",
+   "blocks": [
+    {
+     "anchor": "16-embedding-bedrock-in-existing-apps-sdks-retries-and-reliability-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    },
+    {
+     "anchor": "16-embedding-bedrock-in-existing-apps-sdks-retries-and-reliability-p07",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "bedrock-runtime",
+     "definition": "The AWS SDK client for inference: Converse and InvokeModel.",
+     "anchor": "16-embedding-bedrock-in-existing-apps-sdks-retries-and-reliability-p02"
+    },
+    {
+     "term": "ThrottlingException",
+     "definition": "The normal-at-scale Bedrock signal for quota pressure, handled with backoff, not treated as a bug.",
+     "anchor": "16-embedding-bedrock-in-existing-apps-sdks-retries-and-reliability-p06"
+    },
+    {
+     "term": "exponential backoff",
+     "definition": "Retries that wait 1 second, then 2, then 4, with jitter so a fleet does not retry in lockstep.",
+     "anchor": "16-embedding-bedrock-in-existing-apps-sdks-retries-and-reliability-fig01"
+    },
+    {
+     "term": "circuit breaker",
+     "definition": "The pattern that opens after repeated failures so calls fail fast instead of hammering Bedrock.",
+     "anchor": "16-embedding-bedrock-in-existing-apps-sdks-retries-and-reliability-p03"
+    },
+    {
+     "term": "X-Ray",
+     "definition": "The distributed tracing that shows which hop is slow across API Gateway, Lambda, Bedrock, and the KB.",
+     "anchor": "16-embedding-bedrock-in-existing-apps-sdks-retries-and-reliability-p04"
+    }
+   ],
+   "recall": [
+    {
+     "id": "16-embedding-bedrock-in-existing-apps-sdks-retries-and-reliability-r1",
+     "question": "An app gets throttles at peak. What is the correct retry strategy?",
+     "answer": "Use exponential backoff with jitter and a maximum-attempts ceiling, then a fallback model or cached response. Never retry in a tight loop.",
+     "anchor": "16-embedding-bedrock-in-existing-apps-sdks-retries-and-reliability-p23"
+    },
+    {
+     "id": "16-embedding-bedrock-in-existing-apps-sdks-retries-and-reliability-r2",
+     "question": "AccessDeniedException on a new model in a new region. What do you check first?",
+     "answer": "Check whether the model is available in that region first, then the IAM policy. AccessDenied does not always mean a bad policy.",
+     "anchor": "16-embedding-bedrock-in-existing-apps-sdks-retries-and-reliability-p16"
+    }
+   ]
+  },
+  {
+   "anchor": "master-trap-list-domain-2",
+   "title": "Master trap list: Domain 2",
+   "minutes": 2,
+   "endAnchor": "master-trap-list-domain-2-end",
+   "blocks": [
+    {
+     "anchor": "master-trap-list-domain-2-p01",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "prepare-agent",
+     "definition": "The step teams skip when an agent ignores new configuration; prepare, then re-alias.",
+     "anchor": "master-trap-list-domain-2-ol01"
+    },
+    {
+     "term": "action groups",
+     "definition": "Agent-to-tool connectors; the exam is wrong when it wires agents together through them.",
+     "anchor": "master-trap-list-domain-2-ol01"
+    }
+   ],
+   "recall": [
+    {
+     "id": "master-trap-list-domain-2-r1",
+     "question": "What is the fix when an agent ignores a new action group?",
+     "answer": "The team skipped prepare-agent. Run prepare-agent to compile DRAFT to PREPARED, then repoint the alias.",
+     "anchor": "master-trap-list-domain-2-p01"
+    }
+   ]
+  },
+  {
+   "anchor": "question-bank-domain-2",
+   "title": "Question bank: Domain 2",
+   "minutes": 49,
+   "endAnchor": "question-bank-domain-2-end",
+   "blocks": [
+    {
+     "anchor": "question-bank-domain-2-p11",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "Converse",
+     "definition": "The unified Bedrock API across providers; the correct pick for same-code multi-provider tool use.",
+     "anchor": "question-bank-domain-2-p02"
+    },
+    {
+     "term": "prompt caching",
+     "definition": "The cost fix when every call resends a long stable prefix like a product catalog.",
+     "anchor": "question-bank-domain-2-p27"
+    },
+    {
+     "term": "prepare-agent",
+     "definition": "The first check when an agent keeps old behavior after an instruction change.",
+     "anchor": "question-bank-domain-2-ul31"
+    },
+    {
+     "term": "waitForTaskToken",
+     "definition": "The Step Functions Standard pattern for durable multi-day approval pauses.",
+     "anchor": "question-bank-domain-2-ul62"
+    },
+    {
+     "term": "dead-letter queue",
+     "definition": "Where poison messages go after bounded retries so healthy files keep flowing.",
+     "anchor": "question-bank-domain-2-ul69"
+    }
+   ],
+   "recall": [
+    {
+     "id": "question-bank-domain-2-r1",
+     "question": "Which API is the only one that supports embedding models?",
+     "answer": "InvokeModel. Converse and ConverseStream only generate text, and ApplyGuardrail is a safety API.",
+     "anchor": "question-bank-domain-2-p29"
+    },
+    {
+     "id": "question-bank-domain-2-r2",
+     "question": "The team bought Provisioned Throughput but still throttles while calling invoke_model with the base model ID. What is the fix?",
+     "answer": "Route invocations to the provisioned model ARN. Calling the base model ID bypasses the purchased capacity.",
+     "anchor": "question-bank-domain-2-p316"
+    },
+    {
+     "id": "question-bank-domain-2-r3",
+     "question": "What is the maximum execution time for one Lambda invocation?",
+     "answer": "15 minutes. The 29-second limit is the API Gateway REST integration timeout, and 5 minutes is the Step Functions Express maximum.",
+     "anchor": "question-bank-domain-2-p208"
+    }
+   ]
+  }
+ ]
+}
