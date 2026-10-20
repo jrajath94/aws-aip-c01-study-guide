@@ -1,6 +1,6 @@
-# AIP-C01 deck coverage audit
+# AIP-C01 deck coverage topic index
 
-Source: the 200 example questions in the repo question bank. Each row maps one question ID to the slide that teaches its topic. Slide IDs match `project/slides/<id>.html`.
+This file is a topic index only. The question IDs come from the repo question bank, which the user excluded as a knowledge source. No slide fact comes from the repo. Each row names the slide that covers a question topic. Slide facts must match official AWS documentation. Slide IDs match `project/slides/<id>.html`.
 
 ## Result
 
