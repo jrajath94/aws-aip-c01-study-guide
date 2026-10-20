@@ -142,6 +142,12 @@ quizzes.sort(key=lambda q:(not q['id'].startswith('volume-question-bank--'),0))
 report=dict(coreSlides=len(allcore),authoredLessons=len(core),architecturePlates=len(plates),officialFigures=len(figures),serviceSlides=len(services),serviceEntries=len(service_rows),mappedSkills=len(skills),referenceSections=len(references),interactiveQuestions=len(quizzes),recallCards=len(recalls),mockQuestions=len(mock),inventory=inventory,limits=['Skill mapping verifies an explicit teaching reference. It does not prove complete mastery or exhaustive exam coverage.','Repository material remains inherited source content. Known corrections accompany it. Not every inherited claim or answer receives independent verification.','The mock reuses repository bank items. Its raw score cannot predict a scaled AWS score.','Official Skill Builder sign-in content and undisclosed exam items were not accessed.','Source snapshots show retrieved content. Current model limits and availability can change.'])
 deep=read('course/deep-layers.json') if (ROOT/'course/deep-layers.json').exists() else []
 figs=read('course/official-figures.json') if (ROOT/'course/official-figures.json').exists() else []
+# Documentation UI screenshots support practical chapter work. Exclude the
+# Agents Classic model picker because its provider logos and access flow are stale.
+ui_figs=read('course/ui-figures.json') if (ROOT/'course/ui-figures.json').exists() else []
+ui_figs=[f for f in ui_figs if f['id']!='agent-model-selection']
+labs=read('course/practical-labs.json') if (ROOT/'course/practical-labs.json').exists() else []
+primer=read('course/prerequisite-primer.json') if (ROOT/'course/prerequisite-primer.json').exists() else []
 # Exclude decorative gradients, generic brains, and a faint source overview.
 figs=[f for f in figs if f['id'] not in ['agentcore-components','orchestration-orchestrator','knowledge-base-architecture']]
 for f in figs:f['sourceId']=f['sourceId'].removesuffix('.md')
@@ -150,8 +156,8 @@ for path in ['course/skill-dossiers-d1-d2.json','course/skill-dossiers-d3-d5.jso
  if (ROOT/path).exists():dossiers.extend(read(path))
 dossiers.sort(key=lambda d:[int(x) for x in d['skill'].split('.')])
 report['skillDossiers']=len(dossiers)
-report['treatiseChapters']=len(deep);report['officialAtlasFigures']=len(figs);report['nativeDiagramDefinitions']=len(diagrams);report['mcpReadSources']=sum(s.get('channel')=='official AWS Documentation MCP' for s in sources.values())
-course=dict(dossiers=dossiers,deep=deep,figures=figs,core=allcore,references=references,quizzes=quizzes,recalls=recalls,mock=mock,skills=skills,sources=sources,diagrams=diagrams,services=services,corrections=corrections,report=report)
+report['treatiseChapters']=len(deep);report['officialAtlasFigures']=len(figs);report['uiFigures']=len(ui_figs);report['practicalLabs']=len(labs);report['prerequisitePrimerSections']=len(primer);report['nativeDiagramDefinitions']=len(diagrams);report['mcpReadSources']=sum(s.get('channel')=='official AWS Documentation MCP' for s in sources.values())
+course=dict(dossiers=dossiers,deep=deep,figures=figs,uiFigures=ui_figs,labs=labs,primer=primer,core=allcore,references=references,quizzes=quizzes,recalls=recalls,mock=mock,skills=skills,sources=sources,diagrams=diagrams,services=services,corrections=corrections,report=report)
 (ROOT/'course/treatise-data.js').write_text('window.COURSE='+json.dumps(course,ensure_ascii=False,separators=(',',':'))+';\n')
 (ROOT/'course/treatise-data.json').write_text(json.dumps(course,ensure_ascii=False,separators=(',',':')))
 (ROOT/'audits/coverage.json').write_text(json.dumps(report,indent=2))

@@ -12,7 +12,7 @@ def embed_paths(text,base):
   return 'url("'+dataurl(p)+'")' if p.exists() and p.is_file() else m.group(0)
  return re.sub(r'url\(([^)]+)\)',sub,text)
 def escape_script(text):return text.replace('</','<\\/')
-for f in course['figures']:
+for f in course['figures']+course.get('uiFigures',[]):
  p=(ROOT/'course'/f['path']).resolve();f['path']=dataurl(p)
 for s in course['core']:
  if s.get('image'):
@@ -49,5 +49,8 @@ bridge='''
 <style>#study-reader{width:98vw;height:96vh;max-width:98vw;max-height:96vh;padding:10px;border:1px solid #ccd4e2}#study-reader iframe{display:block;width:100%;height:calc(100% - 48px);border:0}#close-reader{margin:0 0 10px}</style>
 '''.replace('READER_DOCUMENT',json.dumps(reader,ensure_ascii=False).replace('<','\\u003c'))
 html=html.replace('</body>',bridge+'</body>')
-p=out/'AIP-C01-Visual-Treatise.original.html';p.write_text(html)
+for audit in (ROOT/'audits').glob('*.json'):
+ html=html.replace('../audits/'+audit.name, dataurl(audit))
+
+p=ROOT/'.build/AIP-C01-Visual-Treatise.v2.original.html';p.write_text(html)
 print('Packed',p,len(html),'characters')

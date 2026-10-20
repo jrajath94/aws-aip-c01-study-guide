@@ -4,35 +4,36 @@
     "title": "Input content safety",
     "principle": "Inspect untrusted input before it reaches the model. Define harmful input classes, allowed use, and escalation path.",
     "prerequisites": [
-      "Identify the outcome for input content safety.",
-      "Collect relevant evidence."
+      "Know the content policy and the point where user input enters the request.",
+      "Define harmful classes, benign controls, and the moderation owner."
     ],
     "mechanism": "Run input validation, supported Guardrails filters, and application moderation in an ordered path. Block or route unsafe input before prompt assembly.",
     "decision": {
-      "when": "When the stated condition occurs.",
+      "when": "When: A user submits a direct request for prohibited harmful instructions.",
       "choice": "The request is blocked before model invocation, while benign requests continue.",
       "reason": "Raw harmful input reaches the model, or benign input is blocked too often.",
-      "reject": "Reject options that violate the requirement."
+      "reject": "Reject this tempting claim: Keyword filters alone miss indirect and transformed attacks."
     },
     "workedTrace": [
-      "Observe the scenario.",
-      "Inspect: Raw harmful input reaches the model, or benign input is blocked too often.",
-      "Apply: The request is blocked before model invocation, while benign requests continue.",
-      "Compare the result with the requirement."
+      "Case: A user submits a direct request for prohibited harmful instructions.",
+      "Check: Compare input moderation verdicts with labeled requests and blocked or allowed outcomes.",
+      "Act: The request is blocked before model invocation, while benign requests continue.",
+      "Test: Measure harmful request blocks and benign request passes against labeled examples."
     ],
     "failure": {
       "symptom": "A user submits a direct request for prohibited harmful instructions.",
-      "check": "Raw harmful input reaches the model, or benign input is blocked too often.",
+      "check": "Compare input moderation verdicts with labeled requests and blocked or allowed outcomes.",
       "fix": "The request is blocked before model invocation, while benign requests continue."
     },
     "experiment": {
       "change": "Compare the input filter result with a labeled set of harmful and benign requests.",
-      "observe": "Compare the target measure with baseline and quality limits.",
+      "observe": "Measure harmful request blocks and benign request passes against labeled examples.",
       "limit": "Input controls do not guarantee safe model output."
     },
     "masteryQuestion": "Hypothetical case: A user submits a direct request for prohibited harmful instructions. What evidence decides the first action?",
-    "masteryAnswer": "The request is blocked before model invocation, while benign requests continue. Confirm the result against the experiment baseline.",
+    "masteryAnswer": "The request is blocked before model invocation, while benign requests continue.",
     "sources": [
+      "exam-domain-3",
       "guardrails",
       "guardrails-api"
     ]
@@ -42,35 +43,36 @@
     "title": "Output safety",
     "principle": "Check generated output before the application returns it. Define which harmful content classes and action risks require blocking or review.",
     "prerequisites": [
-      "Identify the outcome for output safety.",
-      "Collect relevant evidence."
+      "Know the output policy and the point where the response leaves the model path.",
+      "Define harmful output classes and safe fallback behavior."
     ],
     "mechanism": "Apply supported output filters after generation. Add deterministic business checks for high-impact fields or actions.",
     "decision": {
-      "when": "When the stated condition occurs.",
+      "when": "When: A model produces a harmful or disallowed answer despite a safe user question.",
       "choice": "The post-generation check blocks the answer and returns a safe fallback.",
       "reason": "The filter misses paraphrases or suppresses harmless educational content.",
-      "reject": "Reject options that violate the requirement."
+      "reject": "Reject this tempting claim: An input filter alone cannot block harmful content that the model generates for a safe request."
     },
     "workedTrace": [
-      "Observe the scenario.",
-      "Inspect: The filter misses paraphrases or suppresses harmless educational content.",
-      "Apply: The post-generation check blocks the answer and returns a safe fallback.",
-      "Compare the result with the requirement."
+      "Case: A model produces a harmful or disallowed answer despite a safe user question.",
+      "Check: Inspect output filter results and the final response returned to the caller.",
+      "Act: The post-generation check blocks the answer and returns a safe fallback.",
+      "Test: Measure harmful output misses and benign output blocks after the response filter."
     ],
     "failure": {
       "symptom": "A model produces a harmful or disallowed answer despite a safe user question.",
-      "check": "The filter misses paraphrases or suppresses harmless educational content.",
+      "check": "Inspect output filter results and the final response returned to the caller.",
       "fix": "The post-generation check blocks the answer and returns a safe fallback."
     },
     "experiment": {
       "change": "Change one output filter threshold or policy rule, then compare misses and false blocks on a labeled set.",
-      "observe": "Compare the target measure with baseline and quality limits.",
+      "observe": "Measure harmful output misses and benign output blocks after the response filter.",
       "limit": "Content filtering does not establish factual accuracy."
     },
     "masteryQuestion": "Hypothetical case: A model produces a harmful or disallowed answer despite a safe user question. What evidence decides the first action?",
-    "masteryAnswer": "The post-generation check blocks the answer and returns a safe fallback. Confirm the result against the experiment baseline.",
+    "masteryAnswer": "The post-generation check blocks the answer and returns a safe fallback.",
     "sources": [
+      "exam-domain-3",
       "guardrails",
       "guardrails-api"
     ]
@@ -80,37 +82,38 @@
     "title": "Accuracy verification",
     "principle": "Treat a generated claim as unverified until evidence supports it. Identify authoritative evidence and the cost of an incorrect answer.",
     "prerequisites": [
-      "Identify the outcome for accuracy verification.",
-      "Collect relevant evidence."
+      "Know which source is authoritative for each claim.",
+      "Define evidence support and abstention rules for the task."
     ],
     "mechanism": "Retrieve permitted source passages, bind claims to evidence, and check structured outputs against schema and domain rules. Use a confidence score only when calibration supports its meaning.",
     "decision": {
-      "when": "When the stated condition occurs.",
+      "when": "When: An answer states a date that differs from its retrieved policy passage.",
       "choice": "The verifier flags the mismatch and the application corrects or withholds the date.",
       "reason": "The answer sounds certain although the retrieved context lacks the needed fact.",
-      "reject": "Reject options that violate the requirement."
+      "reject": "Reject this tempting claim: A citation can be real while its passage does not support the claim. JSON Schema cannot establish factual truth."
     },
     "workedTrace": [
-      "Observe the scenario.",
-      "Inspect: The answer sounds certain although the retrieved context lacks the needed fact.",
-      "Apply: The verifier flags the mismatch and the application corrects or withholds the date.",
-      "Compare the result with the requirement."
+      "Case: An answer states a date that differs from its retrieved policy passage.",
+      "Check: Compare each factual claim with its cited source and verifier result.",
+      "Act: The verifier flags the mismatch and the application corrects or withholds the date.",
+      "Test: Measure supported claims, unsupported claims, and abstentions against cited evidence."
     ],
     "failure": {
       "symptom": "An answer states a date that differs from its retrieved policy passage.",
-      "check": "The answer sounds certain although the retrieved context lacks the needed fact.",
+      "check": "Compare each factual claim with its cited source and verifier result.",
       "fix": "The verifier flags the mismatch and the application corrects or withholds the date."
     },
     "experiment": {
       "change": "Remove the supporting passage from a test case and check whether the system abstains.",
-      "observe": "Compare the target measure with baseline and quality limits.",
+      "observe": "Measure supported claims, unsupported claims, and abstentions against cited evidence.",
       "limit": "Similarity to context is not proof that a claim is true."
     },
     "masteryQuestion": "Hypothetical case: An answer states a date that differs from its retrieved policy passage. What evidence decides the first action?",
-    "masteryAnswer": "The verifier flags the mismatch and the application corrects or withholds the date. Confirm the result against the experiment baseline.",
+    "masteryAnswer": "The verifier flags the mismatch and the application corrects or withholds the date.",
     "sources": [
-      "knowledge-bases",
+      "exam-domain-3",
       "guardrails-grounding",
+      "knowledge-bases",
       "structured-output"
     ]
   },
@@ -119,35 +122,36 @@
     "title": "Defense in depth",
     "principle": "Assign separate controls to input, model behavior, output, tool permissions, and monitoring. Map each risk to a control owner.",
     "prerequisites": [
-      "Identify the outcome for defense in depth.",
-      "Collect relevant evidence."
+      "Map input, model, output, tool, and monitoring boundaries.",
+      "Assign an owner and failure response to each control layer."
     ],
     "mechanism": "Use request validation and moderation before inference, supported Guardrails during or after inference, and business validation before side effects. Apply IAM to tools and retain actionable event records.",
     "decision": {
-      "when": "When the stated condition occurs.",
+      "when": "When: An attacker bypasses an input keyword rule with a paraphrase.",
       "choice": "A semantic safety check or output validation catches the risk before release.",
       "reason": "One control becomes a single point of failure or produces no useful diagnostic evidence.",
-      "reject": "Reject options that violate the requirement."
+      "reject": "Reject this tempting claim: One content check does not enforce retrieval permissions, tool authorization, or SQL safety."
     },
     "workedTrace": [
-      "Observe the scenario.",
-      "Inspect: One control becomes a single point of failure or produces no useful diagnostic evidence.",
-      "Apply: A semantic safety check or output validation catches the risk before release.",
-      "Compare the result with the requirement."
+      "Case: An attacker bypasses an input keyword rule with a paraphrase.",
+      "Check: Trace which control layer allowed the unsafe path and whether later checks fired.",
+      "Act: A semantic safety check or output validation catches the risk before release.",
+      "Test: Measure unsafe paths blocked at each independent layer and benign task completion."
     ],
     "failure": {
       "symptom": "An attacker bypasses an input keyword rule with a paraphrase.",
-      "check": "One control becomes a single point of failure or produces no useful diagnostic evidence.",
+      "check": "Trace which control layer allowed the unsafe path and whether later checks fired.",
       "fix": "A semantic safety check or output validation catches the risk before release."
     },
     "experiment": {
       "change": "Disable one layer in a controlled test and verify that another independent layer still blocks the specified unsafe path.",
-      "observe": "Compare the target measure with baseline and quality limits.",
+      "observe": "Measure unsafe paths blocked at each independent layer and benign task completion.",
       "limit": "Multiple controls help only when their failure modes differ."
     },
     "masteryQuestion": "Hypothetical case: An attacker bypasses an input keyword rule with a paraphrase. What evidence decides the first action?",
-    "masteryAnswer": "A semantic safety check or output validation catches the risk before release. Confirm the result against the experiment baseline.",
+    "masteryAnswer": "A semantic safety check or output validation catches the risk before release.",
     "sources": [
+      "exam-domain-3",
       "guardrails",
       "guardrails-api",
       "iam"
@@ -158,37 +162,38 @@
     "title": "Adversarial input defense",
     "principle": "Treat prompt injection as an attempt to alter instruction priority, data access, or tool behavior. Include direct and indirect attack sources.",
     "prerequisites": [
-      "Identify the outcome for adversarial input defense.",
-      "Collect relevant evidence."
+      "Know the trusted instruction boundary and each tool permission.",
+      "Prepare direct and indirect attack cases for the workload."
     ],
     "mechanism": "Keep trusted instructions separate from user and retrieved data. Restrict tools in server code, validate destinations and arguments, and test jailbreak variants.",
     "decision": {
-      "when": "When the stated condition occurs.",
+      "when": "When: A retrieved document tells an agent to reveal another tenant’s records.",
       "choice": "The tool service rejects access outside the authenticated tenant scope.",
       "reason": "The model follows hostile text, changes filters, or sends data to an unapproved destination.",
-      "reject": "Reject options that violate the requirement."
+      "reject": "Reject this tempting claim: A tool result can be accurate data and still contain an injected instruction."
     },
     "workedTrace": [
-      "Observe the scenario.",
-      "Inspect: The model follows hostile text, changes filters, or sends data to an unapproved destination.",
-      "Apply: The tool service rejects access outside the authenticated tenant scope.",
-      "Compare the result with the requirement."
+      "Case: A retrieved document tells an agent to reveal another tenant’s records.",
+      "Check: Inspect attack classifier results, retrieved instructions, and server-side tool arguments.",
+      "Act: The tool service rejects access outside the authenticated tenant scope.",
+      "Test: Measure attack detection and unauthorized tool attempts across direct and indirect inputs."
     ],
     "failure": {
       "symptom": "A retrieved document tells an agent to reveal another tenant’s records.",
-      "check": "The model follows hostile text, changes filters, or sends data to an unapproved destination.",
+      "check": "Inspect attack classifier results, retrieved instructions, and server-side tool arguments.",
       "fix": "The tool service rejects access outside the authenticated tenant scope."
     },
     "experiment": {
       "change": "Add one indirect injection example to the red-team set and observe tool arguments and access decisions.",
-      "observe": "Compare the target measure with baseline and quality limits.",
+      "observe": "Measure attack detection and unauthorized tool attempts across direct and indirect inputs.",
       "limit": "Prompt delimiters alone cannot enforce access control."
     },
     "masteryQuestion": "Hypothetical case: A retrieved document tells an agent to reveal another tenant’s records. What evidence decides the first action?",
-    "masteryAnswer": "The tool service rejects access outside the authenticated tenant scope. Confirm the result against the experiment baseline.",
+    "masteryAnswer": "The tool service rejects access outside the authenticated tenant scope.",
     "sources": [
-      "guardrails",
+      "exam-domain-3",
       "genai-lens",
+      "guardrails",
       "iam"
     ]
   },
@@ -197,38 +202,39 @@
     "title": "Protected inference environment",
     "principle": "Separate network reachability, identity authorization, data access, and encryption. Identify each required service API and workload role.",
     "prerequisites": [
-      "Identify the outcome for protected inference environment.",
-      "Collect relevant evidence."
+      "Know the workload role, service APIs, VPC path, and data resources.",
+      "Separate network reachability from IAM and resource authorization."
     ],
     "mechanism": "Use supported VPC endpoints and restrictive endpoint policies. Grant scoped IAM actions to the runtime role.",
     "decision": {
-      "when": "When the stated condition occurs.",
+      "when": "When: A private workload reaches the inference endpoint but gets AccessDenied.",
       "choice": "Inspect role policy, resource scope, endpoint policy, and applicable key policy.",
       "reason": "A network route works but authorization fails, or an overly broad role exposes other data.",
-      "reject": "Reject options that violate the requirement."
+      "reject": "Reject this tempting claim: A private network path does not grant IAM permission to invoke a model."
     },
     "workedTrace": [
-      "Observe the scenario.",
-      "Inspect: A network route works but authorization fails, or an overly broad role exposes other data.",
-      "Apply: Inspect role policy, resource scope, endpoint policy, and applicable key policy.",
-      "Compare the result with the requirement."
+      "Case: A private workload reaches the inference endpoint but gets AccessDenied.",
+      "Check: Inspect workload role policy, endpoint policy, resource scope, and denied API action.",
+      "Act: Inspect role policy, resource scope, endpoint policy, and applicable key policy.",
+      "Test: Measure authorized requests that pass and unauthorized requests that fail at each boundary."
     ],
     "failure": {
       "symptom": "A private workload reaches the inference endpoint but gets AccessDenied.",
-      "check": "A network route works but authorization fails, or an overly broad role exposes other data.",
+      "check": "Inspect workload role policy, endpoint policy, resource scope, and denied API action.",
       "fix": "Inspect role policy, resource scope, endpoint policy, and applicable key policy."
     },
     "experiment": {
       "change": "Remove one non-required action from a test role and confirm the intended inference path still works.",
-      "observe": "Compare the target measure with baseline and quality limits.",
+      "observe": "Measure authorized requests that pass and unauthorized requests that fail at each boundary.",
       "limit": "Private networking does not grant service permission."
     },
     "masteryQuestion": "Hypothetical case: A private workload reaches the inference endpoint but gets AccessDenied. What evidence decides the first action?",
-    "masteryAnswer": "Inspect role policy, resource scope, endpoint policy, and applicable key policy. Confirm the result against the experiment baseline.",
+    "masteryAnswer": "Inspect role policy, resource scope, endpoint policy, and applicable key policy.",
     "sources": [
+      "data-protection",
+      "exam-domain-3",
       "iam",
-      "vpc",
-      "data-protection"
+      "vpc"
     ]
   },
   {
@@ -236,37 +242,38 @@
     "title": "Privacy-preserving inference",
     "principle": "Classify personal data before model use. Identify whether the task needs raw identifiers, derived features, or no personal data.",
     "prerequisites": [
-      "Identify the outcome for privacy-preserving inference.",
-      "Collect relevant evidence."
+      "Classify the sensitive fields and identify the service data path.",
+      "Know approved retention, access, and encryption rules."
     ],
     "mechanism": "Detect supported PII patterns, mask or minimize fields, and restrict access to prompts and logs. Review the selected service data terms, retention settings, and key controls.",
     "decision": {
-      "when": "When the stated condition occurs.",
+      "when": "When: A support prompt contains an email address that the model does not need.",
       "choice": "Mask the email before inference and preserve only the fields required to solve the task.",
       "reason": "PII appears in request logs or a masking step damages a value required for the task.",
-      "reject": "Reject options that violate the requirement."
+      "reject": "Reject this tempting claim: Masking can leave re-identification risk. Deleting an S3 object does not remove every derivative automatically."
     },
     "workedTrace": [
-      "Observe the scenario.",
-      "Inspect: PII appears in request logs or a masking step damages a value required for the task.",
-      "Apply: Mask the email before inference and preserve only the fields required to solve the task.",
-      "Compare the result with the requirement."
+      "Case: A support prompt contains an email address that the model does not need.",
+      "Check: Inspect the prompt before and after redaction, log access, and retention settings.",
+      "Act: Mask the email before inference and preserve only the fields required to solve the task.",
+      "Test: Measure residual sensitive data in model input and permitted access to retained logs."
     ],
     "failure": {
       "symptom": "A support prompt contains an email address that the model does not need.",
-      "check": "PII appears in request logs or a masking step damages a value required for the task.",
+      "check": "Inspect the prompt before and after redaction, log access, and retention settings.",
       "fix": "Mask the email before inference and preserve only the fields required to solve the task."
     },
     "experiment": {
       "change": "Compare task quality and residual PII on representative records before and after masking.",
-      "observe": "Compare the target measure with baseline and quality limits.",
+      "observe": "Measure residual sensitive data in model input and permitted access to retained logs.",
       "limit": "PII detection can miss values that need context or custom patterns."
     },
     "masteryQuestion": "Hypothetical case: A support prompt contains an email address that the model does not need. What evidence decides the first action?",
-    "masteryAnswer": "Mask the email before inference and preserve only the fields required to solve the task. Confirm the result against the experiment baseline.",
+    "masteryAnswer": "Mask the email before inference and preserve only the fields required to solve the task.",
     "sources": [
       "data-protection",
       "data-retention",
+      "exam-domain-3",
       "guardrails"
     ]
   },
@@ -275,37 +282,38 @@
     "title": "Privacy and utility balance",
     "principle": "Minimize sensitive content while preserving fields that carry task meaning. Define a utility measure and privacy test before transformation.",
     "prerequisites": [
-      "Identify the outcome for privacy and utility balance.",
-      "Collect relevant evidence."
+      "Identify which attributes the task needs and which it can remove.",
+      "Define a privacy risk test and a task quality measure."
     ],
     "mechanism": "Use masking, token replacement, aggregation, or anonymization based on the task. Keep any re-identification map in a separate restricted system.",
     "decision": {
-      "when": "When the stated condition occurs.",
+      "when": "When: A workflow must classify support themes without exposing customer names.",
       "choice": "Replace names with stable task-local tokens or remove them if identity is unnecessary.",
       "reason": "Broad masking removes a product name that the classifier needs, or reversible tokens leak through logs.",
-      "reject": "Reject options that violate the requirement."
+      "reject": "Reject this tempting claim: Removing visible names guarantees anonymity while preserving every useful task signal."
     },
     "workedTrace": [
-      "Observe the scenario.",
-      "Inspect: Broad masking removes a product name that the classifier needs, or reversible tokens leak through logs.",
-      "Apply: Replace names with stable task-local tokens or remove them if identity is unnecessary.",
-      "Compare the result with the requirement."
+      "Case: A workflow must classify support themes without exposing customer names.",
+      "Check: Compare sensitive fields before and after masking, then inspect task output quality.",
+      "Act: Replace names with stable task-local tokens or remove them if identity is unnecessary.",
+      "Test: Measure task quality and residual identity risk after the selected data transformation."
     ],
     "failure": {
       "symptom": "A workflow must classify support themes without exposing customer names.",
-      "check": "Broad masking removes a product name that the classifier needs, or reversible tokens leak through logs.",
+      "check": "Compare sensitive fields before and after masking, then inspect task output quality.",
       "fix": "Replace names with stable task-local tokens or remove them if identity is unnecessary."
     },
     "experiment": {
       "change": "Compare classification quality and re-identification exposure across transformed test records.",
-      "observe": "Compare the target measure with baseline and quality limits.",
+      "observe": "Measure task quality and residual identity risk after the selected data transformation.",
       "limit": "Anonymization strength depends on the data and context."
     },
     "masteryQuestion": "Hypothetical case: A workflow must classify support themes without exposing customer names. What evidence decides the first action?",
-    "masteryAnswer": "Replace names with stable task-local tokens or remove them if identity is unnecessary. Confirm the result against the experiment baseline.",
+    "masteryAnswer": "Replace names with stable task-local tokens or remove them if identity is unnecessary.",
     "sources": [
       "data-protection",
-      "data-retention"
+      "data-retention",
+      "exam-domain-3"
     ]
   },
   {
@@ -313,38 +321,39 @@
     "title": "Compliance framework",
     "principle": "Translate each applicable obligation into an owner, control, evidence record, and review cycle. Confirm the actual regulatory scope with the organization.",
     "prerequisites": [
-      "Identify the outcome for compliance framework.",
-      "Collect relevant evidence."
+      "Know the applicable obligations and who approves the use case.",
+      "Identify the model, data, release, and audit records to retain."
     ],
     "mechanism": "Document intended use, limitations, data lineage, model and prompt versions, approvals, and retention. Use suitable catalog and registry metadata.",
     "decision": {
-      "when": "When the stated condition occurs.",
+      "when": "When: A reviewer asks why a model used one dataset and which release served a decision.",
       "choice": "Trace the deployed version to its approved data, prompt, evaluation, and change record.",
       "reason": "The model card exists but does not match the deployed model or data lineage.",
-      "reject": "Reject options that violate the requirement."
+      "reject": "Reject this tempting claim: A catalog entry does not automatically prove complete data lineage or regulatory compliance."
     },
     "workedTrace": [
-      "Observe the scenario.",
-      "Inspect: The model card exists but does not match the deployed model or data lineage.",
-      "Apply: Trace the deployed version to its approved data, prompt, evaluation, and change record.",
-      "Compare the result with the requirement."
+      "Case: A reviewer asks why a model used one dataset and which release served a decision.",
+      "Check: Trace the deployed version to its model card, data lineage, approval, and audit record.",
+      "Act: Trace the deployed version to its approved data, prompt, evaluation, and change record.",
+      "Test: Measure whether a selected release traces to complete approval, lineage, and audit evidence."
     ],
     "failure": {
       "symptom": "A reviewer asks why a model used one dataset and which release served a decision.",
-      "check": "The model card exists but does not match the deployed model or data lineage.",
+      "check": "Trace the deployed version to its model card, data lineage, approval, and audit record.",
       "fix": "Trace the deployed version to its approved data, prompt, evaluation, and change record."
     },
     "experiment": {
       "change": "Select a release and trace every declared dependency to a versioned source record.",
-      "observe": "Compare the target measure with baseline and quality limits.",
+      "observe": "Measure whether a selected release traces to complete approval, lineage, and audit evidence.",
       "limit": "A course example does not establish legal compliance for a deployment."
     },
     "masteryQuestion": "Hypothetical case: A reviewer asks why a model used one dataset and which release served a decision. What evidence decides the first action?",
-    "masteryAnswer": "Trace the deployed version to its approved data, prompt, evaluation, and change record. Confirm the result against the experiment baseline.",
+    "masteryAnswer": "Trace the deployed version to its approved data, prompt, evaluation, and change record.",
     "sources": [
+      "data-protection",
+      "exam-domain-3",
       "genai-lens",
-      "logging",
-      "data-protection"
+      "logging"
     ]
   },
   {
@@ -352,39 +361,40 @@
     "title": "Data source traceability",
     "principle": "Preserve the origin and version of evidence used to answer a question. Define what the user can see and what the audit needs.",
     "prerequisites": [
-      "Identify the outcome for data source traceability.",
-      "Collect relevant evidence."
+      "Know stable source identifiers and document version rules.",
+      "Know how the application records retrieval and output citations."
     ],
     "mechanism": "Register sources, stable document identifiers, versions, effective dates, and retrieval references. Attach citations to outputs where supported.",
     "decision": {
-      "when": "When the stated condition occurs.",
+      "when": "When: A user challenges a generated policy answer after a source changed.",
       "choice": "Trace the answer citation to the document version retrieved for that request.",
       "reason": "A citation names a file but not the exact version or passage.",
-      "reject": "Reject options that violate the requirement."
+      "reject": "Reject this tempting claim: A file citation does not prove which document version or passage supported the answer."
     },
     "workedTrace": [
-      "Observe the scenario.",
-      "Inspect: A citation names a file but not the exact version or passage.",
-      "Apply: Trace the answer citation to the document version retrieved for that request.",
-      "Compare the result with the requirement."
+      "Case: A user challenges a generated policy answer after a source changed.",
+      "Check: Trace the cited document version to catalog metadata, ingestion event, and request record.",
+      "Act: Trace the answer citation to the document version retrieved for that request.",
+      "Test: Measure citation version accuracy after a source update and a retrieval request."
     ],
     "failure": {
       "symptom": "A user challenges a generated policy answer after a source changed.",
-      "check": "A citation names a file but not the exact version or passage.",
+      "check": "Trace the cited document version to catalog metadata, ingestion event, and request record.",
       "fix": "Trace the answer citation to the document version retrieved for that request."
     },
     "experiment": {
       "change": "Change one source version and verify that both retrieval records and answer citations distinguish it.",
-      "observe": "Compare the target measure with baseline and quality limits.",
+      "observe": "Measure citation version accuracy after a source update and a retrieval request.",
       "limit": "A trace record may contain sensitive content and needs access controls."
     },
     "masteryQuestion": "Hypothetical case: A user challenges a generated policy answer after a source changed. What evidence decides the first action?",
-    "masteryAnswer": "Trace the answer citation to the document version retrieved for that request. Confirm the result against the experiment baseline.",
+    "masteryAnswer": "Trace the answer citation to the document version retrieved for that request.",
     "sources": [
-      "knowledge-bases",
+      "bedrock-cloudtrail",
+      "exam-domain-3",
       "kb-sync",
-      "logging",
-      "bedrock-cloudtrail"
+      "knowledge-bases",
+      "logging"
     ]
   },
   {
@@ -392,37 +402,38 @@
     "title": "Organizational AI governance",
     "principle": "Set policy ownership before a team builds a production model workflow. Define allowed uses, restricted data, exceptions, and escalation roles.",
     "prerequisites": [
-      "Identify the outcome for organizational ai governance.",
-      "Collect relevant evidence."
+      "Know organizational policy owners and exception roles.",
+      "Map each policy requirement to an enforceable application control."
     ],
     "mechanism": "Create a review path for use case approval, data classification, model selection, testing, release, and incident response. Record decisions and assign control owners.",
     "decision": {
-      "when": "When the stated condition occurs.",
+      "when": "When: Two teams apply different rules to the same sensitive use case.",
       "choice": "Use one approved policy and a named exception owner for any deviation.",
       "reason": "A policy exists but has no owner, evidence requirement, or enforcement point.",
-      "reject": "Reject options that violate the requirement."
+      "reject": "Reject this tempting claim: A one-time launch review cannot detect future data, model, or usage changes."
     },
     "workedTrace": [
-      "Observe the scenario.",
-      "Inspect: A policy exists but has no owner, evidence requirement, or enforcement point.",
-      "Apply: Use one approved policy and a named exception owner for any deviation.",
-      "Compare the result with the requirement."
+      "Case: Two teams apply different rules to the same sensitive use case.",
+      "Check: Inspect approved use policy, control owner, exceptions, and evidence of enforcement.",
+      "Act: Use one approved policy and a named exception owner for any deviation.",
+      "Test: Measure control adherence and exception handling for one approved use case."
     ],
     "failure": {
       "symptom": "Two teams apply different rules to the same sensitive use case.",
-      "check": "A policy exists but has no owner, evidence requirement, or enforcement point.",
+      "check": "Inspect approved use policy, control owner, exceptions, and evidence of enforcement.",
       "fix": "Use one approved policy and a named exception owner for any deviation."
     },
     "experiment": {
       "change": "Trace one use case from approval to production and identify each accountable owner and proof record.",
-      "observe": "Compare the target measure with baseline and quality limits.",
+      "observe": "Measure control adherence and exception handling for one approved use case.",
       "limit": "Governance language without an operational control does not change system behavior."
     },
     "masteryQuestion": "Hypothetical case: Two teams apply different rules to the same sensitive use case. What evidence decides the first action?",
-    "masteryAnswer": "Use one approved policy and a named exception owner for any deviation. Confirm the result against the experiment baseline.",
+    "masteryAnswer": "Use one approved policy and a named exception owner for any deviation.",
     "sources": [
-      "genai-lens",
-      "data-protection"
+      "data-protection",
+      "exam-domain-3",
+      "genai-lens"
     ]
   },
   {
@@ -430,38 +441,39 @@
     "title": "Continuous governance monitoring",
     "principle": "Monitor policy compliance and model behavior after release. Define a measurable signal, alert owner, and safe response.",
     "prerequisites": [
-      "Identify the outcome for continuous governance monitoring.",
-      "Collect relevant evidence."
+      "Know approved policy signals, baseline segments, and alert owners.",
+      "Define who reviews and records each safety or drift alert."
     ],
     "mechanism": "Track misuse, quality drift, bias indicators, sensitive data exposure, and policy violations. Redact telemetry where possible.",
     "decision": {
-      "when": "When the stated condition occurs.",
+      "when": "When: A quality segment declines while overall task success remains steady.",
       "choice": "Use segment-level alerts to route a review before a broad rollback.",
       "reason": "Aggregate dashboards hide drift or alerts lack a responsible owner.",
-      "reject": "Reject options that violate the requirement."
+      "reject": "Reject this tempting claim: A launch approval cannot detect later changes in data, model, or use."
     },
     "workedTrace": [
-      "Observe the scenario.",
-      "Inspect: Aggregate dashboards hide drift or alerts lack a responsible owner.",
-      "Apply: Use segment-level alerts to route a review before a broad rollback.",
-      "Compare the result with the requirement."
+      "Case: A quality segment declines while overall task success remains steady.",
+      "Check: Inspect segment-level quality alerts, policy events, assigned owner, and response record.",
+      "Act: Use segment-level alerts to route a review before a broad rollback.",
+      "Test: Measure detection delay, segment coverage, and owner response to a known policy event."
     ],
     "failure": {
       "symptom": "A quality segment declines while overall task success remains steady.",
-      "check": "Aggregate dashboards hide drift or alerts lack a responsible owner.",
+      "check": "Inspect segment-level quality alerts, policy events, assigned owner, and response record.",
       "fix": "Use segment-level alerts to route a review before a broad rollback."
     },
     "experiment": {
       "change": "Inject a known segment regression in a controlled test and verify alert routing and response.",
-      "observe": "Compare the target measure with baseline and quality limits.",
+      "observe": "Measure detection delay, segment coverage, and owner response to a known policy event.",
       "limit": "Automated remediation can create new failures when its trigger is noisy."
     },
     "masteryQuestion": "Hypothetical case: A quality segment declines while overall task success remains steady. What evidence decides the first action?",
-    "masteryAnswer": "Use segment-level alerts to route a review before a broad rollback. Confirm the result against the experiment baseline.",
+    "masteryAnswer": "Use segment-level alerts to route a review before a broad rollback.",
     "sources": [
+      "evaluation",
+      "exam-domain-3",
       "genai-lens",
-      "logging",
-      "evaluation"
+      "logging"
     ]
   },
   {
@@ -469,37 +481,38 @@
     "title": "Transparent model outputs",
     "principle": "Show evidence and limits that help a user judge an answer. Choose explanations that the system can support with records.",
     "prerequisites": [
-      "Identify the outcome for transparent model outputs.",
-      "Collect relevant evidence."
+      "Know which evidence can support a user explanation.",
+      "Distinguish measured uncertainty from generated reasoning text."
     ],
     "mechanism": "Provide source references, uncertainty statements tied to validated measures, and relevant tool outcomes. Keep internal traces for diagnosis under restricted access.",
     "decision": {
-      "when": "When the stated condition occurs.",
+      "when": "When: A user needs to know which policy passage supports a response.",
       "choice": "Show the passage reference and state when the source does not resolve the question.",
       "reason": "A fluent explanation creates false confidence or reveals private internal data.",
-      "reject": "Reject options that violate the requirement."
+      "reject": "Reject this tempting claim: Do not equate hidden chain-of-thought, a fluent explanation, or a model confidence claim with proof."
     },
     "workedTrace": [
-      "Observe the scenario.",
-      "Inspect: A fluent explanation creates false confidence or reveals private internal data.",
-      "Apply: Show the passage reference and state when the source does not resolve the question.",
-      "Compare the result with the requirement."
+      "Case: A user needs to know which policy passage supports a response.",
+      "Check: Trace displayed evidence to its source passage and inspect the basis for uncertainty.",
+      "Act: Show the passage reference and state when the source does not resolve the question.",
+      "Test: Measure whether users can find supporting evidence and understand stated limits."
     ],
     "failure": {
       "symptom": "A user needs to know which policy passage supports a response.",
-      "check": "A fluent explanation creates false confidence or reveals private internal data.",
+      "check": "Trace displayed evidence to its source passage and inspect the basis for uncertainty.",
       "fix": "Show the passage reference and state when the source does not resolve the question."
     },
     "experiment": {
       "change": "Remove source evidence from a test and check whether the UI communicates the missing support.",
-      "observe": "Compare the target measure with baseline and quality limits.",
+      "observe": "Measure whether users can find supporting evidence and understand stated limits.",
       "limit": "A confidence number is useful only when its measure is validated for the task."
     },
     "masteryQuestion": "Hypothetical case: A user needs to know which policy passage supports a response. What evidence decides the first action?",
-    "masteryAnswer": "Show the passage reference and state when the source does not resolve the question. Confirm the result against the experiment baseline.",
+    "masteryAnswer": "Show the passage reference and state when the source does not resolve the question.",
     "sources": [
-      "knowledge-bases",
       "agents",
+      "exam-domain-3",
+      "knowledge-bases",
       "logging"
     ]
   },
@@ -508,37 +521,38 @@
     "title": "Fairness evaluation",
     "principle": "Define affected groups, meaningful outcomes, and relevant comparison criteria before testing. Use representative data and privacy safeguards.",
     "prerequisites": [
-      "Identify the outcome for fairness evaluation.",
-      "Collect relevant evidence."
+      "Define affected groups, labels, and task outcomes before testing.",
+      "Know the limits of each fairness measure and sample."
     ],
     "mechanism": "Compare quality, refusal, error, and safety outcomes across justified segments. Review examples with domain experts.",
     "decision": {
-      "when": "When the stated condition occurs.",
+      "when": "When: A classifier serves users with different dialects and has uneven error patterns.",
       "choice": "Compare errors by relevant language segment and inspect representative failures.",
       "reason": "The average score improves while one segment receives more incorrect refusals.",
-      "reject": "Reject options that violate the requirement."
+      "reject": "Reject this tempting claim: An LLM judge can reproduce bias. An overall average can hide a poor subgroup result."
     },
     "workedTrace": [
-      "Observe the scenario.",
-      "Inspect: The average score improves while one segment receives more incorrect refusals.",
-      "Apply: Compare errors by relevant language segment and inspect representative failures.",
-      "Compare the result with the requirement."
+      "Case: A classifier serves users with different dialects and has uneven error patterns.",
+      "Check: Compare labeled outcomes and refusal errors across the selected user segments.",
+      "Act: Compare errors by relevant language segment and inspect representative failures.",
+      "Test: Compare error and refusal rates across justified groups against the baseline."
     ],
     "failure": {
       "symptom": "A classifier serves users with different dialects and has uneven error patterns.",
-      "check": "The average score improves while one segment receives more incorrect refusals.",
+      "check": "Compare labeled outcomes and refusal errors across the selected user segments.",
       "fix": "Compare errors by relevant language segment and inspect representative failures."
     },
     "experiment": {
       "change": "Change one data or prompt factor and measure segment-level outcomes against the baseline.",
-      "observe": "Compare the target measure with baseline and quality limits.",
+      "observe": "Compare error and refusal rates across justified groups against the baseline.",
       "limit": "A metric cannot define fairness without context and stakeholder judgment."
     },
     "masteryQuestion": "Hypothetical case: A classifier serves users with different dialects and has uneven error patterns. What evidence decides the first action?",
-    "masteryAnswer": "Compare errors by relevant language segment and inspect representative failures. Confirm the result against the experiment baseline.",
+    "masteryAnswer": "Compare errors by relevant language segment and inspect representative failures.",
     "sources": [
       "evaluation",
       "evaluation-metrics",
+      "exam-domain-3",
       "genai-lens"
     ]
   },
@@ -547,38 +561,39 @@
     "title": "Responsible AI policy checks",
     "principle": "Convert responsible AI requirements into controls that can be tested. Identify which requirements need human judgment.",
     "prerequisites": [
-      "Identify the outcome for responsible ai policy checks.",
-      "Collect relevant evidence."
+      "Know the responsible use policy and its review owner.",
+      "Map policy rules to filters, deterministic checks, and escalation."
     ],
     "mechanism": "Use policy-specific filters, model documentation, deterministic checks, and review workflows. Keep the policy version linked to test evidence and release approval.",
     "decision": {
-      "when": "When the stated condition occurs.",
+      "when": "When: An answer may be accurate but violate an approved use restriction.",
       "choice": "Apply the relevant policy rule and route uncertain cases for review.",
       "reason": "A generic safety filter is treated as proof of full policy compliance.",
-      "reject": "Reject options that violate the requirement."
+      "reject": "Reject this tempting claim: Formal policy consistency is not a universal guarantee of truth outside the policy model."
     },
     "workedTrace": [
-      "Observe the scenario.",
-      "Inspect: A generic safety filter is treated as proof of full policy compliance.",
-      "Apply: Apply the relevant policy rule and route uncertain cases for review.",
-      "Compare the result with the requirement."
+      "Case: An answer may be accurate but violate an approved use restriction.",
+      "Check: Map the policy requirement to its control, evaluation evidence, and release decision.",
+      "Act: Apply the relevant policy rule and route uncertain cases for review.",
+      "Test: Measure whether policy edge cases are blocked, allowed, or routed for review as defined."
     ],
     "failure": {
       "symptom": "An answer may be accurate but violate an approved use restriction.",
-      "check": "A generic safety filter is treated as proof of full policy compliance.",
+      "check": "Map the policy requirement to its control, evaluation evidence, and release decision.",
       "fix": "Apply the relevant policy rule and route uncertain cases for review."
     },
     "experiment": {
       "change": "Add a policy edge case and confirm the system blocks, allows, or escalates it as specified.",
-      "observe": "Compare the target measure with baseline and quality limits.",
+      "observe": "Measure whether policy edge cases are blocked, allowed, or routed for review as defined.",
       "limit": "Policy controls do not replace accountable review of the policy itself."
     },
     "masteryQuestion": "Hypothetical case: An answer may be accurate but violate an approved use restriction. What evidence decides the first action?",
-    "masteryAnswer": "Apply the relevant policy rule and route uncertain cases for review. Confirm the result against the experiment baseline.",
+    "masteryAnswer": "Apply the relevant policy rule and route uncertain cases for review.",
     "sources": [
-      "guardrails",
+      "evaluation",
+      "exam-domain-3",
       "genai-lens",
-      "evaluation"
+      "guardrails"
     ]
   },
   {
@@ -586,37 +601,38 @@
     "title": "Token efficiency",
     "principle": "Reduce unnecessary input and output while preserving task evidence and answer completeness. Establish the quality floor first.",
     "prerequisites": [
-      "Identify the outcome for token efficiency.",
-      "Collect relevant evidence."
+      "Know the tokenizer and full request structure for the selected model.",
+      "Set a minimum quality and completeness floor before trimming context."
     ],
     "mechanism": "Estimate input and output tokens by request class. Remove duplicate context, stale history, and irrelevant retrieved text.",
     "decision": {
-      "when": "When the stated condition occurs.",
+      "when": "When: Long conversation history drives cost but contains few relevant turns.",
       "choice": "Keep a tested summary and the recent turns needed for the current task.",
       "reason": "Compression removes a qualifier that changes the answer or output truncates required fields.",
-      "reject": "Reject options that violate the requirement."
+      "reject": "Reject this tempting claim: A larger context window does not guarantee that the model uses every fact well."
     },
     "workedTrace": [
-      "Observe the scenario.",
-      "Inspect: Compression removes a qualifier that changes the answer or output truncates required fields.",
-      "Apply: Keep a tested summary and the recent turns needed for the current task.",
-      "Compare the result with the requirement."
+      "Case: Long conversation history drives cost but contains few relevant turns.",
+      "Check: Inspect input and output token counts, context content, and required output fields.",
+      "Act: Keep a tested summary and the recent turns needed for the current task.",
+      "Test: Measure tokens per successful task and verify required answer fields remain complete."
     ],
     "failure": {
       "symptom": "Long conversation history drives cost but contains few relevant turns.",
-      "check": "Compression removes a qualifier that changes the answer or output truncates required fields.",
+      "check": "Inspect input and output token counts, context content, and required output fields.",
       "fix": "Keep a tested summary and the recent turns needed for the current task."
     },
     "experiment": {
       "change": "Reduce one context component and compare quality, completeness, and token use on fixed cases.",
-      "observe": "Compare the target measure with baseline and quality limits.",
+      "observe": "Measure tokens per successful task and verify required answer fields remain complete.",
       "limit": "Lower token use is not a win if task quality falls below its floor."
     },
     "masteryQuestion": "Hypothetical case: Long conversation history drives cost but contains few relevant turns. What evidence decides the first action?",
-    "masteryAnswer": "Keep a tested summary and the recent turns needed for the current task. Confirm the result against the experiment baseline.",
+    "masteryAnswer": "Keep a tested summary and the recent turns needed for the current task.",
     "sources": [
-      "model-parameters",
-      "converse-api"
+      "converse-api",
+      "exam-domain-4",
+      "model-parameters"
     ]
   },
   {
@@ -624,36 +640,37 @@
     "title": "Cost-effective model choice",
     "principle": "Choose the least costly model that meets the required quality, latency, modality, and availability constraints. Benchmark representative tasks.",
     "prerequisites": [
-      "Identify the outcome for cost-effective model choice.",
-      "Collect relevant evidence."
+      "Define task acceptance criteria and representative test inputs.",
+      "Know current candidate access, modality, latency, and price constraints."
     ],
     "mechanism": "Compare candidate models on the same test set. Measure successful completion, error types, input and output token work, latency, and current prices.",
     "decision": {
-      "when": "When the stated condition occurs.",
+      "when": "When: A small model handles routine classification but fails complex policy questions.",
       "choice": "Use a tested route that escalates uncertain or high-impact cases.",
       "reason": "The cheapest model increases retries, human review, or incorrect actions.",
-      "reject": "Reject options that violate the requirement."
+      "reject": "Reject this tempting claim: The lowest model price can increase review, retry, or error costs."
     },
     "workedTrace": [
-      "Observe the scenario.",
-      "Inspect: The cheapest model increases retries, human review, or incorrect actions.",
-      "Apply: Use a tested route that escalates uncertain or high-impact cases.",
-      "Compare the result with the requirement."
+      "Case: A small model handles routine classification but fails complex policy questions.",
+      "Check: Compare candidate quality on one task set with price and cost per successful task.",
+      "Act: Use a tested route that escalates uncertain or high-impact cases.",
+      "Test: Compare cost per successful task while enforcing the same quality floor."
     ],
     "failure": {
       "symptom": "A small model handles routine classification but fails complex policy questions.",
-      "check": "The cheapest model increases retries, human review, or incorrect actions.",
+      "check": "Compare candidate quality on one task set with price and cost per successful task.",
       "fix": "Use a tested route that escalates uncertain or high-impact cases."
     },
     "experiment": {
       "change": "Compare cost per successful task for a fixed workload across candidate models.",
-      "observe": "Compare the target measure with baseline and quality limits.",
+      "observe": "Compare cost per successful task while enforcing the same quality floor.",
       "limit": "Price alone does not measure business value."
     },
     "masteryQuestion": "Hypothetical case: A small model handles routine classification but fails complex policy questions. What evidence decides the first action?",
-    "masteryAnswer": "Use a tested route that escalates uncertain or high-impact cases. Confirm the result against the experiment baseline.",
+    "masteryAnswer": "Use a tested route that escalates uncertain or high-impact cases.",
     "sources": [
       "bedrock-overview",
+      "exam-domain-4",
       "model-access",
       "model-parameters"
     ]
@@ -663,38 +680,39 @@
     "title": "Capacity and throughput",
     "principle": "Match capacity to request shape and service quotas. Separate request rate, token rate, concurrency, and monthly cost.",
     "prerequisites": [
-      "Identify the outcome for capacity and throughput.",
-      "Collect relevant evidence."
+      "Measure request rate, token rate, concurrency, and burst shape.",
+      "Check supported quotas and deployment modes for the selected model."
     ],
     "mechanism": "Measure arrival bursts, input and output tokens, latency, and concurrency by workload. Assess supported batch or provisioned options against measured demand.",
     "decision": {
-      "when": "When the stated condition occurs.",
+      "when": "When: Peak demand triggers throttling even though average usage is low.",
       "choice": "Use bounded queues or suitable capacity after identifying the limiting quota dimension.",
       "reason": "Provisioned capacity is purchased without a workload estimate or the queue grows without limit.",
-      "reject": "Reject options that violate the requirement."
+      "reject": "Reject this tempting claim: Do not assume automatic spillover from provisioned capacity to a base on-demand model."
     },
     "workedTrace": [
-      "Observe the scenario.",
-      "Inspect: Provisioned capacity is purchased without a workload estimate or the queue grows without limit.",
-      "Apply: Use bounded queues or suitable capacity after identifying the limiting quota dimension.",
-      "Compare the result with the requirement."
+      "Case: Peak demand triggers throttling even though average usage is low.",
+      "Check: Inspect throttling events, request and token rates, queue depth, and concurrency.",
+      "Act: Use bounded queues or suitable capacity after identifying the limiting quota dimension.",
+      "Test: Measure useful throughput, throttles, queue age, and capacity use during representative peaks."
     ],
     "failure": {
       "symptom": "Peak demand triggers throttling even though average usage is low.",
-      "check": "Provisioned capacity is purchased without a workload estimate or the queue grows without limit.",
+      "check": "Inspect throttling events, request and token rates, queue depth, and concurrency.",
       "fix": "Use bounded queues or suitable capacity after identifying the limiting quota dimension."
     },
     "experiment": {
       "change": "Replay a representative peak trace and observe throttles, queue delay, and utilization.",
-      "observe": "Compare the target measure with baseline and quality limits.",
+      "observe": "Measure useful throughput, throttles, queue age, and capacity use during representative peaks.",
       "limit": "Quota and pricing vary by model and service mode."
     },
     "masteryQuestion": "Hypothetical case: Peak demand triggers throttling even though average usage is low. What evidence decides the first action?",
-    "masteryAnswer": "Use bounded queues or suitable capacity after identifying the limiting quota dimension. Confirm the result against the experiment baseline.",
+    "masteryAnswer": "Use bounded queues or suitable capacity after identifying the limiting quota dimension.",
     "sources": [
-      "bedrock-provisioned",
       "batch",
-      "cross-region"
+      "bedrock-provisioned",
+      "cross-region",
+      "exam-domain-4"
     ]
   },
   {
@@ -702,37 +720,38 @@
     "title": "Caching for inference",
     "principle": "Cache only when reuse is likely and the cache key preserves authorization and freshness. Choose prompt, exact result, or semantic result caching by behavior.",
     "prerequisites": [
-      "Identify the outcome for caching for inference.",
-      "Collect relevant evidence."
+      "Know which request content repeats and which data can change.",
+      "Define tenant scope, freshness, and invalidation requirements."
     ],
     "mechanism": "Prompt caching can reuse supported repeated prefixes under service rules. Exact result caches use deterministic request identity.",
     "decision": {
-      "when": "When the stated condition occurs.",
+      "when": "When: Many requests repeat a stable system prefix but ask different user questions.",
       "choice": "Assess prompt caching for the shared prefix and measure supported cache hits.",
       "reason": "A semantic cache returns a prior answer after source or user access changes.",
-      "reject": "Reject options that violate the requirement."
+      "reject": "Reject this tempting claim: A cache hit can return an outdated or unauthorized answer if the key omits state or identity."
     },
     "workedTrace": [
-      "Observe the scenario.",
-      "Inspect: A semantic cache returns a prior answer after source or user access changes.",
-      "Apply: Assess prompt caching for the shared prefix and measure supported cache hits.",
-      "Compare the result with the requirement."
+      "Case: Many requests repeat a stable system prefix but ask different user questions.",
+      "Check: Inspect cache key, tenant scope, source version, hit status, and freshness.",
+      "Act: Assess prompt caching for the shared prefix and measure supported cache hits.",
+      "Test: Measure safe cache hits, stale results, cross-scope results, and end-to-end latency."
     ],
     "failure": {
       "symptom": "Many requests repeat a stable system prefix but ask different user questions.",
-      "check": "A semantic cache returns a prior answer after source or user access changes.",
+      "check": "Inspect cache key, tenant scope, source version, hit status, and freshness.",
       "fix": "Assess prompt caching for the shared prefix and measure supported cache hits."
     },
     "experiment": {
       "change": "Change one cache policy and observe hit rate, stale-answer rate, and total latency.",
-      "observe": "Compare the target measure with baseline and quality limits.",
+      "observe": "Measure safe cache hits, stale results, cross-scope results, and end-to-end latency.",
       "limit": "Caching can amplify stale or cross-tenant data exposure."
     },
     "masteryQuestion": "Hypothetical case: Many requests repeat a stable system prefix but ask different user questions. What evidence decides the first action?",
-    "masteryAnswer": "Assess prompt caching for the shared prefix and measure supported cache hits. Confirm the result against the experiment baseline.",
+    "masteryAnswer": "Assess prompt caching for the shared prefix and measure supported cache hits.",
     "sources": [
-      "prompt-cache",
-      "knowledge-bases"
+      "exam-domain-4",
+      "knowledge-bases",
+      "prompt-cache"
     ]
   },
   {
@@ -740,38 +759,39 @@
     "title": "Latency and cost tradeoffs",
     "principle": "Optimize the critical path against a stated user deadline. Identify which delay matters to the user.",
     "prerequisites": [
-      "Identify the outcome for latency and cost tradeoffs.",
-      "Collect relevant evidence."
+      "Set the user deadline and quality floor for the workflow.",
+      "Measure stage latency and identify independent operations."
     ],
     "mechanism": "Measure time to first token and total response time by stage. Precompute stable results where freshness permits.",
     "decision": {
-      "when": "When the stated condition occurs.",
+      "when": "When: A user sees no response while independent retrieval steps run in sequence.",
       "choice": "Parallelize independent retrieval work and preserve a bounded end-to-end deadline.",
       "reason": "Streaming begins quickly but required evidence arrives too late or total latency remains high.",
-      "reject": "Reject options that violate the requirement."
+      "reject": "Reject this tempting claim: Streaming improves perceived response time but does not remove a slow retrieval stage."
     },
     "workedTrace": [
-      "Observe the scenario.",
-      "Inspect: Streaming begins quickly but required evidence arrives too late or total latency remains high.",
-      "Apply: Parallelize independent retrieval work and preserve a bounded end-to-end deadline.",
-      "Compare the result with the requirement."
+      "Case: A user sees no response while independent retrieval steps run in sequence.",
+      "Check: Inspect stage timestamps, first-token time, full latency, and request cost.",
+      "Act: Parallelize independent retrieval work and preserve a bounded end-to-end deadline.",
+      "Test: Measure first-token time, completion time, quality, and cost after the path change."
     ],
     "failure": {
       "symptom": "A user sees no response while independent retrieval steps run in sequence.",
-      "check": "Streaming begins quickly but required evidence arrives too late or total latency remains high.",
+      "check": "Inspect stage timestamps, first-token time, full latency, and request cost.",
       "fix": "Parallelize independent retrieval work and preserve a bounded end-to-end deadline."
     },
     "experiment": {
       "change": "Change one critical-path stage and compare first-token time, total time, quality, and cost.",
-      "observe": "Compare the target measure with baseline and quality limits.",
+      "observe": "Measure first-token time, completion time, quality, and cost after the path change.",
       "limit": "Lower first-token latency does not prove faster task completion."
     },
     "masteryQuestion": "Hypothetical case: A user sees no response while independent retrieval steps run in sequence. What evidence decides the first action?",
-    "masteryAnswer": "Parallelize independent retrieval work and preserve a bounded end-to-end deadline. Confirm the result against the experiment baseline.",
+    "masteryAnswer": "Parallelize independent retrieval work and preserve a bounded end-to-end deadline.",
     "sources": [
-      "response-stream",
       "api-streaming",
-      "bedrock-provisioned"
+      "bedrock-provisioned",
+      "exam-domain-4",
+      "response-stream"
     ]
   },
   {
@@ -779,38 +799,39 @@
     "title": "Retrieval performance",
     "principle": "Tune retrieval for both evidence quality and query time. Use labeled queries that reflect real terms and access filters.",
     "prerequisites": [
-      "Identify the outcome for retrieval performance.",
-      "Collect relevant evidence."
+      "Prepare labeled queries and relevant evidence.",
+      "Keep access filters fixed while measuring retrieval quality."
     ],
     "mechanism": "Measure recall and precision before generation. Inspect filters, chunk boundaries, lexical and vector signals, index layout, and reranker use.",
     "decision": {
-      "when": "When the stated condition occurs.",
+      "when": "When: Exact product codes are missed by semantic-only retrieval.",
       "choice": "Add or tune lexical matching within a tested hybrid retrieval path.",
       "reason": "Latency improves because access filters were removed or candidate recall falls.",
-      "reject": "Reject options that violate the requirement."
+      "reject": "Reject this tempting claim: A smaller top-k can reduce cost while hiding required evidence."
     },
     "workedTrace": [
-      "Observe the scenario.",
-      "Inspect: Latency improves because access filters were removed or candidate recall falls.",
-      "Apply: Add or tune lexical matching within a tested hybrid retrieval path.",
-      "Compare the result with the requirement."
+      "Case: Exact product codes are missed by semantic-only retrieval.",
+      "Check: Inspect labeled relevant results, access filters, index version, recall, and latency.",
+      "Act: Add or tune lexical matching within a tested hybrid retrieval path.",
+      "Test: Measure labeled recall, precision, and latency after one retrieval configuration change."
     ],
     "failure": {
       "symptom": "Exact product codes are missed by semantic-only retrieval.",
-      "check": "Latency improves because access filters were removed or candidate recall falls.",
+      "check": "Inspect labeled relevant results, access filters, index version, recall, and latency.",
       "fix": "Add or tune lexical matching within a tested hybrid retrieval path."
     },
     "experiment": {
       "change": "Change one index or query parameter and compare recall, precision, and latency.",
-      "observe": "Compare the target measure with baseline and quality limits.",
+      "observe": "Measure labeled recall, precision, and latency after one retrieval configuration change.",
       "limit": "A fast retrieval result is poor if it omits required evidence."
     },
     "masteryQuestion": "Hypothetical case: Exact product codes are missed by semantic-only retrieval. What evidence decides the first action?",
-    "masteryAnswer": "Add or tune lexical matching within a tested hybrid retrieval path. Confirm the result against the experiment baseline.",
+    "masteryAnswer": "Add or tune lexical matching within a tested hybrid retrieval path.",
     "sources": [
-      "retrieval",
+      "evaluation-metrics",
+      "exam-domain-4",
       "knowledge-bases",
-      "evaluation-metrics"
+      "retrieval"
     ]
   },
   {
@@ -818,38 +839,39 @@
     "title": "Throughput optimization",
     "principle": "Increase completed useful work without violating quality or service limits. Identify the bottleneck before adding concurrency.",
     "prerequisites": [
-      "Identify the outcome for throughput optimization.",
-      "Collect relevant evidence."
+      "Measure workload size and downstream capacity.",
+      "Set a queue, retry, and concurrency boundary before tuning."
     ],
     "mechanism": "Use batch inference for suitable offline work. Bound concurrent calls for interactive work.",
     "decision": {
-      "when": "When the stated condition occurs.",
+      "when": "When: Workers issue more parallel requests, then throttling causes retries and lower completion.",
       "choice": "Reduce or shape concurrency and use a queue aligned with capacity.",
       "reason": "Higher request rate increases error rate and queue age.",
-      "reject": "Reject options that violate the requirement."
+      "reject": "Reject this tempting claim: Provisioned capacity does not guarantee every response latency. Model support and commitment terms vary."
     },
     "workedTrace": [
-      "Observe the scenario.",
-      "Inspect: Higher request rate increases error rate and queue age.",
-      "Apply: Reduce or shape concurrency and use a queue aligned with capacity.",
-      "Compare the result with the requirement."
+      "Case: Workers issue more parallel requests, then throttling causes retries and lower completion.",
+      "Check: Inspect completed throughput, throttling, retries, and oldest queue age.",
+      "Act: Reduce or shape concurrency and use a queue aligned with capacity.",
+      "Test: Measure successful requests, token throughput, retries, and queue age after the capacity change."
     ],
     "failure": {
       "symptom": "Workers issue more parallel requests, then throttling causes retries and lower completion.",
-      "check": "Higher request rate increases error rate and queue age.",
+      "check": "Inspect completed throughput, throttling, retries, and oldest queue age.",
       "fix": "Reduce or shape concurrency and use a queue aligned with capacity."
     },
     "experiment": {
       "change": "Change one batch size or concurrency limit and compare throughput, failures, and completion time.",
-      "observe": "Compare the target measure with baseline and quality limits.",
+      "observe": "Measure successful requests, token throughput, retries, and queue age after the capacity change.",
       "limit": "Maximum submitted requests do not equal maximum successful throughput."
     },
     "masteryQuestion": "Hypothetical case: Workers issue more parallel requests, then throttling causes retries and lower completion. What evidence decides the first action?",
-    "masteryAnswer": "Reduce or shape concurrency and use a queue aligned with capacity. Confirm the result against the experiment baseline.",
+    "masteryAnswer": "Reduce or shape concurrency and use a queue aligned with capacity.",
     "sources": [
       "batch",
       "bedrock-errors",
-      "bedrock-provisioned"
+      "bedrock-provisioned",
+      "exam-domain-4"
     ]
   },
   {
@@ -857,37 +879,38 @@
     "title": "Inference parameter tuning",
     "principle": "Tune model parameters for the task and model contract. Keep prompts, data, and evaluation fixed during a comparison.",
     "prerequisites": [
-      "Identify the outcome for inference parameter tuning.",
-      "Collect relevant evidence."
+      "Keep the model, prompt, and evaluation cases fixed.",
+      "Know which parameters the selected model and API support."
     ],
     "mechanism": "Change temperature, top-p, top-k, or output limit only where the chosen model supports them. Assess repeatability, diversity, schema validity, and task correctness.",
     "decision": {
-      "when": "When the stated condition occurs.",
+      "when": "When: A classification task produces variable labels across repeated calls.",
       "choice": "Test lower variation settings with schema and label checks.",
       "reason": "The selected values are unsupported or improve style while reducing answer correctness.",
-      "reject": "Reject options that violate the requirement."
+      "reject": "Reject this tempting claim: Temperature zero does not guarantee identical output across all systems or correct facts."
     },
     "workedTrace": [
-      "Observe the scenario.",
-      "Inspect: The selected values are unsupported or improve style while reducing answer correctness.",
-      "Apply: Test lower variation settings with schema and label checks.",
-      "Compare the result with the requirement."
+      "Case: A classification task produces variable labels across repeated calls.",
+      "Check: Compare fixed test outputs, schema validity, and the exact inference parameters.",
+      "Act: Test lower variation settings with schema and label checks.",
+      "Test: Measure correctness, repeatability, and schema validity after one parameter change."
     ],
     "failure": {
       "symptom": "A classification task produces variable labels across repeated calls.",
-      "check": "The selected values are unsupported or improve style while reducing answer correctness.",
+      "check": "Compare fixed test outputs, schema validity, and the exact inference parameters.",
       "fix": "Test lower variation settings with schema and label checks."
     },
     "experiment": {
       "change": "Change one parameter and compare repeated outputs on a fixed labeled set.",
-      "observe": "Compare the target measure with baseline and quality limits.",
+      "observe": "Measure correctness, repeatability, and schema validity after one parameter change.",
       "limit": "Parameter behavior differs by model and request API."
     },
     "masteryQuestion": "Hypothetical case: A classification task produces variable labels across repeated calls. What evidence decides the first action?",
-    "masteryAnswer": "Test lower variation settings with schema and label checks. Confirm the result against the experiment baseline.",
+    "masteryAnswer": "Test lower variation settings with schema and label checks.",
     "sources": [
-      "model-parameters",
-      "converse-api"
+      "converse-api",
+      "exam-domain-4",
+      "model-parameters"
     ]
   },
   {
@@ -895,37 +918,38 @@
     "title": "Resource allocation",
     "principle": "Allocate compute and concurrency to observed workload classes. Include burst behavior and queue delay.",
     "prerequisites": [
-      "Identify the outcome for resource allocation.",
-      "Collect relevant evidence."
+      "Measure token demand, concurrency, and queue age by workload class.",
+      "Know service capacity and quota limits before scaling workers."
     ],
     "mechanism": "Monitor utilization, token patterns, request concurrency, and response time. Scale the relevant worker or endpoint while respecting upstream model capacity.",
     "decision": {
-      "when": "When the stated condition occurs.",
+      "when": "When: A small number of very long prompts saturates token capacity.",
       "choice": "Scale or shape work using token and concurrency signals, not request count alone.",
       "reason": "Autoscaling reacts late or amplifies throttling by adding more callers.",
-      "reject": "Reject options that violate the requirement."
+      "reject": "Reject this tempting claim: Adding workers can increase throttling when callers exceed service capacity."
     },
     "workedTrace": [
-      "Observe the scenario.",
-      "Inspect: Autoscaling reacts late or amplifies throttling by adding more callers.",
-      "Apply: Scale or shape work using token and concurrency signals, not request count alone.",
-      "Compare the result with the requirement."
+      "Case: A small number of very long prompts saturates token capacity.",
+      "Check: Inspect token rate, concurrency, queue age, scaling events, and downstream throttles.",
+      "Act: Scale or shape work using token and concurrency signals, not request count alone.",
+      "Test: Measure queue age, token saturation, throttle rate, and worker utilization after scaling."
     ],
     "failure": {
       "symptom": "A small number of very long prompts saturates token capacity.",
-      "check": "Autoscaling reacts late or amplifies throttling by adding more callers.",
+      "check": "Inspect token rate, concurrency, queue age, scaling events, and downstream throttles.",
       "fix": "Scale or shape work using token and concurrency signals, not request count alone."
     },
     "experiment": {
       "change": "Change one scaling signal and compare queue age, saturation, and service errors.",
-      "observe": "Compare the target measure with baseline and quality limits.",
+      "observe": "Measure queue age, token saturation, throttle rate, and worker utilization after scaling.",
       "limit": "Scaling policy needs a safe upper bound and a quota check."
     },
     "masteryQuestion": "Hypothetical case: A small number of very long prompts saturates token capacity. What evidence decides the first action?",
-    "masteryAnswer": "Scale or shape work using token and concurrency signals, not request count alone. Confirm the result against the experiment baseline.",
+    "masteryAnswer": "Scale or shape work using token and concurrency signals, not request count alone.",
     "sources": [
+      "batch",
       "bedrock-provisioned",
-      "batch"
+      "exam-domain-4"
     ]
   },
   {
@@ -933,37 +957,38 @@
     "title": "Workflow performance",
     "principle": "Profile the whole workflow before tuning model inference. Trace each service call and dependency.",
     "prerequisites": [
-      "Identify the outcome for workflow performance.",
-      "Collect relevant evidence."
+      "Propagate a request identifier across each workflow stage.",
+      "Measure service time, model time, and tool time separately."
     ],
     "mechanism": "Measure retrieval, reranking, network, model, and tool durations. Remove duplicate calls and parallelize only independent work.",
     "decision": {
-      "when": "When the stated condition occurs.",
+      "when": "When: Model time is small, but a workflow spends most time on serial tool calls.",
       "choice": "Reduce duplicate calls or parallelize independent tool operations.",
       "reason": "A local optimization adds stale data, race conditions, or extra model calls.",
-      "reject": "Reject options that violate the requirement."
+      "reject": "Reject this tempting claim: A faster model fixes a workflow whose delay comes from sequential tool calls."
     },
     "workedTrace": [
-      "Observe the scenario.",
-      "Inspect: A local optimization adds stale data, race conditions, or extra model calls.",
-      "Apply: Reduce duplicate calls or parallelize independent tool operations.",
-      "Compare the result with the requirement."
+      "Case: Model time is small, but a workflow spends most time on serial tool calls.",
+      "Check: Compare stage traces and duplicate calls against the end-to-end request path.",
+      "Act: Reduce duplicate calls or parallelize independent tool operations.",
+      "Test: Measure end-to-end latency and correctness after changing the identified slow stage."
     ],
     "failure": {
       "symptom": "Model time is small, but a workflow spends most time on serial tool calls.",
-      "check": "A local optimization adds stale data, race conditions, or extra model calls.",
+      "check": "Compare stage traces and duplicate calls against the end-to-end request path.",
       "fix": "Reduce duplicate calls or parallelize independent tool operations."
     },
     "experiment": {
       "change": "Change one stage and compare end-to-end latency and task correctness.",
-      "observe": "Compare the target measure with baseline and quality limits.",
+      "observe": "Measure end-to-end latency and correctness after changing the identified slow stage.",
       "limit": "A faster component may not reduce total path time."
     },
     "masteryQuestion": "Hypothetical case: Model time is small, but a workflow spends most time on serial tool calls. What evidence decides the first action?",
-    "masteryAnswer": "Reduce duplicate calls or parallelize independent tool operations. Confirm the result against the experiment baseline.",
+    "masteryAnswer": "Reduce duplicate calls or parallelize independent tool operations.",
     "sources": [
-      "response-stream",
+      "exam-domain-4",
       "logging",
+      "response-stream",
       "retrieval"
     ]
   },
@@ -972,38 +997,39 @@
     "title": "End-to-end observability",
     "principle": "Connect technical signals to user outcomes with a shared request identifier. Define operational and business questions first.",
     "prerequisites": [
-      "Identify the outcome for end-to-end observability.",
-      "Collect relevant evidence."
+      "Define the business outcome and operational signals to connect.",
+      "Propagate a request ID through the full application path."
     ],
     "mechanism": "Trace gateway, retrieval, model, and tools. Record latency, errors, token use, completion, and user outcome measures.",
     "decision": {
-      "when": "When the stated condition occurs.",
+      "when": "When: Success rate drops while model API success remains stable.",
       "choice": "Follow the request trace through retrieval and tools to find where task completion changed.",
       "reason": "Dashboards expose only service health or contain prompt data without access controls.",
-      "reject": "Reject options that violate the requirement."
+      "reject": "Reject this tempting claim: CloudWatch does not infer hallucination rate from raw service metrics. Supply evaluated custom metrics."
     },
     "workedTrace": [
-      "Observe the scenario.",
-      "Inspect: Dashboards expose only service health or contain prompt data without access controls.",
-      "Apply: Follow the request trace through retrieval and tools to find where task completion changed.",
-      "Compare the result with the requirement."
+      "Case: Success rate drops while model API success remains stable.",
+      "Check: Follow one request ID from business outcome through service metrics and traces.",
+      "Act: Follow the request trace through retrieval and tools to find where task completion changed.",
+      "Test: Measure whether the new trace links a known task failure to its responsible stage."
     ],
     "failure": {
       "symptom": "Success rate drops while model API success remains stable.",
-      "check": "Dashboards expose only service health or contain prompt data without access controls.",
+      "check": "Follow one request ID from business outcome through service metrics and traces.",
       "fix": "Follow the request trace through retrieval and tools to find where task completion changed."
     },
     "experiment": {
       "change": "Add one stage-level metric and verify it explains a known test failure.",
-      "observe": "Compare the target measure with baseline and quality limits.",
+      "observe": "Measure whether the new trace links a known task failure to its responsible stage.",
       "limit": "Correlation IDs do not make sensitive trace data safe by themselves."
     },
     "masteryQuestion": "Hypothetical case: Success rate drops while model API success remains stable. What evidence decides the first action?",
-    "masteryAnswer": "Follow the request trace through retrieval and tools to find where task completion changed. Confirm the result against the experiment baseline.",
+    "masteryAnswer": "Follow the request trace through retrieval and tools to find where task completion changed.",
     "sources": [
-      "logging",
       "bedrock-cloudtrail",
-      "genai-lens"
+      "exam-domain-4",
+      "genai-lens",
+      "logging"
     ]
   },
   {
@@ -1011,38 +1037,39 @@
     "title": "GenAI monitoring",
     "principle": "Monitor both service health and behavior quality. Choose indicators that can trigger a useful response.",
     "prerequisites": [
-      "Identify the outcome for genai monitoring.",
-      "Collect relevant evidence."
+      "Set a baseline for tokens, quality, latency, and error behavior.",
+      "Know supported invocation log fields and their access rules."
     ],
     "mechanism": "Track token use, latency, failures, supported invocation logs, prompt and model versions, and quality signals from evaluation. Set anomaly thresholds from baseline traffic.",
     "decision": {
-      "when": "When the stated condition occurs.",
+      "when": "When: Token use rises after a prompt release while completion quality declines.",
       "choice": "Compare versioned traces and evaluation results, then inspect the prompt change.",
       "reason": "An alert fires on harmless traffic variation or misses a quality regression.",
-      "reject": "Reject options that violate the requirement."
+      "reject": "Reject this tempting claim: CloudTrail is not a universal store for prompt and completion bodies. Invocation logging needs explicit configuration."
     },
     "workedTrace": [
-      "Observe the scenario.",
-      "Inspect: An alert fires on harmless traffic variation or misses a quality regression.",
-      "Apply: Compare versioned traces and evaluation results, then inspect the prompt change.",
-      "Compare the result with the requirement."
+      "Case: Token use rises after a prompt release while completion quality declines.",
+      "Check: Compare invocation logs, token trends, release versions, and the established baseline.",
+      "Act: Compare versioned traces and evaluation results, then inspect the prompt change.",
+      "Test: Measure alert precision and detection of a known token or quality regression."
     ],
     "failure": {
       "symptom": "Token use rises after a prompt release while completion quality declines.",
-      "check": "An alert fires on harmless traffic variation or misses a quality regression.",
+      "check": "Compare invocation logs, token trends, release versions, and the established baseline.",
       "fix": "Compare versioned traces and evaluation results, then inspect the prompt change."
     },
     "experiment": {
       "change": "Inject a known token increase and check alert precision and owner response.",
-      "observe": "Compare the target measure with baseline and quality limits.",
+      "observe": "Measure alert precision and detection of a known token or quality regression.",
       "limit": "Invocation logging support and fields can vary by service path."
     },
     "masteryQuestion": "Hypothetical case: Token use rises after a prompt release while completion quality declines. What evidence decides the first action?",
-    "masteryAnswer": "Compare versioned traces and evaluation results, then inspect the prompt change. Confirm the result against the experiment baseline.",
+    "masteryAnswer": "Compare versioned traces and evaluation results, then inspect the prompt change.",
     "sources": [
-      "logging",
       "bedrock-cloudtrail",
-      "evaluation"
+      "evaluation",
+      "exam-domain-4",
+      "logging"
     ]
   },
   {
@@ -1050,38 +1077,39 @@
     "title": "Actionable observability",
     "principle": "Make dashboards answer an operational question and point to an owner. Join behavior, business, and compliance evidence carefully.",
     "prerequisites": [
-      "Identify the outcome for actionable observability.",
-      "Collect relevant evidence."
+      "Know which operator decision the dashboard must support.",
+      "Define metric owners, thresholds, and safe trace access."
     ],
     "mechanism": "Present trends by version, task type, and justified segment. Link alerts to trace samples with sensitive values redacted.",
     "decision": {
-      "when": "When the stated condition occurs.",
+      "when": "When: Stakeholders see a quality trend but cannot find the affected release.",
       "choice": "Add version and task labels that link aggregate metrics to a controlled trace.",
       "reason": "A dashboard has many metrics but no threshold, owner, or response path.",
-      "reject": "Reject options that violate the requirement."
+      "reject": "Reject this tempting claim: More dashboard metrics create an actionable alert without a threshold, owner, or response."
     },
     "workedTrace": [
-      "Observe the scenario.",
-      "Inspect: A dashboard has many metrics but no threshold, owner, or response path.",
-      "Apply: Add version and task labels that link aggregate metrics to a controlled trace.",
-      "Compare the result with the requirement."
+      "Case: Stakeholders see a quality trend but cannot find the affected release.",
+      "Check: Inspect the affected dashboard segment, source trace, threshold, and response owner.",
+      "Act: Add version and task labels that link aggregate metrics to a controlled trace.",
+      "Test: Measure whether an operator can identify affected version, scope, and action from the dashboard."
     ],
     "failure": {
       "symptom": "Stakeholders see a quality trend but cannot find the affected release.",
-      "check": "A dashboard has many metrics but no threshold, owner, or response path.",
+      "check": "Inspect the affected dashboard segment, source trace, threshold, and response owner.",
       "fix": "Add version and task labels that link aggregate metrics to a controlled trace."
     },
     "experiment": {
       "change": "Give an operator a known regression and observe whether the dashboard reveals its scope and next action.",
-      "observe": "Compare the target measure with baseline and quality limits.",
+      "observe": "Measure whether an operator can identify affected version, scope, and action from the dashboard.",
       "limit": "A dashboard is evidence for diagnosis, not proof of cause."
     },
     "masteryQuestion": "Hypothetical case: Stakeholders see a quality trend but cannot find the affected release. What evidence decides the first action?",
-    "masteryAnswer": "Add version and task labels that link aggregate metrics to a controlled trace. Confirm the result against the experiment baseline.",
+    "masteryAnswer": "Add version and task labels that link aggregate metrics to a controlled trace.",
     "sources": [
-      "logging",
       "evaluation",
-      "genai-lens"
+      "exam-domain-4",
+      "genai-lens",
+      "logging"
     ]
   },
   {
@@ -1089,37 +1117,38 @@
     "title": "Tool performance",
     "principle": "Measure tool use as part of agent behavior and service performance. Define valid arguments and useful outcomes.",
     "prerequisites": [
-      "Identify the outcome for tool performance.",
-      "Collect relevant evidence."
+      "Define valid tool arguments and successful task outcomes.",
+      "Propagate agent and tool correlation IDs with redaction rules."
     ],
     "mechanism": "Record tool name, normalized argument status, latency, retries, errors, and result class. Redact sensitive values.",
     "decision": {
-      "when": "When the stated condition occurs.",
+      "when": "When: An agent calls the same search tool repeatedly without new evidence.",
       "choice": "Use traces to detect the loop and apply step or retry bounds.",
       "reason": "A high call count appears successful while task completion or authorization is poor.",
-      "reject": "Reject options that violate the requirement."
+      "reject": "Reject this tempting claim: A successful HTTP response can still contain a failed business operation."
     },
     "workedTrace": [
-      "Observe the scenario.",
-      "Inspect: A high call count appears successful while task completion or authorization is poor.",
-      "Apply: Use traces to detect the loop and apply step or retry bounds.",
-      "Compare the result with the requirement."
+      "Case: An agent calls the same search tool repeatedly without new evidence.",
+      "Check: Inspect redacted tool arguments, retries, errors, and task completion traces.",
+      "Act: Use traces to detect the loop and apply step or retry bounds.",
+      "Test: Measure tool success, retry rate, repeated calls, and agent task completion."
     ],
     "failure": {
       "symptom": "An agent calls the same search tool repeatedly without new evidence.",
-      "check": "A high call count appears successful while task completion or authorization is poor.",
+      "check": "Inspect redacted tool arguments, retries, errors, and task completion traces.",
       "fix": "Use traces to detect the loop and apply step or retry bounds."
     },
     "experiment": {
       "change": "Change one tool timeout or schema rule and compare completion, errors, and call count.",
-      "observe": "Compare the target measure with baseline and quality limits.",
+      "observe": "Measure tool success, retry rate, repeated calls, and agent task completion.",
       "limit": "Tool telemetry should not retain secrets or unnecessary raw arguments."
     },
     "masteryQuestion": "Hypothetical case: An agent calls the same search tool repeatedly without new evidence. What evidence decides the first action?",
-    "masteryAnswer": "Use traces to detect the loop and apply step or retry bounds. Confirm the result against the experiment baseline.",
+    "masteryAnswer": "Use traces to detect the loop and apply step or retry bounds.",
     "sources": [
-      "agents",
       "agentcore-runtime",
+      "agents",
+      "exam-domain-4",
       "logging"
     ]
   },
@@ -1128,35 +1157,36 @@
     "title": "Vector store operations",
     "principle": "Monitor ingestion health and query behavior together. Define freshness and retrieval quality needs.",
     "prerequisites": [
-      "Identify the outcome for vector store operations.",
-      "Collect relevant evidence."
+      "Know source version and ingestion state for the vector index.",
+      "Prepare labeled queries and a freshness target."
     ],
     "mechanism": "Track sync failures, source versions, index size, query latency, filter behavior, and labeled retrieval quality. Optimize index layout only after measuring query and update patterns.",
     "decision": {
-      "when": "When the stated condition occurs.",
+      "when": "When: Query latency remains stable while a source update never reaches the index.",
       "choice": "Inspect ingestion status and indexed version, then retry the failed sync.",
       "reason": "Operational metrics show a healthy index although evidence is stale or filtered out.",
-      "reject": "Reject options that violate the requirement."
+      "reject": "Reject this tempting claim: A healthy query metric does not prove that the index contains current source data."
     },
     "workedTrace": [
-      "Observe the scenario.",
-      "Inspect: Operational metrics show a healthy index although evidence is stale or filtered out.",
-      "Apply: Inspect ingestion status and indexed version, then retry the failed sync.",
-      "Compare the result with the requirement."
+      "Case: Query latency remains stable while a source update never reaches the index.",
+      "Check: Compare source version, ingestion status, index freshness, and retrieved results.",
+      "Act: Inspect ingestion status and indexed version, then retry the failed sync.",
+      "Test: Measure source freshness, labeled retrieval quality, sync errors, and query latency."
     ],
     "failure": {
       "symptom": "Query latency remains stable while a source update never reaches the index.",
-      "check": "Operational metrics show a healthy index although evidence is stale or filtered out.",
+      "check": "Compare source version, ingestion status, index freshness, and retrieved results.",
       "fix": "Inspect ingestion status and indexed version, then retry the failed sync."
     },
     "experiment": {
       "change": "Update a test document and verify freshness, retrieval, and deletion signals end to end.",
-      "observe": "Compare the target measure with baseline and quality limits.",
+      "observe": "Measure source freshness, labeled retrieval quality, sync errors, and query latency.",
       "limit": "Index health alone does not establish evidence correctness."
     },
     "masteryQuestion": "Hypothetical case: Query latency remains stable while a source update never reaches the index. What evidence decides the first action?",
-    "masteryAnswer": "Inspect ingestion status and indexed version, then retry the failed sync. Confirm the result against the experiment baseline.",
+    "masteryAnswer": "Inspect ingestion status and indexed version, then retry the failed sync.",
     "sources": [
+      "exam-domain-4",
       "kb-sync",
       "knowledge-bases",
       "retrieval"
@@ -1167,38 +1197,39 @@
     "title": "GenAI failure diagnosis",
     "principle": "Separate data, retrieval, prompt, model, tool, and application failures. Preserve a reproducible test case.",
     "prerequisites": [
-      "Identify the outcome for genai failure diagnosis.",
-      "Collect relevant evidence."
+      "Keep a reproducible input, model version, and expected result.",
+      "Separate data, retrieval, prompt, model, tool, and application stages."
     ],
     "mechanism": "Replay a versioned golden input and compare evidence, request fields, model version, stop reason, tool trace, and output. Change one suspected cause at a time.",
     "decision": {
-      "when": "When the stated condition occurs.",
+      "when": "When: A response is wrong after a source document update.",
       "choice": "Compare source ingestion, retrieved passages, prompt assembly, and model response in order.",
       "reason": "The team changes the prompt before checking whether retrieval supplied the current source.",
-      "reject": "Reject options that violate the requirement."
+      "reject": "Reject this tempting claim: Exact output diffs can overcount harmless wording changes. Use semantic and task-aware checks."
     },
     "workedTrace": [
-      "Observe the scenario.",
-      "Inspect: The team changes the prompt before checking whether retrieval supplied the current source.",
-      "Apply: Compare source ingestion, retrieved passages, prompt assembly, and model response in order.",
-      "Compare the result with the requirement."
+      "Case: A response is wrong after a source document update.",
+      "Check: Replay the golden input and find the first difference in evidence, prompt, tool, or response.",
+      "Act: Compare source ingestion, retrieved passages, prompt assembly, and model response in order.",
+      "Test: Measure whether replay finds the first divergent stage and reproduces the error."
     ],
     "failure": {
       "symptom": "A response is wrong after a source document update.",
-      "check": "The team changes the prompt before checking whether retrieval supplied the current source.",
+      "check": "Replay the golden input and find the first difference in evidence, prompt, tool, or response.",
       "fix": "Compare source ingestion, retrieved passages, prompt assembly, and model response in order."
     },
     "experiment": {
       "change": "Freeze one failing request and vary one pipeline stage to identify the first divergence.",
-      "observe": "Compare the target measure with baseline and quality limits.",
+      "observe": "Measure whether replay finds the first divergent stage and reproduces the error.",
       "limit": "One reproducible case can locate a defect but cannot prove broad quality."
     },
     "masteryQuestion": "Hypothetical case: A response is wrong after a source document update. What evidence decides the first action?",
-    "masteryAnswer": "Compare source ingestion, retrieved passages, prompt assembly, and model response in order. Confirm the result against the experiment baseline.",
+    "masteryAnswer": "Compare source ingestion, retrieved passages, prompt assembly, and model response in order.",
     "sources": [
       "evaluation",
-      "logging",
-      "knowledge-bases"
+      "exam-domain-4",
+      "knowledge-bases",
+      "logging"
     ]
   },
   {
@@ -1206,37 +1237,38 @@
     "title": "Quality assessment framework",
     "principle": "Evaluate output on the task’s real quality dimensions. Define acceptable evidence and failure costs.",
     "prerequisites": [
-      "Identify the outcome for quality assessment framework.",
-      "Collect relevant evidence."
+      "Define task criteria, evidence, and cost of each error.",
+      "Prepare representative cases with expected outcomes or expert labels."
     ],
     "mechanism": "Combine factual accuracy, relevance, completeness, consistency, and fluency as needed. Add safety and privacy criteria for the use case.",
     "decision": {
-      "when": "When the stated condition occurs.",
+      "when": "When: Answers are fluent but omit a required policy condition.",
       "choice": "Measure completeness and factual support, not fluency alone.",
       "reason": "A single aggregate score hides omissions or unsupported facts.",
-      "reject": "Reject options that violate the requirement."
+      "reject": "Reject this tempting claim: A fluent answer can be wrong. A lexically different answer can be correct."
     },
     "workedTrace": [
-      "Observe the scenario.",
-      "Inspect: A single aggregate score hides omissions or unsupported facts.",
-      "Apply: Measure completeness and factual support, not fluency alone.",
-      "Compare the result with the requirement."
+      "Case: Answers are fluent but omit a required policy condition.",
+      "Check: Inspect the rubric, expected evidence, score dimensions, and failed examples.",
+      "Act: Measure completeness and factual support, not fluency alone.",
+      "Test: Measure agreement with expert labels for each declared quality dimension."
     ],
     "failure": {
       "symptom": "Answers are fluent but omit a required policy condition.",
-      "check": "A single aggregate score hides omissions or unsupported facts.",
+      "check": "Inspect the rubric, expected evidence, score dimensions, and failed examples.",
       "fix": "Measure completeness and factual support, not fluency alone."
     },
     "experiment": {
       "change": "Add a completeness criterion and rescore a fixed sample against expert labels.",
-      "observe": "Compare the target measure with baseline and quality limits.",
+      "observe": "Measure agreement with expert labels for each declared quality dimension.",
       "limit": "A metric is only useful when its target and limits are clear."
     },
     "masteryQuestion": "Hypothetical case: Answers are fluent but omit a required policy condition. What evidence decides the first action?",
-    "masteryAnswer": "Measure completeness and factual support, not fluency alone. Confirm the result against the experiment baseline.",
+    "masteryAnswer": "Measure completeness and factual support, not fluency alone.",
     "sources": [
       "evaluation",
-      "evaluation-metrics"
+      "evaluation-metrics",
+      "exam-domain-5"
     ]
   },
   {
@@ -1244,38 +1276,39 @@
     "title": "Model comparison",
     "principle": "Compare candidates under the same workload and evaluation contract. Include quality, latency, cost, safety, and business outcome.",
     "prerequisites": [
-      "Identify the outcome for model comparison.",
-      "Collect relevant evidence."
+      "Fix the dataset, prompt, request settings, and scoring rubric.",
+      "Set quality, safety, latency, and cost floors before comparison."
     ],
     "mechanism": "Use representative held-out examples and fixed settings. Compare candidates with deterministic checks, calibrated judges, and human review where needed.",
     "decision": {
-      "when": "When the stated condition occurs.",
+      "when": "When: A candidate is cheaper but fails rare high-impact cases.",
       "choice": "Keep the candidate only if it meets each required quality and safety floor.",
       "reason": "Different test sets or settings create a misleading model ranking.",
-      "reject": "Reject options that violate the requirement."
+      "reject": "Reject this tempting claim: Repeated tuning on the only test set can hide poor generalization."
     },
     "workedTrace": [
-      "Observe the scenario.",
-      "Inspect: Different test sets or settings create a misleading model ranking.",
-      "Apply: Keep the candidate only if it meets each required quality and safety floor.",
-      "Compare the result with the requirement."
+      "Case: A candidate is cheaper but fails rare high-impact cases.",
+      "Check: Compare candidates on identical test data, settings, quality, latency, and cost.",
+      "Act: Keep the candidate only if it meets each required quality and safety floor.",
+      "Test: Compare quality, safety, latency, cost, and business outcome on fixed candidate tests."
     ],
     "failure": {
       "symptom": "A candidate is cheaper but fails rare high-impact cases.",
-      "check": "Different test sets or settings create a misleading model ranking.",
+      "check": "Compare candidates on identical test data, settings, quality, latency, and cost.",
       "fix": "Keep the candidate only if it meets each required quality and safety floor."
     },
     "experiment": {
       "change": "Change one model or configuration and compare on the same versioned dataset.",
-      "observe": "Compare the target measure with baseline and quality limits.",
+      "observe": "Compare quality, safety, latency, cost, and business outcome on fixed candidate tests.",
       "limit": "Test evidence applies to the tested workload and settings."
     },
     "masteryQuestion": "Hypothetical case: A candidate is cheaper but fails rare high-impact cases. What evidence decides the first action?",
-    "masteryAnswer": "Keep the candidate only if it meets each required quality and safety floor. Confirm the result against the experiment baseline.",
+    "masteryAnswer": "Keep the candidate only if it meets each required quality and safety floor.",
     "sources": [
+      "bedrock-overview",
       "evaluation",
       "evaluation-metrics",
-      "bedrock-overview"
+      "exam-domain-5"
     ]
   },
   {
@@ -1283,37 +1316,38 @@
     "title": "User feedback evaluation",
     "principle": "Collect feedback that identifies a task failure and supports action. Make feedback easy and safe to provide.",
     "prerequisites": [
-      "Identify the outcome for user feedback evaluation.",
-      "Collect relevant evidence."
+      "Attach feedback to a task and output version.",
+      "Define safe collection, useful error labels, and review ownership."
     ],
     "mechanism": "Capture task context, output version, rating, and error category. Provide a path for correction or escalation.",
     "decision": {
-      "when": "When the stated condition occurs.",
+      "when": "When: Users rate answers poorly but the team cannot tell whether retrieval or wording failed.",
       "choice": "Add a small structured reason choice and optional explanation tied to the response version.",
       "reason": "Feedback is sparse, biased toward extreme cases, or includes private data.",
-      "reject": "Reject options that violate the requirement."
+      "reject": "Reject this tempting claim: A thumbs-up signal alone cannot establish factual correctness."
     },
     "workedTrace": [
-      "Observe the scenario.",
-      "Inspect: Feedback is sparse, biased toward extreme cases, or includes private data.",
-      "Apply: Add a small structured reason choice and optional explanation tied to the response version.",
-      "Compare the result with the requirement."
+      "Case: Users rate answers poorly but the team cannot tell whether retrieval or wording failed.",
+      "Check: Inspect task and response versions, feedback choice, and assigned error category.",
+      "Act: Add a small structured reason choice and optional explanation tied to the response version.",
+      "Test: Measure feedback completion, diagnostic value, and sensitive data exposure."
     ],
     "failure": {
       "symptom": "Users rate answers poorly but the team cannot tell whether retrieval or wording failed.",
-      "check": "Feedback is sparse, biased toward extreme cases, or includes private data.",
+      "check": "Inspect task and response versions, feedback choice, and assigned error category.",
       "fix": "Add a small structured reason choice and optional explanation tied to the response version."
     },
     "experiment": {
       "change": "Add one feedback field and observe completion rate, diagnostic value, and privacy exposure.",
-      "observe": "Compare the target measure with baseline and quality limits.",
+      "observe": "Measure feedback completion, diagnostic value, and sensitive data exposure.",
       "limit": "User ratings are signals and do not replace objective evaluation."
     },
     "masteryQuestion": "Hypothetical case: Users rate answers poorly but the team cannot tell whether retrieval or wording failed. What evidence decides the first action?",
-    "masteryAnswer": "Add a small structured reason choice and optional explanation tied to the response version. Confirm the result against the experiment baseline.",
+    "masteryAnswer": "Add a small structured reason choice and optional explanation tied to the response version.",
     "sources": [
       "evaluation",
-      "evaluation-metrics"
+      "evaluation-metrics",
+      "exam-domain-5"
     ]
   },
   {
@@ -1321,36 +1355,37 @@
     "title": "Quality assurance process",
     "principle": "Turn quality expectations into repeatable release gates. Version datasets, prompts, model settings, and thresholds.",
     "prerequisites": [
-      "Identify the outcome for quality assurance process.",
-      "Collect relevant evidence."
+      "Version the dataset, prompt, model settings, and release baseline.",
+      "Set a blocking rule for critical regression cases."
     ],
     "mechanism": "Run regression checks on fixed cases before release. Include critical segments and safety tests.",
     "decision": {
-      "when": "When the stated condition occurs.",
+      "when": "When: A prompt change fixes one case but breaks a previously correct workflow.",
       "choice": "Run the fixed regression set before release and block on critical failures.",
       "reason": "The test set changes silently or the gate checks only average scores.",
-      "reject": "Reject options that violate the requirement."
+      "reject": "Reject this tempting claim: A passing average does not excuse a critical regression case."
     },
     "workedTrace": [
-      "Observe the scenario.",
-      "Inspect: The test set changes silently or the gate checks only average scores.",
-      "Apply: Run the fixed regression set before release and block on critical failures.",
-      "Compare the result with the requirement."
+      "Case: A prompt change fixes one case but breaks a previously correct workflow.",
+      "Check: Inspect dataset and configuration versions, failed gate, and baseline comparison.",
+      "Act: Run the fixed regression set before release and block on critical failures.",
+      "Test: Measure whether a known regression fails the release gate before deployment."
     ],
     "failure": {
       "symptom": "A prompt change fixes one case but breaks a previously correct workflow.",
-      "check": "The test set changes silently or the gate checks only average scores.",
+      "check": "Inspect dataset and configuration versions, failed gate, and baseline comparison.",
       "fix": "Run the fixed regression set before release and block on critical failures."
     },
     "experiment": {
       "change": "Introduce a known regression and verify that the release gate blocks deployment.",
-      "observe": "Compare the target measure with baseline and quality limits.",
+      "observe": "Measure whether a known regression fails the release gate before deployment.",
       "limit": "A passing test set cannot cover every possible user input."
     },
     "masteryQuestion": "Hypothetical case: A prompt change fixes one case but breaks a previously correct workflow. What evidence decides the first action?",
-    "masteryAnswer": "Run the fixed regression set before release and block on critical failures. Confirm the result against the experiment baseline.",
+    "masteryAnswer": "Run the fixed regression set before release and block on critical failures.",
     "sources": [
       "evaluation",
+      "exam-domain-5",
       "prompt-management"
     ]
   },
@@ -1359,37 +1394,38 @@
     "title": "Multi-perspective output evaluation",
     "principle": "Use different evaluators for different claims. Define human, judge, and programmatic roles.",
     "prerequisites": [
-      "Identify the outcome for multi-perspective output evaluation.",
-      "Collect relevant evidence."
+      "Know which checks are deterministic, judge based, or human.",
+      "Prepare a rubric and calibration labels before scoring."
     ],
     "mechanism": "Apply deterministic checks to schemas and exact rules. Use a model judge for rubric-based comparisons after calibration.",
     "decision": {
-      "when": "When the stated condition occurs.",
+      "when": "When: A response has valid JSON but cites an unsupported policy claim.",
       "choice": "Check schema validity and evidence support as separate dimensions.",
       "reason": "One judge score masks a hard rule violation or factual error.",
-      "reject": "Reject options that violate the requirement."
+      "reject": "Reject this tempting claim: A judge may favor verbose answers or its own model family. Do not treat one score as objective truth."
     },
     "workedTrace": [
-      "Observe the scenario.",
-      "Inspect: One judge score masks a hard rule violation or factual error.",
-      "Apply: Check schema validity and evidence support as separate dimensions.",
-      "Compare the result with the requirement."
+      "Case: A response has valid JSON but cites an unsupported policy claim.",
+      "Check: Compare deterministic results, judge scores, human labels, and disagreement cases.",
+      "Act: Check schema validity and evidence support as separate dimensions.",
+      "Test: Measure judge agreement, human disagreement, deterministic errors, and rubric coverage."
     ],
     "failure": {
       "symptom": "A response has valid JSON but cites an unsupported policy claim.",
-      "check": "One judge score masks a hard rule violation or factual error.",
+      "check": "Compare deterministic results, judge scores, human labels, and disagreement cases.",
       "fix": "Check schema validity and evidence support as separate dimensions."
     },
     "experiment": {
       "change": "Compare judge decisions with expert labels on a fixed sample and inspect disagreements.",
-      "observe": "Compare the target measure with baseline and quality limits.",
+      "observe": "Measure judge agreement, human disagreement, deterministic errors, and rubric coverage.",
       "limit": "Judge calibration is limited to the tested rubric and data."
     },
     "masteryQuestion": "Hypothetical case: A response has valid JSON but cites an unsupported policy claim. What evidence decides the first action?",
-    "masteryAnswer": "Check schema validity and evidence support as separate dimensions. Confirm the result against the experiment baseline.",
+    "masteryAnswer": "Check schema validity and evidence support as separate dimensions.",
     "sources": [
       "evaluation",
       "evaluation-metrics",
+      "exam-domain-5",
       "guardrails-grounding"
     ]
   },
@@ -1398,38 +1434,39 @@
     "title": "Retrieval quality testing",
     "principle": "Test retrieval independently from generation. Label relevant evidence for representative questions.",
     "prerequisites": [
-      "Identify the outcome for retrieval quality testing.",
-      "Collect relevant evidence."
+      "Prepare labeled queries and relevant document passages.",
+      "Separate retrieval metrics from answer generation metrics."
     ],
     "mechanism": "Measure recall at k, precision at k, rank of the first relevant result, and retrieval latency as suitable. Inspect filters, chunking, and source versions on misses.",
     "decision": {
-      "when": "When the stated condition occurs.",
+      "when": "When: The answer model cannot cite a passage that the retriever omitted.",
       "choice": "Inspect retrieval results and recall before changing answer prompts.",
       "reason": "A strong answer metric hides low evidence coverage because the model guesses correctly.",
-      "reject": "Reject options that violate the requirement."
+      "reject": "Reject this tempting claim: Higher recall alone can add noisy context. Score generation quality as well."
     },
     "workedTrace": [
-      "Observe the scenario.",
-      "Inspect: A strong answer metric hides low evidence coverage because the model guesses correctly.",
-      "Apply: Inspect retrieval results and recall before changing answer prompts.",
-      "Compare the result with the requirement."
+      "Case: The answer model cannot cite a passage that the retriever omitted.",
+      "Check: Inspect labeled relevant items, retrieved ranks, filters, and retrieval latency.",
+      "Act: Inspect retrieval results and recall before changing answer prompts.",
+      "Test: Measure recall, precision, first relevant rank, and latency on labeled queries."
     ],
     "failure": {
       "symptom": "The answer model cannot cite a passage that the retriever omitted.",
-      "check": "A strong answer metric hides low evidence coverage because the model guesses correctly.",
+      "check": "Inspect labeled relevant items, retrieved ranks, filters, and retrieval latency.",
       "fix": "Inspect retrieval results and recall before changing answer prompts."
     },
     "experiment": {
       "change": "Change one retriever setting and compare labeled retrieval metrics and latency.",
-      "observe": "Compare the target measure with baseline and quality limits.",
+      "observe": "Measure recall, precision, first relevant rank, and latency on labeled queries.",
       "limit": "Metric values depend on query labels and the selected k."
     },
     "masteryQuestion": "Hypothetical case: The answer model cannot cite a passage that the retriever omitted. What evidence decides the first action?",
-    "masteryAnswer": "Inspect retrieval results and recall before changing answer prompts. Confirm the result against the experiment baseline.",
+    "masteryAnswer": "Inspect retrieval results and recall before changing answer prompts.",
     "sources": [
       "evaluation-metrics",
-      "retrieval",
-      "knowledge-bases"
+      "exam-domain-5",
+      "knowledge-bases",
+      "retrieval"
     ]
   },
   {
@@ -1437,37 +1474,38 @@
     "title": "Agent evaluation",
     "principle": "Evaluate task completion and action correctness, not just final text. Define allowed tools and side effects.",
     "prerequisites": [
-      "Identify the outcome for agent evaluation.",
-      "Collect relevant evidence."
+      "Define expected tool choices, arguments, permissions, and outcomes.",
+      "Record agent steps and side effects in a test trace."
     ],
     "mechanism": "Use versioned scenarios with expected tool choices, arguments, order, authorization, and final result. Track steps, errors, retries, and time.",
     "decision": {
-      "when": "When the stated condition occurs.",
+      "when": "When: The agent returns a correct summary but used an unauthorized tool.",
       "choice": "Fail the test because action validity matters independently from answer quality.",
       "reason": "The evaluation rewards final text and ignores tool execution history.",
-      "reject": "Reject options that violate the requirement."
+      "reject": "Reject this tempting claim: A good final answer can hide an unsafe intermediate action."
     },
     "workedTrace": [
-      "Observe the scenario.",
-      "Inspect: The evaluation rewards final text and ignores tool execution history.",
-      "Apply: Fail the test because action validity matters independently from answer quality.",
-      "Compare the result with the requirement."
+      "Case: The agent returns a correct summary but used an unauthorized tool.",
+      "Check: Inspect tool choice, arguments, action order, permission result, and task completion.",
+      "Act: Fail the test because action validity matters independently from answer quality.",
+      "Test: Measure valid tool choice, authorized arguments, correct action order, and completion."
     ],
     "failure": {
       "symptom": "The agent returns a correct summary but used an unauthorized tool.",
-      "check": "The evaluation rewards final text and ignores tool execution history.",
+      "check": "Inspect tool choice, arguments, action order, permission result, and task completion.",
       "fix": "Fail the test because action validity matters independently from answer quality."
     },
     "experiment": {
       "change": "Change one tool schema or policy and compare action traces on the same scenarios.",
-      "observe": "Compare the target measure with baseline and quality limits.",
+      "observe": "Measure valid tool choice, authorized arguments, correct action order, and completion.",
       "limit": "A successful simulated trace does not prove live integration reliability."
     },
     "masteryQuestion": "Hypothetical case: The agent returns a correct summary but used an unauthorized tool. What evidence decides the first action?",
-    "masteryAnswer": "Fail the test because action validity matters independently from answer quality. Confirm the result against the experiment baseline.",
+    "masteryAnswer": "Fail the test because action validity matters independently from answer quality.",
     "sources": [
       "agents",
-      "evaluation"
+      "evaluation",
+      "exam-domain-5"
     ]
   },
   {
@@ -1475,37 +1513,38 @@
     "title": "Evaluation reporting",
     "principle": "Report enough context for stakeholders to make a release decision. State sample, versions, criteria, and limits.",
     "prerequisites": [
-      "Identify the outcome for evaluation reporting.",
-      "Collect relevant evidence."
+      "Know the stakeholder decision and its release criteria.",
+      "Record sample, dataset, rubric, model, and prompt versions."
     ],
     "mechanism": "Compare baseline and candidate across quality, safety, latency, cost, and relevant segments. Show uncertainty and important failures.",
     "decision": {
-      "when": "When the stated condition occurs.",
+      "when": "When: A score improves but the report omits sample composition and test version.",
       "choice": "Require dataset, rubric, model, and prompt versions before making a decision.",
       "reason": "A report presents averages without critical failures or known uncertainty.",
-      "reject": "Reject options that violate the requirement."
+      "reject": "Reject this tempting claim: A precise average can mislead when the sample omits important segments."
     },
     "workedTrace": [
-      "Observe the scenario.",
-      "Inspect: A report presents averages without critical failures or known uncertainty.",
-      "Apply: Require dataset, rubric, model, and prompt versions before making a decision.",
-      "Compare the result with the requirement."
+      "Case: A score improves but the report omits sample composition and test version.",
+      "Check: Inspect sample count, dataset version, rubric, segment results, and stated limits.",
+      "Act: Require dataset, rubric, model, and prompt versions before making a decision.",
+      "Test: Measure whether decision makers can interpret results with sample and segment context."
     ],
     "failure": {
       "symptom": "A score improves but the report omits sample composition and test version.",
-      "check": "A report presents averages without critical failures or known uncertainty.",
+      "check": "Inspect sample count, dataset version, rubric, segment results, and stated limits.",
       "fix": "Require dataset, rubric, model, and prompt versions before making a decision."
     },
     "experiment": {
       "change": "Add a segment breakdown and test whether the release recommendation changes.",
-      "observe": "Compare the target measure with baseline and quality limits.",
+      "observe": "Measure whether decision makers can interpret results with sample and segment context.",
       "limit": "A chart cannot replace review of material failure examples."
     },
     "masteryQuestion": "Hypothetical case: A score improves but the report omits sample composition and test version. What evidence decides the first action?",
-    "masteryAnswer": "Require dataset, rubric, model, and prompt versions before making a decision. Confirm the result against the experiment baseline.",
+    "masteryAnswer": "Require dataset, rubric, model, and prompt versions before making a decision.",
     "sources": [
       "evaluation",
-      "evaluation-metrics"
+      "evaluation-metrics",
+      "exam-domain-5"
     ]
   },
   {
@@ -1513,37 +1552,38 @@
     "title": "Deployment validation",
     "principle": "Validate a model or prompt update before expanding user exposure. Define stop conditions.",
     "prerequisites": [
-      "Identify the outcome for deployment validation.",
-      "Collect relevant evidence."
+      "Set baseline output quality and stop conditions.",
+      "Prepare synthetic workflows and a rollback path before release."
     ],
     "mechanism": "Run synthetic workflows and regression tests. Compare output, hallucination indicators, semantic drift, latency, and cost.",
     "decision": {
-      "when": "When the stated condition occurs.",
+      "when": "When: A canary has acceptable latency but new unsupported claims.",
       "choice": "Pause expansion and review quality evidence before rollout.",
       "reason": "Synthetic cases miss real traffic patterns or rollback is not tested.",
-      "reject": "Reject options that violate the requirement."
+      "reject": "Reject this tempting claim: Shadow tools must not duplicate real side effects. A canary still needs rollback rules."
     },
     "workedTrace": [
-      "Observe the scenario.",
-      "Inspect: Synthetic cases miss real traffic patterns or rollback is not tested.",
-      "Apply: Pause expansion and review quality evidence before rollout.",
-      "Compare the result with the requirement."
+      "Case: A canary has acceptable latency but new unsupported claims.",
+      "Check: Compare canary and baseline for safety, quality, drift, latency, and cost.",
+      "Act: Pause expansion and review quality evidence before rollout.",
+      "Test: Measure canary quality, safety, drift, latency, and cost against a fixed baseline."
     ],
     "failure": {
       "symptom": "A canary has acceptable latency but new unsupported claims.",
-      "check": "Synthetic cases miss real traffic patterns or rollback is not tested.",
+      "check": "Compare canary and baseline for safety, quality, drift, latency, and cost.",
       "fix": "Pause expansion and review quality evidence before rollout."
     },
     "experiment": {
       "change": "Add one recent failure workflow to the release suite and verify canary response.",
-      "observe": "Compare the target measure with baseline and quality limits.",
+      "observe": "Measure canary quality, safety, drift, latency, and cost against a fixed baseline.",
       "limit": "Canary results apply to its tested traffic and observation period."
     },
     "masteryQuestion": "Hypothetical case: A canary has acceptable latency but new unsupported claims. What evidence decides the first action?",
-    "masteryAnswer": "Pause expansion and review quality evidence before rollout. Confirm the result against the experiment baseline.",
+    "masteryAnswer": "Pause expansion and review quality evidence before rollout.",
     "sources": [
       "evaluation",
-      "evaluation-metrics"
+      "evaluation-metrics",
+      "exam-domain-5"
     ]
   },
   {
@@ -1551,38 +1591,39 @@
     "title": "Context handling diagnosis",
     "principle": "Find what content the model actually received. Count all prompt components and output reserve.",
     "prerequisites": [
-      "Identify the outcome for context handling diagnosis.",
-      "Collect relevant evidence."
+      "Know the complete request shape and model token limit.",
+      "Define the facts and output fields that must survive context reduction."
     ],
     "mechanism": "Inspect request size, truncation behavior, stop reason, retrieved chunks, and validation errors. Reduce irrelevant history or evidence.",
     "decision": {
-      "when": "When the stated condition occurs.",
+      "when": "When: The model omits the final instruction after a long conversation.",
       "choice": "Inspect token use and prompt assembly, then remove or summarize tested history.",
       "reason": "The team raises output tokens when input content was truncated.",
-      "reject": "Reject options that violate the requirement."
+      "reject": "Reject this tempting claim: Raising maxTokens can worsen the total budget. Character count is not a reliable token count."
     },
     "workedTrace": [
-      "Observe the scenario.",
-      "Inspect: The team raises output tokens when input content was truncated.",
-      "Apply: Inspect token use and prompt assembly, then remove or summarize tested history.",
-      "Compare the result with the requirement."
+      "Case: The model omits the final instruction after a long conversation.",
+      "Check: Inspect serialized request, token budget, truncation evidence, and stop reason.",
+      "Act: Inspect token use and prompt assembly, then remove or summarize tested history.",
+      "Test: Measure required content retained in the serialized request and completeness of the answer."
     ],
     "failure": {
       "symptom": "The model omits the final instruction after a long conversation.",
-      "check": "The team raises output tokens when input content was truncated.",
+      "check": "Inspect serialized request, token budget, truncation evidence, and stop reason.",
       "fix": "Inspect token use and prompt assembly, then remove or summarize tested history."
     },
     "experiment": {
       "change": "Change one context component and verify required facts remain in the actual request.",
-      "observe": "Compare the target measure with baseline and quality limits.",
+      "observe": "Measure required content retained in the serialized request and completeness of the answer.",
       "limit": "Token estimation can vary by model tokenizer and request structure."
     },
     "masteryQuestion": "Hypothetical case: The model omits the final instruction after a long conversation. What evidence decides the first action?",
-    "masteryAnswer": "Inspect token use and prompt assembly, then remove or summarize tested history. Confirm the result against the experiment baseline.",
+    "masteryAnswer": "Inspect token use and prompt assembly, then remove or summarize tested history.",
     "sources": [
+      "chunking",
       "converse-api",
-      "model-parameters",
-      "chunking"
+      "exam-domain-5",
+      "model-parameters"
     ]
   },
   {
@@ -1590,37 +1631,38 @@
     "title": "Inference integration diagnosis",
     "principle": "Classify API errors before changing model or prompt behavior. Preserve the exact request and caller context.",
     "prerequisites": [
-      "Identify the outcome for inference integration diagnosis.",
-      "Collect relevant evidence."
+      "Capture the exact request, operation, model, role, and Region.",
+      "Know the API schema and error class for the selected call."
     ],
     "mechanism": "Check operation, model identifier, Region, permissions, request schema, size limits, throttling, timeout, and response parsing. Inspect relevant service errors and request IDs.",
     "decision": {
-      "when": "When the stated condition occurs.",
+      "when": "When: A request fails with ValidationException after an API field change.",
       "choice": "Compare the serialized request with the operation’s supported schema.",
       "reason": "The team retries a malformed request or treats AccessDenied as throttling.",
-      "reject": "Reject options that violate the requirement."
+      "reject": "Reject this tempting claim: Do not retry permission failures or invalid requests without a relevant change."
     },
     "workedTrace": [
-      "Observe the scenario.",
-      "Inspect: The team retries a malformed request or treats AccessDenied as throttling.",
-      "Apply: Compare the serialized request with the operation’s supported schema.",
-      "Compare the result with the requirement."
+      "Case: A request fails with ValidationException after an API field change.",
+      "Check: Inspect operation, serialized fields, model identifier, role, Region, and error code.",
+      "Act: Compare the serialized request with the operation’s supported schema.",
+      "Test: Measure whether the corrected request succeeds under the same role, model, and Region."
     ],
     "failure": {
       "symptom": "A request fails with ValidationException after an API field change.",
-      "check": "The team retries a malformed request or treats AccessDenied as throttling.",
+      "check": "Inspect operation, serialized fields, model identifier, role, Region, and error code.",
       "fix": "Compare the serialized request with the operation’s supported schema."
     },
     "experiment": {
       "change": "Change one request field and replay the same call under the same role and Region.",
-      "observe": "Compare the target measure with baseline and quality limits.",
+      "observe": "Measure whether the corrected request succeeds under the same role, model, and Region.",
       "limit": "Service errors can change. Use current service documentation and logs."
     },
     "masteryQuestion": "Hypothetical case: A request fails with ValidationException after an API field change. What evidence decides the first action?",
-    "masteryAnswer": "Compare the serialized request with the operation’s supported schema. Confirm the result against the experiment baseline.",
+    "masteryAnswer": "Compare the serialized request with the operation’s supported schema.",
     "sources": [
       "bedrock-errors",
       "converse-api",
+      "exam-domain-5",
       "iam"
     ]
   },
@@ -1629,38 +1671,39 @@
     "title": "Prompt behavior diagnosis",
     "principle": "Treat prompt quality as a testable interaction among instructions, evidence, examples, and output contract.",
     "prerequisites": [
-      "Identify the outcome for prompt behavior diagnosis.",
-      "Collect relevant evidence."
+      "Keep fixed cases and a versioned prompt baseline.",
+      "Know the required response contract and evaluation rubric."
     ],
     "mechanism": "Use a fixed failure set and compare prompt versions. Check instruction conflicts, missing context, examples, variable substitution, and schema validation.",
     "decision": {
-      "when": "When the stated condition occurs.",
+      "when": "When: A prompt update improves tone but causes required fields to disappear.",
       "choice": "Compare schema validity and task criteria across the old and new prompt versions.",
       "reason": "The team rewrites several instructions at once and cannot identify the cause.",
-      "reject": "Reject options that violate the requirement."
+      "reject": "Reject this tempting claim: Adding more instructions can create conflicts and consume the evidence budget."
     },
     "workedTrace": [
-      "Observe the scenario.",
-      "Inspect: The team rewrites several instructions at once and cannot identify the cause.",
-      "Apply: Compare schema validity and task criteria across the old and new prompt versions.",
-      "Compare the result with the requirement."
+      "Case: A prompt update improves tone but causes required fields to disappear.",
+      "Check: Diff prompt versions and rendered variables, then inspect failures against the rubric.",
+      "Act: Compare schema validity and task criteria across the old and new prompt versions.",
+      "Test: Measure rubric failures and schema validity after changing one prompt component."
     ],
     "failure": {
       "symptom": "A prompt update improves tone but causes required fields to disappear.",
-      "check": "The team rewrites several instructions at once and cannot identify the cause.",
+      "check": "Diff prompt versions and rendered variables, then inspect failures against the rubric.",
       "fix": "Compare schema validity and task criteria across the old and new prompt versions."
     },
     "experiment": {
       "change": "Change one instruction or example and measure exact failure categories on fixed cases.",
-      "observe": "Compare the target measure with baseline and quality limits.",
+      "observe": "Measure rubric failures and schema validity after changing one prompt component.",
       "limit": "Prompt improvements may not transfer to unseen tasks."
     },
     "masteryQuestion": "Hypothetical case: A prompt update improves tone but causes required fields to disappear. What evidence decides the first action?",
-    "masteryAnswer": "Compare schema validity and task criteria across the old and new prompt versions. Confirm the result against the experiment baseline.",
+    "masteryAnswer": "Compare schema validity and task criteria across the old and new prompt versions.",
     "sources": [
-      "prompt-management",
       "converse-api",
-      "evaluation"
+      "evaluation",
+      "exam-domain-5",
+      "prompt-management"
     ]
   },
   {
@@ -1668,39 +1711,40 @@
     "title": "Retrieval defect diagnosis",
     "principle": "Trace a missing or poor answer backward from generation to indexed source data.",
     "prerequisites": [
-      "Identify the outcome for retrieval defect diagnosis.",
-      "Collect relevant evidence."
+      "Know source versions, sync state, chunking, and embedding settings.",
+      "Prepare labeled queries and expected retrieval results."
     ],
     "mechanism": "Check source existence, latest sync, extraction quality, chunk boundaries, metadata filters, embedding compatibility, and ranking. Compare query and document vector configuration.",
     "decision": {
-      "when": "When the stated condition occurs.",
+      "when": "When: A current policy exists in storage but never appears in retrieved evidence.",
       "choice": "Check ingestion state and filters, then inspect the indexed version and top results.",
       "reason": "Changing the model prompt hides a stale index or wrong embedding setup.",
-      "reject": "Reject options that violate the requirement."
+      "reject": "Reject this tempting claim: A model upgrade cannot reliably fix missing or unauthorized evidence."
     },
     "workedTrace": [
-      "Observe the scenario.",
-      "Inspect: Changing the model prompt hides a stale index or wrong embedding setup.",
-      "Apply: Check ingestion state and filters, then inspect the indexed version and top results.",
-      "Compare the result with the requirement."
+      "Case: A current policy exists in storage but never appears in retrieved evidence.",
+      "Check: Inspect source sync, chunk boundaries, embedding settings, filters, and ranked evidence.",
+      "Act: Check ingestion state and filters, then inspect the indexed version and top results.",
+      "Test: Measure source freshness, relevant retrieval, and latency after the ingestion or query fix."
     ],
     "failure": {
       "symptom": "A current policy exists in storage but never appears in retrieved evidence.",
-      "check": "Changing the model prompt hides a stale index or wrong embedding setup.",
+      "check": "Inspect source sync, chunk boundaries, embedding settings, filters, and ranked evidence.",
       "fix": "Check ingestion state and filters, then inspect the indexed version and top results."
     },
     "experiment": {
       "change": "Update one source record and trace it through ingestion and retrieval with a labeled query.",
-      "observe": "Compare the target measure with baseline and quality limits.",
+      "observe": "Measure source freshness, relevant retrieval, and latency after the ingestion or query fix.",
       "limit": "A successful sync event does not prove useful retrieval."
     },
     "masteryQuestion": "Hypothetical case: A current policy exists in storage but never appears in retrieved evidence. What evidence decides the first action?",
-    "masteryAnswer": "Check ingestion state and filters, then inspect the indexed version and top results. Confirm the result against the experiment baseline.",
+    "masteryAnswer": "Check ingestion state and filters, then inspect the indexed version and top results.",
     "sources": [
-      "knowledge-bases",
+      "chunking",
+      "exam-domain-5",
       "kb-sync",
-      "retrieval",
-      "chunking"
+      "knowledge-bases",
+      "retrieval"
     ]
   },
   {
@@ -1708,38 +1752,39 @@
     "title": "Prompt maintenance diagnosis",
     "principle": "Manage prompt templates as versioned application dependencies. Test variables, schema, and release links.",
     "prerequisites": [
-      "Identify the outcome for prompt maintenance diagnosis.",
-      "Collect relevant evidence."
+      "Know the prompt resource version and required variables.",
+      "Keep a known-good request trace and schema validation result."
     ],
     "mechanism": "Inspect unresolved variables, incompatible request fields, prompt version, and changed instructions. Compare logs and traces with a known-good version.",
     "decision": {
-      "when": "When the stated condition occurs.",
+      "when": "When: A deployed prompt version returns literal placeholder text.",
       "choice": "Inspect variable names and values at invocation, then test the rendered prompt.",
       "reason": "The stored template looks correct while runtime parameters are missing or stale.",
-      "reject": "Reject options that violate the requirement."
+      "reject": "Reject this tempting claim: A stored template does not prove that runtime variables have valid values."
     },
     "workedTrace": [
-      "Observe the scenario.",
-      "Inspect: The stored template looks correct while runtime parameters are missing or stale.",
-      "Apply: Inspect variable names and values at invocation, then test the rendered prompt.",
-      "Compare the result with the requirement."
+      "Case: A deployed prompt version returns literal placeholder text.",
+      "Check: Inspect prompt version, variable bindings, request fields, schema result, and trace.",
+      "Act: Inspect variable names and values at invocation, then test the rendered prompt.",
+      "Test: Measure rendered variable correctness and output validity for each prompt version."
     ],
     "failure": {
       "symptom": "A deployed prompt version returns literal placeholder text.",
-      "check": "The stored template looks correct while runtime parameters are missing or stale.",
+      "check": "Inspect prompt version, variable bindings, request fields, schema result, and trace.",
       "fix": "Inspect variable names and values at invocation, then test the rendered prompt."
     },
     "experiment": {
       "change": "Change one template variable contract and compare rendered requests and output validity.",
-      "observe": "Compare the target measure with baseline and quality limits.",
+      "observe": "Measure rendered variable correctness and output validity for each prompt version.",
       "limit": "Logs can contain sensitive prompts and need strict access and retention."
     },
     "masteryQuestion": "Hypothetical case: A deployed prompt version returns literal placeholder text. What evidence decides the first action?",
-    "masteryAnswer": "Inspect variable names and values at invocation, then test the rendered prompt. Confirm the result against the experiment baseline.",
+    "masteryAnswer": "Inspect variable names and values at invocation, then test the rendered prompt.",
     "sources": [
-      "prompt-management",
+      "converse-api",
+      "exam-domain-5",
       "logging",
-      "converse-api"
+      "prompt-management"
     ]
   }
 ]

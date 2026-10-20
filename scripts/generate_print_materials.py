@@ -355,10 +355,62 @@ def build_print_html():
         </div>
         """
 
-    # Section 3: Rapid Decision Matrix Table
+    # Section 3: In-Scope Blueprint Gap Topics (Crucial for 800+ score)
+    gaps = [
+        ("Amazon AppFlow & AWS Transfer Family", "Ingestion for Knowledge Bases", "AppFlow automates SaaS data ingestion (Salesforce, ServiceNow, Zendesk, Slack) directly into S3 for Knowledge Base syncing without custom ETL. AWS Transfer Family provides managed SFTP/FTPS/FTP endpoints dropping enterprise partner files directly into S3."),
+        ("Neptune Analytics & GraphRAG", "Knowledge Graph + Vector RAG", "Neptune Analytics executes in-memory graph algorithms and vector search together. When queries require tracing complex relationships (e.g. supply chain dependencies, fraud rings, organizational hierarchies), GraphRAG with Neptune outperforms pure similarity search."),
+        ("Amazon Q Apps & Q Business", "Generative AI Business Solutions", "Amazon Q Business connects to 40+ enterprise connectors with built-in ACL identity propagation. Amazon Q Apps allows non-technical employees to generate lightweight, custom multi-step AI business apps from a single natural language prompt."),
+        ("AWS WAF & Amazon CloudFront Edge", "DDoS & Edge Prompt Validation", "CloudFront distributes GenAI web apps globally with low latency. AWS WAF protects API Gateway endpoints against DDoS, enforces IP rate-limiting, and blocks SQLi/XSS attacks before requests reach Bedrock. CloudFront Functions / Lambda@Edge inspects requests at the edge."),
+        ("The CountTokens API & Token Calculation", "Preventing Context Overflow", "The Bedrock <code>CountTokens</code> API calculates exact token counts for prompt text against specific model tokenizers before invocation, preventing runtime <code>ValidationException</code>. Crucial for dynamic sliding window memory calculation."),
+        ("top_k in the Converse API", "Sampling via additionalModelRequestFields", "Converse API exposes temperature, topP, and maxTokens directly in inferenceConfig. To pass model-specific parameters like <code>top_k</code> (Anthropic) or <code>repetition_penalty</code>, use <code>additionalModelRequestFields={'top_k': 50}</code>."),
+        ("Amazon CloudWatch Evidently", "A/B Testing & Feature Flags", "CloudWatch Evidently manages feature flags, dark launches, and client-side variation experiments for foundation models. Allows comparing conversion and click-through metrics between Model A and Model B in production."),
+        ("Amazon Textract Tables & Forms", "Document Modality Extraction", "Standard OCR destroys two-dimensional tabular alignment into flat unreadable text. Textract <code>AnalyzeDocument(FeatureTypes=['TABLES', 'FORMS'])</code> preserves row-column relationships and key-value pairs for RAG ingestion."),
+        ("Binary Vectors & Vector Quantization", "Optimizing OpenSearch Serverless", "Binary vectors and FP16/INT8 scalar quantization in OpenSearch Serverless reduce vector memory footprint by up to 75% while maintaining >95% retrieval accuracy, preventing OCU memory exhaustion on multi-million document collections."),
+        ("SageMaker Large-Model Distributed Tuning", "FSDP & DeepSpeed", "For models exceeding single-GPU VRAM (e.g. 70B+ parameters), use SageMaker PyTorch Fully Sharded Data Parallel (FSDP) or DeepSpeed ZeRO-3 across multi-node ml.p4d/ml.p5 GPU clusters to shard optimizer states, gradients, and model weights.")
+    ]
+
+    html += f"""
+    <div class="domain-header" style="background:#7c3aed;">
+      Part 3: In-Scope Blueprint Gap Topics & Advanced Primitives
+    </div>
+    """
+    for gap_title, gap_sub, gap_desc in gaps:
+        html += f"""
+        <div class="topic-card">
+          <div class="topic-title"><span>{gap_title}</span><span class="topic-skills">{gap_sub}</span></div>
+          <div class="rd-box" style="background:#f5f3ff; border-left-color:#7c3aed;">
+            <div class="rd-row">{gap_desc}</div>
+          </div>
+        </div>
+        """
+
+    # Section 4: The 6 Question Patterns & 30 Exam Traps
+    patterns = [
+        ("Pattern 1: Constraint Extraction", "Scenario stems present 3-4 constraints (residency, budget, latency, serverless). The credited option is the ONLY one that satisfies all constraints simultaneously. Read constraints first, options second."),
+        ("Pattern 2: MOST Correct, Not Merely Correct", "Multiple options will function architecturally, but the prompt asks for 'LEAST operational effort' or 'MOST cost-effective'. Bedrock managed services always beat self-hosted EC2/EKS on operational effort."),
+        ("Pattern 3: Lifecycle & Ordering", "AWS quizes on the exact sequential order of operations. Example: Knowledge Base sync requires (1) S3 upload -> (2) StartIngestionJob -> (3) Status COMPLETE. Agent deployment requires (1) Edit -> (2) PrepareAgent -> (3) Create Alias."),
+        ("Pattern 4: Precision Vocabulary", "Distinguish fine-tuning (labeled prompt-response pairs for style/task) vs continued pre-training (unlabeled text for domain vocabulary). Distinguish Model Invocation Logging (payloads) vs CloudTrail (management APIs only)."),
+        ("Pattern 5: Managed-First Solution Ladder", "Always choose the lowest rung on the ladder that solves the problem: Prompt Engineering -> RAG -> Fine-Tuning -> Pre-training. Never fine-tune when RAG solves dynamic factual freshness."),
+        ("Pattern 6: Wrong-Plane Distractors", "Distractors frequently offer data-plane solutions for control-plane problems (or vice versa). Example: Trying to audit prompt text via CloudTrail, or trying to isolate network traffic using S3 Gateway endpoints instead of PrivateLink.")
+    ]
+
+    html += f"""
+    <div class="domain-header" style="background:#b45309;">
+      Part 4: The 6 AWS AIP-C01 Question Patterns & Elimination Tactics
+    </div>
+    """
+    for pat_title, pat_desc in patterns:
+        html += f"""
+        <div class="topic-card" style="border-left: 2.5pt solid #f59e0b;">
+          <div class="topic-title" style="color:#b45309;"><span>🎯 {pat_title}</span></div>
+          <div class="topic-lead" style="font-size:7.9pt;">{pat_desc}</div>
+        </div>
+        """
+
+    # Section 5: Rapid Decision Matrix Table
     html += f"""
     <div class="domain-header" style="background:#4338ca;">
-      Part 3: 30-Second Rapid Elimination Decision Matrix
+      Part 5: 30-Second Rapid Elimination Decision Matrix
     </div>
     <table class="matrix-table">
       <thead>
@@ -375,6 +427,8 @@ def build_print_html():
         <tr><td>Auditing user prompt text for compliance</td><td>Bedrock Model Invocation Logging to S3</td><td>CloudTrail logs API management calls, NEVER prompt/payload text</td></tr>
         <tr><td>Zero internet traversal from private subnets</td><td>VPC Interface Endpoint (PrivateLink)</td><td>S3 Gateway Endpoint does not secure Bedrock runtime calls</td></tr>
         <tr><td>Offline bulk summarization at lowest cost</td><td>Amazon Bedrock Batch Inference</td><td>Synchronous on-demand costs 2x more and hits request quotas</td></tr>
+        <tr><td>Sensitive database updates / wire transfers</td><td>Action Group RETURN_OF_CONTROL / Step Functions</td><td>Direct Lambda execution has no human review checkpoint</td></tr>
+        <tr><td>Agent changes not taking effect in test</td><td>Call PrepareAgent / Create Agent Alias</td><td>Draft configuration changes do not deploy until prepared</td></tr>
       </tbody>
     </table>
     """

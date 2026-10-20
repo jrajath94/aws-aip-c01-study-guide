@@ -1,0 +1,1515 @@
+[
+  {
+    "chapterId": "deep-01",
+    "title": "Inspect context use in a conversation",
+    "goal": "Compare input and output usage for a short and a long conversation.",
+    "prerequisites": [
+      "Access to an approved model route and a test client."
+    ],
+    "steps": [
+      {
+        "action": "Prepare two non-sensitive prompts with the same question and different history lengths.",
+        "why": "Isolate context size as the changed variable.",
+        "evidence": "Two saved request bodies differ only in history."
+      },
+      {
+        "action": "Send each request with the Converse API using the same model and inference settings.",
+        "why": "Keep model behavior comparable across trials.",
+        "evidence": "Both calls return response content and usage data."
+      },
+      {
+        "action": "Record input and output token usage from each response.",
+        "why": "Usage data shows the processed request size.",
+        "evidence": "The long-history request reports its input usage."
+      },
+      {
+        "action": "Compare answer quality against the same expected answer.",
+        "why": "More context can add irrelevant material.",
+        "evidence": "A reviewer records omissions, distractions, or preserved references."
+      },
+      {
+        "action": "Remove history that does not resolve a current reference, then repeat the call.",
+        "why": "Focused context tests whether old content was necessary.",
+        "evidence": "The revised request retains required details."
+      },
+      {
+        "action": "Review the model context limit and leave room for requested output.",
+        "why": "Input and generation share a bounded request capacity.",
+        "evidence": "The request fits the selected model contract."
+      }
+    ],
+    "expectedEvidence": [
+      "The requests differ only in history length.",
+      "Response usage is recorded for both trials.",
+      "The quality review identifies whether earlier turns matter."
+    ],
+    "failureChecks": [
+      "Check that the same model and settings were used.",
+      "Check that output allowance was not changed between trials.",
+      "Check the expected answer against the supplied context."
+    ],
+    "cleanup": [
+      "Delete local test prompts if policy requires it.",
+      "Do not retain sensitive conversation content in logs."
+    ],
+    "examTransfer": "For a long support session, retain only turns needed to resolve the current request. Verify references before trimming history.",
+    "sources": [
+      "converse-api",
+      "model-parameters",
+      "retrieval"
+    ],
+    "paidResourceRisk": true,
+    "costNote": "This proposed lab can incur AWS charges through inference, retrieval, logging, or service resources. Review current pricing before execution.",
+    "status": "Proposed, not executed."
+  },
+  {
+    "chapterId": "deep-02",
+    "title": "Compare model candidates",
+    "goal": "Use one representative task set to compare available model capabilities and behavior.",
+    "prerequisites": [
+      "An approved sandbox, test prompts, expected outcomes, and model access."
+    ],
+    "steps": [
+      {
+        "action": "List available foundation models with the Bedrock ListFoundationModels API.",
+        "why": "Availability and model identity constrain candidate choice.",
+        "evidence": "The candidate identifiers and modalities are recorded."
+      },
+      {
+        "action": "Check model access and availability for each candidate.",
+        "why": "A listed model may not be ready for this account or Region.",
+        "evidence": "Access and availability checks return the candidate state."
+      },
+      {
+        "action": "Select candidates that meet the required modality and task.",
+        "why": "Remove candidates that cannot accept the intended input.",
+        "evidence": "A short list maps each candidate to task needs."
+      },
+      {
+        "action": "Send the same test prompts through Converse with matching settings.",
+        "why": "A fixed request allows a fair comparison.",
+        "evidence": "Each candidate returns output and usage data."
+      },
+      {
+        "action": "Score correctness, format, refusal behavior, and latency by case.",
+        "why": "Averages can hide a critical task failure.",
+        "evidence": "A results table shows each measure by test case."
+      },
+      {
+        "action": "Choose only a candidate that meets the stated acceptance criteria.",
+        "why": "The workload requirement determines suitability.",
+        "evidence": "A written choice links evidence to each criterion."
+      }
+    ],
+    "expectedEvidence": [
+      "Candidates have confirmed access and task support.",
+      "Each candidate receives the same prompt set.",
+      "Selection evidence covers quality and operational needs."
+    ],
+    "failureChecks": [
+      "Check for request settings that differ by model.",
+      "Check access errors before scoring quality.",
+      "Check critical failure cases separately from overall averages."
+    ],
+    "cleanup": [
+      "Remove test data from temporary locations under local policy.",
+      "Do not delete shared model access or account settings."
+    ],
+    "examTransfer": "When a task needs image input, reject candidates without that modality before comparing answer quality.",
+    "sources": [
+      "bedrock-overview",
+      "model-access",
+      "model-parameters"
+    ],
+    "paidResourceRisk": true,
+    "costNote": "This proposed lab can incur AWS charges through inference, retrieval, logging, or service resources. Review current pricing before execution.",
+    "status": "Proposed, not executed."
+  },
+  {
+    "chapterId": "deep-03",
+    "title": "Validate a Converse request",
+    "goal": "Trace request construction, inference response, and error handling.",
+    "prerequisites": [
+      "AWS SDK configured for an approved sandbox and an accessible model."
+    ],
+    "steps": [
+      {
+        "action": "Build a minimal Converse request with a model identifier and one user message.",
+        "why": "A small request isolates the API contract.",
+        "evidence": "The serialized request contains required message fields."
+      },
+      {
+        "action": "Validate the model identifier and required fields against the API reference.",
+        "why": "Model support and request syntax can differ.",
+        "evidence": "The request passes local schema review."
+      },
+      {
+        "action": "Invoke the Converse API with non-sensitive test content.",
+        "why": "The service validates and processes the request.",
+        "evidence": "The call returns a response or a classified error."
+      },
+      {
+        "action": "Inspect response content, stop reason, and usage fields.",
+        "why": "The application needs more than answer text.",
+        "evidence": "The parser records output and completion state."
+      },
+      {
+        "action": "Send one deliberately invalid test field in an isolated request.",
+        "why": "A controlled error tests validation handling.",
+        "evidence": "The client classifies the returned validation error."
+      },
+      {
+        "action": "Correct the request and repeat the call.",
+        "why": "A valid request should pass the same integration path.",
+        "evidence": "The corrected call returns expected content."
+      }
+    ],
+    "expectedEvidence": [
+      "The valid request passes and returns a parseable response.",
+      "The invalid request produces a handled error.",
+      "The application preserves completion and usage state."
+    ],
+    "failureChecks": [
+      "Check model access and identifier before request changes.",
+      "Check message shape and supported optional fields.",
+      "Do not retry a deterministic validation error."
+    ],
+    "cleanup": [
+      "Remove local request and response artifacts if they contain sensitive data.",
+      "Leave shared model access unchanged."
+    ],
+    "examTransfer": "For a second model, keep the application contract stable and test its model-specific fields separately.",
+    "sources": [
+      "converse-api",
+      "bedrock-overview",
+      "bedrock-errors"
+    ],
+    "paidResourceRisk": true,
+    "costNote": "This proposed lab can incur AWS charges through inference, retrieval, logging, or service resources. Review current pricing before execution.",
+    "status": "Proposed, not executed."
+  },
+  {
+    "chapterId": "deep-04",
+    "title": "Trace a RAG answer to evidence",
+    "goal": "Separate retrieval quality from answer quality with a known source passage.",
+    "prerequisites": [
+      "An existing sandbox knowledge base with approved test content."
+    ],
+    "steps": [
+      {
+        "action": "Choose a question and identify its authoritative source passage.",
+        "why": "Known evidence supports a meaningful retrieval check.",
+        "evidence": "The expected passage and answer criteria are recorded."
+      },
+      {
+        "action": "Call the Retrieve API with the knowledge base identifier and question.",
+        "why": "Retrieve exposes candidate evidence before generation.",
+        "evidence": "The response includes source references and retrieved text."
+      },
+      {
+        "action": "Check whether returned passages cover every required fact.",
+        "why": "Evidence coverage is separate from fluent answer quality.",
+        "evidence": "A reviewer marks relevant, missing, or distracting passages."
+      },
+      {
+        "action": "Call RetrieveAndGenerate with the same question if enabled for the test.",
+        "why": "This tests the combined retrieval and generation path.",
+        "evidence": "The response includes an answer and available citations."
+      },
+      {
+        "action": "Compare each answer claim with its cited source.",
+        "why": "Citation presence alone does not prove support.",
+        "evidence": "Each claim maps to a supporting passage or a noted gap."
+      },
+      {
+        "action": "Record retrieval and answer defects as separate findings.",
+        "why": "Separate defects point to different repairs.",
+        "evidence": "The findings name retrieval, source, or generation stages."
+      }
+    ],
+    "expectedEvidence": [
+      "The retrieved evidence is reviewed before generation.",
+      "The final response is checked against its citations.",
+      "Stage-specific defects are documented."
+    ],
+    "failureChecks": [
+      "Check knowledge base sync status and source identity.",
+      "Check retrieval filters and returned passage relevance.",
+      "Check whether generation added claims absent from evidence."
+    ],
+    "cleanup": [
+      "Keep the source knowledge base intact.",
+      "Remove only local notes and temporary request data."
+    ],
+    "examTransfer": "If evidence is missing, fix retrieval or ingestion before changing answer style.",
+    "sources": [
+      "knowledge-bases",
+      "retrieval",
+      "evaluation-metrics"
+    ],
+    "paidResourceRisk": true,
+    "costNote": "This proposed lab can incur AWS charges through inference, retrieval, logging, or service resources. Review current pricing before execution.",
+    "status": "Proposed, not executed."
+  },
+  {
+    "chapterId": "deep-05",
+    "title": "Verify ingestion freshness",
+    "goal": "Trace a safe source update through sync and retrieval.",
+    "prerequisites": [
+      "An existing disposable knowledge base and a non-sensitive test document."
+    ],
+    "steps": [
+      {
+        "action": "Record the test document source identifier and visible revision marker.",
+        "why": "The marker distinguishes source state from indexed state.",
+        "evidence": "The original marker and source reference are noted."
+      },
+      {
+        "action": "Update the test document with a new revision marker.",
+        "why": "A controlled edit creates a known change.",
+        "evidence": "The source object shows the new marker."
+      },
+      {
+        "action": "Start the test sync with StartIngestionJob for its knowledge base and data source.",
+        "why": "Sync updates the derived retrieval representation.",
+        "evidence": "The sync job reports a completion or failure state."
+      },
+      {
+        "action": "Track the returned job with GetIngestionJob until it reaches a terminal state.",
+        "why": "A successful job may still skip or fail one record.",
+        "evidence": "The record status confirms processing."
+      },
+      {
+        "action": "Retrieve the document passage using the Retrieve API.",
+        "why": "A query checks the user-visible index state.",
+        "evidence": "Retrieved text contains the new marker."
+      },
+      {
+        "action": "Check whether obsolete text still appears in results.",
+        "why": "Replacement and deletion behavior affect answer freshness.",
+        "evidence": "The old marker is absent or its persistence is explained."
+      }
+    ],
+    "expectedEvidence": [
+      "The source and index revision markers agree.",
+      "The sync result is recorded for the test source.",
+      "Retrieval confirms the updated content."
+    ],
+    "failureChecks": [
+      "Check sync errors and parser output if the marker is absent.",
+      "Check that the query targets the revised document.",
+      "Check for duplicate source records."
+    ],
+    "cleanup": [
+      "Restore or remove the test document according to the sandbox plan.",
+      "Do not remove shared knowledge base resources."
+    ],
+    "examTransfer": "A user reports stale answers. Compare source revision, sync state, index result, then generation.",
+    "sources": [
+      "kb-sync",
+      "knowledge-bases",
+      "data-protection"
+    ],
+    "paidResourceRisk": true,
+    "costNote": "This proposed lab can incur AWS charges through inference, retrieval, logging, or service resources. Review current pricing before execution.",
+    "status": "Proposed, not executed."
+  },
+  {
+    "chapterId": "deep-06",
+    "title": "Compare chunk boundaries",
+    "goal": "Observe how one chunking choice changes returned context.",
+    "prerequisites": [
+      "A disposable knowledge base and a test document with a rule and nearby exception."
+    ],
+    "steps": [
+      {
+        "action": "Inspect parsed source text and mark the rule and exception.",
+        "why": "Chunking operates on parsed content.",
+        "evidence": "Both statements and their source location are identified."
+      },
+      {
+        "action": "Create or use a test data source with fixed-size chunking.",
+        "why": "A baseline makes the boundary effect visible.",
+        "evidence": "The configured chunking strategy is recorded."
+      },
+      {
+        "action": "Sync the document and inspect available chunk previews.",
+        "why": "Preview reveals whether the two statements stay together.",
+        "evidence": "The chunk boundary is documented."
+      },
+      {
+        "action": "Retrieve the rule question and save returned passages.",
+        "why": "The query tests whether both conditions surface.",
+        "evidence": "The response shows the matched chunk and source."
+      },
+      {
+        "action": "Repeat with a larger configured chunk size or hierarchical strategy.",
+        "why": "A single controlled configuration tests broader context.",
+        "evidence": "The revised chunking setting is recorded."
+      },
+      {
+        "action": "Compare exception coverage and irrelevant context.",
+        "why": "Larger context can preserve qualifications and add noise.",
+        "evidence": "A reviewer compares both retrieval outputs."
+      }
+    ],
+    "expectedEvidence": [
+      "Parsed text preserves the rule and exception.",
+      "The baseline and revised settings are known.",
+      "Retrieval comparison records both coverage and noise."
+    ],
+    "failureChecks": [
+      "Check parser output before tuning chunk size.",
+      "Check whether returned table or page context differs from the matched chunk.",
+      "Check result count when parent chunks replace children."
+    ],
+    "cleanup": [
+      "Use a disposable data source for re-ingestion.",
+      "Remove only test documents and temporary evaluation notes."
+    ],
+    "examTransfer": "For a table question, preserve labels and values together before adjusting model prompts.",
+    "sources": [
+      "chunking",
+      "retrieval",
+      "knowledge-bases"
+    ],
+    "paidResourceRisk": true,
+    "costNote": "This proposed lab can incur AWS charges through inference, retrieval, logging, or service resources. Review current pricing before execution.",
+    "status": "Proposed, not executed."
+  },
+  {
+    "chapterId": "deep-07",
+    "title": "Test embedding compatibility",
+    "goal": "Compare retrieval with a compatible embedding and a controlled model change.",
+    "prerequisites": [
+      "A disposable index or a safe test corpus with known relevant passages."
+    ],
+    "steps": [
+      {
+        "action": "Record the embedding model used for the test index.",
+        "why": "Index identity determines query compatibility.",
+        "evidence": "The current embedding configuration is documented."
+      },
+      {
+        "action": "Select labeled questions and expected source passages.",
+        "why": "Expected matches support relevance checks.",
+        "evidence": "The test set maps each query to known evidence."
+      },
+      {
+        "action": "Run retrieval with the compatible query embedding configuration.",
+        "why": "This establishes the baseline.",
+        "evidence": "Returned source identifiers and relevance judgments are saved."
+      },
+      {
+        "action": "Change the query embedding configuration only in a test path.",
+        "why": "This isolates the compatibility risk.",
+        "evidence": "The test request uses the alternate query embedding."
+      },
+      {
+        "action": "Compare returned sources with the baseline.",
+        "why": "Different representations can change similarity behavior.",
+        "evidence": "The comparison shows lost, gained, or reordered evidence."
+      },
+      {
+        "action": "Restore compatibility or re-index a test copy before a migration trial.",
+        "why": "A coordinated migration changes both sides.",
+        "evidence": "The selected test setup uses matching query and index representations."
+      }
+    ],
+    "expectedEvidence": [
+      "The index embedding model is known.",
+      "The baseline query set has expected passages.",
+      "The migration decision reflects paired index and query models."
+    ],
+    "failureChecks": [
+      "Check vector dimensions and model identifiers.",
+      "Check whether the corpus was re-embedded.",
+      "Do not treat similarity scores as truth probabilities."
+    ],
+    "cleanup": [
+      "Keep the production index unchanged.",
+      "Delete only a disposable test index if one was created."
+    ],
+    "examTransfer": "During embedding migration, change query and index representations as a coordinated versioned pair.",
+    "sources": [
+      "retrieval",
+      "knowledge-bases",
+      "search-01"
+    ],
+    "paidResourceRisk": true,
+    "costNote": "This proposed lab can incur AWS charges through inference, retrieval, logging, or service resources. Review current pricing before execution.",
+    "status": "Proposed, not executed."
+  },
+  {
+    "chapterId": "deep-08",
+    "title": "Inspect vector filtering",
+    "goal": "Confirm trusted metadata filters constrain retrieval before generation.",
+    "prerequisites": [
+      "An existing sandbox knowledge base with approved test partitions."
+    ],
+    "steps": [
+      {
+        "action": "Choose two test records with distinct trusted metadata values.",
+        "why": "Paired records expose filter behavior.",
+        "evidence": "Source identifiers and metadata values are recorded."
+      },
+      {
+        "action": "Call Retrieve without a filter using a query that matches both records.",
+        "why": "The baseline shows available candidates.",
+        "evidence": "The response includes both records or explains search behavior."
+      },
+      {
+        "action": "Call Retrieve with a trusted metadata filter for one partition.",
+        "why": "Filtering should constrain the candidate set.",
+        "evidence": "Only permitted partition results appear."
+      },
+      {
+        "action": "Repeat with the second partition and compare results.",
+        "why": "Symmetric tests catch hard-coded behavior.",
+        "evidence": "Each request returns its intended source set."
+      },
+      {
+        "action": "Inspect metadata fields in the response.",
+        "why": "Returned metadata supports authorization diagnosis.",
+        "evidence": "The filter field and value match the trusted test identity."
+      },
+      {
+        "action": "Review the application path that supplies the filter.",
+        "why": "A user-controlled value must not establish authorization.",
+        "evidence": "The identity-to-filter mapping has a trusted source."
+      }
+    ],
+    "expectedEvidence": [
+      "Filtered retrieval returns only the expected test partition.",
+      "The application derives filters from authenticated identity.",
+      "No denied passage reaches model input."
+    ],
+    "failureChecks": [
+      "Check metadata field support and filter syntax.",
+      "Check whether the filter is applied before retrieval.",
+      "Check the final model context, not only the visible answer."
+    ],
+    "cleanup": [
+      "Do not alter production access policies.",
+      "Remove local test identifiers and saved outputs as required."
+    ],
+    "examTransfer": "Apply the same identity-bound filter test to every tenant or department route.",
+    "sources": [
+      "knowledge-bases",
+      "retrieval",
+      "kb-retrieve-api"
+    ],
+    "paidResourceRisk": true,
+    "costNote": "This proposed lab can incur AWS charges through inference, retrieval, logging, or service resources. Review current pricing before execution.",
+    "status": "Proposed, not executed."
+  },
+  {
+    "chapterId": "deep-09",
+    "title": "Compare search modes",
+    "goal": "Compare semantic and hybrid search for exact terms and paraphrases.",
+    "prerequisites": [
+      "An existing test knowledge base on a supported vector store with filterable text."
+    ],
+    "steps": [
+      {
+        "action": "Select queries with exact identifiers and paraphrased descriptions.",
+        "why": "Different query types exercise distinct search signals.",
+        "evidence": "Each query has expected source records."
+      },
+      {
+        "action": "Call Retrieve with semantic search and save candidate sources.",
+        "why": "This establishes semantic retrieval behavior.",
+        "evidence": "Results are recorded by query type."
+      },
+      {
+        "action": "Call Retrieve with retrievalConfiguration set to HYBRID on a supported store.",
+        "why": "The search type combines vector and raw-text signals where supported.",
+        "evidence": "The request records overrideSearchType and returns candidate sources."
+      },
+      {
+        "action": "Compare exact identifier recall and paraphrase relevance.",
+        "why": "One mode may help one query class more than another.",
+        "evidence": "A comparison table records source coverage and noise."
+      },
+      {
+        "action": "Inspect first-stage candidates before testing an available reranker.",
+        "why": "Reranking addresses ordering among returned candidates.",
+        "evidence": "A candidate absent from first stage is marked as recall loss."
+      },
+      {
+        "action": "Keep the mode that meets the test criteria and document the store boundary.",
+        "why": "Hybrid support depends on the configured store.",
+        "evidence": "The decision includes capability and relevance evidence."
+      }
+    ],
+    "expectedEvidence": [
+      "Both search modes are compared on the same queries.",
+      "Exact-term and meaning-based results are reviewed separately.",
+      "Store support is confirmed before choosing hybrid."
+    ],
+    "failureChecks": [
+      "Check that the text field is filterable as required.",
+      "Check that expected records enter first-stage candidates.",
+      "Check noise and final context size."
+    ],
+    "cleanup": [
+      "Do not change a shared knowledge base search mode without owner approval.",
+      "Remove local test result files."
+    ],
+    "examTransfer": "Use exact product codes and paraphrases in separate retrieval evaluation groups.",
+    "sources": [
+      "retrieval",
+      "knowledge-bases",
+      "evaluation-metrics",
+      "kb-retrieve-api"
+    ],
+    "paidResourceRisk": true,
+    "costNote": "This proposed lab can incur AWS charges through inference, retrieval, logging, or service resources. Review current pricing before execution.",
+    "status": "Proposed, not executed."
+  },
+  {
+    "chapterId": "deep-10",
+    "title": "Version a prompt template",
+    "goal": "Create and compare a prompt version without changing the model or evidence.",
+    "prerequisites": [
+      "Access to Prompt management or a test prompt resource and approved model route."
+    ],
+    "steps": [
+      {
+        "action": "Record the active prompt resource and version.",
+        "why": "A baseline is needed for comparison.",
+        "evidence": "The prompt ID and version are documented."
+      },
+      {
+        "action": "Identify a specific failure and select a test case.",
+        "why": "A change should target an observed defect.",
+        "evidence": "The expected behavior is written before editing."
+      },
+      {
+        "action": "Create a new prompt variant with the same variables and model route.",
+        "why": "A variant isolates prompt behavior.",
+        "evidence": "The new version or variant is identifiable."
+      },
+      {
+        "action": "Run both versions with identical variable values.",
+        "why": "Equal inputs support a fair comparison.",
+        "evidence": "Outputs and inference settings are saved."
+      },
+      {
+        "action": "Check output structure and evidence use.",
+        "why": "Fluency alone does not show prompt quality.",
+        "evidence": "The test result records parse and support checks."
+      },
+      {
+        "action": "Promote only the evaluated version through the application path.",
+        "why": "Runtime linkage prevents an untested draft from serving users.",
+        "evidence": "The application references the reviewed prompt version."
+      }
+    ],
+    "expectedEvidence": [
+      "The test compares identifiable prompt versions.",
+      "The model, evidence, and variable values stay constant.",
+      "The deployed reference matches the reviewed version."
+    ],
+    "failureChecks": [
+      "Check for untrusted text that can resemble instructions.",
+      "Check that variables resolve to the intended values.",
+      "Check that output validation occurs after inference."
+    ],
+    "cleanup": [
+      "Keep the current production prompt unchanged during comparison.",
+      "Remove only unused test variants under prompt ownership rules."
+    ],
+    "examTransfer": "For a citation defect, keep retrieval fixed while comparing prompt instructions and citation checks.",
+    "sources": [
+      "prompt-management",
+      "converse-api",
+      "kb-retrieve-api"
+    ],
+    "paidResourceRisk": true,
+    "costNote": "This proposed lab can incur AWS charges through inference, retrieval, logging, or service resources. Review current pricing before execution.",
+    "status": "Proposed, not executed."
+  },
+  {
+    "chapterId": "deep-11",
+    "title": "Trace a bounded agent action",
+    "goal": "Inspect tool selection, runtime authorization, and outcome verification.",
+    "prerequisites": [
+      "An existing test agent or agent runtime with a read-only test tool."
+    ],
+    "steps": [
+      {
+        "action": "Review the agent instruction and available tool schemas.",
+        "why": "The action set shapes possible behavior.",
+        "evidence": "The approved tool list and schemas are recorded."
+      },
+      {
+        "action": "Submit an illustrative request that requires a read operation.",
+        "why": "A test task exercises model selection.",
+        "evidence": "The trace shows the chosen tool and arguments."
+      },
+      {
+        "action": "Validate arguments and caller access before invoking the tool.",
+        "why": "The host owns validation and permission checks.",
+        "evidence": "The runtime records an allowed or denied decision."
+      },
+      {
+        "action": "Inspect the tool result returned as an observation.",
+        "why": "The agent needs external evidence to continue.",
+        "evidence": "The trace links the result to the selected call."
+      },
+      {
+        "action": "Verify the external state through the system of record.",
+        "why": "A transcript does not prove the operation succeeded.",
+        "evidence": "The record confirms the observed outcome."
+      },
+      {
+        "action": "Test a denied or malformed request in the sandbox.",
+        "why": "Failure paths reveal control gaps.",
+        "evidence": "The invalid request stops before external action."
+      }
+    ],
+    "expectedEvidence": [
+      "The trace captures the tool request and observation.",
+      "The host checks identity and arguments.",
+      "The system of record confirms the result."
+    ],
+    "failureChecks": [
+      "Check whether the selected tool was exposed intentionally.",
+      "Check repeated calls and stopping behavior.",
+      "Check for side effects before retrying an ambiguous call."
+    ],
+    "cleanup": [
+      "Use read-only tools only for this lab.",
+      "Do not enable or invoke write operations."
+    ],
+    "examTransfer": "Choose a deterministic workflow when the task path is known and agent selection adds no value.",
+    "sources": [
+      "agents-current",
+      "agentcore-runtime",
+      "evaluation"
+    ],
+    "paidResourceRisk": true,
+    "costNote": "This proposed lab can incur AWS charges through inference, retrieval, logging, or service resources. Review current pricing before execution.",
+    "status": "Proposed, not executed."
+  },
+  {
+    "chapterId": "deep-12",
+    "title": "Validate a tool or MCP boundary",
+    "goal": "Test schema validation, authorization, and untrusted tool output.",
+    "prerequisites": [
+      "An existing sandbox MCP client and server or a local tool stub."
+    ],
+    "steps": [
+      {
+        "action": "Inspect the discovered tool name and input schema.",
+        "why": "Discovery defines the callable surface.",
+        "evidence": "The exposed tools match the approved list."
+      },
+      {
+        "action": "Prepare an allowed argument and a malformed argument.",
+        "why": "Paired inputs test validation behavior.",
+        "evidence": "Both test cases are documented."
+      },
+      {
+        "action": "Send the allowed call through the host client.",
+        "why": "The host should validate before server execution.",
+        "evidence": "The server returns a bounded result."
+      },
+      {
+        "action": "Send the malformed call and inspect host behavior.",
+        "why": "Invalid arguments should stop at the boundary.",
+        "evidence": "No backing service operation occurs."
+      },
+      {
+        "action": "Return instruction-like text from a local stub.",
+        "why": "Tool output is untrusted data for later model steps.",
+        "evidence": "The host retains it as data and applies existing policy."
+      },
+      {
+        "action": "Review server identity, authentication, and permissions.",
+        "why": "Protocol compatibility does not establish trust.",
+        "evidence": "The security boundary is documented."
+      }
+    ],
+    "expectedEvidence": [
+      "Allowed calls return only required fields.",
+      "Malformed calls stop before service action.",
+      "Tool output cannot override host policy."
+    ],
+    "failureChecks": [
+      "Check tool discovery scope and server identity.",
+      "Check argument validation before invocation.",
+      "Check the host treats results as untrusted input."
+    ],
+    "cleanup": [
+      "Use a local stub or read-only test server.",
+      "Do not store credentials in tool output or test fixtures."
+    ],
+    "examTransfer": "Apply the same boundary checks to every tool server and discovered operation.",
+    "sources": [
+      "agentcore-runtime",
+      "agents-current",
+      "iam"
+    ],
+    "paidResourceRisk": true,
+    "costNote": "This proposed lab can incur AWS charges through inference, retrieval, logging, or service resources. Review current pricing before execution.",
+    "status": "Proposed, not executed."
+  },
+  {
+    "chapterId": "deep-13",
+    "title": "Compare inference deployment paths",
+    "goal": "Map workload needs to an appropriate inference deployment option.",
+    "prerequisites": [
+      "A documented test workload and access to an approved sandbox."
+    ],
+    "steps": [
+      {
+        "action": "Describe request volume, burst pattern, latency, and model control needs.",
+        "why": "Deployment choice depends on workload characteristics.",
+        "evidence": "The profile lists qualitative needs and assumptions."
+      },
+      {
+        "action": "Review current Bedrock model and provisioned throughput documentation.",
+        "why": "Managed inference and provisioned options have different constraints.",
+        "evidence": "Supported routes and limits are noted."
+      },
+      {
+        "action": "Review SageMaker AI inference options for any hosted model requirement.",
+        "why": "Hosted deployment may fit different control needs.",
+        "evidence": "Candidate options map to the deployment profile."
+      },
+      {
+        "action": "Send representative test requests through the existing approved route.",
+        "why": "A baseline provides operational evidence without provisioning.",
+        "evidence": "Latency, errors, and usage are recorded."
+      },
+      {
+        "action": "Compare options against operations, capacity, and rollback needs.",
+        "why": "Performance alone does not determine fit.",
+        "evidence": "A decision matrix records tradeoffs."
+      },
+      {
+        "action": "Do not create endpoints until ownership and cost review is complete.",
+        "why": "Deployment resources can incur ongoing cost.",
+        "evidence": "The lab ends with a recommendation, not a deployed resource."
+      }
+    ],
+    "expectedEvidence": [
+      "The workload profile drives the candidate list.",
+      "Existing route data informs the decision.",
+      "Any endpoint creation remains a separately approved action."
+    ],
+    "failureChecks": [
+      "Check current model availability and Region.",
+      "Check whether capacity needs are steady or bursty.",
+      "Check operational ownership and cost exposure."
+    ],
+    "cleanup": [
+      "Do not create, modify, or delete endpoints.",
+      "Keep test calls within approved sandbox budgets."
+    ],
+    "examTransfer": "For a customized model, include artifact lifecycle and deployment ownership in the decision.",
+    "sources": [
+      "sagemaker-deploy",
+      "bedrock-overview",
+      "iam"
+    ],
+    "paidResourceRisk": true,
+    "costNote": "This proposed lab can incur AWS charges through inference, retrieval, logging, or service resources. Review current pricing before execution.",
+    "status": "Proposed, not executed."
+  },
+  {
+    "chapterId": "deep-14",
+    "title": "Review a model gateway policy",
+    "goal": "Trace authentication, route authorization, forwarding, and logging at an API boundary.",
+    "prerequisites": [
+      "An existing sandbox gateway or a design-only policy exercise."
+    ],
+    "steps": [
+      {
+        "action": "List intended caller roles and allowed model routes.",
+        "why": "The policy needs explicit caller-to-route rules.",
+        "evidence": "A role and route matrix is documented."
+      },
+      {
+        "action": "Review IAM policies and gateway request validation.",
+        "why": "Authorization must precede provider invocation.",
+        "evidence": "The policy shows allowed actions and route checks."
+      },
+      {
+        "action": "Send an allowed test request through the gateway if available.",
+        "why": "The positive path confirms expected forwarding.",
+        "evidence": "A trace shows the selected route and outcome."
+      },
+      {
+        "action": "Send a disallowed route request in the sandbox.",
+        "why": "A negative test checks the enforcement boundary.",
+        "evidence": "The request is rejected before upstream inference."
+      },
+      {
+        "action": "Inspect invocation logs and redact sensitive request content.",
+        "why": "Telemetry should support diagnosis without excess data.",
+        "evidence": "Logs identify route, outcome, and trace reference."
+      },
+      {
+        "action": "Document fallback behavior and disablement ownership.",
+        "why": "Central routing can create a shared dependency.",
+        "evidence": "The design names an owner and recovery path."
+      }
+    ],
+    "expectedEvidence": [
+      "Allowed requests pass through the policy boundary.",
+      "Disallowed routes stop before model invocation.",
+      "Logs contain safe diagnostic fields."
+    ],
+    "failureChecks": [
+      "Check alternate direct credentials that bypass the gateway.",
+      "Check route allowlists and caller identity derivation.",
+      "Check what prompt and response content enters logs."
+    ],
+    "cleanup": [
+      "Do not change shared enterprise routing policy.",
+      "Remove only sandbox test request records under policy."
+    ],
+    "examTransfer": "A fallback model must preserve required output and safety behavior before it can serve traffic.",
+    "sources": [
+      "iam",
+      "logging",
+      "bedrock-errors"
+    ],
+    "paidResourceRisk": true,
+    "costNote": "This proposed lab can incur AWS charges through inference, retrieval, logging, or service resources. Review current pricing before execution.",
+    "status": "Proposed, not executed."
+  },
+  {
+    "chapterId": "deep-15",
+    "title": "Exercise streaming and retry states",
+    "goal": "Observe partial response events and error-specific retry handling.",
+    "prerequisites": [
+      "An approved streaming model route and test client."
+    ],
+    "steps": [
+      {
+        "action": "Open a streaming request with non-sensitive test content.",
+        "why": "The client receives response events incrementally.",
+        "evidence": "The client records event order and time to first content."
+      },
+      {
+        "action": "Track partial content separately from terminal completion.",
+        "why": "Partial output is not a final answer.",
+        "evidence": "The UI or client state shows open, partial, and complete."
+      },
+      {
+        "action": "Use the ConverseStream API and inspect its response events.",
+        "why": "The API exposes stream-specific response events.",
+        "evidence": "The SDK event parser handles content and completion events."
+      },
+      {
+        "action": "Test a controlled client disconnect or local parser error.",
+        "why": "Failure can occur after some content arrives.",
+        "evidence": "The client records incomplete state without marking success."
+      },
+      {
+        "action": "Review SDK retry behavior for a transient error class.",
+        "why": "Retries should match error type.",
+        "evidence": "Retry configuration is bounded and documented."
+      },
+      {
+        "action": "Do not retry an ambiguous write action without status or idempotency.",
+        "why": "A lost response can hide successful completion.",
+        "evidence": "The test design includes a status check or idempotency control."
+      }
+    ],
+    "expectedEvidence": [
+      "The client distinguishes partial output from completion.",
+      "A midstream failure is visible and recoverable.",
+      "Retry behavior is bounded and error-specific."
+    ],
+    "failureChecks": [
+      "Check whether stream terminal events are parsed.",
+      "Check that validation errors do not retry.",
+      "Check for duplicate side effects after ambiguous timeouts."
+    ],
+    "cleanup": [
+      "Close local stream clients after testing.",
+      "Do not invoke consequential write tools."
+    ],
+    "examTransfer": "Use streaming for early feedback, but measure total completion time separately.",
+    "sources": [
+      "converse-stream-api",
+      "response-stream",
+      "bedrock-errors"
+    ],
+    "paidResourceRisk": true,
+    "costNote": "This proposed lab can incur AWS charges through inference, retrieval, logging, or service resources. Review current pricing before execution.",
+    "status": "Proposed, not executed."
+  },
+  {
+    "chapterId": "deep-16",
+    "title": "Test a guardrail configuration",
+    "goal": "Evaluate configured input and output checks with approved test cases.",
+    "prerequisites": [
+      "An existing test guardrail and an approved non-sensitive test set."
+    ],
+    "steps": [
+      {
+        "action": "Review the guardrail configuration and attached policy version.",
+        "why": "The lab needs a known policy baseline.",
+        "evidence": "Policy categories and version are recorded."
+      },
+      {
+        "action": "Select expected-pass and expected-block examples.",
+        "why": "Both sides reveal false positives and missed controls.",
+        "evidence": "Expected outcomes are approved before invocation."
+      },
+      {
+        "action": "Call ApplyGuardrail with the test content and selected guardrail version.",
+        "why": "The API returns policy assessments without requiring model inference.",
+        "evidence": "The response records the action and any assessments."
+      },
+      {
+        "action": "Test output inspection separately from input screening.",
+        "why": "The controls apply at different points in the request path.",
+        "evidence": "The result identifies which boundary was evaluated."
+      },
+      {
+        "action": "Review grounding or sensitive-data checks only where configured.",
+        "why": "Guardrail features depend on integration and policy setup.",
+        "evidence": "The test report records supported checks."
+      },
+      {
+        "action": "Compare observed outcomes with expected policy decisions.",
+        "why": "A setting is useful only against its intended cases.",
+        "evidence": "False blocks and missed cases have owners."
+      }
+    ],
+    "expectedEvidence": [
+      "Policy version and API path are documented.",
+      "Input and output checks are distinguished.",
+      "Expected and observed outcomes are compared."
+    ],
+    "failureChecks": [
+      "Check whether the selected API path applies the guardrail.",
+      "Check upstream authorization before retrieval content enters context.",
+      "Check false positives and missed blocks separately."
+    ],
+    "cleanup": [
+      "Do not modify a production guardrail.",
+      "Use approved test content and remove temporary artifacts."
+    ],
+    "examTransfer": "An output guardrail cannot correct an unauthorized retrieval result that already reached the model.",
+    "sources": [
+      "guardrails",
+      "guardrails-api",
+      "guardrails-grounding"
+    ],
+    "paidResourceRisk": true,
+    "costNote": "This proposed lab can incur AWS charges through inference, retrieval, logging, or service resources. Review current pricing before execution.",
+    "status": "Proposed, not executed."
+  },
+  {
+    "chapterId": "deep-17",
+    "title": "Trace data access and privacy",
+    "goal": "Map identity, retrieval scope, model input, logs, and retention for a test request.",
+    "prerequisites": [
+      "A sandbox application with test identities and non-sensitive records."
+    ],
+    "steps": [
+      {
+        "action": "Draw the request data path from sign-in to response storage.",
+        "why": "Privacy review needs every data copy and boundary.",
+        "evidence": "The map identifies input, retrieval, inference, and logs."
+      },
+      {
+        "action": "Review IAM permissions for the application role.",
+        "why": "The role controls service-level access.",
+        "evidence": "Allowed actions and resources are listed."
+      },
+      {
+        "action": "Run an allowed retrieval request using a test identity.",
+        "why": "The test checks the permitted path.",
+        "evidence": "Returned records match the identity scope."
+      },
+      {
+        "action": "Run a denied-record query with the same identity.",
+        "why": "The negative case tests access enforcement.",
+        "evidence": "Denied content is absent from retrieved and model input."
+      },
+      {
+        "action": "Inspect configured logging and retention destinations.",
+        "why": "Logs can create another sensitive data store.",
+        "evidence": "Content, metadata, access, and retention are documented."
+      },
+      {
+        "action": "Record required data minimization or deletion actions.",
+        "why": "The lab should leave no unnecessary test data.",
+        "evidence": "A cleanup owner and retention path are identified."
+      }
+    ],
+    "expectedEvidence": [
+      "Trusted identity controls service and record access.",
+      "Denied data does not reach model context.",
+      "Logs and retained data follow approved policy."
+    ],
+    "failureChecks": [
+      "Check for client-supplied filter values.",
+      "Check the full model request for restricted content.",
+      "Check log permissions and retention settings."
+    ],
+    "cleanup": [
+      "Delete test records only when permitted by the source owner.",
+      "Do not change shared IAM policies."
+    ],
+    "examTransfer": "A safe prompt cannot replace an identity-bound retrieval filter.",
+    "sources": [
+      "iam",
+      "data-protection",
+      "data-retention"
+    ],
+    "paidResourceRisk": true,
+    "costNote": "This proposed lab can incur AWS charges through inference, retrieval, logging, or service resources. Review current pricing before execution.",
+    "status": "Proposed, not executed."
+  },
+  {
+    "chapterId": "deep-18",
+    "title": "Build a governance record",
+    "goal": "Create a traceable record for one illustrative GenAI release decision.",
+    "prerequisites": [
+      "A proposed test release and access to its configuration records."
+    ],
+    "steps": [
+      {
+        "action": "Record the use case, owner, data sources, and intended users.",
+        "why": "Scope and ownership support review.",
+        "evidence": "A release record identifies the system boundary."
+      },
+      {
+        "action": "Record model route, prompt version, retrieval setup, and guardrails.",
+        "why": "These settings can change output behavior.",
+        "evidence": "Configuration identifiers are linked to the release."
+      },
+      {
+        "action": "Attach relevant evaluation results and known limits.",
+        "why": "Evidence supports the release decision.",
+        "evidence": "The record names tested cases and unresolved risks."
+      },
+      {
+        "action": "Identify who approves release and who responds to incidents.",
+        "why": "A policy needs accountable owners.",
+        "evidence": "Approval and response roles are explicit."
+      },
+      {
+        "action": "Check whether the record contains unnecessary user content.",
+        "why": "Governance records should minimize sensitive data.",
+        "evidence": "The record keeps metadata needed for audit."
+      },
+      {
+        "action": "Review how rollback or route disablement would occur.",
+        "why": "Incident response needs an operational control.",
+        "evidence": "A named owner can identify the recovery action."
+      }
+    ],
+    "expectedEvidence": [
+      "The record ties configuration to evaluation and owner decisions.",
+      "Sensitive user content is minimized.",
+      "Incident and rollback responsibilities are stated."
+    ],
+    "failureChecks": [
+      "Check whether prompt and model versions match test evidence.",
+      "Check for undocumented data sources or tools.",
+      "Check record access and retention."
+    ],
+    "cleanup": [
+      "Store the record in an approved location.",
+      "Remove unnecessary test content before retention."
+    ],
+    "examTransfer": "An untracked prompt edit prevents reliable reconstruction of an answer path.",
+    "sources": [
+      "scope-ai-professional-01",
+      "data-protection",
+      "logging"
+    ],
+    "paidResourceRisk": true,
+    "costNote": "This proposed lab can incur AWS charges through inference, retrieval, logging, or service resources. Review current pricing before execution.",
+    "status": "Proposed, not executed."
+  },
+  {
+    "chapterId": "deep-19",
+    "title": "Measure prompt cache behavior",
+    "goal": "Compare repeated stable prompt prefixes on a supported model path.",
+    "prerequisites": [
+      "A model and API configuration that supports prompt caching."
+    ],
+    "steps": [
+      {
+        "action": "Verify cache support and requirements for the selected model.",
+        "why": "Caching behavior varies by model and request pattern.",
+        "evidence": "The supported setup is recorded from current documentation."
+      },
+      {
+        "action": "Prepare a stable prefix and separate variable request content.",
+        "why": "Stable content is the candidate for reuse.",
+        "evidence": "The prompt boundaries are visible."
+      },
+      {
+        "action": "Send repeated requests with the same prefix.",
+        "why": "Repeated use tests cache behavior.",
+        "evidence": "Usage or cache indicators are captured when returned."
+      },
+      {
+        "action": "Change the prefix in a separate trial.",
+        "why": "A changed prefix tests reuse sensitivity.",
+        "evidence": "The request versions are recorded."
+      },
+      {
+        "action": "Compare cache signals, latency, and answer quality.",
+        "why": "Reuse should not harm task behavior or isolation.",
+        "evidence": "The comparison records each measure."
+      },
+      {
+        "action": "Review cost and data isolation before adopting the pattern.",
+        "why": "Caching does not remove all cost or privacy duties.",
+        "evidence": "The adoption decision names eligible content and boundaries."
+      }
+    ],
+    "expectedEvidence": [
+      "Cache support is confirmed for the chosen path.",
+      "Stable and changed prefix trials are distinguishable.",
+      "Adoption considers quality and data isolation."
+    ],
+    "failureChecks": [
+      "Check model support and required cache controls.",
+      "Check response usage indicators.",
+      "Check that user-specific data is not shared across requests."
+    ],
+    "cleanup": [
+      "Do not change production prompts for this test.",
+      "Remove local prompt test data under policy."
+    ],
+    "examTransfer": "Caching can help stable repeated input, but does not eliminate output or system costs.",
+    "sources": [
+      "prompt-cache",
+      "model-parameters",
+      "logging"
+    ],
+    "paidResourceRisk": true,
+    "costNote": "This proposed lab can incur AWS charges through inference, retrieval, logging, or service resources. Review current pricing before execution.",
+    "status": "Proposed, not executed."
+  },
+  {
+    "chapterId": "deep-20",
+    "title": "Profile latency and concurrency",
+    "goal": "Separate time to first output, total latency, and throughput under controlled load.",
+    "prerequisites": [
+      "An approved test endpoint or inference route and a representative request set."
+    ],
+    "steps": [
+      {
+        "action": "Record request sizes and stage timing for a baseline run.",
+        "why": "A baseline identifies the dominant latency stage.",
+        "evidence": "The run records request shape and stage times."
+      },
+      {
+        "action": "Send a bounded workload at the baseline concurrency.",
+        "why": "The baseline measures completed work and errors.",
+        "evidence": "Completion rate and latency percentiles are saved."
+      },
+      {
+        "action": "Increase concurrency within approved sandbox limits.",
+        "why": "A controlled change tests saturation behavior.",
+        "evidence": "The test records rate, throttling, and latency."
+      },
+      {
+        "action": "Compare time to first content with total completion time.",
+        "why": "Streaming may change perceived delay without changing total work.",
+        "evidence": "Both timing measures are reported."
+      },
+      {
+        "action": "Inspect errors and dependency spans at each load level.",
+        "why": "Averages can hide saturation and retries.",
+        "evidence": "The trace points to the constrained dependency."
+      },
+      {
+        "action": "Stop the test when the approved load boundary is reached.",
+        "why": "Unbounded tests can create cost or service impact.",
+        "evidence": "The workload ends within the approved envelope."
+      }
+    ],
+    "expectedEvidence": [
+      "The workload and concurrency levels are documented.",
+      "Latency and throughput measures are distinct.",
+      "A bottleneck is identified from stage evidence."
+    ],
+    "failureChecks": [
+      "Check account quotas and endpoint capacity first.",
+      "Check retry amplification at higher concurrency.",
+      "Check request token lengths, not only request counts."
+    ],
+    "cleanup": [
+      "Stop the test client and load generator.",
+      "Do not purchase throughput or create endpoints for this lab."
+    ],
+    "examTransfer": "More concurrency can reduce service quality after a dependency saturates.",
+    "sources": [
+      "api-streaming",
+      "bedrock-provisioned",
+      "bedrock-errors"
+    ],
+    "paidResourceRisk": true,
+    "costNote": "This proposed lab can incur AWS charges through inference, retrieval, logging, or service resources. Review current pricing before execution.",
+    "status": "Proposed, not executed."
+  },
+  {
+    "chapterId": "deep-21",
+    "title": "Trace an invocation",
+    "goal": "Follow one request across model, retrieval, gateway, and log records.",
+    "prerequisites": [
+      "A sandbox request path with approved logging and a non-sensitive test prompt."
+    ],
+    "steps": [
+      {
+        "action": "Create or record a request correlation identifier in the test client.",
+        "why": "A shared identifier links stages.",
+        "evidence": "The identifier appears in the client record."
+      },
+      {
+        "action": "Send one request through the application path.",
+        "why": "A single request limits trace ambiguity.",
+        "evidence": "The application records route and outcome."
+      },
+      {
+        "action": "Review existing model invocation logging settings in the AWS Console.",
+        "why": "The settings show what data may be retained.",
+        "evidence": "Log destinations, fields, and access are reviewed."
+      },
+      {
+        "action": "Find the request across available service logs or traces.",
+        "why": "Correlation can reveal the failing stage.",
+        "evidence": "The record links to invocation metadata."
+      },
+      {
+        "action": "Compare stage timing, model route, and error state.",
+        "why": "These fields locate operational defects.",
+        "evidence": "A diagnosis names the first failing boundary."
+      },
+      {
+        "action": "Remove or restrict sensitive trace content under policy.",
+        "why": "Observability must respect data controls.",
+        "evidence": "Access and retention follow the test plan."
+      }
+    ],
+    "expectedEvidence": [
+      "A request can be located across available telemetry.",
+      "The operator can identify its route and outcome.",
+      "Sensitive content exposure is reviewed."
+    ],
+    "failureChecks": [
+      "Check log delivery configuration and permissions.",
+      "Check whether the correlation identifier propagates.",
+      "Check CloudTrail activity separately from invocation content."
+    ],
+    "cleanup": [
+      "Disable temporary test logging only if this lab created it.",
+      "Do not delete shared audit records."
+    ],
+    "examTransfer": "Use a source revision and prompt version to explain a stale answer from a trace.",
+    "sources": [
+      "logging",
+      "bedrock-cloudtrail",
+      "evaluation-metrics"
+    ],
+    "paidResourceRisk": true,
+    "costNote": "This proposed lab can incur AWS charges through inference, retrieval, logging, or service resources. Review current pricing before execution.",
+    "status": "Proposed, not executed."
+  },
+  {
+    "chapterId": "deep-22",
+    "title": "Evaluate retrieval and answer stages",
+    "goal": "Run separate checks for retrieved context and generated response quality.",
+    "prerequisites": [
+      "A sandbox knowledge base and a labeled, approved evaluation dataset."
+    ],
+    "steps": [
+      {
+        "action": "Select a fixed dataset with questions and expected evidence.",
+        "why": "Stable cases support comparison.",
+        "evidence": "Each test maps to expected passages or outcomes."
+      },
+      {
+        "action": "Run retrieve-only evaluation for the test set.",
+        "why": "This isolates retrieval quality.",
+        "evidence": "Context relevance and coverage results are captured when supported."
+      },
+      {
+        "action": "Review cases with missing or irrelevant evidence.",
+        "why": "Metrics need example-level diagnosis.",
+        "evidence": "Failure cases identify filters, chunks, or query issues."
+      },
+      {
+        "action": "Run retrieve-and-generate evaluation on the same cases.",
+        "why": "This tests answer behavior with retrieved context.",
+        "evidence": "Answer metrics and citations are captured."
+      },
+      {
+        "action": "Compare answer claims with retrieved passages.",
+        "why": "Faithfulness and citation quality need evidence review.",
+        "evidence": "The review records unsupported or missing claims."
+      },
+      {
+        "action": "Repeat after one controlled retrieval change.",
+        "why": "A single change helps explain metric movement.",
+        "evidence": "The comparison ties outcomes to configuration versions."
+      }
+    ],
+    "expectedEvidence": [
+      "Retrieval and answer results are separate.",
+      "Example failures are reviewed.",
+      "The test records dataset and configuration versions."
+    ],
+    "failureChecks": [
+      "Check evaluator coverage and ground truth quality.",
+      "Check whether retrieval misses evidence before blaming generation.",
+      "Check for score changes hidden by aggregate results."
+    ],
+    "cleanup": [
+      "Retain approved evaluation data under its data policy.",
+      "Remove temporary result exports when no longer needed."
+    ],
+    "examTransfer": "A prompt improvement cannot repair evidence that the retriever never returned.",
+    "sources": [
+      "evaluation",
+      "evaluation-metrics",
+      "retrieval"
+    ],
+    "paidResourceRisk": true,
+    "costNote": "This proposed lab can incur AWS charges through inference, retrieval, logging, or service resources. Review current pricing before execution.",
+    "status": "Proposed, not executed."
+  },
+  {
+    "chapterId": "deep-23",
+    "title": "Classify and resolve API failures",
+    "goal": "Use error class and request state to choose a recovery action.",
+    "prerequisites": [
+      "An approved sandbox request path and safe test cases."
+    ],
+    "steps": [
+      {
+        "action": "Capture request ID, model route, and error class from a failed call.",
+        "why": "These details support targeted diagnosis.",
+        "evidence": "The error record omits credentials and sensitive content."
+      },
+      {
+        "action": "Classify the failure as validation, access, throttling, timeout, or service error.",
+        "why": "Each class has a different likely cause.",
+        "evidence": "The classification matches the returned error."
+      },
+      {
+        "action": "Check request shape for validation failures.",
+        "why": "A permanent payload defect will repeat.",
+        "evidence": "Unsupported fields or missing requirements are identified."
+      },
+      {
+        "action": "Check IAM and model access for authorization failures.",
+        "why": "Access policy determines permitted actions.",
+        "evidence": "The caller and required permission are compared."
+      },
+      {
+        "action": "Review rate and bounded backoff for throttling.",
+        "why": "Transient capacity errors may need controlled retry.",
+        "evidence": "Attempts and delay are documented."
+      },
+      {
+        "action": "Check operation state before retrying after an ambiguous timeout.",
+        "why": "A timeout may hide successful completion.",
+        "evidence": "The status check prevents duplicate side effects."
+      }
+    ],
+    "expectedEvidence": [
+      "The recovery action matches the error class.",
+      "Permanent failures are not blindly retried.",
+      "Timeout recovery checks operation state."
+    ],
+    "failureChecks": [
+      "Check if the request reached the service.",
+      "Check access and Region before changing payload.",
+      "Check retries do not amplify the fault."
+    ],
+    "cleanup": [
+      "Do not repeat consequential operations without status confirmation.",
+      "Remove local diagnostic files containing sensitive details."
+    ],
+    "examTransfer": "For a validation error, correct the request instead of retrying it.",
+    "sources": [
+      "bedrock-errors",
+      "converse-api",
+      "iam"
+    ],
+    "paidResourceRisk": true,
+    "costNote": "This proposed lab can incur AWS charges through inference, retrieval, logging, or service resources. Review current pricing before execution.",
+    "status": "Proposed, not executed."
+  },
+  {
+    "chapterId": "deep-24",
+    "title": "Gate a prompt and route release",
+    "goal": "Tie a configuration change to evaluation evidence and a reversible release.",
+    "prerequisites": [
+      "A source-controlled test application, prompt version, evaluation set, and deployment workflow."
+    ],
+    "steps": [
+      {
+        "action": "Record current model route, prompt version, and evaluation baseline.",
+        "why": "A baseline identifies the released state.",
+        "evidence": "The source and deployed identifiers are linked."
+      },
+      {
+        "action": "Change one prompt or route configuration in a test branch.",
+        "why": "One change supports causal review.",
+        "evidence": "The diff shows the exact changed artifact."
+      },
+      {
+        "action": "Run schema, security, and task evaluation checks.",
+        "why": "These checks cover known contract and behavior risks.",
+        "evidence": "Results link to the changed version."
+      },
+      {
+        "action": "Compare evaluation against approved release criteria.",
+        "why": "Promotion should depend on explicit acceptance.",
+        "evidence": "A pass or failure has a recorded reason."
+      },
+      {
+        "action": "Deploy only to a test environment for the lab.",
+        "why": "A test release validates deployment behavior without production impact.",
+        "evidence": "The test environment runs the candidate version."
+      },
+      {
+        "action": "Confirm rollback restores the prior compatible configuration.",
+        "why": "Recovery must cover more than application code.",
+        "evidence": "Prompt, route, and related config return to baseline."
+      }
+    ],
+    "expectedEvidence": [
+      "The candidate artifact has matching evaluation evidence.",
+      "The lab uses only a test environment.",
+      "Rollback restores the prior known configuration."
+    ],
+    "failureChecks": [
+      "Check for prompts or settings outside source control.",
+      "Check evaluation data and model route match the candidate.",
+      "Check rollback includes compatible prompt and retrieval settings."
+    ],
+    "cleanup": [
+      "Do not deploy to production.",
+      "Remove test branch artifacts only under repository policy."
+    ],
+    "examTransfer": "A code-only pipeline misses prompt and retrieval changes that alter model behavior.",
+    "sources": [
+      "evaluation",
+      "prompt-management",
+      "sagemaker-deploy"
+    ],
+    "paidResourceRisk": true,
+    "costNote": "This proposed lab can incur AWS charges through inference, retrieval, logging, or service resources. Review current pricing before execution.",
+    "status": "Proposed, not executed."
+  }
+]

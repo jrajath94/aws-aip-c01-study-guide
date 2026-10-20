@@ -1,0 +1,1 @@
+Error executing tool read_documentation: Requested https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-create.html; served https://docs.aws.amazon.com/bedrock/latest/userguide/. https://docs.aws.amazon.com/bedrock/latest/userguide/ could not be read: Page failed to be simplified from HTML. Use search_documentation.
