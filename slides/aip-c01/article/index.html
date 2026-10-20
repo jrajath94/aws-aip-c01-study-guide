@@ -145,6 +145,7 @@ h2,h3{page-break-after:avoid}
 <a href="#method">8. Method for each question</a>
 <a href="#gapunits">8A2. Four gap units from the cursor branch</a>
 <a href="#pass1">8A3. Cursor branch read, pass 1</a>
+<a href="#qgaps">8A4. Question-bank gap units</a>
 <a href="#terms">8A. Reference terms from the question bank</a>
 <a href="#steps">8B. Console and API steps confirmed in this pass</a>
 <a href="#glossary">8C. Glossary</a>
@@ -2345,6 +2346,81 @@ h2,h3{page-break-after:avoid}
 <p><b>Not in source.</b> The full list of design principles. The official design-principles page surfaced only partly in this build. Controlled autonomy and observability are named in secondary coverage only.</p>
 <p><b>Exam tie.</b> Domain 1 task 1.1 (task 1.1.3 names the Generative AI Lens).</p>
 <p class="trap"><b>Exam trap.</b> The lens does not cover model training. A training question points to another source.</p>
+</article>
+</section>
+
+<section id="qgaps">
+<p class="kicker">Part 8A4</p>
+<h2>Question-bank gap units</h2>
+<p>The 250 review questions were checked against this treatise. Each unit below covers a topic that the treatise did not state, or stated only once. Facts come from the official AWS pages named in each unit. Items marked Not in source are not confirmed.</p>
+<article class="unit" id="q1">
+<h3>Q1 · Action groups: keep tokens and filtering in code</h3>
+<p><b>First principle.</b> The agent chooses an action. Your code performs the action. Credentials, token refresh, and response filtering belong in code, because a model cannot enforce them.</p>
+<p><b>Design guidance.</b> An action group Lambda function, the executor, calls the external API. The executor holds the OAuth bearer token, refreshes it when it expires, and removes fields that the agent must not see. It returns only the filtered result to the agent.</p>
+<p><b>Not in source.</b> The token lifetime for any specific API, and the exact response size limit for action groups.</p>
+<p><b>Exam tie.</b> Domain 2 task 2.1 (agents) and task 2.3 (secure access).</p>
+<p class="trap"><b>Exam trap.</b> Telling the model to refresh the token or hide fields does not enforce either rule. Put both in the executor.</p>
+</article>
+<article class="unit" id="q2">
+<h3>Q2 · Provider-specific fields in the Converse API</h3>
+<p><b>First principle.</b> Converse gives one request shape for many models. A parameter that only one model supports needs a separate field, so the shared shape stays the same.</p>
+<p><b>Facts.</b> The field additionalModelRequestFields holds additional inference parameters that the model supports. These parameters go beyond the base set in inferenceConfig. The response field additionalModelResponseFieldPaths returns model-specific fields as JSON Pointer values. Source: <a href="https://docs.aws.amazon.com/bedrock/latest/APIReference/API_runtime_Converse.html">Converse API reference</a>. The reference example passes top_k in additionalModelRequestFields.</p>
+<p><b>Facts.</b> A prompt from Prompt management cannot include additionalModelRequestFields in the request. Define those fields in the prompt itself. Source: the same page.</p>
+<p><b>Exam tie.</b> Domain 2 task 2.4 (API integration) and task 1.3 (input formatting).</p>
+<p class="trap"><b>Exam trap.</b> Converse does not produce embeddings. For embeddings, use InvokeModel with an embedding model.</p>
+</article>
+<article class="unit" id="q3">
+<h3>Q3 · Workforce access: IAM Identity Center permission sets</h3>
+<p><b>First principle.</b> Staff sign in once to a portal with their company identity. The portal gives short-lived role sessions. No long-term access key is needed.</p>
+<p><b>Facts.</b> A permission set is a template of IAM policies. IAM Identity Center assigns it to users or groups in one or more accounts. It creates matching roles in each account. The default session duration is one hour, and the maximum is 12 hours. The default portal session is eight hours, and the maximum is 90 days. You can attach a permissions boundary to a permission set. Source: <a href="https://docs.aws.amazon.com/singlesignon/latest/userguide/permissionsetsconcept.html">Manage AWS accounts with permission sets</a>.</p>
+<p><b>Design guidance.</b> Give each team a permission set that names only the models and knowledge bases it needs. Do not give everyone the administrator set. Assign a narrower set for daily work.</p>
+<p><b>Not in source.</b> A specific permission set for Bedrock model access, if one exists in this build.</p>
+<p><b>Exam tie.</b> Domain 2 task 2.3 (secure access).</p>
+<p class="trap"><b>Exam trap.</b> A permission set grants access through roles. It does not replace the resource policy of a knowledge base or a guardrail.</p>
+</article>
+<article class="unit" id="q4">
+<h3>Q4 · Failed messages: dead-letter queues and retries</h3>
+<p><b>First principle.</b> A message that fails repeatedly must leave the main queue. Otherwise it blocks the work behind it. A dead-letter queue (DLQ) holds that message for inspection.</p>
+<p><b>Facts.</b> The redrive policy sets maxReceiveCount. After a consumer receives a message that many times without deleting it, SQS moves the message to the DLQ. The DLQ must be in the same account and Region as the source queue. Redrive moves messages back to the source. Set the DLQ retention longer than the source retention. Source: <a href="https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-dead-letter-queues.html">Using dead-letter queues in Amazon SQS</a>.</p>
+<p><b>Design guidance.</b> For urgent document changes, start a knowledge base sync when a document lands in S3, and keep a scheduled sync as a backstop.</p>
+<p><b>Not in source.</b> A built-in S3 event trigger for knowledge base sync jobs. Use a Lambda function that calls the sync API, and confirm that design in the API reference.</p>
+<p><b>Exam tie.</b> Domain 2 task 2.2 (deployment patterns) and task 1.4 (freshness of vector stores).</p>
+<p class="trap"><b>Exam trap.</b> A DLQ does not fix the failing code. It isolates the failed messages so you can find the cause.</p>
+</article>
+<article class="unit" id="q5">
+<h3>Q5 · Chunk size: whole documents, Q-A pairs, and when not to chunk</h3>
+<p><b>First principle.</b> Chunking trades match precision against context. A small chunk matches exactly but may lack context. A large chunk keeps context but dilutes the match. A larger context window does not fix retrieval.</p>
+<p><b>Design guidance.</b> Putting a 200-page PDF into one prompt is not a retrieval design. Later sections can be ignored, and requests can fail when the input is too large. Retrieve chunks instead.</p>
+<p><b>Design guidance.</b> When each item is already a short, self-contained question and answer pair, keep one pair per chunk. Hierarchical chunking adds cost without benefit for those pairs.</p>
+<p><b>Not in source.</b> A numeric size for a chunk that suits any particular model.</p>
+<p><b>Exam tie.</b> Domain 1 task 1.5 (chunking) and task 5.2 (troubleshooting).</p>
+<p class="trap"><b>Exam trap.</b> The answer to poor retrieval is a chunking or retrieval change. Changing the generation model is a later step.</p>
+</article>
+<article class="unit" id="q6">
+<h3>Q6 · Bring-your-own-inference evaluation</h3>
+<p><b>First principle.</b> Evaluation scores responses. It does not need to generate them. If you already have responses from your own system, you can score those.</p>
+<p><b>Facts.</b> A model evaluation job with a judge model can evaluate a model outside Amazon Bedrock. You provide your own inference responses in the prompt dataset. Amazon Bedrock skips the model invoke step and scores the data you supply. Source: <a href="https://docs.aws.amazon.com/bedrock/latest/userguide/evaluation-judge.html">Evaluate model performance using another LLM as a judge</a>.</p>
+<p><b>Design guidance.</b> To score a full application, store the final response that users see in the dataset. This tests the business logic as well as the model call.</p>
+<p><b>Not in source.</b> A separate named feature for end-to-end application evaluation in this build.</p>
+<p><b>Exam tie.</b> Domain 5 task 5.1 (evaluation).</p>
+<p class="trap"><b>Exam trap.</b> Scoring only the model call misses errors in the code around it.</p>
+</article>
+<article class="unit" id="q7">
+<h3>Q7 · Cross-Region routing: data paths and logs</h3>
+<p><b>First principle.</b> A cross-Region profile sends a request to another Region. Where the request goes decides where the data goes and which laws apply.</p>
+<p><b>Facts.</b> A geographic profile routes inside its geography, such as the US or the EU. A global profile routes to any supported commercial Region. The page gives approximately 10 percent savings for global profiles. All data during cross-Region operations stays on the AWS network and is encrypted in transit. CloudTrail logs the requests in the source Region, with the field additionalEventData.inferenceRegion. Source: <a href="https://docs.aws.amazon.com/bedrock/latest/userguide/cross-region-inference.html">Route model inference requests across AWS Regions</a>.</p>
+<p><b>Not in source.</b> Which Region's quotas are used for a routed request. Do not state it as fact. Confirm it in the quota documentation before the exam.</p>
+<p><b>Exam tie.</b> Domain 1 task 1.2 (model selection and resilience) and task 3.2 (data protection).</p>
+<p class="trap"><b>Exam trap.</b> A global profile does not meet an EU data residency rule. Use a geographic EU profile.</p>
+</article>
+<article class="unit" id="q8">
+<h3>Q8 · Machine learning terms the question bank uses</h3>
+<p><b>First principle.</b> These terms are general machine learning definitions. They are not AWS features.</p>
+<p><b>Definitions.</b> Supervised learning trains on labeled examples. Classification predicts a category. Regression predicts a number. Overfitting means a model memorizes training data and fails on new data. Few-shot prompting puts a few input and output examples in the prompt, so the model copies the pattern. A diffusion model generates images by removing noise step by step.</p>
+<p><b>Metrics.</b> Precision is the share of predicted positives that are correct. Recall is the share of actual positives that the model finds. On data with 1 percent fraud, a model can reach 99 percent accuracy and still miss most fraud. Check precision and recall, not accuracy alone.</p>
+<p><b>Not in source.</b> AWS-specific names for these methods. The treatise does not confirm an AWS service for each one.</p>
+<p><b>Exam tie.</b> Domain 1 task 1.1 (foundation model basics) and task 1.3 (input formatting and prompts).</p>
+<p class="trap"><b>Exam trap.</b> High accuracy on imbalanced data hides missed positives. Read precision and recall first.</p>
 </article>
 </section>
 

@@ -94,3 +94,13 @@ Not yet. Most exam facts are confirmed. Official sample questions are still not 
 
 - Many topics have no console steps. Those topics say "Not in source."
 - The treatise does not replace official sample questions. Work the AWS sample questions before the exam.
+
+## Question-bank pass, 250 items (2026-10-20)
+
+- Source of the 250 items: shared quiz batch files in the project folder, checked by topic against the treatise. Full table: `quiz-coverage.md`.
+- Result: 200 covered, 29 partial, 21 gap. Items 1 to 220 (exam scope and ML basics): 193 covered, 22 partial, 5 gap. Items 221 to 250 (prerequisites): 7 covered, 7 partial, 16 gap.
+- Units Q1 to Q8 (Part 8A4) cover action group executors, Converse provider fields, IAM Identity Center permission sets, dead-letter queues, chunk size limits, bring-your-own-inference evaluation, cross-Region data paths, and ML terms.
+- Verified against official pages in this pass: Converse API reference, cross-Region inference page, IAM Identity Center permission sets page, SQS dead-letter queue page, and the LLM-as-a-judge evaluation page.
+- Corrected in this pass: the earlier question answer that said cross-Region quotas come from the source Region is Not in source on the official page.
+- Open: prerequisite items 221 to 250 have no unit. Items 80, 145, 199, and 218 are gaps without a unit. The check is by topic, not a full read of each stem.
+- Score: 4 of 10 before this pass. This pass does not change the score to 9.5. The honest score is 6 of 10 on exam-scope topics, with the open gaps listed above.
