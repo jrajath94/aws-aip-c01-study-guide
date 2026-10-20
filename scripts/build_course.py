@@ -3,13 +3,28 @@ from bs4 import BeautifulSoup,Tag
 import json,re,hashlib,collections
 ROOT=Path(__file__).resolve().parent.parent
 read=lambda name:json.loads((ROOT/name).read_text())
-core=read('course/core.json'); corrections=read('course/corrections.json'); sources={}
+core=read('course/core.json'); advanced=read('course/advanced.json'); additions=read('course/review-additions.json') if (ROOT/'course/review-additions.json').exists() else [];
+for entry in additions:
+ if isinstance(entry['points'],str): entry['points']=re.split(r'(?<=[.!?])\s+',entry['points'])
+core=core[:-1]+advanced+additions+core[-1:]; corrections=read('course/corrections.json'); sources={}
 for f in ['research/manifest.json','research/service-manifest.json','research/extra-manifest.json','research/corrected-manifest.json']:
  if not (ROOT/f).exists():continue
  for s in read(f):
   if 'error' in s:continue
   key=s.get('id') or ('domain'+re.search(r'domain(\d)',s['path'])[1] if re.search(r'domain(\d)',s['path']) else 'exam' if s['path'].endswith('/ai-professional-01.md') else Path(s['path']).stem)
   sources[key]=s
+# MCP snapshots are the primary source channel for the revised treatise.
+for callfile in (ROOT/'research').glob('*calls.json'):
+ for call in json.loads(callfile.read_text()):
+  if call.get('tool')!='read_documentation':continue
+  mp=ROOT/'research/mcp'/(call['id']+'.md')
+  if not mp.exists():continue
+  text=mp.read_text()
+  if not text.startswith('AWS Documentation from'):continue
+  sources[call['id']]={'url':call['arguments']['url'],'path':str(mp.relative_to(ROOT)),'channel':'official AWS Documentation MCP','retrieved':'2026-10-20'}
+for d in range(1,6):
+ if 'exam-domain-'+str(d) in sources:sources['domain'+str(d)]=sources['exam-domain-'+str(d)]
+if 'scope-ai-professional-01' in sources:sources['exam']=sources['scope-ai-professional-01']
 sources['certification']={'url':'https://aws.amazon.com/certification/certified-generative-ai-developer-professional/','path':'research/certification.md'}
 sources['repo-d1']={'url':'../source-repo/volume-d1-foundation-models.html','path':'source-repo/volume-d1-foundation-models.html'}
 # Every official skill maps to explicit authored teaching.
@@ -112,6 +127,7 @@ for slide in allcore:
   score=len(terms & set(re.findall(r'[a-z]{4,}',r['title'].lower())))
   if score:scored.append((score,r['id']))
  slide['related']=[r for score,r in sorted(scored,reverse=True)[:6]]
+ if slide.get('domain'):slide['sources']=list(dict.fromkeys(slide.get('sources',[])+['domain'+str(slide['domain'])]))
  slide['corrections']=correction_ids(slide['title'])
 # Coverage checks are structural, not a claim-by-claim fact audit.
 assert len(skills)==98
@@ -119,8 +135,15 @@ assert len(mock)==75 and all(any(q['id']==qid for q in quizzes) for qid in mock)
 assert len([q for q in quizzes if q['id'].startswith('volume-question-bank--')])==200
 for q in quizzes:
  assert q['options'] and any(o['correct'] for o in q['options']),q['id']
+quizzes.sort(key=lambda q:(not q['id'].startswith('volume-question-bank--'),0))
 report=dict(coreSlides=len(allcore),authoredLessons=len(core),architecturePlates=len(plates),officialFigures=len(figures),serviceSlides=len(services),serviceEntries=len(service_rows),mappedSkills=len(skills),referenceSections=len(references),interactiveQuestions=len(quizzes),recallCards=len(recalls),mockQuestions=len(mock),inventory=inventory,limits=['Skill mapping verifies an explicit teaching reference. It does not prove complete mastery or exhaustive exam coverage.','Repository material remains inherited source content. Known corrections accompany it. Not every inherited claim or answer receives independent verification.','The mock reuses repository bank items. Its raw score cannot predict a scaled AWS score.','Official Skill Builder sign-in content and undisclosed exam items were not accessed.','Source snapshots show retrieved content. Current model limits and availability can change.'])
-course=dict(core=allcore,references=references,quizzes=quizzes,recalls=recalls,mock=mock,skills=skills,sources=sources,diagrams=diagrams,services=services,corrections=corrections,report=report)
+deep=read('course/deep-layers.json') if (ROOT/'course/deep-layers.json').exists() else []
+figs=read('course/official-figures.json') if (ROOT/'course/official-figures.json').exists() else []
+# Exclude decorative gradients, generic brains, and a faint source overview.
+figs=[f for f in figs if f['id'] not in ['agentcore-components','orchestration-orchestrator','knowledge-base-architecture']]
+for f in figs:f['sourceId']=f['sourceId'].removesuffix('.md')
+report['treatiseChapters']=len(deep);report['officialAtlasFigures']=len(figs);report['nativeDiagramDefinitions']=len(diagrams);report['mcpReadSources']=sum(s.get('channel')=='official AWS Documentation MCP' for s in sources.values())
+course=dict(deep=deep,figures=figs,core=allcore,references=references,quizzes=quizzes,recalls=recalls,mock=mock,skills=skills,sources=sources,diagrams=diagrams,services=services,corrections=corrections,report=report)
 (ROOT/'course/course-data.js').write_text('window.COURSE='+json.dumps(course,ensure_ascii=False,separators=(',',':'))+';\n')
 (ROOT/'course/course-data.json').write_text(json.dumps(course,ensure_ascii=False,separators=(',',':')))
 (ROOT/'audits/coverage.json').write_text(json.dumps(report,indent=2))

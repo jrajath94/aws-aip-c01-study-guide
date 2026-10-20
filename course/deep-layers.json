@@ -1,0 +1,1953 @@
+[
+  {
+    "id": "deep-01",
+    "title": "Token and context",
+    "keywords": [
+      "token",
+      "context"
+    ],
+    "prerequisites": [],
+    "idea": "The model receives a bounded sequence of tokens, not an entire application or database.",
+    "sections": [
+      {
+        "title": "The smallest unit",
+        "paragraphs": [
+          "A token is a unit in the model vocabulary. It can represent a word, word part, punctuation mark, or other text unit. Token counts can differ from word counts. The model receives a serialized request that may include system instructions, conversation messages, tool definitions, and retrieved text. The model does not see a user interface or external file unless the application supplies its contents."
+        ]
+      },
+      {
+        "title": "How the mechanism works",
+        "paragraphs": [
+          "The context window is the limit on the request and generated output that a model can process in one inference. The usable space must account for instructions, history, tool schemas, retrieved passages, and requested output. A larger context can hold more evidence, but it does not guarantee that the model will use every detail well. Long prompts can add latency and cost. They can also bury relevant evidence among unrelated text."
+        ]
+      },
+      {
+        "title": "Where it fits",
+        "paragraphs": [
+          "Treat context as a designed input budget. Keep stable rules concise. Add only the history and evidence needed for the current decision. If a request exceeds practical limits, summarize with explicit references or retrieve focused passages. Preserve source identifiers so a later answer can cite the right material."
+        ]
+      },
+      {
+        "title": "Failure and control",
+        "paragraphs": [
+          "The application can measure token use, but it should not assume that one token equals one word. Different models can tokenize the same text differently. Test the chosen model and request shape."
+        ]
+      },
+      {
+        "title": "Causal worked trace",
+        "paragraphs": [
+          "Causal trace: A user asks about a policy exception. The application starts with a short system rule and current message. It adds two retrieved clauses and their source identifiers. The tokenizer maps this serialized request into model tokens. The service checks the request against the selected model context limit. The model processes the supplied sequence and returns text. If the application adds the full archive, input tokens rise before generation starts. The request can then exceed the limit or crowd out the decisive clause."
+        ]
+      },
+      {
+        "title": "Failure diagnosis",
+        "paragraphs": [
+          "Failure diagnosis: A context-length error means the serialized request is too large for that model and request path. Count system text, conversation history, tool schemas, retrieved passages, and output allowance. If the request fits but the answer misses a clause, inspect placement and relevance. Do not diagnose every miss as a token limit problem."
+        ]
+      },
+      {
+        "title": "Transfer case and misconception",
+        "paragraphs": [
+          "Transfer case: A support assistant has a long chat history and one new question. Retain recent turns that resolve references such as “that order.” Summarize older turns with the order identifier and unresolved issue. Retrieve the current policy clause separately. Keep the summary and evidence distinct so the model can tell memory from authority.",
+          "Misconception correction: A large context window does not make every included fact equally accessible or authoritative. The application still selects and orders the evidence. Token capacity is a limit, not a relevance score."
+        ]
+      },
+      {
+        "title": "Design implications",
+        "paragraphs": [
+          "When you design memory, state which facts remain durable and which facts expire after one turn. Keep source evidence outside the conversational summary when the source must support a citation. A compact summary should preserve names, dates, decisions, and unresolved references only when the task needs them. Compare the summary against the original history before release. If it changes a condition, the compression step has damaged meaning. Keep an explicit path to retrieve the original record when the summary cannot answer a follow-up."
+        ]
+      }
+    ],
+    "invariant": "The serialized request must fit the selected model limit, and the model can use only content that the application includes.",
+    "experiment": {
+      "steps": [
+        "Hold the model, question, and output limit constant.",
+        "Set the history window to the last two turns, then run the same test question.",
+        "Repeat with the full history and record token use, answer accuracy, and latency.",
+        "Compare whether the answer needs an older turn or only the current evidence."
+      ],
+      "prediction": "The full history uses more input tokens. It may help when the question refers to earlier details, but it may add noise when those details do not matter.",
+      "interpretation": "If the short history preserves accuracy, trim irrelevant turns. If it loses a required reference, retain a compact summary or the needed turns."
+    },
+    "transferQuestion": "Predict what happens when a prompt includes a full policy archive instead of retrieved clauses.",
+    "transferAnswer": "The request may exceed a model limit or include distractors. Retrieve clauses for the question and retain their source identifiers.",
+    "sources": [
+      "model-parameters",
+      "converse-api",
+      "retrieval"
+    ]
+  },
+  {
+    "id": "deep-02",
+    "title": "Model selection",
+    "keywords": [
+      "model",
+      "selection"
+    ],
+    "prerequisites": [
+      "deep-01"
+    ],
+    "idea": "Choose a model by task quality, modality, latency, cost, and access constraints.",
+    "sections": [
+      {
+        "title": "The smallest unit",
+        "paragraphs": [
+          "A foundation model learns broad patterns from training data. An application sends it an inference request and receives generated output. The model does not become a database because it can produce fluent text. It can make unsupported claims, so the application must define what counts as a correct result."
+        ]
+      },
+      {
+        "title": "How the mechanism works",
+        "paragraphs": [
+          "Model choice starts with the task. A classification task may need a short, stable answer. A complex synthesis task may need stronger reasoning. A multimodal task needs support for the input and output modalities in use. A model can differ in supported parameters, context limits, tool use, Regions, and availability. Confirm those facts in current service documentation before design."
+        ]
+      },
+      {
+        "title": "Where it fits",
+        "paragraphs": [
+          "Compare candidates on a representative evaluation set. Measure answer quality, refusal behavior, latency, cost, and operational fit. Keep the model choice separate from the application interface where possible. Amazon Bedrock provides access to multiple model families through service APIs, but a shared API does not make model behavior identical."
+        ]
+      },
+      {
+        "title": "Failure and control",
+        "paragraphs": [
+          "Check model access and account permissions before a deployment plan depends on an identifier. Model access can require account or provider steps. Avoid choosing by benchmark alone. A benchmark cannot represent every company prompt, data source, or failure cost."
+        ]
+      },
+      {
+        "title": "Causal worked trace",
+        "paragraphs": [
+          "Causal trace: A team defines a set of support questions and expected answers. It runs each candidate model with the same prompt and retrieval evidence. Each model applies its learned parameters to produce an answer. The evaluator compares correctness, refusal behavior, latency, and usage. One candidate may answer faster but omit a critical condition. The task owner weighs that measured defect against the latency gain before selecting a model."
+        ]
+      },
+      {
+        "title": "Failure diagnosis",
+        "paragraphs": [
+          "Failure diagnosis: A fluent answer with a false policy claim is a quality failure, even when the API call succeeds. Check the same prompt and evidence on another candidate. If both fail, inspect task framing and evidence. If one fails, inspect model capability and model-specific request settings. Confirm current access and Region support before attributing the difference to model quality."
+        ]
+      },
+      {
+        "title": "Transfer case and misconception",
+        "paragraphs": [
+          "Transfer case: A document assistant handles both short extraction and multi-step comparison. Define separate routes only when evaluation shows different needs. Keep a shared response contract, then test each route against the same safety and citation rules. Do not route by model reputation alone.",
+          "Misconception correction: A shared service catalog does not imply identical model behavior, context limits, modalities, or parameters. Treat each candidate as a separate system under evaluation."
+        ]
+      },
+      {
+        "title": "Design implications",
+        "paragraphs": [
+          "Write acceptance criteria before comparing candidates. Criteria can include a minimum answer quality, allowed refusal behavior, required modality, and an operational latency target. Values must come from the workload owner, not from an assumed universal threshold. Keep the test prompts stable across candidates. Record model identifiers and request settings, because otherwise a later comparison may use different configurations. Re-run the candidates after material model or prompt changes. A selection is a decision for a workload and its controls, not a permanent ranking of all models."
+        ]
+      }
+    ],
+    "invariant": "A model is suitable only when it meets the task quality threshold and the deployment constraints for the intended workload.",
+    "experiment": {
+      "steps": [
+        "Select one representative evaluation set and one prompt version.",
+        "Run the set on two models that are available to the account.",
+        "Record correctness, refusal behavior, latency, and input and output usage for each run.",
+        "Compare each model against the task owner’s acceptance criteria."
+      ],
+      "prediction": "The candidates can differ in both output quality and operational measures, even with the same request structure.",
+      "interpretation": "Choose the candidate that meets quality and policy needs at acceptable operational cost. If neither passes, revise the task or evidence before deployment."
+    },
+    "transferQuestion": "Predict the effect of choosing the fastest model for a task with costly factual errors.",
+    "transferAnswer": "Low latency can reduce user wait time, but weak task accuracy can raise review and correction cost. Compare models against the task evaluation set.",
+    "sources": [
+      "bedrock-overview",
+      "model-access",
+      "model-parameters"
+    ]
+  },
+  {
+    "id": "deep-03",
+    "title": "Inference APIs",
+    "keywords": [
+      "inference",
+      "apis"
+    ],
+    "prerequisites": [
+      "deep-02"
+    ],
+    "idea": "An inference API turns an application request into model input and output.",
+    "sections": [
+      {
+        "title": "The smallest unit",
+        "paragraphs": [
+          "An API request gives the service a model identifier and a body with messages or a prompt. The request can include generation settings and optional controls. The response can contain generated content, stop information, and usage details. The exact schema depends on the selected API and model."
+        ]
+      },
+      {
+        "title": "How the mechanism works",
+        "paragraphs": [
+          "Amazon Bedrock offers model-specific invocation patterns and the Converse API for a common message interface across supported models. Converse standardizes message structure and selected controls. Some model-specific fields still require additional model request fields. A common interface can simplify application code, but it does not erase model-specific capabilities or response differences."
+        ]
+      },
+      {
+        "title": "Where it fits",
+        "paragraphs": [
+          "Separate request construction from business logic. Validate required fields before the call. Check response status and content shape. Record request identifiers and safe usage data for diagnosis. Avoid assuming that a successful HTTP response means the generated answer meets the application requirement."
+        ]
+      },
+      {
+        "title": "Failure and control",
+        "paragraphs": [
+          "The inference call is one step in a larger flow. The application still owns authentication, authorization, input validation, output handling, timeouts, retries, and user-facing error behavior."
+        ]
+      },
+      {
+        "title": "Causal worked trace",
+        "paragraphs": [
+          "Causal trace: The application creates a Converse request with a model identifier, messages, and inference configuration. The service validates the model route and body. The model receives the messages and produces a response. The application reads the returned content and stop information. If the application sends a model-specific field in the wrong location, validation can fail before generation. A shared message shape simplifies this path but does not remove model-specific fields."
+        ]
+      },
+      {
+        "title": "Failure diagnosis",
+        "paragraphs": [
+          "Failure diagnosis: First separate request rejection from poor generated content. For rejection, check required fields, supported inference settings, model identifier, and access. For malformed application output, inspect the response parser and content blocks. For a valid but unsuitable answer, inspect prompt, evidence, and model behavior. Do not treat an HTTP success as task success."
+        ]
+      },
+      {
+        "title": "Transfer case and misconception",
+        "paragraphs": [
+          "Transfer case: An application migrates from one provider-specific request shape to Converse. Map roles and content to the shared message structure. Keep provider-specific parameters behind a model adapter. Verify both models with the same end-to-end contract, including empty responses and stop conditions.",
+          "Misconception correction: A common API reduces integration variation. It does not normalize every capability, parameter, or answer style across models."
+        ]
+      },
+      {
+        "title": "Design implications",
+        "paragraphs": [
+          "Keep an adapter layer around request serialization when the application supports different model families. The adapter should map the application contract to the chosen API without hiding unsupported behavior. Validate the serialized request in a test environment before sending sensitive content. Parse the response into an internal result type that records text, stop state, usage, and error details. Preserve unknown response fields only when the application has a defined reason. This makes API changes easier to locate without treating every response as plain text."
+        ]
+      }
+    ],
+    "invariant": "The application must validate both the request contract before inference and the response contract after inference.",
+    "experiment": {
+      "steps": [
+        "Keep the prompt and model fixed.",
+        "Remove one optional inference parameter from the Converse request.",
+        "Submit the request and record validation outcome, response structure, and generated content.",
+        "Restore the parameter and compare its effect with the documented model support."
+      ],
+      "prediction": "A supported optional parameter may change generation. An unsupported or misplaced parameter may cause request validation failure.",
+      "interpretation": "Retain only documented settings that improve the target behavior. Handle validation errors as request defects, not transient service errors."
+    },
+    "transferQuestion": "Predict what a shared message API will simplify when an application supports two models.",
+    "transferAnswer": "It can standardize message construction and response handling. Model-specific settings and behavior still need explicit treatment.",
+    "sources": [
+      "converse-api",
+      "bedrock-overview",
+      "bedrock-errors"
+    ]
+  },
+  {
+    "id": "deep-04",
+    "title": "Retrieval augmented generation",
+    "keywords": [
+      "retrieval",
+      "augmented",
+      "generation"
+    ],
+    "prerequisites": [
+      "deep-03"
+    ],
+    "idea": "RAG supplies relevant external evidence to a model at answer time.",
+    "sections": [
+      {
+        "title": "The smallest unit",
+        "paragraphs": [
+          "A model has learned patterns from training. It does not automatically know current private company records. RAG connects a question to a data retrieval step. The system then places selected evidence in the model request. The answer can use both the question and the supplied evidence."
+        ]
+      },
+      {
+        "title": "How the mechanism works",
+        "paragraphs": [
+          "A basic RAG path has two phases. Ingestion prepares documents for search. Query processing retrieves candidate passages and forms a prompt. Generation uses the prompt and passages to produce an answer. Retrieval and generation have separate quality limits. A good model cannot cite evidence that retrieval missed. Good retrieval cannot force a model to follow every instruction."
+        ]
+      },
+      {
+        "title": "Where it fits",
+        "paragraphs": [
+          "RAG is useful when facts change, belong to an organization, or need source traceability. It is not a guarantee of correctness. The system must control document access, filter irrelevant passages, preserve source metadata, and state what to do when evidence is missing."
+        ]
+      },
+      {
+        "title": "Failure and control",
+        "paragraphs": [
+          "Evaluate retrieval and answer quality separately. A correct answer can occur by chance when evidence is weak. A retrieved passage can be relevant while the final answer misstates it."
+        ]
+      },
+      {
+        "title": "Causal worked trace",
+        "paragraphs": [
+          "Causal trace: A policy document enters the knowledge base ingestion path. The system parses it, forms chunks, creates embeddings, and indexes them with source metadata. A user asks a policy question. Retrieval returns candidate passages. The application adds those passages to the model request. The model generates an answer from the question and supplied evidence. If retrieval omits the exception clause, generation cannot reliably ground the answer in that clause."
+        ]
+      },
+      {
+        "title": "Failure diagnosis",
+        "paragraphs": [
+          "Failure diagnosis: Inspect retrieval results before changing the model. If the right passage is absent, test query wording, metadata filters, chunk boundaries, and indexing state. If the passage is present but ignored, inspect context order, prompt instructions, and answer evaluation. If the source itself is wrong or stale, repair ingestion and sync first."
+        ]
+      },
+      {
+        "title": "Transfer case and misconception",
+        "paragraphs": [
+          "Transfer case: A finance assistant must answer from current approved guidance. Keep authoritative source identifiers in retrieved context. Require a clear “insufficient evidence” response when retrieval returns no supporting passage. Evaluate whether the answer cites the passage that supports each claim.",
+          "Misconception correction: RAG reduces reliance on model memory, but it does not guarantee truth. Retrieval relevance, source authority, and answer faithfulness remain separate checks."
+        ]
+      },
+      {
+        "title": "Design implications",
+        "paragraphs": [
+          "RAG is a pipeline, so assign a quality measure to each transition. The source must parse into usable content. The index must contain expected records. Retrieval must return evidence for the query. Generation must use that evidence. A citation must point to the supporting source. If teams measure only final answer accuracy, they may not know which transition caused a failure. Keep the stages visible during development, then retain enough safe production telemetry to identify regressions without exposing unnecessary content."
+        ]
+      }
+    ],
+    "invariant": "A RAG answer can be grounded only in evidence that retrieval supplies and the model uses correctly.",
+    "experiment": {
+      "steps": [
+        "Choose a question with a known supporting document and record the retrieved passages.",
+        "Set the retrieval result limit to a lower value, then repeat the question.",
+        "Compare passage coverage, answer correctness, citations, and input tokens.",
+        "Restore the previous limit and test a query with one relevant exception."
+      ],
+      "prediction": "A lower result limit can reduce noise and context use, but it can also omit needed evidence.",
+      "interpretation": "Set the result limit from measured evidence coverage and answer quality. Do not select it from answer fluency alone."
+    },
+    "transferQuestion": "Predict the result when a relevant policy exists but the query retrieves unrelated passages.",
+    "transferAnswer": "The model may answer from general patterns or unrelated context. Improve retrieval, then test whether the answer uses the correct evidence.",
+    "sources": [
+      "knowledge-bases",
+      "retrieval",
+      "evaluation-metrics"
+    ]
+  },
+  {
+    "id": "deep-05",
+    "title": "Data ingestion",
+    "keywords": [
+      "data",
+      "ingestion"
+    ],
+    "prerequisites": [
+      "deep-04"
+    ],
+    "idea": "Ingestion converts source data into material that a retrieval system can index.",
+    "sections": [
+      {
+        "title": "The smallest unit",
+        "paragraphs": [
+          "An ingestion path reads data from a source such as object storage. It parses supported content, extracts text or structure, and prepares records for downstream processing. The result needs a stable relationship to the original source. Without that relationship, an answer cannot reliably point back to its origin."
+        ]
+      },
+      {
+        "title": "How the mechanism works",
+        "paragraphs": [
+          "A knowledge base sync can detect changed or deleted source data and update its indexed representation. The source remains the system of record. The vector index is a derived search structure. A successful sync does not prove that every parsed field has the intended meaning. Inspect parsing behavior for tables, images, metadata, and unusual formats."
+        ]
+      },
+      {
+        "title": "Where it fits",
+        "paragraphs": [
+          "Metadata can support filtering and source attribution. It can also enforce access boundaries only when the system applies trusted identity and filter logic correctly. Do not accept user-controlled metadata as an authorization decision. Decide how to process deletions, updates, duplicate files, and failed records."
+        ]
+      },
+      {
+        "title": "Failure and control",
+        "paragraphs": [
+          "Track ingestion status and source versions. When answers look stale, compare source change time, sync outcome, indexed metadata, and query results. A stale index is a data pipeline defect, not necessarily a model defect."
+        ]
+      },
+      {
+        "title": "Causal worked trace",
+        "paragraphs": [
+          "Causal trace: A source object changes in the data store. A knowledge base sync detects the source change and processes the content. Parsing extracts text and available metadata. Chunking and embedding create index records linked to the source. A query then retrieves a current passage. If sync failed or skipped the changed object, the index can still return old content although the source object is correct."
+        ]
+      },
+      {
+        "title": "Failure diagnosis",
+        "paragraphs": [
+          "Failure diagnosis: Compare source version and sync status first. Check parser output and metadata next. Then inspect indexed content and query results. This sequence separates source defects from ingestion defects and retrieval defects. Check deletion handling when a removed source still appears. Do not use a model prompt change to mask stale indexed data."
+        ]
+      },
+      {
+        "title": "Transfer case and misconception",
+        "paragraphs": [
+          "Transfer case: A team publishes a revised procedure and expects answers to change. Record the object version, run the supported sync, inspect status, and retrieve the revised clause directly. Confirm that the previous clause no longer appears where the source was replaced. Preserve source identifiers for audit.",
+          "Misconception correction: A source update does not instantly prove that every derived index reflects the update. A successful job status also does not prove the parser captured every intended field."
+        ]
+      },
+      {
+        "title": "Design implications",
+        "paragraphs": [
+          "Treat source storage, parsing, and indexing as separate states. A file can exist in storage while its parsed text is empty or malformed. A parser can produce usable text while a sync has not yet placed it in the index. Metadata can be present but carry an incorrect classification. Make ingestion checks match the content type and source owner. For high-value records, verify a few expected fields after each pipeline change. Keep a process for removals because stale deleted content can remain discoverable until the derived index updates."
+        ]
+      }
+    ],
+    "invariant": "The retrieval result can reflect only the source state that ingestion has parsed and indexed.",
+    "experiment": {
+      "steps": [
+        "Choose one test document with a visible revision marker.",
+        "Change the document text while retaining its source identity.",
+        "Run the knowledge base sync and inspect its status and retrieved text.",
+        "Compare the retrieved marker with the source marker."
+      ],
+      "prediction": "The indexed answer material changes only after the sync path processes the revision successfully.",
+      "interpretation": "If the marker remains old, inspect sync status and parsed output before changing retrieval or prompt settings."
+    },
+    "transferQuestion": "Predict why a corrected document may not change an answer immediately.",
+    "transferAnswer": "The retrieval index may not yet reflect the update, or retrieval may still select an older record. Check sync status and indexed results.",
+    "sources": [
+      "kb-sync",
+      "knowledge-bases",
+      "data-protection"
+    ]
+  },
+  {
+    "id": "deep-06",
+    "title": "Chunk design",
+    "keywords": [
+      "chunk",
+      "design"
+    ],
+    "prerequisites": [
+      "deep-05"
+    ],
+    "idea": "A chunk is a retrievable segment that balances local meaning and search precision.",
+    "sections": [
+      {
+        "title": "The smallest unit",
+        "paragraphs": [
+          "A long document must often be split before indexing. A chunk is a piece of that document, with metadata that links it to the source. If a chunk is too large, it can contain several topics and dilute matching. If it is too small, it can lose definitions or conditions that explain a statement."
+        ]
+      },
+      {
+        "title": "How the mechanism works",
+        "paragraphs": [
+          "Fixed-size chunking uses size and overlap rules. Semantic chunking uses content boundaries or meaning changes. Hierarchical chunking keeps smaller child passages associated with larger parent sections. These choices affect what the retriever can find and what the model sees. There is no universally best chunk size. Test the source formats and questions that matter."
+        ]
+      },
+      {
+        "title": "Where it fits",
+        "paragraphs": [
+          "Preserve headings, page or section references, and document identifiers when available. Keep related conditions together. Avoid splitting a rule from its exception. For tables, retain labels with values. Chunking that looks tidy in a text preview can still break the meaning of a record."
+        ]
+      },
+      {
+        "title": "Failure and control",
+        "paragraphs": [
+          "Tune chunking with retrieval metrics and answer review. Use representative questions that target definitions, exceptions, tables, and cross-section facts. Change one chunking choice at a time so the experiment can explain a result."
+        ]
+      },
+      {
+        "title": "Causal worked trace",
+        "paragraphs": [
+          "Causal trace: A source section contains a rule followed by an exception. Fixed-size chunking cuts text at configured token boundaries. An embedding represents each chunk. Retrieval matches the rule chunk but not the separate exception chunk. The model receives only the rule. A parent-child strategy can retrieve a small child and return broader parent context, while a semantic boundary can keep a coherent passage together."
+        ]
+      },
+      {
+        "title": "Failure diagnosis",
+        "paragraphs": [
+          "Failure diagnosis: When an answer omits a condition, inspect whether the rule and condition occupy different chunks. Check parser output, chunk previews, and retrieval results. Test tables separately because parsed table or page context can affect returned content. If the required fact is absent from parsed text, adjust parsing before chunk settings."
+        ]
+      },
+      {
+        "title": "Transfer case and misconception",
+        "paragraphs": [
+          "Transfer case: A compliance document has headings, tables, and exceptions. Preserve headings with clauses. Keep table labels alongside values. Compare fixed-size, semantic, or hierarchical chunking on queries that require a condition and its exception. Consider source behavior for figures and tables before designing citations.",
+          "Misconception correction: Smaller chunks are not always more precise for the final answer. A small match can lack the surrounding context needed to interpret it."
+        ]
+      },
+      {
+        "title": "Design implications",
+        "paragraphs": [
+          "Choose chunk boundaries by the questions readers ask, not by a universal size rule. A definition question may work with a short chunk. A question about exceptions may need a broader passage. A table question may need its heading and row labels. Source parsing can alter what the chunker receives, so inspect parsed input before tuning boundaries. Keep source location metadata through each transformation. This lets a reviewer move from a retrieved passage to the original page or section and check whether context was lost."
+        ]
+      }
+    ],
+    "invariant": "A chunk must retain enough local context to preserve the meaning of the fact that its embedding retrieves.",
+    "experiment": {
+      "steps": [
+        "Select a document where a rule and exception appear near a likely chunk boundary.",
+        "Set the fixed-size chunk maximum to a symbolic value C, then set it to a larger value C2 that keeps both clauses together.",
+        "Re-ingest and query the same rule question.",
+        "Compare retrieved text and exception coverage."
+      ],
+      "prediction": "The larger boundary can return both clauses, while it may also add unrelated text.",
+      "interpretation": "Keep the boundary that preserves required conditions with acceptable retrieval precision. Use a parent context strategy when child matching needs broader explanation."
+    },
+    "transferQuestion": "Predict how tiny chunks affect a question whose answer depends on a rule and its exception.",
+    "transferAnswer": "Search may find the rule without its exception. Use a chunk boundary or parent retrieval method that keeps both conditions available.",
+    "sources": [
+      "chunking",
+      "retrieval",
+      "knowledge-bases"
+    ]
+  },
+  {
+    "id": "deep-07",
+    "title": "Embeddings",
+    "keywords": [
+      "embeddings"
+    ],
+    "prerequisites": [
+      "deep-06"
+    ],
+    "idea": "An embedding maps content to a numeric representation for similarity search.",
+    "sections": [
+      {
+        "title": "The smallest unit",
+        "paragraphs": [
+          "An embedding model converts text into a vector. The vector represents patterns learned by that model. Similar meanings can map to nearby points, which supports semantic search. The vector is not a summary and does not preserve every fact in readable form."
+        ]
+      },
+      {
+        "title": "How the mechanism works",
+        "paragraphs": [
+          "A retrieval system embeds documents during ingestion and embeds a query during search. The index compares vectors using a configured similarity measure. The document and query representations must be compatible. A model change can require a coordinated re-embedding of indexed content."
+        ]
+      },
+      {
+        "title": "Where it fits",
+        "paragraphs": [
+          "Embeddings can retrieve conceptually related passages when query words differ from source words. They can also miss exact identifiers, rare terms, or domain-specific meanings. Include metadata and lexical search where the task needs exact matching. Assess results on the actual query set, not on intuition about vector distance."
+        ]
+      },
+      {
+        "title": "Failure and control",
+        "paragraphs": [
+          "Embedding quality depends on source quality, chunk design, model choice, and search configuration. A vector store cannot repair ambiguous source text. A strong embedding model cannot enforce access control by itself."
+        ]
+      },
+      {
+        "title": "Causal worked trace",
+        "paragraphs": [
+          "Causal trace: Ingestion text is sent to an embedding model, which maps it to a vector. The vector store indexes that vector with metadata. At query time, the same compatible embedding path maps the question to a vector. Similarity search returns nearby records. If the document and query vectors come from incompatible embedding models, the distance comparison may not represent useful semantic similarity."
+        ]
+      },
+      {
+        "title": "Failure diagnosis",
+        "paragraphs": [
+          "Failure diagnosis: Verify the embedding model and dimensions for indexed records and live queries. Check whether a model change triggered re-embedding. Then inspect source text, chunk quality, and query formulation. If exact identifiers fail, test lexical search rather than assuming embedding quality is the only cause."
+        ]
+      },
+      {
+        "title": "Transfer case and misconception",
+        "paragraphs": [
+          "Transfer case: A team upgrades its embedding model to improve domain retrieval. Create a replacement index or a controlled re-embedding plan. Compare both indices on the same labeled questions. Switch query embedding and index together, then retain a rollback path until evaluation passes.",
+          "Misconception correction: An embedding is not a human-readable summary or a truth score. It supports a similarity operation under a compatible representation and search configuration."
+        ]
+      },
+      {
+        "title": "Design implications",
+        "paragraphs": [
+          "Embedding migrations affect the full indexed corpus, not only the query code. Plan how to create the new representation, compare it with the existing index, and switch traffic. Avoid mixing vectors from incompatible models in one search space unless the service explicitly supports that design. Track the embedding model with each index version. Keep a rollback route to the old model and index during evaluation. Include exact identifiers and domain terms in the evaluation set because semantic similarity can behave differently on those queries."
+        ]
+      }
+    ],
+    "invariant": "Document and query vectors must use compatible embedding representations for similarity results to carry their intended meaning.",
+    "experiment": {
+      "steps": [
+        "Record the embedding model used for the current index and query path.",
+        "Change the query embedding configuration to a different available model without re-indexing.",
+        "Run the same labeled questions and record retrieved source identifiers.",
+        "Restore compatibility, then compare results."
+      ],
+      "prediction": "The incompatible query vectors can produce degraded or unstable retrieval because index vectors remain in the prior representation.",
+      "interpretation": "Deploy an embedding change as a coordinated index and query migration. Keep the old pair available during evaluation."
+    },
+    "transferQuestion": "Predict what can happen if documents use one embedding model and queries use an incompatible model.",
+    "transferAnswer": "Similarity scores can become unreliable because both sides no longer share a compatible representation space. Keep model configuration consistent or re-embed.",
+    "sources": [
+      "retrieval",
+      "knowledge-bases",
+      "search-01"
+    ]
+  },
+  {
+    "id": "deep-08",
+    "title": "Vector stores",
+    "keywords": [
+      "vector",
+      "stores"
+    ],
+    "prerequisites": [
+      "deep-07"
+    ],
+    "idea": "A vector store holds vectors and metadata so a system can retrieve related records.",
+    "sections": [
+      {
+        "title": "The smallest unit",
+        "paragraphs": [
+          "A vector store indexes records for similarity search. A record commonly includes an embedding and metadata, and may include text or a reference to text. The query vector identifies candidate records by proximity under the store configuration."
+        ]
+      },
+      {
+        "title": "How the mechanism works",
+        "paragraphs": [
+          "The vector store is one component in a retrieval path. It does not decide whether a user may see a record unless the application or service applies access filters correctly. It does not verify that retrieved facts are true. It can return a close match that still fails the question."
+        ]
+      },
+      {
+        "title": "Where it fits",
+        "paragraphs": [
+          "Choose a store by integration, scale, filter needs, operational model, and data controls. Amazon Bedrock Knowledge Bases can connect managed ingestion and retrieval functions with supported storage options. A custom retrieval system can offer more control, but it also adds components to operate. Confirm current service support and limits before implementation."
+        ]
+      },
+      {
+        "title": "Failure and control",
+        "paragraphs": [
+          "Inspect returned passages, scores, metadata, and source identifiers. Do not interpret similarity score as a truth probability. Compare retrieval output to a labeled set of relevant records. Use filters from trusted application identity to constrain the candidate set."
+        ]
+      },
+      {
+        "title": "Causal worked trace",
+        "paragraphs": [
+          "Causal trace: The ingestion path stores a vector with source text or a source reference and filter metadata. A query vector reaches the store. The store applies configured filters and similarity search. It returns candidate records. The application reads their text and identifiers and places selected content in the prompt. If authorization filters are missing, the store can return a close match from a record the caller should not see."
+        ]
+      },
+      {
+        "title": "Failure diagnosis",
+        "paragraphs": [
+          "Failure diagnosis: Review the query filter, its trusted identity source, and the returned metadata. Confirm that filters apply before the model receives content. Then evaluate candidate relevance and source authority. A vector score cannot diagnose permission errors or establish factual correctness."
+        ]
+      },
+      {
+        "title": "Transfer case and misconception",
+        "paragraphs": [
+          "Transfer case: A multi-tenant assistant stores documents for several business units. Derive the tenant filter from authenticated identity, not from a free-form user parameter. Test one allowed and one denied source. Confirm that denied text is absent from both retrieved results and model input.",
+          "Misconception correction: The vector store locates candidates. It does not automatically enforce every application access policy or verify the truth of a candidate."
+        ]
+      },
+      {
+        "title": "Design implications",
+        "paragraphs": [
+          "A vector store can filter by metadata only when the configured fields and query path support that operation. Confirm the field is indexed for the required filter behavior. Keep authorization metadata under trusted control. Avoid using a client-supplied tenant name as the sole access check. Test the empty-result case and the denied-result case. Both should produce safe application behavior. A user should not infer the existence of a restricted record from an error message, count, or citation."
+        ]
+      }
+    ],
+    "invariant": "A candidate may reach generation only if it passes both retrieval relevance and authorization checks.",
+    "experiment": {
+      "steps": [
+        "Create a test identity with access to one metadata partition.",
+        "Set the retrieval filter to that identity’s trusted partition value.",
+        "Query for a passage that exists in both an allowed and a denied partition.",
+        "Inspect result metadata and model input for denied content."
+      ],
+      "prediction": "A correctly applied filter excludes records outside the trusted partition, even when their vectors are close matches.",
+      "interpretation": "If denied records appear, fix filter derivation or enforcement before evaluating answer quality."
+    },
+    "transferQuestion": "Predict why a nearest-neighbor result can still be wrong.",
+    "transferAnswer": "The nearest vector is the closest available representation, not proof that the passage answers the question. Validate relevance and source authority.",
+    "sources": [
+      "knowledge-bases",
+      "retrieval",
+      "kb-retrieve-api"
+    ]
+  },
+  {
+    "id": "deep-09",
+    "title": "Hybrid search and reranking",
+    "keywords": [
+      "hybrid",
+      "search",
+      "reranking"
+    ],
+    "prerequisites": [
+      "deep-08"
+    ],
+    "idea": "Hybrid search combines different retrieval signals, while reranking reorders candidates for a query.",
+    "sections": [
+      {
+        "title": "The smallest unit",
+        "paragraphs": [
+          "Vector search finds passages by semantic similarity. Lexical search matches terms and identifiers. Hybrid search combines these signals so a query can benefit from both meaning and exact words. This matters for product codes, names, legal terms, and paraphrased questions."
+        ]
+      },
+      {
+        "title": "How the mechanism works",
+        "paragraphs": [
+          "A first retrieval stage can return a broader candidate set. A reranker then scores candidates against the full query and orders them by likely relevance. The model that generates the answer receives a smaller, more focused set. Each stage adds cost and latency. A reranker cannot recover a passage that the first stage never returned."
+        ]
+      },
+      {
+        "title": "Where it fits",
+        "paragraphs": [
+          "Tune candidate count and final context size together. Too few candidates can omit needed evidence. Too many can add noise and consume context. Preserve filters across retrieval stages. Verify that a reranker does not move a relevant exception below the cut line."
+        ]
+      },
+      {
+        "title": "Failure and control",
+        "paragraphs": [
+          "Compare vector-only, lexical-only, hybrid, and reranked retrieval on the same labeled queries. Measure recall and precision, then review failure cases."
+        ]
+      },
+      {
+        "title": "Causal worked trace",
+        "paragraphs": [
+          "Causal trace: A user asks for a product by its exact SKU and description. Vector search finds semantically similar product text. Lexical search matches the exact SKU. Hybrid search combines both candidate sets. A reranker scores candidates against the full query and orders them. The generator receives the final candidates. If the first stage excludes the exact record, reranking cannot restore it."
+        ]
+      },
+      {
+        "title": "Failure diagnosis",
+        "paragraphs": [
+          "Failure diagnosis: Inspect candidates before and after reranking. If the exact record is missing at first stage, examine lexical fields, filters, and candidate count. If present but ranked low, inspect reranker inputs and query. If the right record reaches generation but answer is wrong, inspect prompt use and output validation."
+        ]
+      },
+      {
+        "title": "Transfer case and misconception",
+        "paragraphs": [
+          "Transfer case: A support system searches error codes and natural-language descriptions. Compare semantic retrieval for paraphrases with lexical retrieval for exact codes. Use hybrid only where the store supports it. Verify the text field is configured for filtering and lexical search as required by the selected service path.",
+          "Misconception correction: Reranking improves order among available candidates. It cannot repair missing source data, an incorrect filter, or a first-stage recall gap."
+        ]
+      },
+      {
+        "title": "Design implications",
+        "paragraphs": [
+          "Measure candidate recall before tuning reranking. If the relevant item is absent from the candidate set, reranking has no opportunity to help. If candidates include the answer but order it poorly, reranking can address that stage. Keep exact-term queries and paraphrase queries in separate evaluation groups. This shows whether a change helps one class while hurting another. Also inspect the final prompt because a better ranking can still fail if the application truncates the useful passage or sends duplicate context."
+        ]
+      }
+    ],
+    "invariant": "A later ranking stage cannot select a relevant passage that an earlier candidate stage never returned.",
+    "experiment": {
+      "steps": [
+        "Choose labeled queries that include exact identifiers and paraphrases.",
+        "Set the knowledge base search type to SEMANTIC, then record candidate recall.",
+        "Set the search type to HYBRID on a supported store and repeat.",
+        "If configured, apply the same reranker and compare final ranking and answer evidence."
+      ],
+      "prediction": "Hybrid search can improve exact-term recall while semantic search can serve meaning-based matches.",
+      "interpretation": "Use the search mode that improves the target query class without unacceptable noise. Add reranking only when candidate order remains a measured defect."
+    },
+    "transferQuestion": "Predict which query gains from lexical search when the source contains an exact SKU.",
+    "transferAnswer": "The exact SKU is a strong lexical signal. Hybrid retrieval can retain the exact record even if its semantic vector is not the closest match.",
+    "sources": [
+      "retrieval",
+      "knowledge-bases",
+      "evaluation-metrics"
+    ]
+  },
+  {
+    "id": "deep-10",
+    "title": "Prompt management",
+    "keywords": [
+      "prompt",
+      "management"
+    ],
+    "prerequisites": [
+      "deep-09"
+    ],
+    "idea": "Prompt management stores reusable instructions and separates stable rules from request data.",
+    "sections": [
+      {
+        "title": "The smallest unit",
+        "paragraphs": [
+          "A prompt shapes how a model interprets its input. It can define a role, task, constraints, examples, and output format. A prompt does not grant capabilities or verify truth. Those controls belong in application logic and supporting systems."
+        ]
+      },
+      {
+        "title": "How the mechanism works",
+        "paragraphs": [
+          "A prompt resource can make a template reusable across application calls. Variables can hold request-specific values. Versioning helps teams compare prompt changes and return to a known version. Keep stable policy instructions separate from user content and retrieved evidence. Clearly label untrusted text so it cannot silently act as a higher-level instruction. For Amazon Bedrock Knowledge Bases, hybrid search is supported only with specified vector stores that contain a filterable text field. Otherwise, the query uses semantic search."
+        ]
+      },
+      {
+        "title": "Where it fits",
+        "paragraphs": [
+          "Examples can teach format and task boundaries. Output schemas can improve structure where supported. Validate generated output after inference. A prompt change is a behavior change, so review it against evaluation cases before release. Do not place secrets or unnecessary personal data in a prompt."
+        ]
+      },
+      {
+        "title": "Failure and control",
+        "paragraphs": [
+          "Store prompt identifiers and versions with safe evaluation records. This makes a response easier to reproduce. A model update, prompt edit, or retrieval change can each alter the result."
+        ]
+      },
+      {
+        "title": "Causal worked trace",
+        "paragraphs": [
+          "Causal trace: A prompt template stores stable instructions and named variables. At runtime, the application supplies the user question and retrieved text in their designated variables. The prompt resource version resolves into a request. The model interprets instructions and data, then returns a response. If untrusted retrieved text is mixed with trusted rules, instruction-like text inside the evidence can confuse the task boundary."
+        ]
+      },
+      {
+        "title": "Failure diagnosis",
+        "paragraphs": [
+          "Failure diagnosis: Compare prompt version, resolved variable values, and model request. If the format fails, validate schema and examples. If behavior changed, compare the deployed prompt version with the evaluated version. If content injection appears, strengthen boundaries and application controls. A template system does not validate the output automatically."
+        ]
+      },
+      {
+        "title": "Transfer case and misconception",
+        "paragraphs": [
+          "Transfer case: A team changes a prompt to require citations. Create a new version, run the citation evaluation set, and compare support for claims. Keep retrieval data unchanged during that comparison. If quality declines, inspect whether the prompt asks for unsupported citations or changes evidence ordering.",
+          "Misconception correction: Prompt instructions guide model behavior. They do not grant permissions, make retrieved text trusted, or guarantee schema-valid output."
+        ]
+      },
+      {
+        "title": "Design implications",
+        "paragraphs": [
+          "Store prompts with a clear owner, purpose, and version. Keep variables typed or validated where the prompt system allows it. Escape or delimit variable data according to the application format. Do not place secrets in examples. Review examples for accidental bias toward a narrow output. When a prompt changes, record the change and its test result. A short prompt can still be unsafe if it grants broad tool use or asks the model to infer missing facts."
+        ]
+      }
+    ],
+    "invariant": "Stable instructions, untrusted data, and output constraints must remain distinguishable through prompt assembly and response validation.",
+    "experiment": {
+      "steps": [
+        "Record the active prompt resource version and its resolved request.",
+        "Change only the prompt version to add explicit delimiters around retrieved passages.",
+        "Run a test passage that contains an instruction-like sentence.",
+        "Compare whether the model follows the task or the embedded sentence."
+      ],
+      "prediction": "Clear boundaries can reduce confusion between the application instruction and quoted evidence, but they do not replace tool authorization.",
+      "interpretation": "Retain the prompt change only if the evaluation shows better boundary behavior without harming normal answers."
+    },
+    "transferQuestion": "Predict the risk of pasting a user document into the same text block as trusted system rules.",
+    "transferAnswer": "The model may treat document instructions as task instructions. Delimit and label untrusted content, and enforce rules outside the prompt.",
+    "sources": [
+      "prompt-management",
+      "converse-api",
+      "data-protection",
+      "kb-retrieve-api"
+    ]
+  },
+  {
+    "id": "deep-11",
+    "title": "Agents",
+    "keywords": [
+      "agents"
+    ],
+    "prerequisites": [
+      "deep-10"
+    ],
+    "idea": "An agent uses a model to select steps and may call tools to complete a goal.",
+    "sections": [
+      {
+        "title": "The smallest unit",
+        "paragraphs": [
+          "A basic language model returns text. An agent loop can also expose tools, receive a tool choice, run the selected action, and send the observation back to the model. The application or agent service controls which actions are available."
+        ]
+      },
+      {
+        "title": "How the mechanism works",
+        "paragraphs": [
+          "An agent needs a goal, instructions, tools, state, and a stopping rule. Each tool has an input contract and an effect. Read-only tools can retrieve information. Write tools can change systems. The agent can select a tool incorrectly, send invalid arguments, or repeat a step. Guard the tool boundary with validation and least privilege. Amazon Bedrock Agents Classic is no longer open to new customers. Existing customers can continue to use it, and AWS directs new capability exploration to Amazon Bedrock AgentCore."
+        ]
+      },
+      {
+        "title": "Where it fits",
+        "paragraphs": [
+          "Use an agent when the task requires conditional steps or tool choice. Use a fixed workflow when the sequence is known and predictable. Limit each tool to the smallest required action. Require human approval for consequential actions when the application risk calls for it."
+        ]
+      },
+      {
+        "title": "Failure and control",
+        "paragraphs": [
+          "Measure task completion, tool selection, invalid calls, retries, and unwanted side effects. Do not treat a fluent transcript as proof that the external task succeeded. Confirm outcomes through the system of record."
+        ]
+      },
+      {
+        "title": "Causal worked trace",
+        "paragraphs": [
+          "Causal trace: A user requests an action. The agent receives a goal and a set of tool definitions. The model selects a tool and supplies arguments. The runtime validates and invokes the tool. The result returns as an observation, and the agent can choose another step or stop. If the action is a known fixed sequence, every model decision adds a possible branch without adding useful flexibility."
+        ]
+      },
+      {
+        "title": "Failure diagnosis",
+        "paragraphs": [
+          "Failure diagnosis: Trace the goal, selected action, arguments, tool response, and stop decision. A wrong tool choice points to tool descriptions or model reasoning. Invalid arguments point to schema or validation. A duplicate action points to retry or stopping logic. Verify external state because a transcript does not prove an action succeeded."
+        ]
+      },
+      {
+        "title": "Transfer case and misconception",
+        "paragraphs": [
+          "Transfer case: An agent can look up an invoice and issue a refund. Separate read and write permissions. Require a user approval before the refund tool call. After the tool returns, verify invoice state through a trusted system query before telling the user the refund completed.",
+          "Misconception correction: An agent is not a model with unrestricted authority. The runtime determines available actions, validates calls, and enforces access controls."
+        ]
+      },
+      {
+        "title": "Design implications",
+        "paragraphs": [
+          "Keep the agent’s action set small and aligned with the task. Tool descriptions should state when the tool applies and what effect it has. Inputs should have required fields and validation. Define a maximum step or time budget where the runtime supports it. Make the stopping condition observable. If an agent reaches the same state repeatedly, stop it and surface a controlled error. For important actions, verify the resulting state from the system of record before reporting completion."
+        ]
+      }
+    ],
+    "invariant": "The agent can perform only actions exposed by its runtime, and each action still requires application authorization.",
+    "experiment": {
+      "steps": [
+        "Use a test agent with one read-only lookup tool and one write tool disabled.",
+        "Submit a task that asks for the write action.",
+        "Inspect the selected tool request and runtime response.",
+        "Enable the write tool only behind an approval check and repeat with approval absent."
+      ],
+      "prediction": "The agent may request a write action, but the runtime should deny it while the tool is disabled or approval is absent.",
+      "interpretation": "Keep authorization in runtime logic. Use agent reasoning to select among permitted actions, not to grant permission."
+    },
+    "transferQuestion": "Predict why a fixed sequence can be safer than an agent for a two-step approval task.",
+    "transferAnswer": "The known sequence can use explicit states and checks. An agent adds model decisions without clear value for a deterministic path.",
+    "sources": [
+      "agents-current",
+      "agentcore-runtime",
+      "evaluation",
+      "agentcore-runtime"
+    ]
+  },
+  {
+    "id": "deep-12",
+    "title": "Tools and MCP",
+    "keywords": [
+      "tools",
+      "mcp"
+    ],
+    "prerequisites": [
+      "deep-11"
+    ],
+    "idea": "A tool gives a model a controlled way to request an application action or retrieve data.",
+    "sections": [
+      {
+        "title": "The smallest unit",
+        "paragraphs": [
+          "A tool definition describes a name, purpose, and input shape. The model can request that tool. The host application validates the request, invokes the implementation, and returns an observation. The model cannot call a real service by naming it in text alone."
+        ]
+      },
+      {
+        "title": "How the mechanism works",
+        "paragraphs": [
+          "Model Context Protocol defines a client and server pattern for exposing tools and resources to a model-connected application. MCP can standardize discovery and calls across systems. It does not remove the need to authenticate, authorize, validate, and audit each operation. Tool output is data. Treat it as untrusted input to later model steps."
+        ]
+      },
+      {
+        "title": "Where it fits",
+        "paragraphs": [
+          "Expose narrow tools with clear argument schemas. Keep credentials in the host environment. Apply identity checks at the service boundary. Return only the data needed for the task. For write actions, add idempotency or approval controls where the operation can cause duplicate or harmful effects."
+        ]
+      },
+      {
+        "title": "Failure and control",
+        "paragraphs": [
+          "Test malformed arguments, denied access, timeouts, malicious tool output, and partial success. Log the tool name and outcome without storing unnecessary sensitive content."
+        ]
+      },
+      {
+        "title": "Causal worked trace",
+        "paragraphs": [
+          "Causal trace: A host discovers an MCP server’s tool description and schema. The model sees the available tool contract. It requests a call with arguments. The host validates the request and authenticates to the backing service. The server returns data. The host passes that result to the model as untrusted content. If the server returns hostile instructions, those instructions remain data and must not change host policy."
+        ]
+      },
+      {
+        "title": "Failure diagnosis",
+        "paragraphs": [
+          "Failure diagnosis: Follow discovery, model call, host validation, server authorization, and result handling. A missing tool can be a discovery or configuration defect. A denied call can be an identity or permission issue. Unexpected behavior can come from unvalidated arguments or unsafe tool output. Inspect each boundary rather than blaming MCP as a single component."
+        ]
+      },
+      {
+        "title": "Transfer case and misconception",
+        "paragraphs": [
+          "Transfer case: An MCP tool reads customer records. Expose only the required fields. Derive the user identity at the host boundary and pass a scoped credential. Test denied customer IDs and malformed arguments. Keep write tools separate from read tools and log the action outcome without excess customer content.",
+          "Misconception correction: MCP standardizes communication patterns. It does not make a server trustworthy or remove the host’s duty to authorize each call."
+        ]
+      },
+      {
+        "title": "Design implications",
+        "paragraphs": [
+          "MCP can make tool discovery and invocation more consistent across clients, but the security model still depends on host and server setup. Review server identity, transport, authentication, tool schemas, and returned data. Avoid enabling every discovered tool by default. Present only the tools needed for the task. A server update can change a tool description or behavior, so track versions and review changes. Treat tool output as external input, even when it comes from an approved server."
+        ]
+      }
+    ],
+    "invariant": "Every tool call and result crosses a trust boundary that requires validation and least privilege.",
+    "experiment": {
+      "steps": [
+        "Configure a test tool with a schema that requires a customer identifier.",
+        "Change the host validator to reject identifiers outside the authenticated test identity.",
+        "Request an allowed identifier, then a denied identifier.",
+        "Inspect service calls and returned content for both requests."
+      ],
+      "prediction": "The allowed call reaches the service. The denied call stops at the host authorization check.",
+      "interpretation": "Keep identity-derived validation before the tool operation. Do not rely on model instructions to restrict identifiers."
+    },
+    "transferQuestion": "Predict what fails if an MCP server returns a string that contains an instruction to ignore system rules.",
+    "transferAnswer": "The host should treat the string as untrusted tool data. Preserve the instruction hierarchy and validate any follow-up action.",
+    "sources": [
+      "agents-current",
+      "agentcore-runtime",
+      "iam"
+    ]
+  },
+  {
+    "id": "deep-13",
+    "title": "Deployment choices",
+    "keywords": [
+      "deployment",
+      "choices"
+    ],
+    "prerequisites": [
+      "deep-12"
+    ],
+    "idea": "Deployment places inference behind a service path that fits control and workload needs.",
+    "sections": [
+      {
+        "title": "The smallest unit",
+        "paragraphs": [
+          "A managed model API reduces the need to operate model serving infrastructure. A custom hosted model can provide more control over model selection and serving configuration. The right choice depends on workload, model rights, performance needs, and operational capacity."
+        ]
+      },
+      {
+        "title": "How the mechanism works",
+        "paragraphs": [
+          "Amazon Bedrock provides managed access to supported foundation models. Amazon SageMaker AI supports model deployment options for inference workloads. Managed endpoints, serverless options, and other deployment patterns have different scaling, startup, capacity, and cost behavior. Check current product documentation for availability and limits."
+        ]
+      },
+      {
+        "title": "Where it fits",
+        "paragraphs": [
+          "Map the request path from application to endpoint. Include network access, identity, secrets, monitoring, scaling, and failure response. Test startup and peak behavior. Keep model artifacts, inference code, and endpoint configuration under version control where applicable."
+        ]
+      },
+      {
+        "title": "Failure and control",
+        "paragraphs": [
+          "Deployment is not only a model endpoint. The application needs a controlled release process for prompt, retrieval, model, and infrastructure changes. Roll back the smallest changed component when evidence points to it."
+        ]
+      },
+      {
+        "title": "Causal worked trace",
+        "paragraphs": [
+          "Causal trace: A team selects managed model inference or a hosted deployment path. The application builds a request and authenticates with its runtime role. Network and service controls route the call. The chosen endpoint runs inference. The application records result and error data. A health check can pass while a real request fails because model access, payload validation, or a downstream dependency differs from the probe."
+        ]
+      },
+      {
+        "title": "Failure diagnosis",
+        "paragraphs": [
+          "Failure diagnosis: Test the full path with the same identity, Region, model route, network, and request body as production. Separate endpoint health from request success. Check deployment configuration, capacity, model availability, and response parsing. Review current service capabilities before assuming an option is supported in the target Region."
+        ]
+      },
+      {
+        "title": "Transfer case and misconception",
+        "paragraphs": [
+          "Transfer case: A team moves a prototype into a production endpoint. Define the caller role, network path, request schema, scaling plan, monitoring, and rollback version. Run representative traffic before cutover. Record which component owns model artifact updates and endpoint settings.",
+          "Misconception correction: A managed endpoint reduces some infrastructure work. It does not remove application operations, IAM, capacity planning, or release responsibility."
+        ]
+      },
+      {
+        "title": "Design implications",
+        "paragraphs": [
+          "Select a deployment path from workload characteristics and ownership limits. Consider whether traffic is steady or bursty, whether a model artifact must be customized, and which team owns scaling and patching. Compare the total operational path, including monitoring and recovery. Confirm model rights, service support, and Region availability. Run a representative request through the deployed path with the production identity. Keep a rollback configuration that the on-call team can apply without rebuilding the system.",
+          "Treat model packaging, endpoint configuration, and application code as separate release items. Assign an owner to each item and test rollback across all three."
+        ]
+      }
+    ],
+    "invariant": "Deployment success requires the complete production request path to work under its intended identity and load.",
+    "experiment": {
+      "steps": [
+        "Use a staging endpoint and a production-equivalent runtime role.",
+        "Change the endpoint configuration to the planned deployment option.",
+        "Send the same representative request through the application path.",
+        "Record request success, latency, scaling behavior, and errors."
+      ],
+      "prediction": "A complete-path test can reveal identity or payload failures that an endpoint health check does not exercise.",
+      "interpretation": "Promote only after the application path meets the workload criteria. Keep rollback tied to a known endpoint configuration."
+    },
+    "transferQuestion": "Predict why a model endpoint can pass a health check while user requests still fail.",
+    "transferAnswer": "The health check may not exercise authentication, request schema, model availability, or downstream dependencies. Test the full request path.",
+    "sources": [
+      "sagemaker-deploy",
+      "bedrock-overview",
+      "iam"
+    ]
+  },
+  {
+    "id": "deep-14",
+    "title": "Enterprise gateway",
+    "keywords": [
+      "enterprise",
+      "gateway"
+    ],
+    "prerequisites": [
+      "deep-13"
+    ],
+    "idea": "A gateway creates a controlled entry point for model requests across an organization.",
+    "sections": [
+      {
+        "title": "The smallest unit",
+        "paragraphs": [
+          "Applications often need a common path for identity checks, policy, logging, rate limits, and model routing. A gateway can enforce shared rules before requests reach a model service. It can also simplify application integration by hiding service details behind a stable interface."
+        ]
+      },
+      {
+        "title": "How the mechanism works",
+        "paragraphs": [
+          "A gateway should authenticate the caller and decide what model and data operations that caller can use. It can apply request validation, quotas, allowed model lists, and routing rules. It can also attach trace identifiers. The gateway does not make unsafe prompts safe by itself. Each tool and data source still needs its own authorization."
+        ]
+      },
+      {
+        "title": "Where it fits",
+        "paragraphs": [
+          "Keep policy decisions explicit and testable. Avoid logging full prompts by default when they can contain confidential data. Define who can change routing and model allowlists. Track gateway errors separately from provider errors so teams can locate the failing boundary."
+        ]
+      },
+      {
+        "title": "Failure and control",
+        "paragraphs": [
+          "Centralization can create a shared outage or bottleneck. Use health checks, capacity planning, and documented fallback behavior. A fallback model may have different capabilities, so validate the answer contract before failover."
+        ]
+      },
+      {
+        "title": "Causal worked trace",
+        "paragraphs": [
+          "Causal trace: A client sends a model request to an enterprise gateway. The gateway authenticates the principal, checks the requested route against policy, applies quotas, and forwards an allowed request. The provider returns a result. The gateway adds trace data and returns the response. If the client chooses any model identifier and the gateway trusts it, callers can bypass route policy or cost controls."
+        ]
+      },
+      {
+        "title": "Failure diagnosis",
+        "paragraphs": [
+          "Failure diagnosis: Determine whether the request failed at caller authentication, route authorization, quota, provider invocation, or response handling. Use a trace identifier across boundaries. Do not log full sensitive prompts as a shortcut. Check whether fallback routing preserves model capabilities and the application response contract."
+        ]
+      },
+      {
+        "title": "Transfer case and misconception",
+        "paragraphs": [
+          "Transfer case: An organization exposes a single internal model endpoint to several teams. Map each team to allowed model routes and quotas. Apply caller-specific authorization before forwarding. Give policy owners a controlled review path for route changes. Test a disallowed route and confirm that no provider call occurs.",
+          "Misconception correction: A gateway centralizes policy enforcement only for requests that pass through it. Direct service credentials or unguarded tools can create another route."
+        ]
+      },
+      {
+        "title": "Design implications",
+        "paragraphs": [
+          "A gateway should publish a stable contract to client teams and keep policy rules reviewable. Define which identity claims are trusted, which routes are allowed, and how quotas are assigned. Include a path for policy updates and emergency disablement. Monitor gateway rejection separately from upstream model errors. If routing falls back, record the selected route and ensure that the fallback meets required output and safety behavior. Never let a client bypass the gateway with a broader credential than the gateway uses."
+        ]
+      }
+    ],
+    "invariant": "The gateway must authenticate the caller and authorize the model route before forwarding the request.",
+    "experiment": {
+      "steps": [
+        "Configure a test caller with one permitted model route.",
+        "Change its requested model identifier to a route outside the allowlist.",
+        "Send the request through the gateway and inspect gateway and provider traces.",
+        "Restore the permitted route and compare outcomes."
+      ],
+      "prediction": "The disallowed request is rejected before provider invocation when route authorization is enforced at the gateway.",
+      "interpretation": "Keep the allowlist check before forwarding. Audit other paths that can invoke models outside the gateway."
+    },
+    "transferQuestion": "Predict the risk of a gateway that accepts every model identifier supplied by a client.",
+    "transferAnswer": "A caller can invoke a model outside approved policy or cost limits. Enforce an allowlist and caller-specific authorization.",
+    "sources": [
+      "iam",
+      "logging",
+      "bedrock-errors"
+    ]
+  },
+  {
+    "id": "deep-15",
+    "title": "Streaming and retries",
+    "keywords": [
+      "streaming",
+      "retries"
+    ],
+    "prerequisites": [
+      "deep-14"
+    ],
+    "idea": "Streaming returns response parts over time, while retries repeat a failed request under controlled rules.",
+    "sections": [
+      {
+        "title": "The smallest unit",
+        "paragraphs": [
+          "A non-streaming call returns after the response is ready. A streaming call can deliver pieces as the model produces them. This can reduce perceived wait, but the application must handle partial output, stream errors, and final completion signals."
+        ]
+      },
+      {
+        "title": "How the mechanism works",
+        "paragraphs": [
+          "Retries can help with transient service errors or throttling. They can also duplicate work, add latency, and raise cost. Use a retry policy with bounded attempts, backoff, and jitter. Check whether the operation is safe to repeat. Distinguish a failed connection from a completed response whose delivery status is unknown."
+        ]
+      },
+      {
+        "title": "Where it fits",
+        "paragraphs": [
+          "Do not show partial text as a final answer until the stream completes. If a stream fails, decide whether to resume, retry, or display a clear error. For tool actions, use idempotency keys or a status check to prevent duplicate effects."
+        ]
+      },
+      {
+        "title": "Failure and control",
+        "paragraphs": [
+          "Classify errors before retry. A validation error or access denial needs a request or policy fix, not repeated attempts. Record attempt count and final outcome."
+        ]
+      },
+      {
+        "title": "Causal worked trace",
+        "paragraphs": [
+          "Causal trace: A client opens a response stream and receives partial content. The service later emits completion or an error. Separately, a retry policy can resend a request after a transient failure. If a tool operation completed but its response was lost, a blind retry can execute the side effect twice. Stream completion and operation completion therefore need explicit state handling."
+        ]
+      },
+      {
+        "title": "Failure diagnosis",
+        "paragraphs": [
+          "Failure diagnosis: Record attempt number, stream state, error class, and whether a side effect may have occurred. Validation and access errors need correction, not retries. Throttling and transient service failures may support bounded backoff. A connection timeout after a write needs status lookup or idempotency before another call."
+        ]
+      },
+      {
+        "title": "Transfer case and misconception",
+        "paragraphs": [
+          "Transfer case: A chat UI streams a generated response while also allowing a payment lookup tool. Render partial text as provisional. Mark the answer complete only after the final stream event. Give any consequential tool call an idempotency key and verify operation state after an ambiguous timeout.",
+          "Misconception correction: Streaming can improve time to first visible content. It does not guarantee lower total latency or make a partial response complete."
+        ]
+      },
+      {
+        "title": "Design implications",
+        "paragraphs": [
+          "Retry policy needs an error taxonomy and an operation-safety check. Use bounded attempts so one failing request cannot consume unlimited capacity. Backoff reduces synchronized retry bursts when many clients see the same outage. Jitter can spread retries across time. For streaming, the client also needs clear states for open, partial, complete, and failed. Do not append a restarted stream to a partial answer unless the service contract supports resume. Mark incomplete output clearly and avoid treating it as an accepted result."
+        ]
+      }
+    ],
+    "invariant": "A retry is safe only when the operation is repeatable or the application can detect duplicate completion.",
+    "experiment": {
+      "steps": [
+        "Set the retry policy to one attempt for the test call.",
+        "Change the maximum retry count to a bounded value greater than one and set backoff for throttling errors.",
+        "Simulate a transient throttling response on a read-only request.",
+        "Compare attempt count, completion time, and final result."
+      ],
+      "prediction": "A bounded retry can recover from a transient read failure but increases worst-case time.",
+      "interpretation": "Keep retries limited to retryable errors. Use idempotency or status checks for operations with side effects."
+    },
+    "transferQuestion": "Predict what a client may do when it retries a tool call after a timeout with no idempotency control.",
+    "transferAnswer": "The external action may run twice if the first call succeeded but the response was lost. Use idempotency or verify operation status.",
+    "sources": [
+      "api-streaming",
+      "converse-stream-api",
+      "bedrock-errors"
+    ]
+  },
+  {
+    "id": "deep-16",
+    "title": "Guardrails",
+    "keywords": [
+      "guardrails"
+    ],
+    "prerequisites": [
+      "deep-15"
+    ],
+    "idea": "Guardrails apply configured safety and data controls to model inputs or outputs.",
+    "sections": [
+      {
+        "title": "The smallest unit",
+        "paragraphs": [
+          "A guardrail can detect configured categories of harmful content or sensitive data patterns. It can also support topic controls and grounding-related checks in supported workflows. These controls reduce selected risks. They do not prove that every answer is safe or correct."
+        ]
+      },
+      {
+        "title": "How the mechanism works",
+        "paragraphs": [
+          "Apply guardrails at the appropriate points in the request path. Input controls can screen a user request. Output controls can inspect a response. RAG flows may need checks for grounding or source relevance. The supported options depend on API and model integration. Test behavior with representative content and expected outcomes."
+        ]
+      },
+      {
+        "title": "Where it fits",
+        "paragraphs": [
+          "A guardrail can block legitimate content if its policy is too broad. A policy can miss content outside its coverage. Keep a route for review and controlled exceptions. Do not rely on a prompt instruction as a substitute for a configured safety control."
+        ]
+      },
+      {
+        "title": "Failure and control",
+        "paragraphs": [
+          "Measure block rates and inspect false positives and false negatives through an approved review process. Protect sensitive test data. Update policy when the application use case changes."
+        ]
+      },
+      {
+        "title": "Causal worked trace",
+        "paragraphs": [
+          "Causal trace: A user submits content to a guarded inference path. Input policy checks inspect the request. The model receives allowed content and returns a response. Output checks inspect that response before delivery. In a RAG application, authorization and retrieval occur earlier. An output guardrail cannot prevent an unauthorized record from entering the model context before generation."
+        ]
+      },
+      {
+        "title": "Failure diagnosis",
+        "paragraphs": [
+          "Failure diagnosis: Identify whether the issue is input screening, output screening, grounding, or retrieval authorization. Review the configured policy, API path, and result. Test false blocks and missed blocks with approved cases. If private evidence reached generation, correct retrieval permissions first, then assess output controls."
+        ]
+      },
+      {
+        "title": "Transfer case and misconception",
+        "paragraphs": [
+          "Transfer case: A health support assistant screens harmful content and retrieves care guidance. Apply access checks to source records before prompt assembly. Configure appropriate input and output policies. Route uncertain high-impact cases to the approved human review process. Evaluate both allowed and disallowed test content.",
+          "Misconception correction: Guardrails cover configured categories and supported checks. They do not guarantee that every unsafe, unsupported, or unauthorized answer is detected."
+        ]
+      },
+      {
+        "title": "Design implications",
+        "paragraphs": [
+          "Guardrail configuration must match the application use case and API integration. Test expected blocks as well as expected passes. Review false positives with the content owner, and review missed risks with the safety owner. Keep policy version and outcome metadata for audits. Do not store sensitive examples beyond the approved test controls. An output check can reduce harmful responses, but it cannot correct inaccurate source data or weak authorization. Use separate controls for content safety, data access, and answer grounding."
+        ]
+      }
+    ],
+    "invariant": "Safety checks must run at the relevant boundary, and upstream authorization cannot be delegated to an output filter.",
+    "experiment": {
+      "steps": [
+        "Select an input and output policy test set with expected allow or block results.",
+        "Change one guardrail policy threshold or category setting supported by the configured API.",
+        "Run the same cases and record blocks, passes, and false decisions.",
+        "Keep retrieval authorization tests separate from content policy tests."
+      ],
+      "prediction": "The setting change can alter which content the guardrail blocks or allows. It cannot repair an upstream access leak.",
+      "interpretation": "Tune policy against reviewed cases. Keep authorization enforcement before retrieval results enter model input."
+    },
+    "transferQuestion": "Predict why an output guardrail alone cannot prevent an unauthorized record from entering the prompt.",
+    "transferAnswer": "The output check occurs after retrieval. The retrieval path must enforce authorization before it sends a record to the model.",
+    "sources": [
+      "guardrails",
+      "guardrails-api",
+      "guardrails-grounding"
+    ]
+  },
+  {
+    "id": "deep-17",
+    "title": "Privacy and IAM",
+    "keywords": [
+      "privacy",
+      "iam"
+    ],
+    "prerequisites": [
+      "deep-16"
+    ],
+    "idea": "Privacy controls protect data use, while IAM controls who can call services and resources.",
+    "sections": [
+      {
+        "title": "The smallest unit",
+        "paragraphs": [
+          "A request can include personal, confidential, or regulated data. The application should send only the data needed for the task. AWS Identity and Access Management policies define which principals can perform service actions on resources. These are related controls with different jobs."
+        ]
+      },
+      {
+        "title": "How the mechanism works",
+        "paragraphs": [
+          "Use least privilege for model invocation, data access, logging, and administration. Separate roles where workloads have different access needs. Protect data in transit and at rest through supported service controls. Review retention and logging behavior before sending sensitive content. Do not assume that a model endpoint enforces document-level authorization for a RAG application."
+        ]
+      },
+      {
+        "title": "Where it fits",
+        "paragraphs": [
+          "RAG authorization should derive from trusted user identity and source permissions. Apply filters before content reaches generation. A prompt that says “do not reveal private data” cannot replace access control. Review tool permissions with the same care as database permissions."
+        ]
+      },
+      {
+        "title": "Failure and control",
+        "paragraphs": [
+          "Minimize sensitive data in logs and evaluation sets. Define retention and access rules. Verify controls in the deployed path, including support staff and diagnostic access."
+        ]
+      },
+      {
+        "title": "Causal worked trace",
+        "paragraphs": [
+          "Causal trace: A user authenticates to an application. The application derives the user’s trusted identity and queries a data source with scoped permissions. Retrieval filters limit candidate records. The application sends allowed passages to the model. Logs and storage follow separate access and retention controls. If a shared role searches all records without user filters, the model can receive data beyond the caller’s rights."
+        ]
+      },
+      {
+        "title": "Failure diagnosis",
+        "paragraphs": [
+          "Failure diagnosis: Trace principal, role assumption, data query, filter source, retrieved records, model input, and logs. Locate the first point where access exceeds policy. Check whether user-supplied filter values can override trusted identity. Review log destinations for sensitive payload exposure."
+        ]
+      },
+      {
+        "title": "Transfer case and misconception",
+        "paragraphs": [
+          "Transfer case: A multi-tenant knowledge assistant must isolate departments. Bind each authenticated user to an approved department claim. Apply that claim to retrieval through a trusted control. Test with paired allowed and denied documents. Inspect the final model input, not only the user-visible answer.",
+          "Misconception correction: A prompt that tells the model not to reveal records is not access control. Privacy minimization and IAM authorization solve different parts of the problem."
+        ]
+      },
+      {
+        "title": "Design implications",
+        "paragraphs": [
+          "Map data flows before choosing privacy controls. Identify what enters the prompt, what reaches logs, where outputs persist, and which principals can access each store. Use only the fields needed for the task. Define retention and deletion behavior for prompts, outputs, traces, and evaluation data. IAM policies should scope service actions and resources. Application authorization should scope records for each user. Review both controls together because a tightly scoped AWS role can still expose too many records through application logic."
+        ]
+      }
+    ],
+    "invariant": "Only data authorized for the authenticated caller may enter the model request or its accessible logs.",
+    "experiment": {
+      "steps": [
+        "Create two test identities with different permitted metadata partitions.",
+        "Change the retrieval filter to derive its partition from authenticated identity.",
+        "Ask each identity for a record in both partitions.",
+        "Inspect retrieved results and model inputs for cross-partition content."
+      ],
+      "prediction": "Correct identity-bound filters return only records allowed for each identity.",
+      "interpretation": "If any denied content reaches model input, block release and repair authorization before evaluating answer text."
+    },
+    "transferQuestion": "Predict the exposure if a shared retrieval role searches every document for every user.",
+    "transferAnswer": "The model can receive records the user cannot access. Restrict retrieval with trusted identity and authorization filters.",
+    "sources": [
+      "iam",
+      "data-protection",
+      "data-retention"
+    ]
+  },
+  {
+    "id": "deep-18",
+    "title": "Governance",
+    "keywords": [
+      "governance"
+    ],
+    "prerequisites": [
+      "deep-17"
+    ],
+    "idea": "Governance assigns owners and evidence for model, data, and application decisions.",
+    "sections": [
+      {
+        "title": "The smallest unit",
+        "paragraphs": [
+          "An AI application combines models, data, prompts, tools, and deployment settings. Each can change behavior or risk. Governance defines who approves these changes, which records teams keep, and how they respond to incidents."
+        ]
+      },
+      {
+        "title": "How the mechanism works",
+        "paragraphs": [
+          "Maintain a record of model choice, use case, data sources, evaluation results, prompt versions, guardrail settings, owners, and release approvals. Keep the record useful for the risk and regulatory setting. Do not collect sensitive prompt content when metadata can answer the audit question."
+        ]
+      },
+      {
+        "title": "Where it fits",
+        "paragraphs": [
+          "Set boundaries for acceptable use and human review. Define how users report an incorrect or unsafe answer. Specify how teams suspend a model route or data source. Governance must connect to actual release and operational controls, or it remains a document with no enforcement."
+        ]
+      },
+      {
+        "title": "Failure and control",
+        "paragraphs": [
+          "Review material changes to model, prompt, retrieval, tools, or data. A change in one layer can affect another. Keep a known-good version and a rollback path."
+        ]
+      },
+      {
+        "title": "Causal worked trace",
+        "paragraphs": [
+          "Causal trace: A model, prompt, dataset, and tool policy receive named versions. A change request identifies an owner and risk. Evaluation runs against the candidate versions. An approver reviews results and policy evidence. The release process deploys the approved set and retains a rollback target. If a prompt changes outside version control, a later incident cannot be tied reliably to the evaluated configuration."
+        ]
+      },
+      {
+        "title": "Failure diagnosis",
+        "paragraphs": [
+          "Failure diagnosis: Compare deployed and approved versions for model route, prompt, source data, guardrails, and tools. Identify the owner of each change. Check whether release evidence used representative cases. A missing record is a governance gap, while a poor answer can also be a technical defect."
+        ]
+      },
+      {
+        "title": "Transfer case and misconception",
+        "paragraphs": [
+          "Transfer case: A team adds a write tool to an agent. Update the system inventory, threat review, tool permissions, evaluation cases, human approval policy, and release record. Verify that the tool owner can disable the route during an incident.",
+          "Misconception correction: A governance document alone does not enforce policy. Controls need owners, release gates, technical checks, and a response path."
+        ]
+      },
+      {
+        "title": "Design implications",
+        "paragraphs": [
+          "Governance should scale with impact and data sensitivity. A low-risk internal summary may need fewer approval steps than an agent that changes financial records. Define an owner for each risk and an incident path. Keep records that help reproduce a decision, such as model route, prompt version, data source version, and evaluation result. Review vendor and service changes that can affect the system. Retire unused models and tools so stale permissions do not remain available.",
+          "The record should support an incident review without collecting more user data than needed. Limit access to review artifacts and define when teams must remove them."
+        ]
+      }
+    ],
+    "invariant": "A production behavior change must map to an identifiable version, owner, approval, and evidence set.",
+    "experiment": {
+      "steps": [
+        "Select a released prompt and evaluation record.",
+        "Change the prompt resource version without updating the release record in a test branch.",
+        "Run the release check and inspect whether the version mismatch is detected.",
+        "Update the record and repeat the check."
+      ],
+      "prediction": "A version-aware release gate should flag the untracked prompt change before promotion.",
+      "interpretation": "Make prompt and configuration versions explicit release inputs. Keep the gate tied to the deployed artifact."
+    },
+    "transferQuestion": "Predict why an untracked prompt edit can block incident analysis.",
+    "transferAnswer": "The team cannot link the response to the prompt version that shaped it. Version prompts and associate versions with evaluation and release records.",
+    "sources": [
+      "scope-ai-professional-01",
+      "data-protection",
+      "logging"
+    ]
+  },
+  {
+    "id": "deep-19",
+    "title": "Caching and cost",
+    "keywords": [
+      "caching",
+      "cost"
+    ],
+    "prerequisites": [
+      "deep-18"
+    ],
+    "idea": "Caching can reuse stable work, while cost control requires visibility into request components.",
+    "sections": [
+      {
+        "title": "The smallest unit",
+        "paragraphs": [
+          "Inference cost can depend on input, output, model, and service configuration. Retrieval, storage, evaluation, and orchestration also have costs. A low-cost model call can still create an expensive system if prompts are long or agents make many calls."
+        ]
+      },
+      {
+        "title": "How the mechanism works",
+        "paragraphs": [
+          "Prompt caching can reduce repeated processing for supported model and API configurations. Cache behavior, eligible content, and billing rules vary by model. Keep stable prompt prefixes consistent where caching applies. Verify cache metrics instead of assuming reuse. Never allow caching to cross user or data boundaries in a way that exposes private content."
+        ]
+      },
+      {
+        "title": "Where it fits",
+        "paragraphs": [
+          "Track request volume, input and output use, cache use, retrieval work, and retries. Set budgets or quotas at the right application boundary. Reduce unnecessary context before reducing answer quality. Route simple tasks to an adequate lower-cost model only after evaluation."
+        ]
+      },
+      {
+        "title": "Failure and control",
+        "paragraphs": [
+          "Use cost per successful task as a decision measure. This includes retries, review, and correction. Compare designs with the same task set and quality threshold."
+        ]
+      },
+      {
+        "title": "Causal worked trace",
+        "paragraphs": [
+          "Causal trace: A request repeats a stable prompt prefix and adds a changing user question. A supported model path can reuse eligible prefix computation through prompt caching. The service reports cache-related usage where supported. The application pays for remaining input, output, retrieval, and orchestration work. If the changing content appears before the stable prefix, cache reuse can decline."
+        ]
+      },
+      {
+        "title": "Failure diagnosis",
+        "paragraphs": [
+          "Failure diagnosis: Check model support, API configuration, cache eligibility, prefix order, and returned usage signals. Compare a repeated stable prefix with a changed prefix. If cost remains high, inspect total request volume, output length, retrieval, retries, and agent calls. Do not assume caching removes the cost of all work."
+        ]
+      },
+      {
+        "title": "Transfer case and misconception",
+        "paragraphs": [
+          "Transfer case: A system uses a long stable policy prompt for many requests. Place stable instructions before request-specific data when the selected model’s caching behavior supports that pattern. Exclude private user data from cross-user cache assumptions. Measure cache use and answer quality after the change.",
+          "Misconception correction: Cache reuse is conditional on supported models and request details. It is neither automatic for every request nor permission to share private context."
+        ]
+      },
+      {
+        "title": "Design implications",
+        "paragraphs": [
+          "Cost control begins with attribution. Associate requests with an application, task type, and model route where policy permits. Compare cost per accepted task instead of raw cost per call. A system with retries or agent loops can make several calls for one user request. Cache only eligible stable content, and protect isolation across users. Reduce irrelevant retrieved text and repeated history before lowering model capability. Review cache behavior after prompt edits because a small prefix change can affect reuse."
+        ]
+      }
+    ],
+    "invariant": "Caching can reduce repeated eligible processing, while each request still requires correct isolation and full cost accounting.",
+    "experiment": {
+      "steps": [
+        "Choose a supported model and record current prompt token usage and cache metrics.",
+        "Move the stable instruction block before the variable user content without changing text.",
+        "Repeat the same request sequence and record cache signals, latency, and answer quality.",
+        "Compare with a sequence that changes the stable prefix."
+      ],
+      "prediction": "A stable repeated prefix can improve reuse when the model and API support the cache path.",
+      "interpretation": "Retain the ordering only when measured reuse improves and request isolation remains correct."
+    },
+    "transferQuestion": "Predict why a longer prompt can raise cost even when the output stays short.",
+    "transferAnswer": "The request still processes more input context. Reuse stable content where supported and remove irrelevant context.",
+    "sources": [
+      "prompt-cache",
+      "model-parameters",
+      "logging"
+    ]
+  },
+  {
+    "id": "deep-20",
+    "title": "Throughput and latency",
+    "keywords": [
+      "throughput",
+      "latency"
+    ],
+    "prerequisites": [
+      "deep-19"
+    ],
+    "idea": "Throughput measures completed work over time, while latency measures time for one request.",
+    "sections": [
+      {
+        "title": "The smallest unit",
+        "paragraphs": [
+          "Users experience latency from the full request path. It can include authentication, retrieval, model queueing, generation, tool calls, and network transfer. Throughput depends on service capacity, request shape, concurrency, and downstream limits."
+        ]
+      },
+      {
+        "title": "How the mechanism works",
+        "paragraphs": [
+          "Streaming can show early output sooner without reducing total generation time. A smaller prompt can reduce input work. Parallel retrieval can reduce sequential wait when dependencies allow it. More concurrency can increase throughput until a shared limit or bottleneck appears. Measure under realistic request sizes and traffic patterns."
+        ]
+      },
+      {
+        "title": "Where it fits",
+        "paragraphs": [
+          "Use percentiles to understand slow requests, not only averages. Separate time spent in retrieval, model calls, tools, and application code. Apply timeouts that fit the user task. Avoid unbounded concurrency or retries because they can worsen overload."
+        ]
+      },
+      {
+        "title": "Failure and control",
+        "paragraphs": [
+          "Load tests should include normal and peak patterns, cold paths, large requests, and service errors. Confirm current quotas and capacity plans in the relevant account and Region."
+        ]
+      },
+      {
+        "title": "Causal worked trace",
+        "paragraphs": [
+          "Causal trace: A request enters the application, passes retrieval, calls a model, and may call tools. Each stage adds time. Streaming can expose the first model output before generation ends. Concurrency increases active work. When a downstream quota or capacity limit is reached, requests queue or fail. More clients can then increase tail latency instead of throughput."
+        ]
+      },
+      {
+        "title": "Failure diagnosis",
+        "paragraphs": [
+          "Failure diagnosis: Break latency into application, retrieval, model, tool, and network spans. Compare percentiles and error rates under realistic load. If only high concurrency degrades, inspect queues and quotas. If time to first token improves but total time does not, streaming changed perceived latency rather than total work."
+        ]
+      },
+      {
+        "title": "Transfer case and misconception",
+        "paragraphs": [
+          "Transfer case: A help desk sees long waits during peak traffic. Measure the full path at normal and peak request rates. Test a smaller prompt and bounded concurrency separately. Confirm current account quotas and deployment capacity before choosing a scaling strategy.",
+          "Misconception correction: More parallel requests do not always increase completed work per second. Shared limits can create queueing, throttling, and retry amplification."
+        ]
+      },
+      {
+        "title": "Design implications",
+        "paragraphs": [
+          "Latency budgets should reflect user needs and dependency behavior. Measure time to first output separately from time to final completion. A streaming design can improve the first measure while total work remains unchanged. Load tests should preserve realistic prompt sizes and retrieval patterns. Include throttling and timeout behavior. Scale one bottleneck at a time. If model time dominates, application parallelism may not help. If retrieval dominates, changing model capacity may have little effect.",
+          "Keep load-test results with the tested model route and request profile. A result from a different prompt size or Region may not predict production behavior.",
+          "Include a quota test and a recovery test after the load test."
+        ]
+      }
+    ],
+    "invariant": "Throughput improves only while added concurrency stays within the capacity of every required dependency.",
+    "experiment": {
+      "steps": [
+        "Set a representative request mix and fixed request rate.",
+        "Change the application concurrency limit from baseline L to a higher bounded value L2.",
+        "Measure completion rate, latency percentiles, throttling, and errors.",
+        "Repeat at a lower limit to identify the saturation point."
+      ],
+      "prediction": "Completion rate may rise before saturation, then level off or fall as queues and throttling increase.",
+      "interpretation": "Choose a concurrency limit from measured completion rate and latency, with headroom for dependency limits."
+    },
+    "transferQuestion": "Predict why higher concurrency may worsen both latency and error rates.",
+    "transferAnswer": "A downstream service can saturate. Requests queue or fail, so control concurrency and observe each dependency.",
+    "sources": [
+      "api-streaming",
+      "bedrock-provisioned",
+      "bedrock-errors"
+    ]
+  },
+  {
+    "id": "deep-21",
+    "title": "Observability",
+    "keywords": [
+      "observability"
+    ],
+    "prerequisites": [
+      "deep-20"
+    ],
+    "idea": "Observability links request traces, service metrics, and logs to explain system behavior.",
+    "sections": [
+      {
+        "title": "The smallest unit",
+        "paragraphs": [
+          "Metrics show rates and distributions. Logs record selected events. Traces connect stages in one request. Together they help locate delay, failure, and quality changes. Model text can be sensitive, so observability must include data minimization."
+        ]
+      },
+      {
+        "title": "How the mechanism works",
+        "paragraphs": [
+          "Record a request identifier, model or route, prompt version, retrieval outcome, tool names, latency, usage, and error class where policy allows. Amazon Bedrock model invocation logging can send invocation data to configured CloudWatch Logs or Amazon S3 destinations. Review what content enters those destinations and who can access it."
+        ]
+      },
+      {
+        "title": "Where it fits",
+        "paragraphs": [
+          "A trace should distinguish retrieval failure from generation failure. It should also show retries and partial stream outcomes. Avoid treating model output alone as a diagnostic record. Keep retention and access aligned with the data classification."
+        ]
+      },
+      {
+        "title": "Failure and control",
+        "paragraphs": [
+          "Use dashboards for service health and sampled review for answer quality. Alert on actionable conditions such as elevated error rate, latency, or empty retrieval. Do not alert on a metric without an owner and response path."
+        ]
+      },
+      {
+        "title": "Causal worked trace",
+        "paragraphs": [
+          "Causal trace: The application creates a trace identifier and sends a request. The gateway records route and policy result. Retrieval records safe source identifiers and timing. The model call records route, usage, and outcome. The response path records completion or error. These linked events let an operator locate a failure without storing every sensitive prompt or answer."
+        ]
+      },
+      {
+        "title": "Failure diagnosis",
+        "paragraphs": [
+          "Failure diagnosis: Check trace continuity across application, gateway, retrieval, model, and tool spans. A missing span indicates instrumentation or propagation gaps. A latency spike points to the slow stage. A quality issue needs evaluation evidence and prompt or retrieval versions. Logs without versions cannot explain behavior changes reliably."
+        ]
+      },
+      {
+        "title": "Transfer case and misconception",
+        "paragraphs": [
+          "Transfer case: A user reports a stale answer. Use the request identifier to inspect the route, prompt version, retrieval sources, sync age, and model outcome. Limit access to sensitive logs. Compare the retrieved source version with the authoritative object before changing model settings.",
+          "Misconception correction: More logging is not automatically better observability. Unneeded prompt capture can raise privacy risk without locating the failure boundary."
+        ]
+      },
+      {
+        "title": "Design implications",
+        "paragraphs": [
+          "Telemetry should answer specific operational questions. Decide which fields identify a route, version, stage, error, and outcome. Avoid high-cardinality labels that make metrics hard to use. Protect trace access because even metadata can reveal sensitive activity. Set retention based on incident and audit needs. Sample routine requests when full traces are costly, while preserving error traces when policy allows. Ensure operators can find the trace from a user report without exposing the report to every support role.",
+          "CloudTrail can support account activity review, while invocation logs support request diagnosis. Select each source for its operational purpose and retention policy."
+        ]
+      }
+    ],
+    "invariant": "A request must have enough safe, linked telemetry to locate its failing stage and configuration.",
+    "experiment": {
+      "steps": [
+        "Choose one synthetic request and enable a trace identifier across application stages.",
+        "Add a retrieval timing and source identifier event without full passage text.",
+        "Run the request with an induced retrieval delay in a test environment.",
+        "Inspect whether the trace identifies retrieval as the delayed stage."
+      ],
+      "prediction": "Linked stage timing should locate the delay while avoiding full sensitive content in logs.",
+      "interpretation": "Keep telemetry fields that answer an operational question. Add content capture only under approved need and controls."
+    },
+    "transferQuestion": "Predict what diagnostic gap remains if logs record only the final answer.",
+    "transferAnswer": "The team cannot see which evidence, prompt, model route, or tool result shaped the answer. Record safe request metadata across stages.",
+    "sources": [
+      "logging",
+      "bedrock-cloudtrail",
+      "evaluation-metrics"
+    ]
+  },
+  {
+    "id": "deep-22",
+    "title": "Evaluation",
+    "keywords": [
+      "evaluation"
+    ],
+    "prerequisites": [
+      "deep-21"
+    ],
+    "idea": "Evaluation tests whether a system meets defined quality and safety requirements.",
+    "sections": [
+      {
+        "title": "The smallest unit",
+        "paragraphs": [
+          "A model output can sound plausible and still be wrong. Evaluation starts with explicit criteria and representative examples. A dataset should cover normal requests, edge cases, and known failure risks. Human review may be needed for subjective judgments."
+        ]
+      },
+      {
+        "title": "How the mechanism works",
+        "paragraphs": [
+          "For RAG, separate retrieval measures from answer measures. Retrieval metrics can assess whether relevant evidence appears among results. Answer checks can assess correctness, relevance, completeness, and grounding. Safety evaluation can test configured policy boundaries. Use the same versioned test set to compare changes."
+        ]
+      },
+      {
+        "title": "Where it fits",
+        "paragraphs": [
+          "Automated metrics are proxies. They can disagree with expert judgment or reward superficial patterns. Calibrate them against reviewed examples. Record model, prompt, data, and configuration versions with the result. Do not claim quality from a small or unrepresentative sample."
+        ]
+      },
+      {
+        "title": "Failure and control",
+        "paragraphs": [
+          "Run evaluation before and after changes to model, prompt, chunking, retrieval, or guardrails. Investigate regressions by category. A higher average score can hide a severe failure on a critical use case."
+        ]
+      },
+      {
+        "title": "Causal worked trace",
+        "paragraphs": [
+          "Causal trace: An evaluation dataset pairs questions with expected evidence or outcomes. A retrieval-only run returns candidate passages. Metrics assess relevance and coverage. A retrieve-and-generate run also evaluates the answer, including correctness, completeness, faithfulness, or citation behavior. If retrieval coverage is poor, answer changes alone can hide the upstream defect."
+        ]
+      },
+      {
+        "title": "Failure diagnosis",
+        "paragraphs": [
+          "Failure diagnosis: Separate retrieval metrics from generated answer metrics. Inspect examples where context relevance is high but coverage is low. Inspect faithfulness failures when evidence is present. Confirm evaluator limits and human-reviewed examples. An aggregate score can hide critical failure categories or an unrepresentative dataset."
+        ]
+      },
+      {
+        "title": "Transfer case and misconception",
+        "paragraphs": [
+          "Transfer case: A team changes chunking. Run retrieval-only evaluation first to compare whether expected source passages appear. Then run retrieve-and-generate evaluation to assess answer impact. Keep dataset, model, and prompt fixed for the comparison, then inspect examples behind metric changes.",
+          "Misconception correction: A single evaluation score does not prove a system is reliable. Metrics are measures with scope, assumptions, and blind spots."
+        ]
+      },
+      {
+        "title": "Design implications",
+        "paragraphs": [
+          "Evaluation sets need stable versions and clear expected evidence. Include cases that expose known risks, such as stale sources, missing context, ambiguous questions, and policy exceptions. Keep a holdout set for decisions when repeated tuning may overfit a development set. Record evaluator model and configuration. Review samples where automated metrics disagree with human judgment. A metric can track a trend, but an owner must decide whether the change matters for the intended user and risk.",
+          "Do not tune against the final holdout set. Preserve that set for a later check after the chosen configuration is stable.",
+          "Document the reason for each acceptance threshold and the owner who approved it."
+        ]
+      }
+    ],
+    "invariant": "A quality claim must match the evaluated task, data, configuration, metric, and known limits.",
+    "experiment": {
+      "steps": [
+        "Select a fixed dataset with questions and expected supporting passages.",
+        "Change the retrieval result count from baseline K to K2.",
+        "Run retrieve-only evaluation and record context relevance and coverage.",
+        "Run retrieve-and-generate evaluation on the same cases and inspect faithfulness and citations."
+      ],
+      "prediction": "A higher result count may improve coverage while lowering relevance or increasing context noise.",
+      "interpretation": "Choose K from both retrieval and answer measures. Review individual failures before accepting an aggregate improvement."
+    },
+    "transferQuestion": "Predict why answer accuracy alone does not diagnose a RAG failure.",
+    "transferAnswer": "The answer can be wrong because retrieval missed the evidence or because generation misused it. Measure both stages.",
+    "sources": [
+      "evaluation",
+      "evaluation-metrics",
+      "retrieval"
+    ]
+  },
+  {
+    "id": "deep-23",
+    "title": "Troubleshooting",
+    "keywords": [
+      "troubleshooting"
+    ],
+    "prerequisites": [
+      "deep-22"
+    ],
+    "idea": "Troubleshooting locates the first failed boundary and tests a targeted cause.",
+    "sections": [
+      {
+        "title": "The smallest unit",
+        "paragraphs": [
+          "A model application crosses boundaries: client, identity, API, model access, retrieval, network, and output parsing. Start with the error type and request identifier. Compare expected and actual request shape. Confirm the caller, Region, model route, and permissions."
+        ]
+      },
+      {
+        "title": "How the mechanism works",
+        "paragraphs": [
+          "Access denied points toward identity or resource policy. Throttling points toward quota or burst behavior. Validation errors point toward request shape or unsupported settings. A timeout can mean the client ended before the service completed. A service error can be transient, but repeated retries can hide the real cause."
+        ]
+      },
+      {
+        "title": "Where it fits",
+        "paragraphs": [
+          "Reproduce with the smallest request that preserves the fault. Change one variable at a time. Check current service documentation for the named error and model support. Keep secrets out of diagnostic output. Confirm whether any side effect completed before retrying a timed-out tool action."
+        ]
+      },
+      {
+        "title": "Failure and control",
+        "paragraphs": [
+          "After a fix, test the original path and the failure case. Record the root cause and prevention control. A workaround that increases retries may reduce symptoms while raising cost and load."
+        ]
+      },
+      {
+        "title": "Causal worked trace",
+        "paragraphs": [
+          "Causal trace: A client sends a request with a model identifier and body. The service returns an error class and request information. The application classifies the error as access, validation, throttling, timeout, or service failure. It checks configuration or applies a bounded retry only where appropriate. If the same invalid parameter is retried, the same validation failure repeats without progress."
+        ]
+      },
+      {
+        "title": "Failure diagnosis",
+        "paragraphs": [
+          "Failure diagnosis: Read the error class before changing code. Access denial requires identity or policy review. Validation requires payload or model setting correction. Throttling requires quota and rate handling. Timeouts require checking completion state. Service errors may be transient. Preserve request identifiers while removing secrets from diagnostics."
+        ]
+      },
+      {
+        "title": "Transfer case and misconception",
+        "paragraphs": [
+          "Transfer case: An application sees throttling during a burst. Inspect attempt rates and account quota. Apply bounded backoff with jitter and cap concurrent work. Re-test under expected traffic. If errors persist at normal demand, review quota or capacity rather than increasing retries.",
+          "Misconception correction: Retrying every error does not improve resilience. It can repeat permanent failures and amplify load during an outage."
+        ]
+      },
+      {
+        "title": "Design implications",
+        "paragraphs": [
+          "Use a decision tree that starts with error class and request state. Confirm whether the service received the request and whether an external action may have completed. Capture request identifiers and relevant configuration while redacting credentials and personal data. Check service status and quotas only when the error points there. Change one cause at a time. Document the verified root cause and prevention step. This avoids turning a temporary workaround into permanent retry behavior.",
+          "Separate client-side timeouts from service errors. A client timeout does not prove that the service stopped processing the request."
+        ]
+      }
+    ],
+    "invariant": "The recovery action must match the diagnosed error class and the operation’s repeat safety.",
+    "experiment": {
+      "steps": [
+        "Use a test request that returns a known throttling response.",
+        "Set a bounded retry policy with backoff for throttling only.",
+        "Repeat with a validation error and confirm that it receives no retry.",
+        "Record attempts, final result, and elapsed time."
+      ],
+      "prediction": "The throttled request can recover when service capacity returns. The invalid request stops after its first validation failure.",
+      "interpretation": "Keep error-specific retry rules and bounded attempts. Correct permanent request or permission defects directly."
+    },
+    "transferQuestion": "Predict the right first action for a validation error caused by an unsupported parameter.",
+    "transferAnswer": "Remove or correct the parameter according to the model API. Retrying the same request will repeat the same failure.",
+    "sources": [
+      "bedrock-errors",
+      "converse-api",
+      "iam"
+    ]
+  },
+  {
+    "id": "deep-24",
+    "title": "CI/CD for AI applications",
+    "keywords": [
+      "ci",
+      "cd",
+      "for",
+      "ai",
+      "applications"
+    ],
+    "prerequisites": [
+      "deep-23"
+    ],
+    "idea": "CI/CD applies repeatable checks and controlled release steps to AI system changes.",
+    "sections": [
+      {
+        "title": "The smallest unit",
+        "paragraphs": [
+          "An AI application has code plus behavior configuration. Prompts, evaluation data, retrieval settings, guardrails, model routes, and infrastructure can all change output. A release process should identify each changed component and its owner."
+        ]
+      },
+      {
+        "title": "How the mechanism works",
+        "paragraphs": [
+          "Use source control for prompts and infrastructure where possible. Run schema checks, security checks, and evaluation before release. Deploy to a test environment with representative data controls. Promote a version only when it meets the release criteria. Keep the prior version available for rollback."
+        ]
+      },
+      {
+        "title": "Where it fits",
+        "paragraphs": [
+          "Model behavior can change when a provider updates a model or when the application changes its context. Pin supported versions where the service offers that control. Record the exact route and settings used in evaluation. Use staged rollout for changes with broad user impact."
+        ]
+      },
+      {
+        "title": "Failure and control",
+        "paragraphs": [
+          "A deployment pipeline cannot prove every answer is safe. It can make known checks repeatable and expose regressions before broad release. Pair automated checks with human review for high-impact cases."
+        ]
+      },
+      {
+        "title": "Causal worked trace",
+        "paragraphs": [
+          "Causal trace: A developer changes a prompt, model route, or retrieval setting. Source control records the change. CI validates schemas and runs the evaluation set. A release gate compares results with acceptance criteria. Deployment promotes the approved version. A rollback restores the prior version if production signals regress. If prompts are outside source control, code checks can pass while behavior changes unnoticed."
+        ]
+      },
+      {
+        "title": "Failure diagnosis",
+        "paragraphs": [
+          "Failure diagnosis: Identify which artifact changed, then compare its evaluated version with the deployed version. Check data and model route alongside code. If CI passed but production fails, compare environment, identity, source freshness, and traffic pattern. An evaluation pass covers only its cases and must not be treated as universal proof."
+        ]
+      },
+      {
+        "title": "Transfer case and misconception",
+        "paragraphs": [
+          "Transfer case: A team updates a prompt and tool schema in one release. Version both artifacts. Run schema checks, security checks, and task evaluation. Deploy to a test environment with safe representative data. Promote only after approval, and retain the prior prompt and configuration for rollback.",
+          "Misconception correction: CI/CD can repeat known checks and control release steps. It cannot prove every possible model response is correct or safe."
+        ]
+      },
+      {
+        "title": "Design implications",
+        "paragraphs": [
+          "Treat prompts, evaluation cases, retrieval configuration, guardrail settings, and infrastructure as release artifacts. A pipeline can lint schemas, run tests, compare evaluation results, and require approvals. Use environment-specific identities and data. Keep secrets in managed secret stores, not source control. Stage broad changes when practical and monitor post-release indicators. Define rollback triggers before release. A rollback must restore compatible model, prompt, index, and tool versions, not only application code.",
+          "For RAG releases, record the index or sync state used by evaluation. A prompt check against stale test data may not predict production answers."
+        ]
+      }
+    ],
+    "invariant": "Every behavior-affecting artifact must be versioned, evaluated, and traceable to the deployed release.",
+    "experiment": {
+      "steps": [
+        "Select a prompt and evaluation baseline under version control.",
+        "Change one prompt instruction and commit the new version.",
+        "Run the release pipeline and compare evaluation output with the baseline.",
+        "Attempt promotion with the old evaluation record, then with a record for the new version."
+      ],
+      "prediction": "A version-aware gate should reject a candidate whose evaluation record does not match the changed prompt.",
+      "interpretation": "Bind evaluation evidence to exact artifact versions. Keep promotion and rollback tied to those versions."
+    },
+    "transferQuestion": "Predict why a code-only pipeline misses a prompt regression.",
+    "transferAnswer": "Prompt text can change behavior without changing application code. Version and evaluate prompts as release inputs.",
+    "sources": [
+      "evaluation",
+      "prompt-management",
+      "sagemaker-deploy"
+    ]
+  }
+]

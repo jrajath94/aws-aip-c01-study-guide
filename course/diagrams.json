@@ -1,28 +1,549 @@
 {
-"rag":{"title":"Evidence path","steps":[["Question","Authenticate the caller and identify the task."],["Retrieve","Search current authorized chunks with metadata filters."],["Generate","Send bounded evidence and instructions to the model."],["Verify","Check source support, citations, schema, and safety."]]},
-"secure-rag":{"title":"Tenant boundary","steps":[["Verified identity","Derive tenant and role on the server."],["Filtered retrieval","Apply source permissions before the model sees evidence."],["Bounded inference","Use approved model, prompt, and safety policy."],["Protected response","Validate evidence and restrict logs and caches."]]},
-"ingest":{"title":"Source to index","steps":[["Source event","S3, connector, or approved enterprise change event."],["Extract and validate","Parse text and tables. Check data quality and permissions."],["Chunk and embed","Preserve source version and use a compatible embedding model."],["Index and verify","Upsert or delete vectors. Measure freshness and ingestion errors."]]},
-"gateway":{"title":"Governed model access","steps":[["Client identity","Authenticate and derive trusted access context."],["Gateway","Validate requests and enforce budgets and policy."],["Model adapter","Apply compatible schema, prompt version, and model route."],["Telemetry","Correlate model use, evidence, quality, and cost."]]},
-"resilience":{"title":"Controlled failure path","steps":[["Invoke","Apply deadline and concurrency limits."],["Classify failure","Distinguish invalid input, denied access, throttle, and transient fault."],["Retry or break","Use bounded jittered retries and a circuit breaker."],["Fallback or stop","Preserve quality, residency, permissions, and user-visible status."]]},
-"vector":{"title":"Semantic retrieval","steps":[["Document vectors","Embed each permitted chunk and preserve source metadata."],["Query vector","Use a compatible embedding configuration."],["Candidate search","Apply access filters and compare vectors or hybrid scores."],["Ranked evidence","Return passages with references. Score meaning remains model-specific."]]},
-"chunk":{"title":"Parent and child context","steps":[["Document","Keep sections, tables, and source locations intact."],["Child chunks","Embed smaller passages for precise candidate matches."],["Parent context","Replace matching children with broader parents where configured."],["Prompt budget","Deduplicate context and reserve output tokens."]]},
-"rerank":{"title":"Two-stage retrieval","steps":[["User query","Preserve intent, exact terms, and data access scope."],["Candidate set","Use vector or hybrid search to obtain relevant candidates."],["Reranker","Score the available candidates against the query."],["Final context","Select supported evidence within the prompt budget."]]},
-"chat":{"title":"Conversation state","steps":[["Session lookup","Verify ownership and load required structured constraints."],["Context assembly","Select recent history, tested summaries, and evidence."],["Model call","Use approved instructions and a bounded token budget."],["State update","Validate the result and store only permitted state."]]},
-"workflow":{"title":"Fixed document workflow","steps":[["Extract","Convert the supported document into fields and evidence."],["Validate","Check schema, required values, and source support."],["Branch","Route exceptions to review under explicit rules."],["Persist","Write authorized results and record the operation."]]},
-"agent":{"title":"Agent action loop","steps":[["Plan next step","Use task state and available tool schemas."],["Authorize tool","Validate identity, parameters, budget, and any required approval."],["Execute and observe","Call the tool with retry safety. Record the result."],["Continue or stop","Update state. Enforce success, step limit, and deadline."]]},
-"multiagent":{"title":"Specialist coordination","steps":[["Supervisor","Split the task and enforce shared constraints."],["Specialists","Use narrow task contracts and scoped tool access."],["Evidence synthesis","Compare findings and resolve conflicting evidence."],["Final validation","Evaluate the combined result and total task cost."]]},
-"approval":{"title":"Controlled transaction","steps":[["Propose","Prepare the exact operation from current authorized evidence."],["Validate","Check business rules, actor scope, amount, and parameters."],["Approve","Bind human approval to the exact action and expiry."],["Execute once","Use an idempotency key and confirm transaction status."]]},
-"tool":{"title":"Tool trust boundary","steps":[["Model proposal","Treat arguments as untrusted input."],["Server validation","Validate schema, permissions, business rules, and destination."],["Operation","Execute with deadline and side-effect safeguards."],["Tool result","Return a typed result or classified failure."]]},
-"mcp":{"title":"MCP tool access","steps":[["Agent client","Discover tools through the supported protocol."],["MCP server","Expose explicit names, schemas, and controlled capabilities."],["Authorization","Resolve identity and restrict resource and operation scope."],["System of record","Call the approved API and return verified results."]]},
-"agentcore":{"title":"AgentCore responsibilities","steps":[["Runtime","Execute the selected agent framework in a supported environment."],["Gateway and identity","Connect approved tools with suitable identity controls."],["Memory","Maintain permitted task and user state."],["Observability","Trace task behavior, tool operations, latency, and failures."]]},
-"cascade":{"title":"Capability-aware routing","steps":[["Task classification","Identify required capability and hard constraints."],["Validated small path","Use a smaller model for proven suitable tasks."],["Escalation","Move unsupported or difficult tasks to an approved capable path."],["Evaluation","Compare total task quality, latency, and cost."]]},
-"async":{"title":"Durable async request","steps":[["API request","Validate the task and return an operation identifier."],["Queue and worker","Apply backpressure and perform supported inference work."],["Result store","Persist status and output with access controls."],["Client status","Poll or receive an approved notification of completion."]]},
-"stream":{"title":"End-to-end streaming","steps":[["Model stream","Receive supported content blocks and completion events."],["Application","Track state, safety checks, cancellation, and errors."],["Transport","Use a compatible unbuffered integration and client protocol."],["Client","Show partial output and distinguish final validated content."]]},
-"safety":{"title":"Defense in depth","steps":[["Input and evidence","Check harmful content and indirect instruction attacks."],["Model controls","Use supported safety policies and bounded instructions."],["Tool boundary","Enforce permission and validate every side effect."],["Output controls","Check policy, sensitive data, structure, and evidence."]]},
-"private":{"title":"Private inference path","steps":[["Private application","Use a role and private subnet network controls."],["Interface endpoint","Configure security groups, private DNS, and endpoint policy."],["Bedrock runtime","Authorize the exact model or approved inference profile."],["Data services","Use separate access and encryption controls for sources and logs."]]},
-"pii":{"title":"Sensitive data lifecycle","steps":[["Discover","Classify source data and locate sensitive fields."],["Minimize","Redact or tokenize fields that the task does not require."],["Process","Use approved model access, permissions, and output policy."],["Retain or delete","Apply policy to sources, vectors, caches, histories, and logs."]]},
-"cache":{"title":"Cache decision","steps":[["Request scope","Resolve identity, source version, model, prompt, and policy."],["Eligible result","Reuse only a valid authorized exact or semantic result."],["Prompt reuse","Use supported prefix caching on a model invocation."],["Invalidate","Expire content after data, permission, model, or policy changes."]]},
-"latency":{"title":"Request critical path","steps":[["Access","Measure authentication and gateway work."],["Evidence","Measure retrieval and rerank time."],["Inference","Measure first token, completion time, and output length."],["Tools and response","Measure downstream work and client delivery."]]},
-"observe":{"title":"Correlated operations","steps":[["Request context","Propagate correlation ID and version identifiers."],["Stage telemetry","Record retrieval, model, and tool performance."],["Quality signals","Evaluate sampled answers and task completion."],["Action","Alert the owner and execute tested remediation."]]},
-"eval":{"title":"Release quality gate","steps":[["Versioned candidate","Freeze model, prompt, retrieval, data, and tool settings."],["Held-out tests","Run task, safety, latency, and cost evaluations."],["Decision gate","Compare required thresholds and critical failures."],["Controlled rollout","Use canary or shadow validation and a rollback target."]]}
+  "rag": {
+    "title": "Evidence path",
+    "steps": [
+      [
+        "Question",
+        "Authenticate the caller and identify the task."
+      ],
+      [
+        "Retrieve",
+        "Search current authorized chunks with metadata filters."
+      ],
+      [
+        "Generate",
+        "Send bounded evidence and instructions to the model."
+      ],
+      [
+        "Verify",
+        "Check source support, citations, schema, and safety."
+      ]
+    ]
+  },
+  "secure-rag": {
+    "title": "Tenant boundary",
+    "steps": [
+      [
+        "Verified identity",
+        "Derive tenant and role on the server."
+      ],
+      [
+        "Filtered retrieval",
+        "Apply source permissions before the model sees evidence."
+      ],
+      [
+        "Bounded inference",
+        "Use approved model, prompt, and safety policy."
+      ],
+      [
+        "Protected response",
+        "Validate evidence and restrict logs and caches."
+      ]
+    ]
+  },
+  "ingest": {
+    "title": "Source to index",
+    "steps": [
+      [
+        "Source event",
+        "S3, connector, or approved enterprise change event."
+      ],
+      [
+        "Extract and validate",
+        "Parse text and tables. Check data quality and permissions."
+      ],
+      [
+        "Chunk and embed",
+        "Preserve source version and use a compatible embedding model."
+      ],
+      [
+        "Index and verify",
+        "Upsert or delete vectors. Measure freshness and ingestion errors."
+      ]
+    ]
+  },
+  "gateway": {
+    "title": "Governed model access",
+    "steps": [
+      [
+        "Client identity",
+        "Authenticate and derive trusted access context."
+      ],
+      [
+        "Gateway",
+        "Validate requests and enforce budgets and policy."
+      ],
+      [
+        "Model adapter",
+        "Apply compatible schema, prompt version, and model route."
+      ],
+      [
+        "Telemetry",
+        "Correlate model use, evidence, quality, and cost."
+      ]
+    ]
+  },
+  "resilience": {
+    "title": "Controlled failure path",
+    "steps": [
+      [
+        "Invoke",
+        "Apply deadline and concurrency limits."
+      ],
+      [
+        "Classify failure",
+        "Distinguish invalid input, denied access, throttle, and transient fault."
+      ],
+      [
+        "Retry or break",
+        "Use bounded jittered retries and a circuit breaker."
+      ],
+      [
+        "Fallback or stop",
+        "Preserve quality, residency, permissions, and user-visible status."
+      ]
+    ]
+  },
+  "vector": {
+    "title": "Semantic retrieval",
+    "steps": [
+      [
+        "Document vectors",
+        "Embed each permitted chunk and preserve source metadata."
+      ],
+      [
+        "Query vector",
+        "Use a compatible embedding configuration."
+      ],
+      [
+        "Candidate search",
+        "Apply access filters and compare vectors or hybrid scores."
+      ],
+      [
+        "Ranked evidence",
+        "Return passages with references. Score meaning remains model-specific."
+      ]
+    ]
+  },
+  "chunk": {
+    "title": "Parent and child context",
+    "steps": [
+      [
+        "Document",
+        "Keep sections, tables, and source locations intact."
+      ],
+      [
+        "Child chunks",
+        "Embed smaller passages for precise candidate matches."
+      ],
+      [
+        "Parent context",
+        "Replace matching children with broader parents where configured."
+      ],
+      [
+        "Prompt budget",
+        "Deduplicate context and reserve output tokens."
+      ]
+    ]
+  },
+  "rerank": {
+    "title": "Two-stage retrieval",
+    "steps": [
+      [
+        "User query",
+        "Preserve intent, exact terms, and data access scope."
+      ],
+      [
+        "Candidate set",
+        "Use vector or hybrid search to obtain relevant candidates."
+      ],
+      [
+        "Reranker",
+        "Score the available candidates against the query."
+      ],
+      [
+        "Final context",
+        "Select supported evidence within the prompt budget."
+      ]
+    ]
+  },
+  "chat": {
+    "title": "Conversation state",
+    "steps": [
+      [
+        "Session lookup",
+        "Verify ownership and load required structured constraints."
+      ],
+      [
+        "Context assembly",
+        "Select recent history, tested summaries, and evidence."
+      ],
+      [
+        "Model call",
+        "Use approved instructions and a bounded token budget."
+      ],
+      [
+        "State update",
+        "Validate the result and store only permitted state."
+      ]
+    ]
+  },
+  "workflow": {
+    "title": "Fixed document workflow",
+    "steps": [
+      [
+        "Extract",
+        "Convert the supported document into fields and evidence."
+      ],
+      [
+        "Validate",
+        "Check schema, required values, and source support."
+      ],
+      [
+        "Branch",
+        "Route exceptions to review under explicit rules."
+      ],
+      [
+        "Persist",
+        "Write authorized results and record the operation."
+      ]
+    ]
+  },
+  "agent": {
+    "title": "Agent action loop",
+    "steps": [
+      [
+        "Plan next step",
+        "Use task state and available tool schemas."
+      ],
+      [
+        "Authorize tool",
+        "Validate identity, parameters, budget, and any required approval."
+      ],
+      [
+        "Execute and observe",
+        "Call the tool with retry safety. Record the result."
+      ],
+      [
+        "Continue or stop",
+        "Update state. Enforce success, step limit, and deadline."
+      ]
+    ]
+  },
+  "multiagent": {
+    "title": "Specialist coordination",
+    "steps": [
+      [
+        "Supervisor",
+        "Split the task and enforce shared constraints."
+      ],
+      [
+        "Specialists",
+        "Use narrow task contracts and scoped tool access."
+      ],
+      [
+        "Evidence synthesis",
+        "Compare findings and resolve conflicting evidence."
+      ],
+      [
+        "Final validation",
+        "Evaluate the combined result and total task cost."
+      ]
+    ]
+  },
+  "approval": {
+    "title": "Controlled transaction",
+    "steps": [
+      [
+        "Propose",
+        "Prepare the exact operation from current authorized evidence."
+      ],
+      [
+        "Validate",
+        "Check business rules, actor scope, amount, and parameters."
+      ],
+      [
+        "Approve",
+        "Bind human approval to the exact action and expiry."
+      ],
+      [
+        "Execute once",
+        "Use an idempotency key and confirm transaction status."
+      ]
+    ]
+  },
+  "tool": {
+    "title": "Tool trust boundary",
+    "steps": [
+      [
+        "Model proposal",
+        "Treat arguments as untrusted input."
+      ],
+      [
+        "Server validation",
+        "Validate schema, permissions, business rules, and destination."
+      ],
+      [
+        "Operation",
+        "Execute with deadline and side-effect safeguards."
+      ],
+      [
+        "Tool result",
+        "Return a typed result or classified failure."
+      ]
+    ]
+  },
+  "mcp": {
+    "title": "MCP tool access",
+    "steps": [
+      [
+        "Agent client",
+        "Discover tools through the supported protocol."
+      ],
+      [
+        "MCP server",
+        "Expose explicit names, schemas, and controlled capabilities."
+      ],
+      [
+        "Authorization",
+        "Resolve identity and restrict resource and operation scope."
+      ],
+      [
+        "System of record",
+        "Call the approved API and return verified results."
+      ]
+    ]
+  },
+  "agentcore": {
+    "title": "AgentCore responsibilities",
+    "steps": [
+      [
+        "Runtime",
+        "Execute the selected agent framework in a supported environment."
+      ],
+      [
+        "Gateway and identity",
+        "Connect approved tools with suitable identity controls."
+      ],
+      [
+        "Memory",
+        "Maintain permitted task and user state."
+      ],
+      [
+        "Observability",
+        "Trace task behavior, tool operations, latency, and failures."
+      ]
+    ],
+    "kind": "components"
+  },
+  "cascade": {
+    "title": "Conditional model escalation",
+    "steps": [
+      [
+        "Task classification",
+        "Identify required capability and hard constraints."
+      ],
+      [
+        "Validated small path",
+        "Use a smaller model for proven suitable tasks."
+      ],
+      [
+        "Escalate only when required",
+        "Invoke an approved capable path when the validated small path cannot satisfy the task."
+      ],
+      [
+        "Evaluation",
+        "Compare total task quality, latency, and cost."
+      ]
+    ]
+  },
+  "async": {
+    "title": "Durable async request",
+    "steps": [
+      [
+        "API request",
+        "Validate the task and return an operation identifier."
+      ],
+      [
+        "Queue and worker",
+        "Apply backpressure and perform supported inference work."
+      ],
+      [
+        "Result store",
+        "Persist status and output with access controls."
+      ],
+      [
+        "Client status",
+        "Poll or receive an approved notification of completion."
+      ]
+    ]
+  },
+  "stream": {
+    "title": "End-to-end streaming",
+    "steps": [
+      [
+        "Model stream",
+        "Receive supported content blocks and completion events."
+      ],
+      [
+        "Application",
+        "Track state, safety checks, cancellation, and errors."
+      ],
+      [
+        "Transport",
+        "Use a compatible unbuffered integration and client protocol."
+      ],
+      [
+        "Client",
+        "Show partial output and distinguish final validated content."
+      ]
+    ]
+  },
+  "safety": {
+    "title": "Defense in depth",
+    "steps": [
+      [
+        "Input and evidence",
+        "Check harmful content and indirect instruction attacks."
+      ],
+      [
+        "Model controls",
+        "Use supported safety policies and bounded instructions."
+      ],
+      [
+        "Tool boundary",
+        "Enforce permission and validate every side effect."
+      ],
+      [
+        "Output controls",
+        "Check policy, sensitive data, structure, and evidence."
+      ]
+    ]
+  },
+  "private": {
+    "title": "Private inference path",
+    "steps": [
+      [
+        "Private application",
+        "Use a role and private subnet network controls."
+      ],
+      [
+        "Interface endpoint",
+        "Configure security groups, private DNS, and endpoint policy."
+      ],
+      [
+        "Bedrock runtime",
+        "Authorize the exact model or approved inference profile."
+      ],
+      [
+        "Data services",
+        "Use separate access and encryption controls for sources and logs."
+      ]
+    ]
+  },
+  "pii": {
+    "title": "Sensitive data lifecycle",
+    "steps": [
+      [
+        "Discover",
+        "Classify source data and locate sensitive fields."
+      ],
+      [
+        "Minimize",
+        "Redact or tokenize fields that the task does not require."
+      ],
+      [
+        "Process",
+        "Use approved model access, permissions, and output policy."
+      ],
+      [
+        "Retain or delete",
+        "Apply policy to sources, vectors, caches, histories, and logs."
+      ]
+    ]
+  },
+  "cache": {
+    "title": "Cache lookup and miss path",
+    "steps": [
+      [
+        "Request scope",
+        "Resolve identity, source version, model, prompt, and policy."
+      ],
+      [
+        "Result cache lookup",
+        "Return a valid authorized hit. On a miss, continue to the model path."
+      ],
+      [
+        "Prompt reuse",
+        "Use supported prefix caching on a model invocation."
+      ],
+      [
+        "Cache maintenance",
+        "Invalidate eligible entries after data, permission, model, or policy changes."
+      ]
+    ]
+  },
+  "latency": {
+    "title": "Request critical path",
+    "steps": [
+      [
+        "Access",
+        "Measure authentication and gateway work."
+      ],
+      [
+        "Evidence",
+        "Measure retrieval and rerank time."
+      ],
+      [
+        "Inference",
+        "Measure first token, completion time, and output length."
+      ],
+      [
+        "Tools and response",
+        "Measure downstream work and client delivery."
+      ]
+    ]
+  },
+  "observe": {
+    "title": "Correlated operations",
+    "steps": [
+      [
+        "Request context",
+        "Propagate correlation ID and version identifiers."
+      ],
+      [
+        "Stage telemetry",
+        "Record retrieval, model, and tool performance."
+      ],
+      [
+        "Quality signals",
+        "Evaluate sampled answers and task completion."
+      ],
+      [
+        "Action",
+        "Alert the owner and execute tested remediation."
+      ]
+    ]
+  },
+  "eval": {
+    "title": "Release quality gate",
+    "steps": [
+      [
+        "Versioned candidate",
+        "Freeze model, prompt, retrieval, data, and tool settings."
+      ],
+      [
+        "Held-out tests",
+        "Run task, safety, latency, and cost evaluations."
+      ],
+      [
+        "Decision gate",
+        "Compare required thresholds and critical failures."
+      ],
+      [
+        "Controlled rollout",
+        "Use canary or shadow validation and a rollback target."
+      ]
+    ]
+  }
 }

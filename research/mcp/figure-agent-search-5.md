@@ -1,0 +1,302 @@
+{
+  "search_results": [
+    {
+      "rank_order": 1,
+      "url": "https://docs.aws.amazon.com/solutions/aws-genai-cost-optimization-kiro-power/index.html",
+      "title": "prompt caching opportunities",
+      "context": "A cost optimization pattern where repeated prompt content is cached to reduce token processing costs in Amazon Bedrock",
+      "recommended_sections": null,
+      "sections": null,
+      "metadata": null
+    },
+    {
+      "rank_order": 2,
+      "url": "https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-minimax-minimax-m2-1.html",
+      "title": "Amazon Bedrock Implicit Prompt Caching",
+      "context": "Amazon Bedrock feature that automatically caches prompt content to speed up repeated inference requests",
+      "recommended_sections": [
+        "Capabilities and Features"
+      ],
+      "sections": null,
+      "metadata": {
+        "additional_urls": [
+          {
+            "url": "https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-xai-grok-4-7.html",
+            "section_title": "Capabilities and Features",
+            "section_anchor": "model-card-xai-grok-4-7-capabilities"
+          },
+          {
+            "url": "https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-anthropic-claude-mythos-5.html",
+            "section_title": "Capabilities and Features",
+            "section_anchor": "model-card-anthropic-claude-mythos-5-capabilities"
+          }
+        ]
+      }
+    },
+    {
+      "rank_order": 3,
+      "url": "https://docs.aws.amazon.com/prescriptive-guidance/latest/gen-ai-inference-architecture-and-best-practices-on-aws/amazon-bedrock.html",
+      "title": "Amazon Bedrock prompt caching",
+      "context": "A feature that caches prompt prefixes to reduce cost and latency, with implicit and explicit variants supported on the Responses API",
+      "recommended_sections": [
+        "Inference optimizations and configurations"
+      ],
+      "sections": null,
+      "metadata": {
+        "additional_urls": [
+          {
+            "url": "https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-openai-gpt-56-cyber.html",
+            "section_title": "Pricing",
+            "section_anchor": "model-card-openai-gpt-56-cyber-pricing"
+          },
+          {
+            "url": "https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-anthropic-claude-fable-5.html",
+            "section_title": "Capabilities and Features",
+            "section_anchor": "model-card-anthropic-claude-fable-5-capabilities"
+          }
+        ]
+      }
+    },
+    {
+      "rank_order": 4,
+      "url": "https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-openai-gpt-56-terra.html",
+      "title": "Input — 30-minute cache write",
+      "context": "Pricing dimension representing the cost per 1 million tokens written to the prompt cache with a 30-minute retention window",
+      "recommended_sections": [
+        "Commercial Regions — short context (272K input tokens or fewer)",
+        "Pricing",
+        "Short context (272K input tokens or fewer)"
+      ],
+      "sections": null,
+      "metadata": null
+    },
+    {
+      "rank_order": 5,
+      "url": "https://docs.aws.amazon.com/bedrock/latest/userguide/prompt-caching.html",
+      "title": "prompt caching",
+      "context": "Amazon Bedrock feature that retains cached prompt prefixes for a defined duration to reduce redundant token processing",
+      "recommended_sections": [
+        "Prompt caching for faster model inference",
+        "Implicit Prompt Caching",
+        "Types of prompt caching",
+        "Prompt caching for models from Anthropic"
+      ],
+      "sections": null,
+      "metadata": {
+        "additional_urls": [
+          {
+            "url": "https://docs.aws.amazon.com/wellarchitected/latest/agentic-ai-lens/agentcost02-bp03.html",
+            "section_title": "Resources",
+            "section_anchor": "resources"
+          }
+        ]
+      }
+    },
+    {
+      "rank_order": 6,
+      "url": "https://docs.aws.amazon.com/guidance/latest/cloud-intelligence-dashboards/whats-new.html",
+      "title": "prompt caching efficiency visual",
+      "context": "A CUDOS Dashboard visual that tracks the ratio of cache reads to cache writes for Amazon Bedrock prompt caching.",
+      "recommended_sections": [
+        "CUDOS Dashboard v5.9.0: Amazon Bedrock token usage and prompt caching insights (August 12, 2026)"
+      ],
+      "sections": null,
+      "metadata": null
+    },
+    {
+      "rank_order": 7,
+      "url": "https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-anthropic-claude-mythos-5.html",
+      "title": "Amazon Bedrock Explicit Prompt Caching",
+      "context": "Amazon Bedrock feature that allows users to explicitly mark prompt checkpoints for caching with configurable TTL",
+      "recommended_sections": [
+        "Capabilities and Features"
+      ],
+      "sections": null,
+      "metadata": null
+    },
+    {
+      "rank_order": 8,
+      "url": "https://docs.aws.amazon.com/wellarchitected/latest/generative-ai-lens/smbdb-knowledge-worker-co-pilot.html",
+      "title": "Bedrock Intelligent Prompt Routing",
+      "context": "An Amazon Bedrock cost optimization feature that automatically routes requests to the most cost-effective model meeting quality requirements.",
+      "recommended_sections": [
+        "Amazon Bedrock AI orchestration",
+        "Reference architecture"
+      ],
+      "sections": null,
+      "metadata": null
+    },
+    {
+      "rank_order": 9,
+      "url": "https://docs.aws.amazon.com/prescriptive-guidance/latest/agentic-ai-serverless/cost-optimization.html",
+      "title": "prompt trimming and token discipline",
+      "context": "A cost optimization practice of enforcing maximum prompt sizes and concise phrasing to reduce Amazon Bedrock token costs",
+      "recommended_sections": null,
+      "sections": [
+        "Cost optimization",
+        "Why cost optimization is crucial in serverless AI",
+        "Cost optimization strategies",
+        "Example: Cost-aware generative AI assistant",
+        "Monitoring and alerting for cost optimization",
+        "Cost optimization warning signals",
+        "Summary of cost optimization"
+      ],
+      "metadata": null
+    },
+    {
+      "rank_order": 10,
+      "url": "https://docs.aws.amazon.com/bedrock/latest/userguide/monitoring-runtime-metrics.html",
+      "title": "prompt cache",
+      "context": "Amazon Bedrock feature that stores input tokens for reuse at a reduced charge, tracked via CacheReadInputTokenCount and CacheWriteInputTokenCount metrics.",
+      "recommended_sections": [
+        "Amazon Bedrock runtime metrics"
+      ],
+      "sections": null,
+      "metadata": {
+        "additional_urls": [
+          {
+            "url": "https://docs.aws.amazon.com/bedrock/latest/userguide/model-parameters-anthropic-claude-messages-tool-use.html",
+            "section_title": "Mid-conversation tool changes (Beta)",
+            "section_anchor": "model-parameters-anthropic-claude-mid-conversation-tool-changes"
+          }
+        ]
+      }
+    }
+  ],
+  "facets": null,
+  "query_id": "a03ca95e-6f06-4cfe-8b65-448ad4af3e1e",
+  "metadata": {
+    "discovered_services": [
+      {
+        "name": "Amazon Bedrock Flows",
+        "description": "AWS feature that allows creation and management of advanced workflows linking foundation models, prompts, agents, and knowledge bases without writing code."
+      },
+      {
+        "name": "Amazon Connect Customer",
+        "description": "AWS cloud-based contact center service that enables outbound campaign delivery across multiple channels including email, SMS, telephony, WhatsApp, and web notifications."
+      }
+    ],
+    "related_tasks": [
+      {
+        "name": "Optimize for prompt caching",
+        "description": "Structure AI agent prompts to maximize prompt caching effectiveness by placing static content before dynamic variables and meeting minimum token thresholds.",
+        "urls": [
+          {
+            "url_name": "/connect/latest/adminguide/agentic-self-service-prompt-best-practices.html#prompt-bp-prompt-caching",
+            "url_description": "How to maximize Amazon Bedrock prompt caching effectiveness by placing static content before dynamic variables and meeting minimum token thresholds for each model."
+          }
+        ]
+      },
+      {
+        "name": "Best practices for using cache management in GPT-5.5 and earlier models",
+        "description": "Guidelines for structuring prompts to maximize implicit prompt cache hits in OpenAI GPT-5.5 and earlier models on Amazon Bedrock",
+        "urls": [
+          {
+            "url_name": "/bedrock/latest/userguide/prompt-caching.html#prompt-caching-openai-pre56-best-practices",
+            "url_description": "Best practices for structuring prompts with static content first to maximize implicit prompt cache hits in OpenAI GPT-5.5 and earlier models on Amazon Bedrock"
+          }
+        ]
+      },
+      {
+        "name": "implement cost optimization strategies for serverless AI",
+        "description": "Apply a set of architectural and operational strategies to reduce and control costs in serverless AI workloads on AWS",
+        "urls": [
+          {
+            "url_name": "/prescriptive-guidance/latest/agentic-ai-serverless/cost-optimization.html#cost-optimization-strategies.be53ab7e-a37b-5f32-8316-bb2c18afaf82",
+            "url_description": "Actionable strategies to reduce serverless AI costs including tiered Amazon Bedrock model routing, prompt token trimming, RAG metadata filtering, DynamoDB tool call caching, and async Lambda response handling with EventBridge and SQS"
+          }
+        ]
+      },
+      {
+        "name": "configure Bedrock Intelligent Prompt Routing",
+        "description": "Set up Bedrock's Intelligent Prompt Routing to automatically select models based on query complexity and processing mode by configuring optimization goals in the Bedrock console.",
+        "urls": [
+          {
+            "url_name": "/wellarchitected/latest/generative-ai-lens/smbdb-knowledge-worker-co-pilot.html#amazon-bedrock-ai-orchestration",
+            "url_description": "How to configure Amazon Bedrock Intelligent Prompt Routing to automatically select Claude or Nova models based on query complexity and processing mode, with business context safety controls and confidence scoring."
+          }
+        ]
+      },
+      {
+        "name": "Create a flow with a single prompt",
+        "description": "A procedure to build and test an Amazon Bedrock flow that uses a single inline prompt node to generate a song playlist from a JSON input",
+        "urls": [
+          {
+            "url_name": "/bedrock/latest/userguide/flows-ex-prompt.html#flows-ex-prompt",
+            "url_description": "Step-by-step guide to create an Amazon Bedrock flow using a single prompt node with template variables mapped to JSON input fields, connect flow nodes, and test the flow in the console"
+          },
+          {
+            "url_name": "/bedrock/latest/userguide/flows-ex.html#flows-ex",
+            "url_description": "How to explore and build example Amazon Bedrock Flows in the console, including flows with single prompts and condition nodes, and how to use templates to create an initial flow"
+          }
+        ]
+      },
+      {
+        "name": "Optimize your AI prompts",
+        "description": "Apply guidelines to improve AI prompt performance by positioning static content before variables and using sufficient token counts in prefixes",
+        "urls": [
+          {
+            "url_name": "/connect/latest/adminguide/create-ai-prompts.html#guidelines-optimize-prompt",
+            "url_description": "Best practices for optimizing Amazon Connect AI prompt performance by positioning static content before variables and using prompt prefixes with at least 1,000 tokens"
+          }
+        ]
+      },
+      {
+        "name": "add or remove tools mid-conversation",
+        "description": "Use tool_addition and tool_removal blocks in role: system messages to modify the available tool set during a conversation without invalidating the prompt cache",
+        "urls": [
+          {
+            "url_name": "/bedrock/latest/userguide/model-parameters-anthropic-claude-messages-tool-use.html#model-parameters-anthropic-claude-mid-conversation-tool-changes",
+            "url_description": "How to add and remove tools mid-conversation in Amazon Bedrock Claude models using tool_addition and tool_removal content blocks in role: system messages with the mid-conversation-tool-changes-2026-07-01 or inline-tools-2026-09-15 beta flags"
+          }
+        ]
+      },
+      {
+        "name": "configure Amazon Bedrock model access",
+        "description": "Properly configure access to required Amazon Bedrock models to enable model routing, guardrails, and prompt caching through the AI gateway",
+        "urls": [
+          {
+            "url_name": "/solutions/multi-provider-generative-ai-gateway-on-aws/index.html",
+            "url_description": null
+          },
+          {
+            "url_name": "/solutions/agentic-ai-operational-foundations-on-aws/index.html",
+            "url_description": null
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "relation": "relatesTo",
+        "to": "Amazon Bedrock Explicit Prompt Caching",
+        "to_description": "Amazon Bedrock feature that allows users to explicitly mark prompt checkpoints for caching with configurable TTL",
+        "from": "Amazon Bedrock Implicit Prompt Caching"
+      },
+      {
+        "relation": "relatesTo",
+        "to": "Reasoning Summaries",
+        "to_description": "Amazon Bedrock feature that returns summaries of model reasoning steps, supported on Responses, Converse, and ConverseStream APIs",
+        "from": "Amazon Bedrock prompt caching"
+      },
+      {
+        "relation": "relatesTo",
+        "to": "prompt caching",
+        "to_description": "Amazon Bedrock feature that retains cached prompt prefixes for a defined duration to reduce redundant token processing",
+        "from": "Input — 30-minute cache write"
+      },
+      {
+        "relation": "relatesTo",
+        "to": "prompt node",
+        "to_description": "An orchestration node in the Amazon Bedrock flow canvas that sends input to a foundation model and returns the model's completion",
+        "from": "prompt caching"
+      },
+      {
+        "relation": "relatesTo",
+        "to": "Anthropic Messages API",
+        "to_description": "Anthropic's native API for interacting with Claude models, accessible via the bedrock-runtime endpoint's /anthropic route",
+        "from": "prompt caching"
+      }
+    ]
+  }
+}
