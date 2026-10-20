@@ -119,6 +119,7 @@ svg rect:hover{stroke-width:2.4}
 <a href="#traps">7. Traps AWS reuses</a>
 <a href="#method">8. Method for each question</a>
 <a href="#terms">8A. Reference terms from the question bank</a>
+<a href="#steps">8B. Console and API steps confirmed in this pass</a>
 <a href="#gaps">9. Gaps, limits, and checks</a>
 </div>
 </nav>
@@ -790,17 +791,17 @@ svg rect:hover{stroke-width:2.4}
 <p>These topics have no console steps in the pages this build could read. Each one is marked Not in source for steps.</p>
 <table>
 <tr><th>Topic</th><th>Console or API steps</th></tr>
-<tr><td>Provisioned Throughput purchase</td><td>Not in source</td></tr>
+<tr><td>Provisioned Throughput purchase</td><td>Resolved. Steps in section 8B.</td></tr>
 <tr><td>Guardrail creation steps (the page title is confirmed)</td><td>Not in source</td></tr>
 <tr><td>SageMaker real-time endpoint creation (page stub)</td><td>Not in source</td></tr>
-<tr><td>Lambda timeout setting</td><td>Not in source</td></tr>
+<tr><td>Lambda timeout setting</td><td>Resolved. Steps in section 8B.</td></tr>
 <tr><td>API Gateway integration timeout setting</td><td>Not in source</td></tr>
 <tr><td>Macie, Lake Formation, CloudTrail, KMS, and PrivateLink console steps</td><td>Not in source</td></tr>
 <tr><td>Comprehend, Transcribe, Glue Data Quality, and Data Automation steps</td><td>Not in source</td></tr>
 <tr><td>OpenSearch Serverless, S3 Vectors, Neptune, and DynamoDB TTL steps</td><td>Not in source</td></tr>
 <tr><td>CloudWatch anomaly alarm and X-Ray steps</td><td>Not in source</td></tr>
 <tr><td>Model Monitor and judge evaluation job steps</td><td>Not in source</td></tr>
-<tr><td>Model Registry approval steps (the page shows approval status in the API output)</td><td>Not in source</td></tr>
+<tr><td>Model Registry approval steps</td><td>Resolved. Steps in section 8B.</td></tr>
 </table>
 </section>
 <section id="d1">
@@ -2269,6 +2270,39 @@ svg rect:hover{stroke-width:2.4}
 <p>BLEU and ROUGE are text overlap metrics. BLEU compares n-gram overlap for translation. ROUGE compares overlap for summaries. Whether Bedrock built-in evaluation includes them is Not in source. Check the Bedrock automatic evaluation metrics page before the exam.</p>
 <h3>Pricing</h3>
 <p>Cost depends on input tokens, output tokens, and the throughput mode. The units in Domain 4 cover these levers. A single price table is Not in source for this build. Check the Amazon Bedrock pricing page for current prices.</p>
+</section>
+
+<section id="steps">
+<p class="kicker">Part 8B</p>
+<h2>Console and API steps confirmed in this pass</h2>
+<p>Each step below comes from the official AWS page named under it. Guardrail creation steps are Not in source. The page fetched in this build did not show them.</p>
+<h3>Purchase Provisioned Throughput (Amazon Bedrock console)</h3>
+<ol class="steps">
+<li>Open the Amazon Bedrock console. Select Provisioned Throughput in the left navigation pane.</li>
+<li>Choose Purchase Provisioned Throughput.</li>
+<li>Enter a name. Under Select model, select the base model or custom model.</li>
+<li>Under Provisioning mode, select By Model Units.</li>
+<li>Select the commitment term. Enter the number of model units.</li>
+<li>Choose Purchase Provisioned Throughput. Acknowledge the price and choose Confirm purchase.</li>
+<li>Wait for the status to change from Creating to In service.</li>
+</ol>
+<p>Commitment needs an AWS support request for model units first. Source: <a href="https://docs.aws.amazon.com/bedrock/latest/userguide/prov-thru-purchase.html">Purchase a Provisioned Throughput</a>. The API call is CreateProvisionedModelThroughput. It returns a provisionedModelArn. Check the status with GetProvisionedModelThroughput until it is InService.</p>
+<h3>Set the Lambda timeout</h3>
+<ol class="steps">
+<li>Open the Lambda console. Choose the function.</li>
+<li>Choose the Configuration tab. Then choose General configuration.</li>
+<li>Choose Edit.</li>
+<li>For Timeout, enter a value from 1 to 900 seconds.</li>
+<li>Choose Save.</li>
+</ol>
+<p>The default is 3 seconds. The maximum is 900 seconds. The CLI option is <code>--timeout</code>. Source: <a href="https://docs.aws.amazon.com/lambda/latest/dg/configuration-timeout.html">Configure Lambda function timeout</a>.</p>
+<h3>Approve a model version in SageMaker Model Registry</h3>
+<ol class="steps">
+<li>Open the Studio console. Choose Models. Choose the Registered models tab.</li>
+<li>Choose the model group. Select the model version.</li>
+<li>On the Deploy tab, choose the approval status dropdown. Select Approved or Rejected.</li>
+</ol>
+<p>The API call is update_model_package with ModelApprovalStatus set to Approved or Rejected. Source: <a href="https://docs.aws.amazon.com/sagemaker/latest/dg/model-registry-approve.html">Update the Approval Status of a Model</a>. Approved can start CI/CD deployment when a project template is used.</p>
 </section>
 
 <section id="gaps">
