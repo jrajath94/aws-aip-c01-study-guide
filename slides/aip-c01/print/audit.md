@@ -112,3 +112,13 @@ Not yet. Most exam facts are confirmed. Official sample questions are still not 
 - Still gap: item 218 (responsible AI feature list). The exam guide section was not found in this build.
 - Corrections to quiz answers, from official pages: item 119 (request metadata is not a cost allocation tag), item 126 (no region-based cause on the AccessDenied page), item 38 and 156 (quota Region not stated).
 - Judgment: the exam-scope score is 7 of 10. The treatise covers the 250 items by topic. Twenty partial items and one gap remain, and several need official pages this build could not confirm.
+
+## Round 3: partial items and open gaps (2026-10-20)
+
+- Status after round 3: covered 229, partial 5, contradicted 3, not in source 13. Total 250.
+- Closed with official pages: items 28, 124, 130, 223, 229, 232, 241. Each row names its page in `quiz-coverage.md`.
+- Contradicted quiz answers: items 22, 104, 119. The list with the correct answer and page is in `quiz-coverage.md`.
+- Not in source: items 38, 126, 156 (quota and error cause), 72, 145 (BDA blueprint), 98 (Glue lineage), 99, 108, 149, 186, 218, 245, 250.
+- Partial: items 54, 141, 180, 184, 221.
+- The treatise (`article/index.html`) did not change in round 3. The print PDF and DOCX were not rebuilt for this round.
+- Facts found in round 3 that the treatise does not yet state: KB evaluation metric names, OpenSearch shard sizing, Lambda environment variable encryption, S3 event invocation of Lambda, and the application inference profile cost page.
