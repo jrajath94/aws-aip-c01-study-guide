@@ -1,0 +1,943 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AIP-C01 Study Treatise</title>
+<meta name="description" content="Long-form study treatise for AWS Certified Generative AI Developer, Professional (AIP-C01).">
+<meta name="author" content="Author">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+:root{--bg:#F6F6F2;--ink:#1B1F24;--mute:#4A5159;--rule:#D5D9DE;--head:#E9ECEF;--blue:#1D4E89;--rust:#A4441C;--card:#FBFBF8}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#15181C;--ink:#ECEEF0;--mute:#A9B0B8;--rule:#2E343C;--head:#222830;--blue:#8EB4E6;--rust:#E08A5E;--card:#1B2027}}
+:root[data-theme="dark"]{--bg:#15181C;--ink:#ECEEF0;--mute:#A9B0B8;--rule:#2E343C;--head:#222830;--blue:#8EB4E6;--rust:#E08A5E;--card:#1B2027}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'IBM Plex Sans',Arial,sans-serif;font-size:18px;line-height:1.6}
+main{max-width:920px;margin:0 auto;padding:48px 16px 120px}
+h1{font-size:44px;line-height:1.15;font-weight:600;margin:0 0 12px}
+h2{font-size:34px;line-height:1.2;font-weight:600;margin:0 0 14px}
+h3{font-size:22px;line-height:1.3;font-weight:600;margin:28px 0 10px}
+.kicker{font-size:14px;letter-spacing:0.08em;text-transform:uppercase;color:var(--blue);font-weight:600;margin:0 0 8px}
+p{margin:0 0 14px}
+section{padding:40px 0;border-top:1px solid var(--rule)}
+section:first-of-type{border-top:0}
+table{border-collapse:collapse;width:100%;margin:12px 0 20px;font-size:16px}
+th{text-align:left;font-weight:600;background:var(--head);padding:10px 12px;border-bottom:2px solid var(--ink)}
+td{padding:10px 12px;border-bottom:1px solid var(--rule);vertical-align:top}
+.box{border:1px solid var(--rust);padding:16px 20px;margin:18px 0;background:var(--card)}
+.box b{color:var(--rust)}
+.note{border:1px solid var(--rule);padding:14px 18px;margin:18px 0;background:var(--card);color:var(--mute);font-size:16px}
+.steps{counter-reset:s;padding-left:0;list-style:none}
+.steps li{counter-increment:s;margin:0 0 10px;padding-left:40px;position:relative}
+.steps li::before{content:counter(s);position:absolute;left:0;top:0;font-weight:600;color:var(--blue)}
+figure{margin:24px 0;padding:0}
+figure img{display:block;width:100%;height:auto;border:1px solid var(--rule);background:#fff}
+figcaption{font-size:14px;color:var(--mute);margin-top:8px}
+figcaption a{color:var(--blue)}
+.diagram{border:1px solid var(--rule);background:var(--card);padding:18px;margin:20px 0}
+.diagram svg{width:100%;height:auto;display:block}
+.diagram .cap{font-size:14px;color:var(--mute);margin-top:8px}
+.flow{stroke-dasharray:6 6;animation:march 1.2s linear infinite}
+@keyframes march{to{stroke-dashoffset:-24}}
+.pulse{animation:fade 2.4s ease-in-out infinite}
+@keyframes fade{0%,100%{opacity:.35}50%{opacity:1}}
+@media (prefers-reduced-motion: reduce){.flow,.pulse{animation:none}}
+.toc{columns:2;font-size:16px;margin:24px 0}
+.toc a{color:var(--blue);text-decoration:none;display:block;padding:3px 0}
+.meta{font-size:15px;color:var(--mute)}
+.fact{display:grid;grid-template-columns:200px 1fr;gap:0;margin:0 0 20px}
+@media (max-width:640px){.toc{columns:1}h1{font-size:34px}h2{font-size:28px}.fact{grid-template-columns:1fr}}
+.mini{font-size:15px}
+</style>
+</head>
+<body>
+<main>
+
+<header>
+<p class="kicker">AWS Certified Generative AI Developer, Professional · AIP-C01</p>
+<h1>Study treatise: one path from first principles to exam answer</h1>
+<p class="meta">Scope: the five exam domains, their task statements, the services they name, and the traps AWS reuses. Built to be read in order, top to bottom. Read each section before the next.</p>
+<div class="note">
+<b>Sources.</b> AWS documentation pages and the AWS exam guide for AIP-C01. The study guide repository was excluded as a knowledge source. Claims marked <b>Not in source</b> could not be confirmed on an official page in this build. Claims marked <b>Inference</b> are reasoning from the sources, not AWS statements. Figures in examples are illustrative.
+</div>
+<p class="mini"><b>Status of checks.</b> Domain 1 and Domain 4 were fact-checked line by line against AWS documentation. Domain 3 and Domain 5 were checked by a second pass. Domain 2 has an open fact-check. Re-check every item marked in the gap lists before exam day.</p>
+</header>
+
+<nav>
+<p class="kicker">Contents</p>
+<div class="toc">
+<a href="#exam">0. The exam at a glance</a>
+<a href="#reading">1. How AWS asks questions</a>
+<a href="#d1">2. Domain 1 · Foundation model integration, data, compliance</a>
+<a href="#d2">3. Domain 2 · Implementation and integration</a>
+<a href="#d3">4. Domain 3 · Safety, security, governance</a>
+<a href="#d4">5. Domain 4 · Operational efficiency</a>
+<a href="#d5">6. Domain 5 · Testing, validation, troubleshooting</a>
+<a href="#traps">7. Traps AWS reuses</a>
+<a href="#method">8. Method for each question</a>
+<a href="#gaps">9. Gaps, limits, and checks</a>
+</div>
+</nav>
+
+<section id="exam">
+<p class="kicker">Part 0</p>
+<h2>The exam at a glance</h2>
+<p>The exam has 75 questions. Sixty-five are scored and ten are unscored. The exam uses multiple choice and multiple response questions. The passing score is 750 on a scale from 100 to 1,000.</p>
+<table>
+<tr><th>Item</th><th>Value</th></tr>
+<tr><td>Exam name</td><td>AWS Certified Generative AI Developer, Professional</td></tr>
+<tr><td>Exam code</td><td>AIP-C01</td></tr>
+<tr><td>Questions</td><td>75 total. 65 scored. 10 unscored.</td></tr>
+<tr><td>Question types</td><td>Multiple choice (one correct answer) and multiple response (two or more correct answers)</td></tr>
+<tr><td>Passing score</td><td>750 on a scale from 100 to 1,000</td></tr>
+<tr><td>Scoring by section</td><td>Not in source. The pass decision uses the whole exam.</td></tr>
+<tr><td>Duration and fee</td><td>180 minutes and 300 USD. Stated in the repository README. Not on the official certification page. Confirm before exam day.</td></tr>
+</table>
+<h3>Domain weights</h3>
+<table>
+<tr><th>Domain</th><th>Name</th><th>Weight in the repository README</th><th>Approximate question count (Inference)</th></tr>
+<tr><td>1</td><td>Foundation model integration, data management, and compliance</td><td>31%</td><td>about 20</td></tr>
+<tr><td>2</td><td>Implementation and integration</td><td>26%</td><td>about 17</td></tr>
+<tr><td>3</td><td>AI safety, security, and governance</td><td>20%</td><td>about 13</td></tr>
+<tr><td>4</td><td>Operational efficiency and optimization</td><td>12%</td><td>about 8</td></tr>
+<tr><td>5</td><td>Testing, validation, and troubleshooting</td><td>11%</td><td>about 7</td></tr>
+</table>
+<p class="mini">The weights come from the repository README. The official guide page did not show them in this build. Confirm each weight against the official exam guide.</p>
+<h3>Target candidate</h3>
+<p>AWS expects two or more years of production application experience. It also expects one year of hands-on generative AI work. The exam assumes working knowledge of AWS compute, storage, networking, security, and infrastructure as code. Model training, advanced machine learning, and data engineering are outside the scope.</p>
+</section>
+
+<section id="reading">
+<p class="kicker">Part 1</p>
+<h2>How AWS asks questions</h2>
+<p>Each question has a company, a constraint, and a design that is broken or incomplete. Several options look correct. One option meets every constraint at the same time.</p>
+<ol class="steps">
+<li>Read the last sentence of the stem. Note what it asks for.</li>
+<li>List each constraint. Examples are a cost ceiling, a latency budget, a compliance rule, and an existing AWS footprint.</li>
+<li>Pick the option that meets all constraints.</li>
+<li>Choose the simplest managed option. Choose custom work only when a constraint forces it.</li>
+</ol>
+<div class="diagram">
+<svg viewBox="0 0 800 150" role="img" aria-label="Constraint filter">
+<rect x="10" y="50" width="180" height="50" fill="none" stroke="#1B1F24"/>
+<text x="100" y="80" text-anchor="middle" font-size="16" fill="#1B1F24" font-family="IBM Plex Sans,Arial">Stem and constraints</text>
+<line class="flow" x1="190" y1="75" x2="290" y2="75" stroke="#1D4E89" stroke-width="2"/>
+<rect x="290" y="50" width="200" height="50" fill="none" stroke="#1B1F24"/>
+<text x="390" y="80" text-anchor="middle" font-size="16" fill="#1B1F24" font-family="IBM Plex Sans,Arial">Eliminate options that break one constraint</text>
+<line class="flow" x1="490" y1="75" x2="590" y2="75" stroke="#1D4E89" stroke-width="2"/>
+<rect x="590" y="50" width="200" height="50" fill="none" stroke="#A4441C" stroke-width="2"/>
+<text x="690" y="80" text-anchor="middle" font-size="16" fill="#1B1F24" font-family="IBM Plex Sans,Arial">Answer that meets all</text>
+</svg>
+<div class="cap">Diagram: the elimination order for every question. Built in SVG for this treatise. Inference from the exam guide.</div>
+</div>
+</section>
+
+<section id="d1">
+<p class="kicker">Part 2 · Domain 1 · Weight 31 percent (repository README)</p>
+<h2>Foundation model integration, data management, and compliance</h2>
+<p>Domain 1 asks one question. How do you get the correct model, the correct data, and the correct controls into a working system on AWS? It has six task statements. Read each one in order.</p>
+
+<h3>1.1 Design the solution first, then prove it</h3>
+<p>Design from the constraints. Then build a proof of concept. Use on-demand inference first. Buying Provisioned Throughput or hardware before a proof of concept is a distractor pattern. Prove the approach on real data, then commit capacity.</p>
+<p>Use the AWS Well-Architected Framework and the Generative AI Lens to keep designs consistent across teams.</p>
+
+<h3>1.1 The approach ladder</h3>
+<p>Climb the ladder from the cheapest rung. Stop at the first rung that meets the requirement.</p>
+<table>
+<tr><th>Rung</th><th>Use when</th><th>Signal words</th></tr>
+<tr><td>1. Prompt engineering</td><td>Start here. The cheapest step.</td><td>Format, tone, instructions</td></tr>
+<tr><td>2. RAG</td><td>Documents change often, or answers must cite sources.</td><td>Private, current, cite, sources</td></tr>
+<tr><td>3. Agents</td><td>The model must take actions, such as calling tools or APIs.</td><td>Take action, call, update a system</td></tr>
+<tr><td>4. Fine-tuning</td><td>Stable behavior and a large, repeated task volume.</td><td>Fixed format at high volume, distill</td></tr>
+</table>
+<div class="box"><b>Exam trap.</b> Fine-tuning a model on documents that change is wrong. Use RAG. Knowledge goes to retrieval. Behavior goes to weights.</div>
+
+<h3>1.1 Knowledge or behavior</h3>
+<table>
+<tr><th>Need</th><th>Approach</th></tr>
+<tr><td>Private, current, or cited facts</td><td>RAG with a Knowledge Base</td></tr>
+<tr><td>Fixed format, tone, or voice at high volume</td><td>Fine-tune a small model (distillation)</td></tr>
+<tr><td>Calls to APIs or databases</td><td>Agents</td></tr>
+</table>
+
+<h3>1.2 Choose a model on five axes</h3>
+<table>
+<tr><th>Axis</th><th>What to check</th></tr>
+<tr><td>Capability</td><td>Reasoning, multilingual, code, vision</td></tr>
+<tr><td>Cost per token</td><td>Input and output prices differ. Output tokens often cost more.</td></tr>
+<tr><td>Latency</td><td>Time to first token and tokens per second. Streaming improves perceived speed.</td></tr>
+<tr><td>Context window</td><td>How much text fits in one call, including retrieved chunks.</td></tr>
+<tr><td>Regional availability</td><td>Is the model offered in the Region where you run?</td></tr>
+</table>
+<p>Order of decision: latency needs, then reasoning difficulty, then cost. Test the final choice on your own data. The flagship model is not the default answer. It can break a latency budget.</p>
+
+<h3>1.2 Routing mechanisms</h3>
+<table>
+<tr><th>Mechanism</th><th>Routes by</th><th>Use when</th></tr>
+<tr><td>Cross-Region inference profile</td><td>Regional availability and throughput</td><td>More throughput across Regions. Same model family.</td></tr>
+<tr><td>Intelligent prompt routing</td><td>Predicted response quality and cost</td><td>Chooses between two models in one model family.</td></tr>
+<tr><td>Lambda routing with AppConfig</td><td>Rules you write</td><td>You need your own policy and a model ID read at runtime.</td></tr>
+</table>
+<div class="box"><b>Exam trap.</b> A cross-Region profile routes for throughput and availability. It does not choose a model by prompt complexity.</div>
+
+<h3>1.2 Cross-Region inference and data scope</h3>
+<p>Call the inference profile ID, such as one with the <code>us.</code> or <code>eu.</code> prefix. Requests route to Regions listed in the profile.</p>
+<p>A global profile can send requests outside a strict EU boundary. A geographic EU profile keeps routing inside the EU Regions it lists. Check the profile scope against the residency rule.</p>
+<p>Cross-Region inference does not provide automatic failover for your application. Add retries and fallback in the application for an availability target.</p>
+
+<h3>1.2 Switch, survive, and customize</h3>
+<ol class="steps">
+<li>Switch without a redeploy. Read the model ID from configuration. AWS AppConfig with Lambda and API Gateway supports this pattern.</li>
+<li>Survive disruptions. A circuit breaker stops calls to a failing model. Graceful degradation returns a smaller model or a cached answer.</li>
+<li>Customize with the least effort. Fine-tune on SageMaker AI when prompts and RAG fail. Use parameter-efficient methods such as LoRA.</li>
+<li>Retire safely. Register each model version in SageMaker Model Registry. Plan rollback before you deploy.</li>
+</ol>
+<figure>
+<img src="img/AppConfigHowItWorks.png" alt="AWS AppConfig how it works diagram" width="1200" height="600">
+<figcaption>Official AWS image. Source: <a href="https://docs.aws.amazon.com/appconfig/latest/userguide/what-is-appconfig.html">AWS AppConfig User Guide, What is AppConfig</a>. Use for the configuration-driven model switch pattern.</figcaption>
+</figure>
+<div class="box"><b>Exam trap.</b> "No code changes" or "no redeploy" points to the configuration-driven pattern only.</div>
+
+<h3>1.2 Customization ladder</h3>
+<table>
+<tr><th>Rung</th><th>What changes</th><th>Use when</th></tr>
+<tr><td>Prompt engineering</td><td>Instructions only</td><td>Try this first.</td></tr>
+<tr><td>RAG</td><td>Private or current facts at query time</td><td>Facts change, and citations are needed.</td></tr>
+<tr><td>Supervised fine-tuning</td><td>Model parameters, from labeled examples</td><td>Stable behavior that prompts cannot hold.</td></tr>
+<tr><td>Distillation</td><td>A smaller student model learns from a larger teacher</td><td>A narrow task at high volume.</td></tr>
+</table>
+<p>Fine-tuning does not fix facts that change. Use RAG for those facts.</p>
+
+<h3>1.2 Model lifecycle</h3>
+<p>Every release should be a version you can roll back. A model registry groups versions and tracks approval status. CloudTrail records Amazon Bedrock API calls, including InvokeModel and Converse, for the audit trail.</p>
+<div class="box"><b>Exam trap.</b> A model or prompt that changes in place has no safe rollback point.</div>
+
+<h3>1.2 Three ways to call a model</h3>
+<table>
+<tr><th>API</th><th>Use it for</th><th>Limit</th></tr>
+<tr><td>Converse</td><td>Chat and tool use through one request format</td><td>Text, images, documents, and video for supported models. Not an embeddings API.</td></tr>
+<tr><td>InvokeModel</td><td>Provider-specific bodies and embeddings</td><td>You build each provider's request body.</td></tr>
+<tr><td>ConverseStream</td><td>Tokens as they arrive</td><td>The client must read a stream.</td></tr>
+</table>
+<p>Streaming does not shorten total generation time. It shortens the time to the first visible token.</p>
+
+<h3>1.2 Structured output</h3>
+<p>A schema is stronger than a request for JSON. Converse accepts a JSON schema in its output configuration for supported models. Check the model card for support.</p>
+<div class="box"><b>Exam trap.</b> A prompt that asks for JSON does not guarantee valid JSON. Add the schema.</div>
+
+<h3>1.3 Data validation and processing in four stages</h3>
+<ol class="steps">
+<li>Validate. AWS Glue Data Quality rules, Lambda checks, and CloudWatch metrics.</li>
+<li>Process. Amazon Bedrock Data Automation for documents, images, audio, and video. SageMaker Processing for batch jobs. Amazon Transcribe for speech.</li>
+<li>Format. JSON for Bedrock API requests. Conversation format for dialog apps.</li>
+<li>Enhance. Amazon Comprehend extracts entities and detects PII. Lambda normalizes records.</li>
+</ol>
+<table>
+<tr><th>Need</th><th>Service</th></tr>
+<tr><td>Extract fields from documents, images, video, and audio</td><td>Amazon Bedrock Data Automation</td></tr>
+<tr><td>Rule-based data quality checks</td><td>AWS Glue Data Quality, with rules written in DQDL</td></tr>
+<tr><td>Speech to text with speaker labels</td><td>Amazon Transcribe</td></tr>
+<tr><td>Find and redact PII in text</td><td>Amazon Comprehend PII detection</td></tr>
+</table>
+<div class="box"><b>Exam trap.</b> Guardrails block, mask, or filter content. They do not validate data quality or extract invoice fields.</div>
+
+<h3>1.3 Services that look right and are wrong</h3>
+<table>
+<tr><th>Service</th><th>Looks right because</th><th>Why it is wrong here</th></tr>
+<tr><td>Amazon Kendra</td><td>Enterprise search over documents</td><td>Not open to new customers. AWS points new work to Bedrock Knowledge Bases.</td></tr>
+<tr><td>Amazon ElastiCache</td><td>Fast in-memory reads</td><td>Not a durable store of record. Durable only with durability enabled on node-based Valkey clusters.</td></tr>
+<tr><td>Bedrock Guardrails</td><td>Reads document text</td><td>Checks content against safety policies. Does not extract data.</td></tr>
+<tr><td>Amazon Translate</td><td>Changes the language of text</td><td>Translates text. Use Comprehend to detect PII.</td></tr>
+</table>
+
+<h3>1.3 Chunking by document type</h3>
+<table>
+<tr><th>Strategy</th><th>Use when</th><th>Note</th></tr>
+<tr><td>Fixed size</td><td>FAQs and short, self-contained text</td><td>Simple to run.</td></tr>
+<tr><td>Hierarchical</td><td>Manuals, contracts, long documents with headings</td><td>Small child chunks match. Parent chunks give context.</td></tr>
+<tr><td>Semantic</td><td>Quality matters more than cost</td><td>Splits on meaning. Costs more to process.</td></tr>
+<tr><td>Custom with Lambda</td><td>Tables, equations, figures with captions</td><td>Boundaries follow the document structure.</td></tr>
+</table>
+<div class="box"><b>Exam trap.</b> A table split at a chunk boundary loses its values. Each part can look correct alone.</div>
+
+<h3>1.3 Retrieval symptoms</h3>
+<p>Chunks look relevant and answers are wrong. The failure is in retrieval, not generation. Changing the generator model does not fix broken retrieval. After a re-sync, check the embedding model version and the chunking configuration. To change chunking on a Knowledge Base data source, add a new data source with the new setting, then sync it.</p>
+
+<h3>1.4 Vector stores</h3>
+<table>
+<tr><th>Option</th><th>Fits</th></tr>
+<tr><td>Bedrock Knowledge Bases</td><td>Private documents with citations. Managed RAG. The default answer.</td></tr>
+<tr><td>OpenSearch Serverless</td><td>Managed vector search that scales with usage. Combines filters and vectors.</td></tr>
+<tr><td>Aurora with pgvector</td><td>Vector search in a relational database the team already runs.</td></tr>
+<tr><td>S3 Vectors</td><td>Large corpus, infrequent queries, no cluster to run.</td></tr>
+<tr><td>DynamoDB</td><td>Metadata and embeddings in one table design.</td></tr>
+<tr><td>Neptune</td><td>GraphRAG. Traverses explicit relationships between entities.</td></tr>
+</table>
+<p>S3 Vectors fits large, rare searches. An always-on cluster costs money even when few queries arrive. For steady, interactive search with high query volume, an always-on store fits better. The cheapest store is wrong when the latency need is strict.</p>
+<figure>
+<img src="img/serverless-collection-type.png" alt="OpenSearch Serverless collection types" width="1200" height="700">
+<figcaption>Official AWS image. Source: <a href="https://docs.aws.amazon.com/opensearch-service/latest/developerguide/serverless-overview.html">Amazon OpenSearch Serverless overview</a>. Use for collection type choice.</figcaption>
+</figure>
+<div class="box"><b>Exam trap.</b> Neptune is a distractor for plain document search. ElastiCache is a trap when the question needs a durable store.</div>
+
+<h3>1.4 Embeddings</h3>
+<p>Embeddings turn meaning into vectors. Amazon Titan Text Embeddings v2 outputs 1024 (default), 512, or 256 dimensions. Cohere Embed uses an <code>input_type</code> value. Use <code>search_query</code> for questions and <code>search_document</code> for passages. Call embedding models with InvokeModel, not Converse.</p>
+<p>Keyword search misses paraphrases such as "reset my password" and "change my credentials". Vector search matches them. Smaller dimensions cost less and may lower quality. Test both sizes on a golden set and pick the one that passes.</p>
+
+<h3>1.5 RAG end to end</h3>
+<div class="diagram">
+<svg viewBox="0 0 800 330" role="img" aria-label="RAG two paths">
+<text x="20" y="28" font-size="16" font-weight="600" fill="#1B1F24" font-family="IBM Plex Sans,Arial">Ingest path. Runs ahead of time.</text>
+<g font-family="IBM Plex Sans,Arial" font-size="15" fill="#1B1F24">
+<rect x="20" y="42" width="150" height="46" fill="none" stroke="#1B1F24"/><text x="95" y="70" text-anchor="middle">Documents in S3</text>
+<rect x="210" y="42" width="110" height="46" fill="none" stroke="#1B1F24"/><text x="265" y="70" text-anchor="middle">Chunk</text>
+<rect x="360" y="42" width="110" height="46" fill="none" stroke="#1B1F24"/><text x="415" y="70" text-anchor="middle">Embed</text>
+<rect x="510" y="42" width="170" height="46" fill="none" stroke="#1B1F24"/><text x="595" y="70" text-anchor="middle">Vector store</text>
+</g>
+<line class="flow" x1="170" y1="65" x2="208" y2="65" stroke="#1D4E89" stroke-width="2"/>
+<line class="flow" x1="320" y1="65" x2="358" y2="65" stroke="#1D4E89" stroke-width="2"/>
+<line class="flow" x1="470" y1="65" x2="508" y2="65" stroke="#1D4E89" stroke-width="2"/>
+<text x="20" y="150" font-size="16" font-weight="600" fill="#1B1F24" font-family="IBM Plex Sans,Arial">Query path. Runs per request.</text>
+<g font-family="IBM Plex Sans,Arial" font-size="15" fill="#1B1F24">
+<rect x="20" y="166" width="120" height="46" fill="none" stroke="#1B1F24"/><text x="80" y="194" text-anchor="middle">Question</text>
+<rect x="170" y="166" width="150" height="46" fill="none" stroke="#1B1F24"/><text x="245" y="194" text-anchor="middle">Embed and retrieve</text>
+<rect x="350" y="166" width="110" height="46" fill="none" stroke="#1B1F24"/><text x="405" y="194" text-anchor="middle">Rerank</text>
+<rect x="490" y="166" width="280" height="46" fill="none" stroke="#A4441C" stroke-width="2"/><text x="630" y="194" text-anchor="middle">Foundation model answers with citations</text>
+</g>
+<line class="flow" x1="140" y1="189" x2="168" y2="189" stroke="#1D4E89" stroke-width="2"/>
+<line class="flow" x1="320" y1="189" x2="348" y2="189" stroke="#1D4E89" stroke-width="2"/>
+<line class="flow" x1="460" y1="189" x2="488" y2="189" stroke="#1D4E89" stroke-width="2"/>
+<line class="flow" x1="595" y1="88" x2="245" y2="164" stroke="#1D4E89" stroke-width="1.5"/>
+<text x="20" y="262" font-size="15" fill="#4A5159" font-family="IBM Plex Sans,Arial">Diagnose by stage. Chunks first, then retrieval, then generation.</text>
+</svg>
+<div class="cap">Diagram: two paths. The ingest path prepares the store. The query path answers each question. Built in SVG for this treatise.</div>
+</div>
+<p>Each stage is a design decision. A failure in one stage looks like a failure in the answer. Diagnose the stage that failed.</p>
+
+<h3>1.5 Retrieval fixes</h3>
+<table>
+<tr><th>Problem</th><th>Fix</th></tr>
+<tr><td>Keyword-heavy queries drift</td><td>Hybrid search that combines semantic and keyword signals</td></tr>
+<tr><td>Top results are related but not right</td><td>Reranker that scores candidates for relevance before generation</td></tr>
+<tr><td>Vocabulary gap, such as refund and return</td><td>Query expansion</td></tr>
+<tr><td>Multi-hop question</td><td>Query decomposition into sub-questions, then merge the results</td></tr>
+</table>
+<p>Hybrid search finds exact codes and citation strings with keywords. It finds related meaning with vectors. A reranker orders candidates. It does not add chunks that retrieval missed.</p>
+<div class="box"><b>Exam trap.</b> Bigger models do not fix broken retrieval or broken chunking.</div>
+
+<h3>1.5 Knowledge Bases or hand-built RAG</h3>
+<p>Choose Bedrock Knowledge Bases for private documents with citations and the least custom effort. A sync and one API call cover the flow. Choose hand-built RAG only when a stated requirement, such as a custom retrieval algorithm, needs it.</p>
+<p>Web crawler connectors cannot be created on customer-managed knowledge bases after September 30, 2026. Use Amazon Bedrock Managed Knowledge Base for web sources. This date comes from the Domain 1 fact-check. Confirm it on the Knowledge Base documentation before exam day.</p>
+<div class="box"><b>Exam trap.</b> A hand-built pipeline is a distractor when the scenario asks for least effort.</div>
+
+<h3>1.5 Citations and grounding</h3>
+<p>RetrieveAndGenerate returns a generated answer with source citations. Citations give attribution for audits. Contextual grounding checks return a score for each answer. Auditors can sample those scores.</p>
+
+<h3>1.6 Prompt governance</h3>
+<ol class="steps">
+<li>Instruct. Store role definitions and variables in Amazon Bedrock Prompt Management. Enforce responsible AI rules with Bedrock Guardrails.</li>
+<li>Govern. Keep parameterized templates under version control. Use approval workflows before publication. Track use with CloudTrail.</li>
+<li>Test. Use Lambda to check expected output. Use Step Functions to run edge cases.</li>
+<li>Improve. Give structured inputs, a stated output format, and feedback loops.</li>
+</ol>
+
+<h3>1.6 Prompt Flows or Step Functions</h3>
+<table>
+<tr><th>Need</th><th>Use</th></tr>
+<tr><td>A fixed prompt chain with branches, built in the console</td><td>Amazon Bedrock Prompt Flows</td></tr>
+<tr><td>A durable workflow with waits, retries, and human approval</td><td>AWS Step Functions with callback task tokens</td></tr>
+<tr><td>A workflow that waits about two days for a person</td><td>Step Functions Standard. Runs for up to one year.</td></tr>
+</table>
+<div class="box"><b>Exam trap.</b> For a multi-day approval, use Step Functions Standard. A Lambda that waits for a person hits the 15-minute limit.</div>
+
+<h3>1.6 Tenant and region isolation</h3>
+<p>Isolation must be structural. Use one knowledge base for each tenant. Use IAM to scope each role to its own knowledge base. Use metadata filters for region or product line. The model receives only what retrieval returns. A prompt that says "ignore other tenants" is not isolation.</p>
+
+<h3>Tools for agents: MCP</h3>
+<p>The Model Context Protocol (MCP) sets a standard way for agents to find and call tools. Remote MCP servers use Streamable HTTP. MCP is the tool connection standard. It is not a model choice or a guardrail.</p>
+
+<h3>Domain 1 gaps</h3>
+<p>Not in source: official sample questions for Domain 1. Named multimodal embedding models such as Titan Multimodal. Amazon SageMaker JumpStart, Neo, and Unified Studio.</p>
+</section>
+
+<section id="d2">
+<p class="kicker">Part 3 · Domain 2 · Weight 26 percent (repository README)</p>
+<h2>Implementation and integration</h2>
+<p>Domain 2 covers agents, deployment, enterprise integration, API patterns, and application tools. Its fact-check is still open. Read the official Bedrock Agents and Step Functions pages before exam day.</p>
+
+<h3>2.1 Anatomy of an agent</h3>
+<div class="diagram">
+<svg viewBox="0 0 800 260" role="img" aria-label="Agent loop">
+<g font-family="IBM Plex Sans,Arial" font-size="15" fill="#1B1F24">
+<rect x="20" y="30" width="170" height="50" fill="none" stroke="#1B1F24"/><text x="105" y="60" text-anchor="middle">User input</text>
+<rect x="250" y="30" width="200" height="50" fill="none" stroke="#1B1F24"/><text x="350" y="60" text-anchor="middle">Agent reasons about next step</text>
+<rect x="520" y="30" width="250" height="50" fill="none" stroke="#1B1F24"/><text x="645" y="60" text-anchor="middle">Action group (Lambda function)</text>
+<rect x="250" y="150" width="200" height="50" fill="none" stroke="#1B1F24"/><text x="350" y="180" text-anchor="middle">Knowledge base</text>
+<rect x="520" y="150" width="250" height="50" fill="none" stroke="#A4441C" stroke-width="2"/><text x="645" y="180" text-anchor="middle">Trace output (enableTrace)</text>
+</g>
+<line class="flow" x1="190" y1="55" x2="248" y2="55" stroke="#1D4E89" stroke-width="2"/>
+<line class="flow" x1="450" y1="55" x2="518" y2="55" stroke="#1D4E89" stroke-width="2"/>
+<line class="flow" x1="350" y1="80" x2="350" y2="148" stroke="#1D4E89" stroke-width="2"/>
+<line class="flow" x1="645" y1="80" x2="645" y2="148" stroke="#A4441C" stroke-width="2"/>
+</svg>
+<div class="cap">Diagram: the agent loop. The agent calls an action group or a knowledge base, and writes a trace record for each step. Built in SVG for this treatise.</div>
+</div>
+<figure>
+<img src="img/agents-runtime.png" alt="Amazon Bedrock Agents runtime flow" width="1200" height="800">
+<figcaption>Official AWS image. Source: <a href="https://docs.aws.amazon.com/bedrock/latest/userguide/agents-how.html">Amazon Bedrock Agents, how agents work</a>. Use for the runtime path.</figcaption>
+</figure>
+<figure>
+<img src="img/agents-buildtime.png" alt="Amazon Bedrock Agents build-time flow" width="1200" height="700">
+<figcaption>Official AWS image. Source: <a href="https://docs.aws.amazon.com/bedrock/latest/userguide/agents-how.html">Amazon Bedrock Agents, how agents work</a>. Use for the build-time path.</figcaption>
+</figure>
+<ul>
+<li><code>invoke_agent</code> takes <code>agentId</code>, <code>agentAliasId</code>, <code>sessionId</code>, and <code>inputText</code>. It returns a stream.</li>
+<li>The <code>sessionId</code> is the memory key for one conversation.</li>
+<li>Set <code>enableTrace</code> to get a record for each step.</li>
+</ul>
+<div class="box"><b>Exam trap.</b> After a change, prepare the agent and move the alias. Otherwise callers run the old version.</div>
+
+<h3>2.1 DRAFT, versions, and aliases</h3>
+<p>Configuration changes go to DRAFT. Callers reach a new version only after you create a version and point an alias to it. Console tests run against DRAFT. A passing console test does not prove alias traffic works. A new tool that works in the console but not in production usually means the alias still points to an older version.</p>
+<figure>
+<img src="img/roc-testwindow.png" alt="Bedrock Agents test window" width="1200" height="700">
+<figcaption>Official AWS image. Source: <a href="https://docs.aws.amazon.com/bedrock/latest/userguide/agents-test.html">Test an agent</a>. Use to show the DRAFT test window.</figcaption>
+</figure>
+
+<h3>2.1 Session memory and customer memory</h3>
+<p>The agent session expires. Customer memory must outlive it. Use DynamoDB for memory that lasts weeks. DynamoDB gives single-digit millisecond lookup by a key such as customer or session ID. It encrypts data at rest. Native TTL expires old records. The agent session TTL is set in seconds, between 60 and 5400.</p>
+
+<h3>2.1 Agent loop limits</h3>
+<table>
+<tr><th>Limit</th><th>Control</th></tr>
+<tr><td>Stop</td><td>Stopping conditions bound the number of steps.</td></tr>
+<tr><td>Time</td><td>Timeouts in Lambda and Step Functions.</td></tr>
+<tr><td>Access</td><td>IAM policies set resource boundaries on every tool call.</td></tr>
+<tr><td>Failure</td><td>Circuit breakers stop repeated failures to a tool.</td></tr>
+</table>
+
+<h3>2.1 Multi-agent collaboration</h3>
+<p>Bedrock multi-agent collaboration uses a supervisor agent and collaborator agents. Each collaborator calls its own tools through its own action group. Delegation is not an action group.</p>
+<div class="box"><b>Exam trap.</b> A DRAFT collaborator cannot take delegations. Prepare and alias it first.</div>
+
+<h3>2.1 Open-source frameworks and MCP hosting</h3>
+<p>Strands Agents and AWS Agent Squad are open-source frameworks named in the exam guide. Choose a framework when the team needs code-level control. Choose a managed agent when the console is enough.</p>
+<p>Host light, stateless, bursty MCP tools on Lambda. Heavy, stateful servers need a different host. Their host is Not in source for this build. AgentCore Runtime requires Streamable HTTP for remote MCP servers.</p>
+
+<h3>2.2 Deployment patterns</h3>
+<table>
+<tr><th>Option</th><th>Fits</th></tr>
+<tr><td>On-demand</td><td>Spiky or unknown traffic. Pay per token. No commitment.</td></tr>
+<tr><td>Provisioned Throughput</td><td>A predictable baseline. Reserved model units. Hourly billing with a commitment term.</td></tr>
+<tr><td>SageMaker AI endpoints</td><td>Custom or fine-tuned models. Real-time, serverless, or asynchronous.</td></tr>
+<tr><td>Batch inference</td><td>Offline sets that can wait for hours. About half the on-demand price for select models.</td></tr>
+</table>
+<p>For mixed traffic, use Provisioned Throughput for the baseline and on-demand for spikes.</p>
+<div class="box"><b>Exam trap.</b> After buying Provisioned Throughput, calls to the base model ID still use on-demand capacity. Call the provisioned model ARN instead. Adding model units is the distractor.</div>
+
+<h3>2.2 SageMaker endpoints</h3>
+<table>
+<tr><th>Endpoint</th><th>Fit</th></tr>
+<tr><td>Real-time</td><td>Steady traffic. Autoscaling. Blue-green and rolling deployments.</td></tr>
+<tr><td>Serverless Inference</td><td>Intermittent traffic. Scales to zero. Trade-off: cold start on the first request.</td></tr>
+<tr><td>Asynchronous</td><td>Long jobs, up to one hour. Queued. Results go to S3.</td></tr>
+</table>
+<figure>
+<img src="img/serverless-endpoints-how-it-works.png" alt="SageMaker serverless endpoint flow" width="1200" height="700">
+<figcaption>Official AWS image. Source: <a href="https://docs.aws.amazon.com/sagemaker/latest/dg/serverless-endpoints.html">SageMaker AI serverless endpoints</a>.</figcaption>
+</figure>
+<figure>
+<img src="img/async-architecture.png" alt="SageMaker asynchronous inference architecture" width="1200" height="700">
+<figcaption>Official AWS image. Source: <a href="https://docs.aws.amazon.com/sagemaker/latest/dg/async-inference.html">SageMaker AI asynchronous inference</a>.</figcaption>
+</figure>
+<div class="box"><b>Exam trap.</b> A real-time endpoint for a job that runs 45 minutes is the wrong pick. Use asynchronous inference.</div>
+
+<h3>2.2 Lambda limits and long work</h3>
+<p>A Lambda function runs for at most 15 minutes. Put long flows in Step Functions and keep each Lambda step short. Waits in Lambda bill for the full duration. API Gateway REST integrations stop at a 29-second integration limit. Streaming does not change that limit.</p>
+<figure>
+<img src="img/configuration-tab.png" alt="Lambda configuration tab timeout setting" width="1200" height="600">
+<figcaption>Official AWS image. Source: <a href="https://docs.aws.amazon.com/lambda/latest/dg/configuration-timeout.html">Lambda function timeout</a>. Use for the timeout setting location.</figcaption>
+</figure>
+
+<h3>2.2 Human approval with a task token</h3>
+<figure>
+<img src="img/wait-for-task-token.png" alt="Step Functions wait for callback with task token" width="1200" height="700">
+<figcaption>Official AWS image. Source: <a href="https://docs.aws.amazon.com/step-functions/latest/dg/connect-to-resource.html">Step Functions, connect to resources</a>. Use for the callback pattern.</figcaption>
+</figure>
+<div class="diagram">
+<svg viewBox="0 0 800 150" role="img" aria-label="Approval flow with task token">
+<g font-family="IBM Plex Sans,Arial" font-size="15" fill="#1B1F24">
+<rect x="20" y="40" width="160" height="50" fill="none" stroke="#1B1F24"/><text x="100" y="70" text-anchor="middle">Agent drafts</text>
+<rect x="250" y="40" width="200" height="50" fill="none" stroke="#1B1F24"/><text x="350" y="70" text-anchor="middle">Step Functions waits with task token</text>
+<rect x="520" y="40" width="260" height="50" fill="none" stroke="#A4441C" stroke-width="2"/><text x="650" y="70" text-anchor="middle">Human approves, or timeout</text>
+</g>
+<line class="flow" x1="180" y1="65" x2="248" y2="65" stroke="#1D4E89" stroke-width="2"/>
+<line class="flow" x1="450" y1="65" x2="518" y2="65" stroke="#1D4E89" stroke-width="2"/>
+</svg>
+<div class="cap">Diagram: a durable pause. Express workflows do not support the callback pattern. Built in SVG for this treatise.</div>
+</div>
+<p>The execution history gives the audit trail. Standard workflows keep execution history for up to 90 days. Use Standard for waits measured in hours or days.</p>
+
+<h3>2.3 Enterprise gateway and access</h3>
+<p>Put one controlled entry in front of the models. API Gateway, Lambda or EventBridge, and then Bedrock or SageMaker AI. One gateway enforces guardrail identifiers, IAM policy, uniform logs, and team cost tags. AWS Outposts keeps data on premises for rules that keep data on site. AgentCore Gateway routes agent traffic through one endpoint and includes observability and auditing.</p>
+
+<h3>2.3 Converse or InvokeModel</h3>
+<table>
+<tr><th>Task</th><th>API</th></tr>
+<tr><td>Chat and tool use, one code path for many models</td><td>Converse</td></tr>
+<tr><td>Embeddings</td><td>InvokeModel with an embedding model</td></tr>
+<tr><td>Provider-specific body or parameter</td><td>InvokeModel. Claude requires <code>anthropic_version</code> and <code>max_tokens</code> in the body.</td></tr>
+</table>
+<div class="box"><b>Exam trap.</b> Converse is for text generation and chat. It is not the embeddings API.</div>
+
+<h3>2.3 ApplyGuardrail on any model</h3>
+<p>ApplyGuardrail applies a Bedrock safety policy to content from any model. It takes content and returns an allow or block result. It does not call the model. Input screening and output screening are separate checks.</p>
+
+<h3>2.4 Streaming to the browser</h3>
+<p>ConverseStream and InvokeModelWithResponseStream send tokens as they arrive. WebSocket APIs or server-sent events carry the stream to the browser. A REST integration still stops at the 29-second limit. Pick a path that can hold the stream.</p>
+<div class="box"><b>Exam trap.</b> A 90-second model call fails at the gateway. Raising the Lambda timeout does not fix it.</div>
+
+<h3>2.4 Call models reliably</h3>
+<ol class="steps">
+<li>Call. Use Bedrock APIs for synchronous calls. Use SQS for asynchronous work that can finish later.</li>
+<li>Recover. Use exponential backoff with jitter. Set a maximum attempt count. Use a fallback model.</li>
+<li>Observe. Trace calls with AWS X-Ray. Log token counts per call.</li>
+<li>Route. Use static configuration, Step Functions for content-based routing, or metric-based routing.</li>
+</ol>
+<div class="box"><b>Exam trap.</b> A tight retry loop is never correct. Retries need jitter, a maximum attempt count, and a fallback.</div>
+
+<h3>2.5 Application tools</h3>
+<table>
+<tr><th>Need</th><th>Service</th></tr>
+<tr><td>Coding help in the IDE, code changes, test generation</td><td>Amazon Q Developer</td></tr>
+<tr><td>Chat over company data for employees</td><td>Amazon Q Business</td></tr>
+<tr><td>Web app with managed hosting and sign-in</td><td>AWS Amplify</td></tr>
+<tr><td>Real-time collaborative editing</td><td>AWS AppSync with DynamoDB</td></tr>
+<tr><td>Extract data from documents, images, audio, and video</td><td>Amazon Bedrock Data Automation</td></tr>
+<tr><td>No-code prompt chains with branches</td><td>Amazon Bedrock Prompt Flows</td></tr>
+</table>
+<div class="box"><b>Exam trap.</b> Q Business and Q Developer have similar names. One does company chat. The other writes code.</div>
+
+<h3>2.5 Prompt variants, versions, and caching</h3>
+<p>A variant compares two wordings side by side. A version is an immutable snapshot that you can roll back to. Prompt caching reuses a repeated prefix. The cached part must match exactly and sit before the changing content. Cache writes cost extra, so caching pays off only with repeat volume.</p>
+<div class="box"><b>Exam trap.</b> Prompt caching lowers the cost of a repeated prefix. It does not reserve throughput. Provisioned Throughput reserves capacity.</div>
+
+<h3>Domain 2 gaps</h3>
+<p>Not in source: official sample questions for Domain 2. AWS CodeDeploy, Kiro, and Amazon Managed Streaming for Apache Kafka. The fact-check for this domain has not closed.</p>
+</section>
+
+<section id="d3">
+<p class="kicker">Part 4 · Domain 3 · Weight 20 percent (repository README)</p>
+<h2>AI safety, security, and governance</h2>
+<p>Domain 3 covers guardrails, data privacy, compliance evidence, and responsible AI. Four failure modes need four controls. No single control covers all four.</p>
+<table>
+<tr><th>Failure</th><th>Control</th><th>Layer</th></tr>
+<tr><td>Confident wrong answer</td><td>Contextual grounding checks</td><td>Output</td></tr>
+<tr><td>Prompt injection and jailbreak</td><td>Prompt attack filter</td><td>Input</td></tr>
+<tr><td>PII leak</td><td>Sensitive information filters</td><td>Input and output</td></tr>
+<tr><td>Harmful content</td><td>Content filters and denied topics</td><td>Input and output</td></tr>
+</table>
+
+<h3>3.1 One guardrail, six policies</h3>
+<div class="diagram">
+<svg viewBox="0 0 800 200" role="img" aria-label="Guardrail checks input and output">
+<g font-family="IBM Plex Sans,Arial" font-size="15" fill="#1B1F24">
+<rect x="10" y="70" width="140" height="50" fill="none" stroke="#1B1F24"/><text x="80" y="100" text-anchor="middle">User input</text>
+<rect x="190" y="70" width="170" height="50" fill="none" stroke="#A4441C" stroke-width="2"/><text x="275" y="100" text-anchor="middle">Guardrail checks input</text>
+<rect x="400" y="70" width="170" height="50" fill="none" stroke="#1B1F24"/><text x="485" y="100" text-anchor="middle">Foundation model</text>
+<rect x="610" y="70" width="180" height="50" fill="none" stroke="#A4441C" stroke-width="2"/><text x="700" y="100" text-anchor="middle">Guardrail checks output</text>
+</g>
+<line class="flow" x1="150" y1="95" x2="188" y2="95" stroke="#1D4E89" stroke-width="2"/>
+<line class="flow" x1="360" y1="95" x2="398" y2="95" stroke="#1D4E89" stroke-width="2"/>
+<line class="flow" x1="570" y1="95" x2="608" y2="95" stroke="#1D4E89" stroke-width="2"/>
+<text x="10" y="170" font-size="15" fill="#4A5159" font-family="IBM Plex Sans,Arial">Policies: content filters, denied topics, word filters, sensitive information filters, contextual grounding checks, Automated Reasoning checks.</text>
+</svg>
+<div class="cap">Diagram: the guardrail checks input and output. Built in SVG for this treatise.</div>
+</div>
+<table>
+<tr><th>Policy</th><th>Blocks or checks</th></tr>
+<tr><td>Content filters</td><td>Harmful categories. The prompt attack category applies to input.</td></tr>
+<tr><td>Denied topics</td><td>A whole subject, described in natural language.</td></tr>
+<tr><td>Word filters</td><td>Exact words or phrases.</td></tr>
+<tr><td>Sensitive information filters</td><td>PII entities. Redact or block.</td></tr>
+<tr><td>Contextual grounding checks</td><td>Whether the answer is supported by the source and relevant to the question.</td></tr>
+<tr><td>Automated Reasoning checks</td><td>Whether the response agrees with formal policy rules.</td></tr>
+</table>
+<p>A draft is editable. A version is a frozen snapshot. Production points at a version. Input and output checks are separate switches.</p>
+<figure>
+<img src="img/configurations.png" alt="Bedrock configuration screen" width="1200" height="600">
+<figcaption>Official AWS image. Source: <a href="https://docs.aws.amazon.com/bedrock/latest/userguide/kb-test-retrieve.html">Test a Knowledge Base</a>. Use to show a configuration panel. Not a guardrail screen.</figcaption>
+</figure>
+
+<h3>3.1 Choose the right filter</h3>
+<ul>
+<li>Use a denied topic for a whole subject. A word list cannot stop every phrasing of a subject.</li>
+<li>Use a word filter for exact strings. It misses rephrased requests.</li>
+<li>Use the prompt attack filter for jailbreak and injection patterns. A denied topic does not detect prompt attacks.</li>
+</ul>
+<div class="box"><b>Exam trap.</b> Turn off the prompt attack filter and jailbreaks reach the model. Attack detection runs on input.</div>
+
+<h3>3.1 Grounding is not safety</h3>
+<p>Contextual grounding checks test support from the source. They do not test harm. Use content filters for harmful text. Grounding reduces hallucination. It does not remove it.</p>
+<div class="box"><b>Exam trap.</b> Answers that say a control "prevents all prompt injection" or "eliminates hallucinations" are wrong. No control is absolute.</div>
+
+<h3>3.1 Defense in depth</h3>
+<ol class="steps">
+<li>Pre-filter with Amazon Comprehend PII detection and an abuse classifier.</li>
+<li>Guardrails on input and output.</li>
+<li>Lambda format checks, allow-list checks, and business rules.</li>
+<li>API Gateway throttling and usage plans.</li>
+</ol>
+<p>Each layer fails sometimes. Layers use different controls, so a gap in one layer can be covered by another.</p>
+
+<h3>3.1 Detect mode</h3>
+<p>Detect mode runs the classifier and reports the verdict. It does not refuse the message. Use detect mode to measure a new rule before you block with it.</p>
+<div class="box"><b>Exam trap.</b> Detect mode is not a block. A blocked message needs the Block action.</div>
+
+<h3>3.2 Privacy: detect, then redact or block</h3>
+<table>
+<tr><th>Service</th><th>Where</th><th>Job</th></tr>
+<tr><td>Amazon Macie</td><td>Data at rest in Amazon S3</td><td>Discovers sensitive data in S3 objects.</td></tr>
+<tr><td>Amazon Comprehend</td><td>Single text documents</td><td>Real-time PII detection for single documents up to 100 KB.</td></tr>
+<tr><td>Bedrock Guardrails</td><td>Model input and output</td><td>Sensitive information filters block or mask PII at the model call.</td></tr>
+</table>
+<div class="box"><b>Exam trap.</b> Macie does not watch live model traffic. Guardrails does not scan a whole bucket.</div>
+
+<h3>3.2 Private network access</h3>
+<p>VPC interface endpoints (AWS PrivateLink) keep API traffic on the AWS network. Create one endpoint for each Bedrock plane the workload uses. The bedrock-runtime plane runs invocations. The bedrock-agent and bedrock-agent-runtime planes serve agents.</p>
+<div class="box"><b>Exam trap.</b> One runtime endpoint does not cover agent calls. Check each plane.</div>
+
+<h3>3.2 Logs that hold prompts</h3>
+<p>Model invocation logs can hold prompts and completions. In a clinical setting, those logs can hold protected health information. Encrypt the logs with AWS KMS and restrict access. In a strict compliance setting, disable logging.</p>
+<p>S3 Object Lock gives write-once-read-many retention. S3 Lifecycle expiration deletes objects at the end of their lifetime. Invocation logs keep the original, unmodified request, even when a guardrail masks PII in the output.</p>
+<div class="box"><b>Exam trap.</b> Masked output does not mean the log is masked. Protect the log store.</div>
+
+<h3>3.2 Data security plane</h3>
+<table>
+<tr><th>Plane</th><th>Control</th></tr>
+<tr><td>Network</td><td>VPC interface endpoints keep traffic off the public internet.</td></tr>
+<tr><td>Access</td><td>IAM least privilege. Lake Formation for column and row access to lake tables.</td></tr>
+<tr><td>Encryption</td><td>AWS KMS for data at rest. TLS for data in transit.</td></tr>
+<tr><td>Monitoring</td><td>CloudTrail records API calls. CloudWatch Logs holds invocation logs.</td></tr>
+</table>
+<p>Encryption answers the storage risk. It does not answer a question about training use. Check the data terms and the retention settings for that question.</p>
+
+<h3>3.2 Cross-Region guardrail inference</h3>
+<p>Cross-Region guardrail inference routes requests to another Region in the same geography. Input prompts and outputs can move to that Region. A strict single-Region rule conflicts with that routing. Check whether the guardrail allows cross-Region inference before you choose it for a strict residency rule.</p>
+
+<h3>3.3 Data lake access and model documentation</h3>
+<table>
+<tr><th>Need</th><th>Control</th></tr>
+<tr><td>One team sees a salary column and another does not</td><td>Lake Formation column-level access</td></tr>
+<tr><td>A team sees only its own rows</td><td>Lake Formation row-level access</td></tr>
+<tr><td>Versioned record of intended use, limits, and evaluation results</td><td>SageMaker Model Cards linked to the model package</td></tr>
+</table>
+<div class="box"><b>Exam trap.</b> Model Cards describe the model. Lake Formation controls who reads the data.</div>
+
+<h3>3.3 Audit and lineage</h3>
+<p>CloudTrail shows who called which API, when, and from where. It does not show row content. Lineage shows which documents support an answer. Combine catalog metadata with citations on each output. No single feature gives full lineage.</p>
+
+<h3>3.3 Governance mapping</h3>
+<table>
+<tr><th>Need</th><th>Service</th></tr>
+<tr><td>Model documentation for audit</td><td>SageMaker Model Cards</td></tr>
+<tr><td>Data lineage and source registry</td><td>AWS Glue Data Catalog</td></tr>
+<tr><td>Audit of API calls</td><td>AWS CloudTrail</td></tr>
+<tr><td>Decision and runtime logs</td><td>Amazon CloudWatch Logs</td></tr>
+<tr><td>Runtime safety</td><td>Bedrock Guardrails</td></tr>
+</table>
+<p>Map each regulation to one control, one proof, and one review cadence.</p>
+
+<h3>3.3 Organization-wide controls</h3>
+<p>Service control policies (SCPs) apply rules across accounts. A condition on the <code>bedrock:GuardrailIdentifier</code> key can require a guardrail on each request. Application code can be changed or skipped. The IAM layer still applies.</p>
+<div class="box"><b>Exam trap.</b> A guardrail that only the application code calls can be skipped. Enforce it at IAM.</div>
+
+<h3>3.4 Responsible AI</h3>
+<table>
+<tr><th>Principle</th><th>How to show it</th></tr>
+<tr><td>Transparent</td><td>Show sources and reasoning. Use agent traces. Cite sources on each claim.</td></tr>
+<tr><td>Fair</td><td>Define fairness metrics before launch. A/B test prompt variants. Evaluate at scale with an LLM-as-a-judge.</td></tr>
+<tr><td>Policy-checked</td><td>Apply guardrails from policy requirements. Run compliance checks in Lambda.</td></tr>
+</table>
+<p>Fairness is continuous. A launch test is a snapshot. Data drift and demographic drift change model behavior after launch. A one-time bias test before launch does not prove fairness later.</p>
+<div class="box"><b>Exam trap.</b> A model card alone does not explain one loan decision. Add the citations and the trace.</div>
+
+<h3>Domain 3 gaps</h3>
+<p>Not in source: official sample questions for Domain 3. The Lake Formation permission model details. IAM Access Analyzer. AWS WAF rule configuration.</p>
+</section>
+
+<section id="d4">
+<p class="kicker">Part 5 · Domain 4 · Weight 12 percent (repository README)</p>
+<h2>Operational efficiency and optimization</h2>
+<p>Domain 4 covers cost, latency, capacity, throttling, and monitoring. Match each observed fact to one lever.</p>
+
+<h3>4.1 Token economics</h3>
+<p>You pay for each input token and each output token. The formula uses the price per million tokens.</p>
+<div class="diagram">
+<svg viewBox="0 0 800 130" role="img" aria-label="Cost formula">
+<text x="20" y="40" font-size="18" fill="#1B1F24" font-family="IBM Plex Sans,Arial">Cost = (input tokens / 1,000,000 × input price) + (output tokens / 1,000,000 × output price)</text>
+<text x="20" y="80" font-size="16" fill="#4A5159" font-family="IBM Plex Sans,Arial">Illustrative prices: 3 USD per million input tokens and 15 USD per million output tokens. Not current AWS prices.</text>
+<text x="20" y="110" font-size="16" fill="#1B1F24" font-family="IBM Plex Sans,Arial">Example: 4,000 input and 1,000 output tokens = 0.012 + 0.015 = 0.027 USD.</text>
+</svg>
+<div class="cap">Diagram: the cost formula with illustrative prices. Built in SVG for this treatise.</div>
+</div>
+<p>At these illustrative prices, output costs five times as much as input per token. Long replies raise cost. Set a maximum output length to cap the reply. Check current AWS prices before exam day.</p>
+
+<h3>4.1 Cost levers</h3>
+<table>
+<tr><th>Observed fact</th><th>Lever</th></tr>
+<tr><td>Most requests are simple</td><td>Tiered routing to a smaller model</td></tr>
+<tr><td>The same long prefix repeats</td><td>Prompt caching with a cache checkpoint</td></tr>
+<tr><td>Steady baseline load with a latency target</td><td>Provisioned Throughput for the baseline</td></tr>
+<tr><td>Short spikes above the baseline</td><td>On-demand inference</td></tr>
+<tr><td>Work that can wait for hours</td><td>Batch inference</td></tr>
+<tr><td>Many paraphrases of the same question</td><td>Semantic cache</td></tr>
+</table>
+<div class="box"><b>Exam trap.</b> Buying more capacity does not fix a cost that comes from long prompts.</div>
+
+<h3>4.1 Prompt caching</h3>
+<p>A cache checkpoint marks the static prefix of a prompt as cacheable. Keep the variable part at the end. A changing user message in the prefix breaks the cache. The default time to live is 5 minutes. The prefix must meet a minimum token count. The fact-check found minimums from 512 to 4,096 tokens, depending on the model.</p>
+<figure>
+<img src="img/bedrock-prompt-caching-ui-toggle.png" alt="Prompt caching toggle in the Bedrock console" width="1200" height="600">
+<figcaption>Official AWS image. Source: <a href="https://docs.aws.amazon.com/bedrock/latest/userguide/prompt-caching.html">Prompt caching in Amazon Bedrock</a>. Use to show where caching is enabled.</figcaption>
+</figure>
+<figure>
+<img src="img/bedrock-prompt-caching-metrics.png" alt="Prompt caching metrics" width="1200" height="600">
+<figcaption>Official AWS image. Source: <a href="https://docs.aws.amazon.com/bedrock/latest/userguide/prompt-caching.html">Prompt caching in Amazon Bedrock</a>. Use to show cache read and write metrics.</figcaption>
+</figure>
+<div class="diagram">
+<svg viewBox="0 0 800 120" role="img" aria-label="Cache prefix layout">
+<rect x="10" y="30" width="420" height="50" fill="none" stroke="#1B1F24"/><text x="220" y="60" text-anchor="middle" font-size="15" fill="#1B1F24" font-family="IBM Plex Sans,Arial">Static prefix: instructions, tools, documents (cached)</text>
+<rect x="440" y="30" width="350" height="50" fill="none" stroke="#A4441C" stroke-width="2"/><text x="615" y="60" text-anchor="middle" font-size="15" fill="#1B1F24" font-family="IBM Plex Sans,Arial">Variable user message (not cached)</text>
+</svg>
+<div class="cap">Diagram: put stable content first. Built in SVG for this treatise.</div>
+</div>
+
+<h3>4.1 Semantic cache</h3>
+<p>A semantic cache matches paraphrases of the same question by embedding similarity. It returns the stored answer before the model runs. Prompt caching is different. It reuses an exact prompt prefix at the model. A semantic cache needs repeated, similar questions to get a good hit rate. Highly personal questions rarely repeat.</p>
+
+<h3>4.1 Batch for work that can wait</h3>
+<p>Batch inference reads input from S3 and writes output to S3. The price is 50 percent lower than on-demand for select models. Set the job time limit with the timeout duration in hours. A user waiting for a chat reply needs on-demand, not batch.</p>
+
+<h3>4.1 Model right-sizing</h3>
+<table>
+<tr><th>Pattern</th><th>How it works</th></tr>
+<tr><td>Cascade</td><td>Try the small model first. Escalate when the answer is uncertain or the query is complex.</td></tr>
+<tr><td>Route by complexity</td><td>A classifier or router sends each query to a model. Bedrock intelligent prompt routing picks between two models in one family by predicted response quality and cost.</td></tr>
+<tr><td>Fine-tune a small model</td><td>For a narrow, repeated task at high volume.</td></tr>
+</table>
+<div class="box"><b>Exam trap.</b> Sending every request to the largest model wastes cost.</div>
+
+<h3>4.1 Capacity concepts that look alike</h3>
+<table>
+<tr><th>Concept</th><th>Purpose</th><th>Choose for</th></tr>
+<tr><td>Cross-Region inference profile</td><td>Routes requests across Regions for throughput and availability</td><td>Availability and resilience</td></tr>
+<tr><td>Intelligent prompt routing</td><td>Routes between two models in one family</td><td>Cost</td></tr>
+<tr><td>Provisioned Throughput</td><td>Reserves model units</td><td>Steady, predictable traffic</td></tr>
+</table>
+<div class="box"><b>Exam trap.</b> Code that calls the base model ID does not use reserved capacity. Call the provisioned model ARN.</div>
+
+<h3>4.1 Quotas, retries, and pre-call checks</h3>
+<ol class="steps">
+<li>Quotas. Tokens per minute (TPM) and tokens per day (TPD) cap token use. Watch the InvocationThrottles metric in CloudWatch.</li>
+<li>Retry. Use exponential backoff with jitter. Set a maximum number of attempts.</li>
+<li>Fall back. Use a second model or a cached answer when retries end.</li>
+<li>Check first. Count tokens before the call with CountTokens. Compare the count with the model limit.</li>
+</ol>
+<div class="box"><b>Exam trap.</b> Retries that add load can make an overload worse. Back off with jitter.</div>
+
+<h3>4.2 Latency: find the slow step</h3>
+<p>Latency is what the user feels. Throughput is what the system handles. Stream the response to improve perceived speed. Streaming does not raise throughput. For a slow retrieval step, use index optimization, query preprocessing, or hybrid search. A bigger model does not fix a slow search step.</p>
+<table>
+<tr><th>Goal</th><th>Lever</th></tr>
+<tr><td>Perceived speed</td><td>Stream the response as it generates</td></tr>
+<tr><td>Speed for predictable questions</td><td>Precompute answers ahead of time</td></tr>
+<tr><td>Volume</td><td>Batch inference for offline work. Provisioned Throughput for steady capacity.</td></tr>
+</table>
+
+<h3>4.2 Sampling and variance</h3>
+<p>Temperature sets how wide sampling is. Lower values give more repeatable output. Top K limits the candidate tokens. Top P limits the share of the probability distribution that is considered. Sampling settings do not change the price per token. Buying capacity does not fix different answers to the same input.</p>
+<p>Not in source: effect of a fixed seed on output. Effect of a versioned prompt on output variance. Effect of sampling on token counts.</p>
+
+<h3>4.3 Monitoring signals</h3>
+<table>
+<tr><th>Signal</th><th>Tool and use</th></tr>
+<tr><td>Token and invocation metrics</td><td>CloudWatch metrics: InputTokenCount, OutputTokenCount, Invocations</td></tr>
+<tr><td>Spend spikes</td><td>CloudWatch anomaly detection and alarms. Cost Anomaly Detection for spend.</td></tr>
+<tr><td>Exact requests and responses</td><td>Model invocation logs. Search with CloudWatch Logs Insights.</td></tr>
+<tr><td>Slow or failing step</td><td>AWS X-Ray traces requests and downstream calls.</td></tr>
+</table>
+<p>Pattern: find the slow step with X-Ray, then audit the exact prompts in the invocation logs.</p>
+<figure>
+<img src="img/mmv2-architecture.png" alt="SageMaker Model Monitor architecture" width="1200" height="700">
+<figcaption>Official AWS image. Source: <a href="https://docs.aws.amazon.com/sagemaker/latest/dg/model-monitor.html">SageMaker AI Model Monitor</a>. Use for drift monitoring. The page states that Model Monitor is no longer open to new customers. Check that status before you rely on it.</figcaption>
+</figure>
+<figure>
+<img src="img/mmv2-architecture-batch.png" alt="SageMaker Model Monitor batch architecture" width="1200" height="700">
+<figcaption>Official AWS image. Source: <a href="https://docs.aws.amazon.com/sagemaker/latest/dg/model-monitor.html">SageMaker AI Model Monitor</a>.</figcaption>
+</figure>
+<div class="box"><b>Exam trap.</b> Model Monitor watches statistical drift in structured features and predictions. It does not score free-text answer quality. Use a judge or a golden set for that.</div>
+
+<h3>Domain 4 gaps</h3>
+<p>Not in source: official sample questions for Domain 4. Amazon CloudWatch Synthetics. AWS Auto Scaling for GenAI workloads. AWS Cost Explorer.</p>
+</section>
+
+<section id="d5">
+<p class="kicker">Part 6 · Domain 5 · Weight 11 percent (repository README)</p>
+<h2>Testing, validation, and troubleshooting</h2>
+<p>Domain 5 covers evaluation methods, golden datasets, A/B tests, debugging, and release gates.</p>
+
+<h3>5.1 Evaluation matrix</h3>
+<table>
+<tr><th>Method</th><th>Measures</th><th>Use when</th></tr>
+<tr><td>Automatic</td><td>Accuracy, robustness, toxicity. Accuracy needs ground-truth labels.</td><td>Objective, repeatable checks</td></tr>
+<tr><td>LLM-as-a-judge</td><td>Correctness, faithfulness, harmfulness, style. Custom metrics.</td><td>Quality at scale. RAG and agent evaluation.</td></tr>
+<tr><td>Human</td><td>Relevance, brand voice, custom criteria</td><td>Subjective judgment</td></tr>
+<tr><td>Bring your own inference</td><td>The same metrics on your own responses</td><td>Non-Bedrock models or external RAG sources</td></tr>
+<tr><td>Retrieve-only</td><td>Context relevance and context coverage</td><td>Isolate the retriever</td></tr>
+</table>
+<p>Pick the cheapest method that measures the claim. Escalate only for what the cheap method cannot judge.</p>
+<div class="box"><b>Exam trap.</b> Automatic accuracy metrics do not measure tone, style, or voice. Use human review for brand voice.</div>
+
+<h3>5.1 Judges need calibration</h3>
+<ol class="steps">
+<li>Rate a fixed golden set with humans.</li>
+<li>Run the same set through the judge.</li>
+<li>Measure judge-human agreement. Low agreement means the judge is not valid.</li>
+<li>Pin the judge model ID. A changed judge changes the scores.</li>
+</ol>
+<div class="box"><b>Exam trap.</b> An uncalibrated judge gives opinions, not measurements.</div>
+
+<h3>5.1 RAG evaluation: split retrieval from generation</h3>
+<table>
+<tr><th>Part</th><th>Metrics</th></tr>
+<tr><td>Retriever</td><td>Context relevance and context coverage. Did the system get the correct articles?</td></tr>
+<tr><td>Generator</td><td>Faithfulness. Are the claims supported by the retrieved chunks?</td></tr>
+</table>
+<p>Citation precision and citation coverage are Not in source for this build. Context relevance and context coverage come from an AWS blog post, not a reference page.</p>
+<div class="box"><b>Exam trap.</b> A good final answer can hide weak retrieval. Measure both parts.</div>
+
+<h3>5.1 Golden datasets, regression, and canaries</h3>
+<table>
+<tr><th>Practice</th><th>What it does</th></tr>
+<tr><td>Golden dataset</td><td>Trusted prompts with known good answers. Run them after every change.</td></tr>
+<tr><td>Regression suite</td><td>Reruns the golden set on each change to catch drift.</td></tr>
+<tr><td>Canary</td><td>Releases a new version to a small share of traffic first.</td></tr>
+<tr><td>A/B test</td><td>Compares two variants on live or sampled traffic.</td></tr>
+</table>
+<div class="box"><b>Exam trap.</b> A re-sync or a prompt edit is a change. It needs the same release gate.</div>
+<div class="diagram">
+<svg viewBox="0 0 800 130" role="img" aria-label="Release gates">
+<g font-family="IBM Plex Sans,Arial" font-size="15" fill="#1B1F24">
+<rect x="10" y="40" width="140" height="46" fill="none" stroke="#1B1F24"/><text x="80" y="68" text-anchor="middle">Version the prompt</text>
+<rect x="190" y="40" width="150" height="46" fill="none" stroke="#1B1F24"/><text x="265" y="68" text-anchor="middle">Run golden set</text>
+<rect x="380" y="40" width="150" height="46" fill="none" stroke="#A4441C" stroke-width="2"/><text x="455" y="68" text-anchor="middle">Quality gate</text>
+<rect x="570" y="40" width="220" height="46" fill="none" stroke="#1B1F24"/><text x="680" y="68" text-anchor="middle">Canary, then full traffic</text>
+</g>
+<line class="flow" x1="150" y1="63" x2="188" y2="63" stroke="#1D4E89" stroke-width="2"/>
+<line class="flow" x1="340" y1="63" x2="378" y2="63" stroke="#1D4E89" stroke-width="2"/>
+<line class="flow" x1="530" y1="63" x2="568" y2="63" stroke="#1D4E89" stroke-width="2"/>
+</svg>
+<div class="cap">Diagram: a failed gate blocks the release. Built in SVG for this treatise.</div>
+</div>
+
+<h3>5.1 Safety tests</h3>
+<p>Run automated adversarial test sets against prompt injection and jailbreak patterns. Run them again after every guardrail or prompt change. Agent evaluations measure task completion and tool usage. Step-by-step red-team procedures are Not in source.</p>
+
+<h3>5.2 Troubleshooting by symptom</h3>
+<table>
+<tr><th>Symptom</th><th>Likely cause</th><th>First check</th></tr>
+<tr><td>Output cut off mid-sentence</td><td>Maximum output tokens too low, or context overflow</td><td>Maximum tokens and the token count against the limit</td></tr>
+<tr><td>Answer ignores the documents</td><td>Retrieval or chunking</td><td>Retrieved chunks, before the model</td></tr>
+<tr><td>Output changes between runs</td><td>Sampling settings or prompt drift</td><td>Temperature, Top P, prompt version</td></tr>
+<tr><td>Throttling after buying capacity</td><td>Base model ID used</td><td>Provisioned model ARN in the call</td></tr>
+<tr><td>Agent runs old behavior</td><td>Agent not prepared, or alias not moved</td><td>Prepare the agent. Check the alias version.</td></tr>
+<tr><td>Works on Titan, fails on Claude</td><td>Wrong InvokeModel body</td><td>anthropic_version and max_tokens in the body</td></tr>
+<tr><td>AccessDeniedException in one Region only</td><td>IAM permissions for that call</td><td>IAM policy and resource ARNs for that Region</td></tr>
+<tr><td>Quality dropped after a re-sync</td><td>Changed chunking or embedding model</td><td>What the sync changed. Then the golden set.</td></tr>
+</table>
+<div class="box"><b>Exam trap.</b> Temperature does not fix bad retrieval. Start the debug at the step that failed.</div>
+
+<h3>5.2 Debugging tools</h3>
+<p>CloudWatch Logs shows what the model received. Logs Insights finds patterns by time, caller identity, or request metadata. CloudTrail shows who called which API and when. CloudTrail is for audit, not for debugging answers.</p>
+
+<h3>5.2 Grounding and hallucination</h3>
+<table>
+<tr><th>Tool</th><th>Detects</th></tr>
+<tr><td>Golden dataset with out-of-scope questions</td><td>Hallucinations</td></tr>
+<tr><td>Output comparison across runs</td><td>Inconsistent answers to the same input</td></tr>
+<tr><td>Contextual grounding check and grounding score</td><td>Claims that the retrieved source does not support</td></tr>
+</table>
+<p>A hallucination test needs out-of-scope questions. Without them, the set only confirms answers that the documents already support.</p>
+
+<h3>Domain 5 gaps</h3>
+<p>Not in source: official sample questions for Domain 5. Setup steps for Bedrock Model Evaluations jobs. Step-by-step red-team procedures. Bedrock Agents Classic is closed to new customers per the docs. The agent rows here apply to existing use.</p>
+</section>
+
+<section id="traps">
+<p class="kicker">Part 7</p>
+<h2>Traps AWS reuses</h2>
+<table>
+<tr><th>Wrong answer</th><th>Correct idea</th></tr>
+<tr><td>Fine-tune on documents that change</td><td>RAG with a Knowledge Base</td></tr>
+<tr><td>Neptune for plain document search</td><td>A vector store. Neptune is for graph queries.</td></tr>
+<tr><td>Converse for embeddings</td><td>InvokeModel with an embedding model</td></tr>
+<tr><td>Batch for a user waiting on a reply</td><td>On-demand, real-time calls</td></tr>
+<tr><td>Guardrails to extract invoice fields</td><td>Bedrock Data Automation</td></tr>
+<tr><td>CloudTrail as a data trigger</td><td>S3 events and EventBridge</td></tr>
+<tr><td>Prompt attack filter off</td><td>Keep it on for input</td></tr>
+<tr><td>ElastiCache as the durable vector store</td><td>OpenSearch Serverless, Aurora with pgvector, or S3 Vectors</td></tr>
+<tr><td>Absolute claims about injection or hallucination</td><td>No control is absolute</td></tr>
+<tr><td>Agent runs without prepare</td><td>Prepare, then move the alias</td></tr>
+<tr><td>Action group to link two agents</td><td>Built-in supervisor and collaborator pattern</td></tr>
+<tr><td>More model units after throttling</td><td>Call the provisioned model ARN</td></tr>
+<tr><td>Raise the Lambda timeout past 900 seconds</td><td>900 seconds is the Lambda maximum. Use asynchronous jobs or Step Functions.</td></tr>
+<tr><td>Tight retry loop</td><td>Backoff, jitter, maximum attempts, fallback</td></tr>
+<tr><td>Prompt caching for throughput</td><td>Provisioned Throughput for reserved capacity</td></tr>
+<tr><td>Automatic accuracy metric for tone</td><td>LLM-as-a-judge and human review</td></tr>
+<tr><td>Temperature to fix retrieval</td><td>Fix chunking and retrieval first</td></tr>
+<tr><td>Hand-built RAG when the scenario asks for least effort</td><td>Bedrock Knowledge Bases</td></tr>
+</table>
+</section>
+
+<section id="method">
+<p class="kicker">Part 8</p>
+<h2>Method for each question</h2>
+<ol class="steps">
+<li>Read the last sentence. Note what it asks for.</li>
+<li>List each constraint in the stem. Cost, latency, compliance, and existing footprint.</li>
+<li>Match each constraint to one service or pattern.</li>
+<li>Eliminate each option that breaks one constraint.</li>
+<li>For multiple response, count the answers the stem requires. Select all of them.</li>
+</ol>
+</section>
+
+<section id="gaps">
+<p class="kicker">Part 9</p>
+<h2>Gaps, limits, and checks</h2>
+<h3>Not in source for this build</h3>
+<ul>
+<li>Official sample questions for any domain. Only third-party practice sets were found.</li>
+<li>Amazon SageMaker JumpStart, Neo, and Unified Studio.</li>
+<li>AWS CodeDeploy, Kiro, and Amazon Managed Streaming for Apache Kafka.</li>
+<li>Amazon CloudWatch Synthetics, Auto Scaling for GenAI workloads, and AWS Cost Explorer.</li>
+<li>Lake Formation permission model details, IAM Access Analyzer, and AWS WAF rules.</li>
+<li>Step-by-step red-team procedures and Model Evaluations job setup.</li>
+</ul>
+<h3>Open checks before exam day</h3>
+<ol class="steps">
+<li>Confirm the domain weights against the official AIP-C01 exam guide.</li>
+<li>Confirm the 180-minute duration and the 300 USD fee on the official certification page.</li>
+<li>Finish the Domain 2 fact-check against the Bedrock Agents and Step Functions pages.</li>
+<li>Confirm the web crawler date and the Model Monitor status on the official pages.</li>
+<li>Confirm whether Amazon Bedrock uses prompts for model training. The sources did not settle this.</li>
+</ol>
+<h3>Images</h3>
+<p>The fifteen images in this treatise come from AWS documentation pages. Each caption names its source page. They are for personal study. Icons and other decorative items from the pages were left out.</p>
+</section>
+
+</main>
+</body>
+</html>
