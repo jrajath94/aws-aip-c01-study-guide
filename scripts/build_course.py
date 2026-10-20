@@ -23,10 +23,21 @@ for callfile in (ROOT/'research').glob('*calls.json'):
   text=mp.read_text()
   if not text.startswith('AWS Documentation from'):continue
   sources[call['id']]={'url':call['arguments']['url'],'path':str(mp.relative_to(ROOT)),'channel':'official AWS Documentation MCP','retrieved':'2026-10-20'}
+# Preserve citations to official documentation search snapshots. These records
+# identify the first returned AWS documentation page, not a full-page capture.
+for sp in sorted((ROOT/'research/mcp').glob('search-*.json')):
+ try:
+  snapshot=json.loads(sp.read_text())
+  results=snapshot.get('structured_content',{}).get('search_results',[])
+  if results and results[0].get('url','').startswith('https://docs.aws.amazon.com/'):
+   sources[sp.stem]={'url':results[0]['url'],'path':str(sp.relative_to(ROOT)),'channel':'official AWS Documentation MCP search snapshot','retrieved':'2026-10-20'}
+ except (json.JSONDecodeError,AttributeError):
+  continue
 for d in range(1,6):
  if 'exam-domain-'+str(d) in sources:sources['domain'+str(d)]=sources['exam-domain-'+str(d)]
 if 'scope-ai-professional-01' in sources:sources['exam']=sources['scope-ai-professional-01']
 sources['certification']={'url':'https://aws.amazon.com/certification/certified-generative-ai-developer-professional/','path':'research/certification.md'}
+sources['strands']={'url':'https://docs.aws.amazon.com/prescriptive-guidance/latest/gen-ai-inference-architecture-and-best-practices-on-aws/amazon-bedrock.html','path':'research/mcp/visual-doc-017.md','channel':'official AWS Documentation MCP'}
 sources['repo-d1']={'url':'../source-repo/volume-d1-foundation-models.html','path':'source-repo/volume-d1-foundation-models.html'}
 # Every official skill maps to explicit authored teaching.
 skills=[]

@@ -18,7 +18,7 @@ C=json.loads((ROOT/'course/treatise-data.json').read_text())
 for n in ('Regular','Bold'):pdfmetrics.registerFont(TTFont('Anthropic'+n,str(ROOT/f'assets/typography/AnthropicSans-{n}.ttf')))
 pdfmetrics.registerFontFamily('AnthropicRegular',normal='AnthropicRegular',bold='AnthropicBold',italic='AnthropicRegular',boldItalic='AnthropicBold')
 styles=getSampleStyleSheet()
-styles.add(ParagraphStyle(name='BodyCompact',fontName='AnthropicRegular',fontSize=9.5,leading=11.8,spaceAfter=4,textColor=colors.HexColor('#161b22'),splitLongWords=True))
+styles.add(ParagraphStyle(name='BodyCompact',fontName='AnthropicRegular',fontSize=9.5,leading=11.8,spaceAfter=3,textColor=colors.HexColor('#161b22'),splitLongWords=True))
 styles.add(ParagraphStyle(name='H1Compact',fontName='AnthropicBold',fontSize=16,leading=18,spaceBefore=10,spaceAfter=7,keepWithNext=True))
 styles.add(ParagraphStyle(name='H2Compact',fontName='AnthropicBold',fontSize=12,leading=14,spaceBefore=8,spaceAfter=5,keepWithNext=True))
 styles.add(ParagraphStyle(name='H3Compact',fontName='AnthropicBold',fontSize=10,leading=12,spaceBefore=5,spaceAfter=3,keepWithNext=True))
@@ -48,12 +48,16 @@ def p(s,style='BodyCompact',target=None,word=True):
 def h(s,level=2,**kw):p(s,f'H{level}Compact',**kw)
 def enum(items,target=None,word=True):
  for i,t in enumerate(items,1):p(f'{i}. {t}',target=target,word=word)
+source_entries={}
 def sources(ids,target=None,word=True):
- urls=[]
+ refs=[]
  for i in ids:
   src=C['sources'].get(i,{})
-  if src.get('url') and src['url'] not in urls:urls.append(src['url'])
- for url in urls:p(url,'CaptionCompact',target,word)
+  url=src.get('url')
+  if url:
+   if url not in source_entries:source_entries[url]=len(source_entries)+1
+   refs.append(str(source_entries[url]))
+ if refs:p('Sources ['+', '.join(dict.fromkeys(refs))+'].','CaptionCompact',target,word)
 def picture(f):
  path=(ROOT/'course'/f['path']).resolve()
  if not path.exists():return
@@ -153,6 +157,21 @@ for s in C['core']:
   v=s.get(key)
   if isinstance(v,str):p(v)
  sources(s.get('sources',[]))
+h('Architecture reference',1)
+for key,dia in C['diagrams'].items():
+ h(dia['title'])
+ cells=[]
+ for i,(name,body) in enumerate(dia['steps'],1):
+  cells.append(Paragraph(escape(str(i)+'. '+clean(name))+ '<br/>'+escape(clean(body)),styles['BodyCompact']))
+ rows=[cells[i:i+2] for i in range(0,len(cells),2)]
+ if len(rows[-1])<2:rows[-1].append('')
+ t=Table(rows,colWidths=[178,178],hAlign='LEFT');t.setStyle(TableStyle([('VALIGN',(0,0),(-1,-1),'TOP'),('GRID',(0,0),(-1,-1),.4,colors.HexColor('#999999')),('LEFTPADDING',(0,0),(-1,-1),5),('RIGHTPADDING',(0,0),(-1,-1),5)]));flows.append(t)
+ table=D.add_table(rows=0, cols=2)
+ for row in rows:
+  cellsw=table.add_row().cells
+  for j,v in enumerate(row):cellsw[j].text=clean(v.getPlainText()) if hasattr(v,'getPlainText') else ''
+ if dia.get('relation'):p(dia['relation'])
+ p('Numbers identify components or stages. Follow the stated relationship. Independent controls do not form a strict sequence.','CaptionCompact')
 h('Service boundaries',1)
 for group in C['services']:
  h(group['title'])
@@ -199,6 +218,8 @@ def impose(src,dst):
  w.add_metadata({'/Author':'','/Creator':'','/Producer':'','/Title':''})
  with open(dst,'wb') as f:w.write(f)
  return {'logicalPages':len(r.pages),'physicalSides':len(w.pages),'duplexSheets':math.ceil(len(w.pages)/2),'mapping':mapping,'emptyLogicalPages':[i+1 for i,p in enumerate(r.pages) if len((p.extract_text() or '').strip())<3]}
+h('Official source index',1)
+for url,n in source_entries.items():p('['+str(n)+'] '+url,'CaptionCompact')
 make_pdf(BUILD/'core-logical.pdf',flows);make_pdf(BUILD/'practice-logical.pdf',practice)
 stats['corePrint']=impose(BUILD/'core-logical.pdf',BUILD/'AIP-C01-Core-Two-Up.original.pdf')
 stats['practicePrint']=impose(BUILD/'practice-logical.pdf',BUILD/'AIP-C01-Practice-Two-Up.original.pdf')

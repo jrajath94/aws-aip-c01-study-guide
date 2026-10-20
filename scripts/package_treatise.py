@@ -14,10 +14,9 @@ def embed_paths(text,base):
 def escape_script(text):return text.replace('</','<\\/')
 for f in course['figures']+course.get('uiFigures',[]):
  p=(ROOT/'course'/f['path']).resolve();f['path']=dataurl(p)
-for s in course['core']:
- if s.get('image'):
-  p=(ROOT/'course'/s['image']).resolve()
-  if p.exists():s['image']=dataurl(p)
+# The standalone reader uses the native architecture scenes and selected official figures.
+# Preserve source illustrations in the repository archive rather than duplicating bitmap text.
+for s in course['core']:s['image']=''
 # Preserve access to original evidence through public repository links.
 origin='https://github.com/jrajath94/aws-aip-c01-study-guide/blob/823006efa64f98b560dd4fe40445e6a8042ef79b/'
 for ref in course['references']:
