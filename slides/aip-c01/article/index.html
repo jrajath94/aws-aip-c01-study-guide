@@ -107,6 +107,7 @@ section{padding:10px 0}
 }
 h2,h3{page-break-after:avoid}
 @media print{h2,h3{page-break-after:avoid}}
+.trap{background:none}
 </style>
 </head>
 <body>
@@ -142,6 +143,7 @@ h2,h3{page-break-after:avoid}
 <a href="#d5">6. Domain 5 · Testing, validation, troubleshooting</a>
 <a href="#traps">7. Traps AWS reuses</a>
 <a href="#method">8. Method for each question</a>
+<a href="#gapunits">8A2. Four gap units from the cursor branch</a>
 <a href="#terms">8A. Reference terms from the question bank</a>
 <a href="#steps">8B. Console and API steps confirmed in this pass</a>
 <a href="#glossary">8C. Glossary</a>
@@ -2270,6 +2272,49 @@ h2,h3{page-break-after:avoid}
 <li>Eliminate each option that breaks one constraint.</li>
 <li>For multiple response, count the answers the stem requires. Select all of them.</li>
 </ol>
+</section>
+
+<section id="gapunits">
+<p class="kicker">Part 8D</p>
+<h2>Four gap units from the cursor branch</h2>
+<p>Each unit below covers a topic that the master did not cover. Facts come from official pages. Design guidance and arithmetic are labeled. Items marked Not in source are not confirmed.</p>
+<article class="unit" id="g1">
+<h3>G1 · Vector quantization: fewer bits, less memory</h3>
+<p><b>First principle.</b> A float32 vector dimension uses 4 bytes. Quantization stores fewer bits per dimension. Smaller vectors need less index memory, and index memory is often the largest cost in a RAG system.</p>
+<p><b>Facts.</b> In OpenSearch with the Faiss engine, FP16 scalar quantization (SQfp16) halves memory. It needs OpenSearch 2.13 or later. Source: <a href="https://docs.opensearch.org/2.18/search-plugins/knn/knn-vector-quantization/">OpenSearch k-NN vector quantization</a>, an OpenSearch project page, not an AWS page. Binary quantization stores 1 bit per dimension, which is 32 times smaller than float32. 2-bit and 4-bit options give 16 and 8 times. Those figures come from an AWS blog post, a secondary source.</p>
+<p><b>Arithmetic (design guidance).</b> One 1,536-dimension float32 vector is 6,144 bytes, about 6 KB. Ten million vectors need about 60 GB. One binary vector is 1,536 bits, or 192 bytes. Ten million binary vectors need about 1.9 GB.</p>
+<p><b>Accuracy.</b> The 2 percent accuracy loss in the cursor branch is one example. It is Not in source as a general figure. Measure the loss on your data. Rescore the top candidates with full-precision vectors or a reranker.</p>
+<p><b>Exam tie.</b> Domain 1 task 1.5 (vector search), Domain 4 tasks 4.1 and 4.2 (cost and retrieval performance).</p>
+<p class="trap"><b>Exam trap.</b> Binary quantization without rescoring can lose accuracy. Choose it for a first-pass search over a large index, not for final ranking.</p>
+</article>
+<article class="unit" id="g2">
+<h3>G2 · Red-teaming your own app with AWS tools</h3>
+<p><b>First principle.</b> A safety control is a hypothesis until someone attacks it. Red-teaming is systematic adversarial testing. You attack your own app before a user does, then fix each break.</p>
+<p><b>Facts.</b> The Guardrails prompt attack filter detects jailbreaks and prompt injection. Prompt leakage is detected on the Standard tier only. Source: <a href="https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-prompt-attack.html">Detect prompt attacks with Amazon Bedrock Guardrails</a>. With InvokeModel or InvokeModelWithResponseStream, you must tag user input. Untagged input is not checked for prompt attacks. The filter does not evaluate tool results or tool definitions.</p>
+<p><b>Facts.</b> Automated Reasoning checks do not detect prompt injection. They run in detect mode only. They support English only and do not support streaming. Use content filters together with them. Source: <a href="https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-automated-reasoning-checks.html">What are Automated Reasoning checks</a>.</p>
+<p><b>Suite design (design guidance).</b> Cover direct jailbreaks, indirect injection in retrieved documents and tool outputs, PII extraction probes, and multi-turn attacks. Run the suite after each guardrail or prompt change. Test the retrieval layer with poisoned documents.</p>
+<p><b>Not in source.</b> A managed AWS red-team service. The harmfulness and refusal metric names used in the cursor branch for evaluation jobs.</p>
+<p><b>Exam tie.</b> Domain 3 task 3.1 (task 3.1.5, adversarial threats), Domain 5 task 5.1 (regression and judges).</p>
+<p class="trap"><b>Exam trap.</b> Automated Reasoning checks do not stop prompt injection. The prompt attack filter does, on tagged input.</p>
+</article>
+<article class="unit" id="g3">
+<h3>G3 · Security hardening: private paths, layered controls, one PII service per plane</h3>
+<p><b>First principle.</b> Each control covers one layer. A network path, an identity, a data store, and a model call need different controls. No single service covers all four.</p>
+<p><b>Facts.</b> VPC interface endpoints (PrivateLink) keep Bedrock traffic off the public internet. Source: the Amazon Bedrock data protection page, which links the Amazon VPC and AWS PrivateLink topic. Macie finds sensitive data in S3 objects at rest. Comprehend detects PII in text. Guardrails sensitive-information filters block or mask PII at the model call. KMS encrypts data at rest. Translate does not protect PII. Rekognition is a vision service.</p>
+<p><b>Design guidance.</b> Use Macie for data at rest, Comprehend for text before the call, and Guardrails at the model boundary. Use a pre-filter, guardrails on input and output, grounding checks, and a post-processing step for sensitive audiences. A NAT gateway gives outbound internet access. It is not a private path to Bedrock. WAF filters web requests. It does not make a network path private.</p>
+<p><b>Exam tie.</b> Domain 3 tasks 3.1 and 3.2.</p>
+<p class="trap"><b>Exam trap.</b> Encryption (KMS) does not change the network path. Private paths (PrivateLink) do not encrypt data at rest.</p>
+</article>
+<article class="unit" id="g4">
+<h3>G4 · Decision ladders: pick the cheapest rung that works</h3>
+<p><b>First principle.</b> Start with the cheapest change. Move up only when the cheaper rung fails a measured test.</p>
+<p><b>Design guidance.</b> The ladder is prompt engineering, then RAG, then fine-tuning, then continued pre-training. Each rung costs more and needs more data. Changing documents and citations point to RAG. Stable behavior at high volume points to fine-tuning or distillation.</p>
+<p><b>Facts.</b> On-demand inference pays per token with no commitment. Provisioned Throughput is billed hourly, with a commitment of none, 1 month, or 6 months. Batch inference is offline, with input and output in S3. Source: <a href="https://docs.aws.amazon.com/bedrock/latest/userguide/prov-throughput.html">Provisioned Throughput</a> and <a href="https://docs.aws.amazon.com/bedrock/latest/userguide/batch-inference.html">batch inference</a>.</p>
+<p><b>Not in source.</b> A 1-year Savings Plan for inference. The claim that RetrieveAndGenerate always returns citations in this build.</p>
+<p><b>Choice rule (design guidance).</b> Traffic is spiky or unknown: on-demand. Traffic is steady and measured: Provisioned Throughput. The user waits for a reply: real-time calls, not batch.</p>
+<p><b>Exam tie.</b> Domain 1 task 1.2 (customization ladder), Domain 4 task 4.1 (cost levers).</p>
+<p class="trap"><b>Exam trap.</b> A commitment does not fit spiky traffic. Batch does not fit a user waiting on a reply.</p>
+</article>
 </section>
 
 <section id="terms">
