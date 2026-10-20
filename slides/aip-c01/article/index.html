@@ -39,7 +39,19 @@ figcaption a{color:var(--blue)}
 .diagram{border:1px solid var(--rule);background:var(--card);padding:18px;margin:20px 0}
 .diagram svg{width:100%;height:auto;display:block}
 .diagram .cap{font-size:14px;color:var(--mute);margin-top:8px}
-.flow{stroke-dasharray:6 6;animation:march 1.2s linear infinite}
+.flow{stroke:var(--blue);stroke-width:2;stroke-dasharray:6 6;animation:march 1.2s linear infinite}
+.flow-r{stroke:var(--rust)}
+svg text{fill:var(--ink);font-family:'IBM Plex Sans',Arial,sans-serif}
+svg .t{fill:var(--ink)}
+svg .m{fill:var(--mute)}
+svg .box{fill:var(--card);stroke:var(--ink);stroke-width:1.2}
+svg .box-r{fill:var(--card);stroke:var(--rust);stroke-width:2}
+svg text[fill="#1B1F24"],svg g[fill="#1B1F24"]{fill:var(--ink)}
+svg text[fill="#4A5159"]{fill:var(--mute)}
+svg rect[stroke="#1B1F24"]{stroke:var(--ink)}
+svg rect[stroke="#A4441C"]{stroke:var(--rust)}
+svg line[stroke="#1D4E89"]{stroke:var(--blue)}
+svg line[stroke="#A4441C"]{stroke:var(--rust)}
 @keyframes march{to{stroke-dashoffset:-24}}
 .pulse{animation:fade 2.4s ease-in-out infinite}
 @keyframes fade{0%,100%{opacity:.35}50%{opacity:1}}
@@ -70,6 +82,7 @@ figcaption a{color:var(--blue)}
 <div class="toc">
 <a href="#exam">0. The exam at a glance</a>
 <a href="#reading">1. How AWS asks questions</a>
+<a href="#atlas">1A. Components, architecture, and domain ties</a>
 <a href="#d1">2. Domain 1 · Foundation model integration, data, compliance</a>
 <a href="#d2">3. Domain 2 · Implementation and integration</a>
 <a href="#d3">4. Domain 3 · Safety, security, governance</a>
@@ -134,6 +147,135 @@ figcaption a{color:var(--blue)}
 </div>
 </section>
 
+<section id="atlas">
+<p class="kicker">Part 1A · Components and architecture</p>
+<h2>The components, how they connect, and where each one sits in the exam</h2>
+<p>This part introduces each AWS component before the domain detail. Read the six architectures first. Each architecture shows one request or one lifecycle. Then read the component table. Each row names the domain and task that test the component.</p>
+<div class="note">Diagram key. Solid boxes are components. Red outline marks a safety or control point. Animated lines show data flow. Each diagram is an SVG drawn for this treatise from the component behavior in the official pages. Official AWS images follow each group where a page provides one.</div>
+<h3>Architecture 1 · The request path</h3>
+<p>Every production call passes through an entry point, a compute step, a safety check, and a model. The request path puts those parts in order. Configuration sits beside the compute step. Telemetry sits below the path.</p>
+<div class="diagram">
+<svg viewBox="0 0 800 230" role="img" aria-label="Request path"><rect class="box" x="10" y="60" width="120" height="50"/><text class="t" x="70.0" y="85.0" text-anchor="middle" font-size="15">Client</text><rect class="box" x="160" y="60" width="130" height="50"/><text class="t" x="225.0" y="81.0" text-anchor="middle" font-size="15">API Gateway</text><text class="m" x="225.0" y="99.0" text-anchor="middle" font-size="12">29 s REST default</text><rect class="box" x="320" y="60" width="130" height="50"/><text class="t" x="385.0" y="81.0" text-anchor="middle" font-size="15">Lambda</text><text class="m" x="385.0" y="99.0" text-anchor="middle" font-size="12">15 min max</text><rect class="box-r" x="480" y="60" width="140" height="50"/><text class="t" x="550.0" y="81.0" text-anchor="middle" font-size="15">Guardrail</text><text class="m" x="550.0" y="99.0" text-anchor="middle" font-size="12">input check</text><rect class="box" x="650" y="60" width="130" height="50"/><text class="t" x="715.0" y="81.0" text-anchor="middle" font-size="15">Bedrock model</text><text class="m" x="715.0" y="99.0" text-anchor="middle" font-size="12">Converse</text><line class="flow" x1="130" y1="85" x2="158" y2="85"/><line class="flow" x1="290" y1="85" x2="318" y2="85"/><line class="flow" x1="450" y1="85" x2="478" y2="85"/><line class="flow" x1="620" y1="85" x2="648" y2="85"/><rect class="box" x="320" y="160" width="130" height="44"/><text class="t" x="385.0" y="178.0" text-anchor="middle" font-size="15">AppConfig</text><text class="m" x="385.0" y="196.0" text-anchor="middle" font-size="12">model ID</text><line class="flow" x1="385" y1="158" x2="385" y2="112"/><rect class="box" x="160" y="160" width="130" height="44"/><text class="t" x="225.0" y="182.0" text-anchor="middle" font-size="15">Usage plan</text><line class="flow" x1="225" y1="158" x2="225" y2="112"/><rect class="box" x="480" y="160" width="300" height="44"/><text class="t" x="630.0" y="182.0" text-anchor="middle" font-size="15">CloudWatch, X-Ray, invocation logs</text><line class="flow" x1="550" y1="158" x2="550" y2="112"/></svg>
+<div class="cap">Diagram: request path. Lambda reads the model ID from configuration. The guardrail checks input before the model call. Built in SVG for this treatise. Domains 2 and 3, tasks 2.3, 2.4, 3.1.</div>
+</div>
+<h3>Architecture 2 · The agent path</h3>
+<p>An agent plans steps and calls tools. Bedrock Agents and AgentCore both fit this path. The agent calls an action group or an MCP tool through a gateway. Policy and identity sit in front of each tool call. Trace records each step.</p>
+<div class="diagram">
+<svg viewBox="0 0 800 230" role="img" aria-label="Agent path"><rect class="box" x="10" y="60" width="120" height="50"/><text class="t" x="70.0" y="85.0" text-anchor="middle" font-size="15">User</text><rect class="box" x="170" y="60" width="150" height="50"/><text class="t" x="245.0" y="81.0" text-anchor="middle" font-size="15">Agent runtime</text><text class="m" x="245.0" y="99.0" text-anchor="middle" font-size="12">framework free</text><rect class="box" x="360" y="60" width="150" height="50"/><text class="t" x="435.0" y="81.0" text-anchor="middle" font-size="15">Gateway</text><text class="m" x="435.0" y="99.0" text-anchor="middle" font-size="12">MCP tools</text><rect class="box" x="550" y="60" width="140" height="50"/><text class="t" x="620.0" y="81.0" text-anchor="middle" font-size="15">Tool</text><text class="m" x="620.0" y="99.0" text-anchor="middle" font-size="12">Lambda or MCP</text><line class="flow" x1="130" y1="85" x2="168" y2="85"/><line class="flow" x1="320" y1="85" x2="358" y2="85"/><line class="flow" x1="510" y1="85" x2="548" y2="85"/><rect class="box-r" x="360" y="160" width="150" height="44"/><text class="t" x="435.0" y="178.0" text-anchor="middle" font-size="15">Policy</text><text class="m" x="435.0" y="196.0" text-anchor="middle" font-size="12">each tool call</text><line class="flow flow-r" x1="435" y1="158" x2="435" y2="112"/><rect class="box" x="170" y="160" width="150" height="44"/><text class="t" x="245.0" y="178.0" text-anchor="middle" font-size="15">Memory</text><text class="m" x="245.0" y="196.0" text-anchor="middle" font-size="12">short and long term</text><line class="flow" x1="245" y1="158" x2="245" y2="112"/><rect class="box" x="10" y="160" width="120" height="44"/><text class="t" x="70.0" y="182.0" text-anchor="middle" font-size="15">Identity</text><line class="flow" x1="70" y1="158" x2="70" y2="112"/><rect class="box" x="550" y="160" width="140" height="44"/><text class="t" x="620.0" y="182.0" text-anchor="middle" font-size="15">Knowledge base</text><line class="flow" x1="620" y1="158" x2="620" y2="112"/></svg>
+<div class="cap">Diagram: agent path. Policy checks each tool call before it runs. Memory holds context between turns. Built in SVG for this treatise. Domains 2 and 3, tasks 2.1, 2.2, 3.1.</div>
+</div>
+<h3>Architecture 3 · The safety and privacy path</h3>
+<p>Safety has layers. Each layer uses a different control. A gap in one layer is covered by another. Data controls sit below the path. They protect data at rest and in transit, and they restrict who reads it.</p>
+<div class="diagram">
+<svg viewBox="0 0 800 230" role="img" aria-label="Safety path"><rect class="box" x="10" y="60" width="110" height="50"/><text class="t" x="65.0" y="85.0" text-anchor="middle" font-size="15">Input</text><rect class="box" x="150" y="60" width="120" height="50"/><text class="t" x="210.0" y="81.0" text-anchor="middle" font-size="15">Comprehend</text><text class="m" x="210.0" y="99.0" text-anchor="middle" font-size="12">PII pre-filter</text><rect class="box-r" x="300" y="60" width="130" height="50"/><text class="t" x="365.0" y="81.0" text-anchor="middle" font-size="15">Guardrail in</text><text class="m" x="365.0" y="99.0" text-anchor="middle" font-size="12">input policies</text><rect class="box" x="460" y="60" width="110" height="50"/><text class="t" x="515.0" y="85.0" text-anchor="middle" font-size="15">Model</text><rect class="box-r" x="600" y="60" width="130" height="50"/><text class="t" x="665.0" y="81.0" text-anchor="middle" font-size="15">Guardrail out</text><text class="m" x="665.0" y="99.0" text-anchor="middle" font-size="12">output policies</text><line class="flow" x1="120" y1="85" x2="148" y2="85"/><line class="flow" x1="270" y1="85" x2="298" y2="85"/><line class="flow" x1="430" y1="85" x2="458" y2="85"/><line class="flow" x1="570" y1="85" x2="598" y2="85"/><rect class="box-r" x="10" y="160" width="180" height="44"/><text class="t" x="100.0" y="178.0" text-anchor="middle" font-size="15">PrivateLink</text><text class="m" x="100.0" y="196.0" text-anchor="middle" font-size="12">VPC endpoints</text><rect class="box-r" x="210" y="160" width="180" height="44"/><text class="t" x="300.0" y="178.0" text-anchor="middle" font-size="15">KMS</text><text class="m" x="300.0" y="196.0" text-anchor="middle" font-size="12">keys for data at rest</text><rect class="box" x="410" y="160" width="180" height="44"/><text class="t" x="500.0" y="178.0" text-anchor="middle" font-size="15">CloudTrail</text><text class="m" x="500.0" y="196.0" text-anchor="middle" font-size="12">API audit</text><rect class="box" x="610" y="160" width="130" height="44"/><text class="t" x="675.0" y="178.0" text-anchor="middle" font-size="15">Macie</text><text class="m" x="675.0" y="196.0" text-anchor="middle" font-size="12">S3 at rest</text></svg>
+<div class="cap">Diagram: safety layers on the request path and controls below. Built in SVG for this treatise. Domain 3, tasks 3.1 and 3.2.</div>
+</div>
+<h3>Architecture 4 · The knowledge path</h3>
+<p>Knowledge Bases manage the ingest path and the query path. You choose the vector store. You choose the chunking strategy when you create the data source. Retrieval returns citations. Governance keeps tenant data apart.</p>
+<div class="diagram">
+<svg viewBox="0 0 800 230" role="img" aria-label="Knowledge path"><rect class="box" x="10" y="60" width="130" height="50"/><text class="t" x="75.0" y="85.0" text-anchor="middle" font-size="15">S3 documents</text><rect class="box" x="180" y="60" width="130" height="50"/><text class="t" x="245.0" y="81.0" text-anchor="middle" font-size="15">Knowledge Base</text><text class="m" x="245.0" y="99.0" text-anchor="middle" font-size="12">chunk and embed</text><rect class="box" x="350" y="60" width="150" height="50"/><text class="t" x="425.0" y="81.0" text-anchor="middle" font-size="15">Vector store</text><text class="m" x="425.0" y="99.0" text-anchor="middle" font-size="12">OpenSearch, Aurora, S3 Vectors</text><rect class="box" x="540" y="60" width="250" height="50"/><text class="t" x="665.0" y="85.0" text-anchor="middle" font-size="15">Model with citations</text><line class="flow" x1="140" y1="85" x2="178" y2="85"/><line class="flow" x1="310" y1="85" x2="348" y2="85"/><line class="flow" x1="500" y1="85" x2="538" y2="85"/><rect class="box" x="180" y="160" width="130" height="44"/><text class="t" x="245.0" y="178.0" text-anchor="middle" font-size="15">Embedding model</text><text class="m" x="245.0" y="196.0" text-anchor="middle" font-size="12">Titan or Cohere</text><line class="flow" x1="245" y1="158" x2="245" y2="112"/><rect class="box-r" x="350" y="160" width="150" height="44"/><text class="t" x="425.0" y="182.0" text-anchor="middle" font-size="15">IAM role per tenant</text><line class="flow flow-r" x1="425" y1="158" x2="425" y2="112"/><rect class="box-r" x="540" y="160" width="250" height="44"/><text class="t" x="665.0" y="178.0" text-anchor="middle" font-size="15">Guardrail grounding check</text><text class="m" x="665.0" y="196.0" text-anchor="middle" font-size="12">score per answer</text><line class="flow flow-r" x1="665" y1="158" x2="665" y2="112"/></svg>
+<div class="cap">Diagram: knowledge path with the embedding step and tenant control. Built in SVG for this treatise. Domain 1, tasks 1.3 to 1.5. Domain 3, task 3.2.</div>
+</div>
+<h3>Architecture 5 · The operations path</h3>
+<p>Operations answers three questions. Is the system slow? Is it spending too much? Is the answer wrong? Metrics answer the first two. Traces find the slow step. Logs hold the payloads that show the wrong answer.</p>
+<div class="diagram">
+<svg viewBox="0 0 800 230" role="img" aria-label="Operations path"><rect class="box" x="10" y="60" width="130" height="50"/><text class="t" x="75.0" y="85.0" text-anchor="middle" font-size="15">Application</text><rect class="box" x="180" y="60" width="150" height="50"/><text class="t" x="255.0" y="81.0" text-anchor="middle" font-size="15">CloudWatch metrics</text><text class="m" x="255.0" y="99.0" text-anchor="middle" font-size="12">tokens, throttles</text><rect class="box" x="370" y="60" width="150" height="50"/><text class="t" x="445.0" y="85.0" text-anchor="middle" font-size="15">Anomaly alarm</text><rect class="box" x="560" y="60" width="230" height="50"/><text class="t" x="675.0" y="85.0" text-anchor="middle" font-size="15">Notify and act</text><line class="flow" x1="140" y1="85" x2="178" y2="85"/><line class="flow" x1="330" y1="85" x2="368" y2="85"/><line class="flow" x1="520" y1="85" x2="558" y2="85"/><rect class="box" x="180" y="160" width="150" height="44"/><text class="t" x="255.0" y="178.0" text-anchor="middle" font-size="15">Invocation logs</text><text class="m" x="255.0" y="196.0" text-anchor="middle" font-size="12">payloads</text><line class="flow" x1="255" y1="158" x2="255" y2="112"/><rect class="box" x="370" y="160" width="150" height="44"/><text class="t" x="445.0" y="178.0" text-anchor="middle" font-size="15">X-Ray traces</text><text class="m" x="445.0" y="196.0" text-anchor="middle" font-size="12">slow step</text><line class="flow" x1="445" y1="158" x2="445" y2="112"/><rect class="box" x="560" y="160" width="230" height="44"/><text class="t" x="675.0" y="178.0" text-anchor="middle" font-size="15">Judge or golden set</text><text class="m" x="675.0" y="196.0" text-anchor="middle" font-size="12">answer quality over time</text><line class="flow" x1="675" y1="158" x2="675" y2="112"/></svg>
+<div class="cap">Diagram: operations signals. Metrics, traces, logs, and quality checks each answer a different question. Built in SVG for this treatise. Domains 4 and 5, tasks 4.3, 5.1, 5.2.</div>
+</div>
+<h3>Architecture 6 · The release path</h3>
+<p>A change to a prompt, a model, a chunk setting, or a guardrail is a release. Each release passes the same gates. A failed gate blocks the release. A canary limits the blast radius. Rollback returns to the last approved version.</p>
+<div class="diagram">
+<svg viewBox="0 0 800 230" role="img" aria-label="Release path"><rect class="box" x="10" y="60" width="140" height="50"/><text class="t" x="80.0" y="85.0" text-anchor="middle" font-size="15">New version</text><rect class="box" x="190" y="60" width="150" height="50"/><text class="t" x="265.0" y="85.0" text-anchor="middle" font-size="15">Golden set run</text><rect class="box-r" x="380" y="60" width="150" height="50"/><text class="t" x="455.0" y="81.0" text-anchor="middle" font-size="15">Quality gate</text><text class="m" x="455.0" y="99.0" text-anchor="middle" font-size="12">metrics and judge</text><rect class="box" x="570" y="60" width="220" height="50"/><text class="t" x="680.0" y="85.0" text-anchor="middle" font-size="15">Canary, then full</text><line class="flow" x1="150" y1="85" x2="188" y2="85"/><line class="flow" x1="340" y1="85" x2="378" y2="85"/><line class="flow" x1="530" y1="85" x2="568" y2="85"/><rect class="box-r" x="190" y="160" width="150" height="44"/><text class="t" x="265.0" y="178.0" text-anchor="middle" font-size="15">Rollback</text><text class="m" x="265.0" y="196.0" text-anchor="middle" font-size="12">last approved</text><line class="flow flow-r" x1="455" y1="110" x2="265" y2="158"/><rect class="box" x="380" y="160" width="150" height="44"/><text class="t" x="455.0" y="178.0" text-anchor="middle" font-size="15">Alias or AppConfig</text><text class="m" x="455.0" y="196.0" text-anchor="middle" font-size="12">moves traffic</text><line class="flow" x1="455" y1="110" x2="455" y2="158"/></svg>
+<div class="cap">Diagram: release gates with rollback. Built in SVG for this treatise. Domain 5, tasks 5.1 and 5.2. Domain 2, task 2.3.</div>
+</div>
+<h3>Component table</h3>
+<p>Each row names one component, its job, the architecture box it sits in, and the tasks that test it.</p>
+<table>
+<tr><th>Component</th><th>Job</th><th>Sits in</th><th>Tasks</th></tr>
+<tr><td>Bedrock Converse and InvokeModel</td><td>Call foundation models. Converse for chat and tools. InvokeModel for embeddings and provider bodies.</td><td>Model call</td><td>1.2, 2.4</td></tr>
+<tr><td>Provisioned Throughput</td><td>Reserves model units for steady traffic. Calls must use the provisioned model ARN.</td><td>Capacity</td><td>2.2, 4.1</td></tr>
+<tr><td>Cross-Region inference profile</td><td>Spreads requests across Regions in the profile for throughput and availability.</td><td>Model call</td><td>1.2, 4.1</td></tr>
+<tr><td>Batch inference</td><td>Offline jobs from S3 to S3. 50 percent lower price for select models.</td><td>Offline lane</td><td>2.2, 4.1</td></tr>
+<tr><td>Prompt caching</td><td>Reuses an exact prefix marked with a cache checkpoint. Stable content first.</td><td>Prompt build</td><td>2.5, 4.1</td></tr>
+<tr><td>Bedrock Guardrails</td><td>Six policies on input and output. Draft, then version.</td><td>Safety boxes</td><td>3.1, 2.3</td></tr>
+<tr><td>ApplyGuardrail</td><td>Checks content from any model. Does not call the model.</td><td>Safety boxes</td><td>2.3, 3.1</td></tr>
+<tr><td>Knowledge Bases</td><td>Managed RAG: sync, chunk, embed, retrieve, and cite.</td><td>Knowledge path</td><td>1.4, 1.5, 5.2</td></tr>
+<tr><td>Bedrock Agents</td><td>Agents with action groups, DRAFT, versions, and aliases. No longer open to new customers. AgentCore is the documented alternative.</td><td>Agent path</td><td>2.1</td></tr>
+<tr><td>AgentCore Runtime</td><td>Hosts agent code from any framework. Remote MCP servers need Streamable HTTP.</td><td>Agent path</td><td>2.2</td></tr>
+<tr><td>AgentCore Gateway</td><td>Exposes tools as MCP tools through one endpoint.</td><td>Agent path</td><td>1.5, 2.3</td></tr>
+<tr><td>AgentCore Memory</td><td>Short-term and long-term context for an agent.</td><td>Agent path</td><td>2.1</td></tr>
+<tr><td>AgentCore Identity</td><td>Controls who and what can call agents and tools.</td><td>Agent path</td><td>3.2</td></tr>
+<tr><td>AgentCore Policy</td><td>Checks each tool call through Gateway before the tool runs.</td><td>Agent path</td><td>2.1, 3.1</td></tr>
+<tr><td>AgentCore Observability</td><td>Traces and metrics for agent steps.</td><td>Operations path</td><td>4.3</td></tr>
+<tr><td>Prompt Management</td><td>Templates, variables, versions, and variants.</td><td>Release path</td><td>1.6, 2.5</td></tr>
+<tr><td>Prompt Flows</td><td>Console prompt chains with branches and Knowledge Base or Lambda nodes.</td><td>Workflow</td><td>1.6</td></tr>
+<tr><td>Model evaluation with a judge</td><td>Scores responses on your dataset. Calibrate the judge first.</td><td>Release path</td><td>5.1</td></tr>
+<tr><td>Bedrock Data Automation</td><td>Extracts fields from documents, images, audio, and video.</td><td>Data</td><td>1.3, 2.5</td></tr>
+<tr><td>Amazon Comprehend</td><td>Detects entities and PII in single text documents up to 100 KB in real time.</td><td>Pre-filter</td><td>1.3, 3.2</td></tr>
+<tr><td>Amazon Transcribe</td><td>Speech to text with speaker labels.</td><td>Data</td><td>1.3</td></tr>
+<tr><td>Amazon Macie</td><td>Finds sensitive data in S3 objects at rest.</td><td>Data at rest</td><td>3.2</td></tr>
+<tr><td>AWS Glue Data Quality</td><td>Rule-based quality checks written in DQDL.</td><td>Validation</td><td>1.3</td></tr>
+<tr><td>AWS Lake Formation</td><td>Column and row access for lake tables.</td><td>Access</td><td>3.2, 3.3</td></tr>
+<tr><td>SageMaker Model Cards</td><td>Versioned record of intended use, limits, and evaluation results.</td><td>Governance</td><td>3.3, 3.4</td></tr>
+<tr><td>SageMaker Model Registry</td><td>Groups model versions and tracks approval status.</td><td>Lifecycle</td><td>1.2</td></tr>
+<tr><td>SageMaker endpoints</td><td>Real-time, serverless, and asynchronous hosting.</td><td>Deploy</td><td>2.2</td></tr>
+<tr><td>SageMaker Model Monitor</td><td>Drift on structured features and predictions. Not free-text quality. The docs say it is no longer open to new customers.</td><td>Operations path</td><td>4.3</td></tr>
+<tr><td>OpenSearch Serverless</td><td>Managed vector search that combines filters and vectors.</td><td>Vector store</td><td>1.4</td></tr>
+<tr><td>S3 Vectors</td><td>Vector storage for large, infrequent search with no cluster to run.</td><td>Vector store</td><td>1.4</td></tr>
+<tr><td>Aurora with pgvector</td><td>Vector search in a relational database.</td><td>Vector store</td><td>1.4</td></tr>
+<tr><td>Amazon Neptune</td><td>Graph queries for GraphRAG over explicit relationships.</td><td>Vector store</td><td>1.4</td></tr>
+<tr><td>DynamoDB</td><td>Session and customer memory with TTL.</td><td>Agent path</td><td>2.1</td></tr>
+<tr><td>AWS Step Functions</td><td>Durable workflows with waits, retries, and callback task tokens. Standard runs up to one year.</td><td>Orchestration</td><td>1.6, 2.2</td></tr>
+<tr><td>AWS Lambda</td><td>Short compute steps. Standard functions run up to 15 minutes.</td><td>Compute</td><td>2.2</td></tr>
+<tr><td>API Gateway</td><td>Entry point with throttling. REST integrations default to 29 seconds.</td><td>Request path</td><td>2.3, 3.1</td></tr>
+<tr><td>AWS AppConfig</td><td>Runtime configuration, such as the model ID.</td><td>Request path</td><td>1.2</td></tr>
+<tr><td>CloudWatch</td><td>Metrics, alarms, anomaly detection, and Logs Insights.</td><td>Operations path</td><td>4.3, 5.2</td></tr>
+<tr><td>AWS X-Ray</td><td>Traces requests and downstream calls across services.</td><td>Operations path</td><td>4.3</td></tr>
+<tr><td>AWS CloudTrail</td><td>Records API calls for audit. Does not show row content.</td><td>Governance</td><td>3.3</td></tr>
+<tr><td>AWS KMS</td><td>Keys for encryption at rest.</td><td>Security</td><td>3.2</td></tr>
+<tr><td>AWS PrivateLink</td><td>VPC interface endpoints for Bedrock planes.</td><td>Network</td><td>3.2</td></tr>
+<tr><td>SCP and IAM condition keys</td><td>Enforce a rule across accounts, such as a required guardrail identifier.</td><td>Governance</td><td>3.3</td></tr>
+<tr><td>AWS Outposts</td><td>AWS infrastructure on premises for data that must stay on site.</td><td>Network</td><td>2.3</td></tr>
+<tr><td>Amazon Q Developer</td><td>Coding help in the IDE.</td><td>Apps</td><td>2.5</td></tr>
+<tr><td>Amazon Q Business</td><td>Company chat over company data. No longer open to new customers. Amazon Quick is the documented alternative.</td><td>Apps</td><td>2.5</td></tr>
+<tr><td>Amazon Kendra</td><td>Enterprise search. No longer open to new customers. Knowledge Bases is the documented alternative.</td><td>Legacy</td><td>1.3</td></tr>
+</table>
+<h3>Official images for these components</h3>
+<p>These six images come from new official pages. Earlier sections already use the other official images.</p>
+<figure>
+<img src="img/Product-Page-Diagram_Amazon-API-Gateway-How-Works.png" alt="API Gateway how it works diagram" width="1200" height="700">
+<figcaption>Official AWS image. Source: <a href="https://docs.aws.amazon.com/apigateway/latest/developerguide/welcome.html">Amazon API Gateway, welcome</a>. Use for the entry point role.</figcaption>
+</figure>
+<figure>
+<img src="img/memory-overview.png" alt="AgentCore memory overview diagram" width="1200" height="700">
+<figcaption>Official AWS image. Source: <a href="https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/memory.html">AgentCore Memory</a>. Use for short-term and long-term memory.</figcaption>
+</figure>
+<figure>
+<img src="img/Anomaly_Detection_Graph5.png" alt="CloudWatch anomaly detection band graph" width="1200" height="700">
+<figcaption>Official AWS image. Source: <a href="https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch_Anomaly_Detection.html">CloudWatch anomaly detection</a>. Use for the adaptive band that alarms on token spikes.</figcaption>
+</figure>
+<figure>
+<img src="img/Anomaly_Detection_Graph7.png" alt="CloudWatch anomaly detection alarm graph" width="1200" height="700">
+<figcaption>Official AWS image. Source: <a href="https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch_Anomaly_Detection.html">CloudWatch anomaly detection</a>.</figcaption>
+</figure>
+<figure>
+<img src="img/key-hierarchy-root.png" alt="AWS KMS key hierarchy root diagram" width="1200" height="700">
+<figcaption>Official AWS image. Source: <a href="https://docs.aws.amazon.com/kms/latest/developerguide/overview.html">AWS KMS overview</a>. Use for the key hierarchy.</figcaption>
+</figure>
+<figure>
+<img src="img/key-hierarchy-kms-key.png" alt="AWS KMS key hierarchy diagram" width="1200" height="700">
+<figcaption>Official AWS image. Source: <a href="https://docs.aws.amazon.com/kms/latest/developerguide/overview.html">AWS KMS overview</a>.</figcaption>
+</figure>
+<h3>How the components tie to the domains</h3>
+<table>
+<tr><th>Domain</th><th>Main components</th><th>Architecture</th></tr>
+<tr><td>1. Foundation models, data, compliance</td><td>Converse, InvokeModel, Knowledge Bases, vector stores, AppConfig, Data Automation, Comprehend, Glue Data Quality, Model Registry</td><td>Architectures 1 and 4</td></tr>
+<tr><td>2. Implementation and integration</td><td>Bedrock Agents, AgentCore, Step Functions, Lambda, API Gateway, SageMaker endpoints, Batch inference</td><td>Architectures 1, 2, and 6</td></tr>
+<tr><td>3. Safety, security, governance</td><td>Guardrails, Comprehend, PrivateLink, KMS, Macie, Lake Formation, CloudTrail, Model Cards, SCP</td><td>Architecture 3</td></tr>
+<tr><td>4. Operational efficiency</td><td>Provisioned Throughput, Cross-Region profiles, prompt caching, Batch, CloudWatch, X-Ray, AgentCore Observability</td><td>Architecture 5</td></tr>
+<tr><td>5. Testing, validation, troubleshooting</td><td>Judge evaluations, golden sets, CloudWatch Logs Insights, X-Ray, Glue Data Quality, Step Functions for release gates</td><td>Architectures 5 and 6</td></tr>
+</table>
+</section>
 <section id="d1">
 <p class="kicker">Part 2 · Domain 1 · Weight 31 percent (repository README)</p>
 <h2>Foundation model integration, data management, and compliance</h2>
