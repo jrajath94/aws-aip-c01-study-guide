@@ -1,5 +1,6 @@
 from pathlib import Path
-from bs4 import BeautifulSoup,Tag
+from bs4 import BeautifulSoup,Tag,Comment
+from html import escape
 import json,re,hashlib,collections
 ROOT=Path(__file__).resolve().parent.parent
 read=lambda name:json.loads((ROOT/name).read_text())
@@ -54,7 +55,8 @@ def clean_html(raw,filename):
  return str(s)
 references=[];quizzes=[];recalls=[];inventory=[];mock=[];headingmap=[]
 for p in sorted((ROOT/'source-repo').glob('*.html')):
- soup=BeautifulSoup(p.read_text(),'html.parser');main=soup.select_one('main');inner=main.select_one('.ds-content-inner') or main
+ soup=BeautifulSoup(p.read_text(),'html.parser');main=soup.select_one('main');inner=main
+ for wrapper in list(main.select('.ds-content-inner')):wrapper.unwrap()
  filename=p.name;volume=p.stem;dm=re.search(r'volume-d(\d)',volume);domain=int(dm[1]) if dm else 0
  for q in main.select('.pq'):
   stem=q.select_one('.pq-question');answer=q.select_one('.pq-answer')
@@ -77,16 +79,17 @@ for p in sorted((ROOT/'source-repo').glob('*.html')):
  def flush():
   global current,title,anchor,section
   if not current:return
-  raw=''.join(str(n) for n in current);text=BeautifulSoup(raw,'html.parser').get_text(' ',strip=True)
+  raw=''.join(str(n) if isinstance(n,Tag) else escape(str(n)) for n in current);text=BeautifulSoup(raw,'html.parser').get_text(' ',strip=True)
   if not text:return
   section+=1;rid=f'ref-{volume}-{section:03}'
   references.append(dict(id=rid,title=title,domain=domain,volume=volume,anchor=anchor,html=clean_html(raw,filename),text=text,words=len(text.split()),source='../source-repo/'+filename+('#'+anchor if anchor else ''),corrections=correction_ids(title+' '+text[:1500])))
   headingmap.append(dict(file=filename,anchor=anchor,title=title,slide=rid))
   current=[]
  for el in list(inner.children):
+  if isinstance(el,Comment):continue
   if isinstance(el,Tag) and el.name in ['h1','h2','h3']:
    flush();title=el.get_text(' ',strip=True);anchor=el.get('id','');current=[el]
-  elif isinstance(el,Tag):current.append(el)
+  elif isinstance(el,Tag) or str(el).strip():current.append(el)
  flush()
  study=ROOT/'source-repo/study'/f'{volume}.json'
  if study.exists():
@@ -142,12 +145,17 @@ figs=read('course/official-figures.json') if (ROOT/'course/official-figures.json
 # Exclude decorative gradients, generic brains, and a faint source overview.
 figs=[f for f in figs if f['id'] not in ['agentcore-components','orchestration-orchestrator','knowledge-base-architecture']]
 for f in figs:f['sourceId']=f['sourceId'].removesuffix('.md')
+dossiers=[]
+for path in ['course/skill-dossiers-d1-d2.json','course/skill-dossiers-d3-d5.json']:
+ if (ROOT/path).exists():dossiers.extend(read(path))
+dossiers.sort(key=lambda d:[int(x) for x in d['skill'].split('.')])
+report['skillDossiers']=len(dossiers)
 report['treatiseChapters']=len(deep);report['officialAtlasFigures']=len(figs);report['nativeDiagramDefinitions']=len(diagrams);report['mcpReadSources']=sum(s.get('channel')=='official AWS Documentation MCP' for s in sources.values())
-course=dict(deep=deep,figures=figs,core=allcore,references=references,quizzes=quizzes,recalls=recalls,mock=mock,skills=skills,sources=sources,diagrams=diagrams,services=services,corrections=corrections,report=report)
-(ROOT/'course/course-data.js').write_text('window.COURSE='+json.dumps(course,ensure_ascii=False,separators=(',',':'))+';\n')
-(ROOT/'course/course-data.json').write_text(json.dumps(course,ensure_ascii=False,separators=(',',':')))
+course=dict(dossiers=dossiers,deep=deep,figures=figs,core=allcore,references=references,quizzes=quizzes,recalls=recalls,mock=mock,skills=skills,sources=sources,diagrams=diagrams,services=services,corrections=corrections,report=report)
+(ROOT/'course/treatise-data.js').write_text('window.COURSE='+json.dumps(course,ensure_ascii=False,separators=(',',':'))+';\n')
+(ROOT/'course/treatise-data.json').write_text(json.dumps(course,ensure_ascii=False,separators=(',',':')))
 (ROOT/'audits/coverage.json').write_text(json.dumps(report,indent=2))
 (ROOT/'audits/skill-map.json').write_text(json.dumps(skills,indent=2))
 (ROOT/'audits/repository-map.json').write_text(json.dumps(headingmap,indent=2))
-(ROOT/'course/presentation-content.json').write_text(json.dumps(allcore+services,indent=2))
+(ROOT/'course/treatise-slides.json').write_text(json.dumps(allcore+services,indent=2))
 print(json.dumps({k:v for k,v in report.items() if k not in ['inventory','limits']},indent=2))

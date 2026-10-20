@@ -2,7 +2,7 @@ from pathlib import Path
 import json,re,base64
 ROOT=Path(__file__).resolve().parent.parent
 out=ROOT/'output';out.mkdir(exist_ok=True)
-course=json.loads((ROOT/'course/course-data.json').read_text())
+course=json.loads((ROOT/'course/treatise-data.json').read_text())
 def dataurl(path):
  path=Path(path);typ={'.png':'image/png','.jpg':'image/jpeg','.jpeg':'image/jpeg','.svg':'image/svg+xml','.ttf':'font/ttf','.woff2':'font/woff2'}.get(path.suffix,'application/octet-stream')
  return 'data:'+typ+';base64,'+base64.b64encode(path.read_bytes()).decode()
@@ -27,11 +27,11 @@ for src in course['sources'].values():src['url']=src['url'].replace('../source-r
 css=embed_paths((ROOT/'course/treatise.css').read_text(),ROOT/'course')
 reader_css=embed_paths((ROOT/'course/reader.css').read_text(),ROOT/'course')
 reader=(ROOT/'course/reader.html').read_text().replace('<link rel="stylesheet" href="reader.css">','<style>'+reader_css+'</style>')
-reader=reader.replace('<script src="course-data.js"></script>','<script>window.COURSE=parent.COURSE;</script>')
+reader=reader.replace('<script src="treatise-data.js"></script>','<script>window.COURSE=parent.COURSE;</script>')
 reader_js=(ROOT/'course/reader.js').read_text().replace("history.replaceState(null,'','#'+mode+'/'+encodeURIComponent(id));","try{history.replaceState(null,'','#'+mode+'/'+encodeURIComponent(id));}catch{}")
 reader=reader.replace('<script src="reader.js"></script>','<script>'+escape_script(reader_js)+'</script>')
 html=(ROOT/'course/treatise.html').read_text().replace('<link rel="stylesheet" href="treatise.css">','<style>'+css+'</style>')
-html=html.replace('<script src="course-data.js"></script>','<script>window.COURSE='+escape_script(json.dumps(course,ensure_ascii=False,separators=(',',':')))+';</script>')
+html=html.replace('<script src="treatise-data.js"></script>','<script>window.COURSE='+escape_script(json.dumps(course,ensure_ascii=False,separators=(',',':')))+';</script>')
 html=html.replace('<script src="treatise.js"></script>','<script>'+escape_script((ROOT/'course/treatise.js').read_text())+'</script>')
 bridge='''
 <script>
