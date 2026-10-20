@@ -59,11 +59,11 @@ Not yet. Most exam facts are confirmed. Official sample questions are still not 
 ## Checks not done
 
 - Official sample questions. None were found. Search returns third-party banks only.
-- Table rows were read for consistency. They were not fetched and checked against the official pages one by one. Rows that still need a fetch: intelligent prompt routing, CloudWatch metric names, Provisioned Throughput billing terms, and the Comprehend 100 KB limit.
-- The 44 "Not in source" items. Most are console-field gaps in the practical units. Those need UI pages that this build could not read.
+- Table rows were read for consistency. Four rows were then fetched and checked: intelligent prompt routing, CloudWatch metric names, Provisioned Throughput billing, and the Comprehend size limit. Three were confirmed. The Comprehend row was corrected. The PII-only limit is Not in source as a separate line.
+- The 44 "Not in source" items. Most are console-field gaps in the practical units. The official pages fetched in this pass did not answer them. Resolving them needs the console pages, which this build could not read.
 - API Gateway 29 second integration timeout. The quotas page does not list it. It stays Not in source.
 - Knowledge Base web crawler end date. The docs page gave no date. It stays Not in source.
-- Whether Amazon Bedrock uses prompts for model training. The sources did not settle this.
+- Whether Amazon Bedrock uses prompts for model training is resolved. The Bedrock FAQ says no, for Amazon Nova, Amazon Titan, and third-party models.
 - Several units give design guidance, not AWS facts. Those units say so.
 - The brand font is not installed. The files use Inter.
 - The publication-clean and watermark-remover skills are not present in this environment, so no watermark pass ran.
