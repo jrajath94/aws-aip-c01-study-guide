@@ -51,7 +51,7 @@ Not yet. The exam facts and service status are now confirmed. The bank coverage,
 - The exam has 75 questions: 65 scored and 10 unscored. The pass mark is 750 on a 100 to 1,000 scale. The official guide confirms both.
 - The exam length is 180 minutes. The fee is 300 USD. The official AWS certification page confirms both.
 - Every task number in the treatise (1.1 to 5.2) exists in the official guide. Each "Domain N task X.Y" reference matches its domain.
-- Units 55 to 68 were checked against the official task statements. Five exam-tie lines were corrected.
+- Units 55 to 68 were checked against the official task statements. Seven exam-tie lines were corrected.
 - Amazon Kendra, Amazon Q Business, SageMaker Model Monitor, and Bedrock Agents Classic are closed to new customers. The treatise states this correctly for each.
 - The 200 repo questions were parsed. Terms in their answer explanations were compared with the treatise text. Eleven terms are absent: CloudFormation, Textract, Cognito, Clarify, continued pre-training, top-p, max tokens, BLEU, ROUGE, Verified Permissions, and Pricing. Twenty-two questions use at least one of them.
 
