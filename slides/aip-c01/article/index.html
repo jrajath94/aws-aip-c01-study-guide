@@ -62,9 +62,32 @@ svg line[stroke="#A4441C"]{stroke:var(--rust)}
 .fact{display:grid;grid-template-columns:200px 1fr;gap:0;margin:0 0 20px}
 @media (max-width:640px){.toc{columns:1}h1{font-size:34px}h2{font-size:28px}.fact{grid-template-columns:1fr}}
 .mini{font-size:15px}
+
+#progress{position:fixed;top:0;left:0;height:4px;width:0;background:var(--blue);z-index:50;transition:width .15s linear}
+#loader{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:60;transition:opacity .4s ease}
+#loader.gone{opacity:0;pointer-events:none}
+.spin{width:36px;height:36px;border:3px solid var(--rule);border-top-color:var(--blue);border-radius:50%;animation:spin .9s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.reveal{opacity:0;transform:translateY(10px);transition:opacity .5s ease,transform .5s ease}
+.reveal.in{opacity:1;transform:none}
+.unit{padding:28px 0;border-top:1px dashed var(--rule)}
+.pts{padding-left:20px}
+.pts li{margin:0 0 6px}
+.checkrow{display:flex;align-items:center;gap:12px;margin:10px 0 0}
+.checkbtn{font:inherit;font-size:15px;padding:6px 14px;border:1px solid var(--blue);background:var(--card);color:var(--blue);cursor:pointer;border-radius:4px}
+.checkbtn[aria-pressed="true"]{background:var(--blue);color:var(--bg)}
+.counter{position:sticky;top:0;background:var(--bg);font-size:14px;color:var(--mute);padding:6px 0;z-index:40}
+svg .bar{fill:var(--card);stroke:var(--blue);stroke-width:1.2}
+svg .bar-r{fill:var(--card);stroke:var(--rust);stroke-width:1.6}
+svg .bar-g{fill:var(--head);stroke:var(--mute);stroke-width:1.2}
+svg .box-g{fill:var(--head);stroke:var(--ink);stroke-width:1.2}
+svg rect:hover{stroke-width:2.4}
+@media (prefers-reduced-motion: reduce){.reveal{opacity:1;transform:none;transition:none}#loader{display:none}}
 </style>
 </head>
 <body>
+<div id="progress"></div>
+<div id="loader" aria-hidden="true"><div class="spin"></div></div>
 <main>
 
 <header>
@@ -86,6 +109,7 @@ svg line[stroke="#A4441C"]{stroke:var(--rust)}
 <a href="#course">1B. Concepts course: tokens to evaluation</a>
 <a href="#services">1C. AWS AppConfig and Amazon SageMaker AI</a>
 <a href="#tie">1D. How lessons tie to domains</a>
+<a href="#units">1E. Twenty visual units</a>
 <a href="#d1">2. Domain 1 · Foundation model integration, data, compliance</a>
 <a href="#d2">3. Domain 2 · Implementation and integration</a>
 <a href="#d3">4. Domain 3 · Safety, security, governance</a>
@@ -418,6 +442,237 @@ svg line[stroke="#A4441C"]{stroke:var(--rust)}
 <tr><td>Monitoring signals</td><td>11</td><td>CloudWatch, X-Ray, invocation logs, Model Monitor</td><td>4.3, 5.2</td></tr>
 </table>
 <p>Read the table from left to right. A question that names one idea points to one lesson, one service, and one task.</p>
+</section>
+<section id="units">
+<p class="kicker">Part 1E · Visual units</p>
+<h2>Twenty visual units for the components and ideas</h2>
+<div class="counter" id="unit-counter">Units understood: 0 of 20</div>
+<p>Each unit explains one idea. Read one unit at a time. Each unit starts with the first principle, then the picture, then the exam tie. Every diagram in this part is a schematic drawn from the official behavior. Official images appear in the component parts.</p>
+<div class="note">How to read a unit. Look at the picture first. Read the first principle second. Then check the trap.</div>
+<article class="unit reveal" id="u1">
+<p class="kicker">Visual unit 1</p>
+<h3>Converse and InvokeModel: two doors to one model</h3>
+<p><b>First principle.</b> Your application sends a request. Converse uses one request format for chat and tools across models. InvokeModel sends the body that one provider expects.</p>
+<div class="diagram"><svg viewBox="0 0 800 190" role="img" aria-label="Converse and InvokeModel paths"><rect class="box" x="10" y="70" width="150" height="50" rx="6"/><text class="t" x="85.0" y="100.0" text-anchor="middle" font-size="15">Your app</text><line class="flow" x1="160" y1="88" x2="220" y2="58"/><line class="flow" x1="160" y1="100" x2="220" y2="128"/><rect class="box" x="220" y="30" width="190" height="50" rx="6"/><text class="t" x="315.0" y="51.0" text-anchor="middle" font-size="15">Converse</text><text class="m" x="315.0" y="69.0" text-anchor="middle" font-size="12">one format</text><rect class="box" x="220" y="110" width="190" height="50" rx="6"/><text class="t" x="315.0" y="131.0" text-anchor="middle" font-size="15">InvokeModel</text><text class="m" x="315.0" y="149.0" text-anchor="middle" font-size="12">provider body</text><line class="flow" x1="410" y1="55" x2="500" y2="85"/><line class="flow" x1="410" y1="135" x2="500" y2="105"/><rect class="box" x="500" y="70" width="130" height="50" rx="6"/><text class="t" x="565.0" y="100.0" text-anchor="middle" font-size="15">Model</text><rect class="box-r" x="650" y="70" width="140" height="50" rx="6"/><text class="t" x="720.0" y="91.0" text-anchor="middle" font-size="15">Embeddings</text><text class="m" x="720.0" y="109.0" text-anchor="middle" font-size="12">InvokeModel only</text></svg></div>
+<ul class="pts"><li>Use Converse for chat, tool use, and multimodal input on supported models.</li><li>Use InvokeModel for embeddings and provider-specific fields.</li><li>A Claude body needs anthropic_version and max_tokens when you call InvokeModel.</li></ul>
+<p><b>Exam tie.</b> Domain 2 task 2.3 and Domain 1 task 1.2 test this choice. Embeddings always use InvokeModel.</p>
+<div class="box"><b>Exam trap.</b> Converse does not produce embeddings. A Titan body sent to Claude fails.</div>
+<div class="checkrow"><button class="checkbtn" data-unit="u1" aria-pressed="false">I understand this unit</button></div>
+</article>
+<article class="unit reveal" id="u2">
+<p class="kicker">Visual unit 2</p>
+<h3>On-demand, Provisioned Throughput, and batch: three load shapes</h3>
+<p><b>First principle.</b> Capacity is a shape problem. Spiky, steady, and offline load need different purchases. Match the purchase to the shape of the traffic.</p>
+<div class="diagram"><svg viewBox="0 0 800 220" role="img" aria-label="Three load shapes"><text class="t" x="10" y="22" font-size="13" text-anchor="start">Load over a day</text><polyline points="20,95 60,70 90,92 130,40 170,88 210,62 250,96 300,80" fill="none" stroke="var(--rust)" stroke-width="2"/><text class="t" x="20" y="112" font-size="13" text-anchor="start">Spiky: on-demand</text><line x1="20" y1="150" x2="400" y2="150" style="stroke:var(--blue)" stroke-width="3"/><text class="t" x="20" y="170" font-size="13" text-anchor="start">Steady baseline: Provisioned Throughput</text><rect class="bar" x="430" y="40" width="340" height="40" rx="4"/><text class="t" x="438" y="65.0" font-size="13">Batch: offline S3 to S3, lower price</text><rect class="bar-r" x="430" y="100" width="340" height="40" rx="4"/><text class="t" x="438" y="125.0" font-size="13">On-demand: real-time, pay per token</text><text class="t" x="430" y="170" font-size="13" text-anchor="start">Pick the purchase by the shape of the load.</text></svg></div>
+<ul class="pts"><li>On-demand pays per token and has no commitment. It suits spiky or unknown traffic.</li><li>Provisioned Throughput reserves model units. It suits a steady baseline.</li><li>Batch runs offline from S3 to S3. It suits work that can wait for hours.</li></ul>
+<p><b>Exam tie.</b> Domain 2 task 2.2 and Domain 4 task 4.1. Mixed traffic uses a reserved baseline and on-demand spikes.</p>
+<div class="box"><b>Exam trap.</b> More model units do not help a call that still uses the base model ID.</div>
+<div class="checkrow"><button class="checkbtn" data-unit="u2" aria-pressed="false">I understand this unit</button></div>
+</article>
+<article class="unit reveal" id="u3">
+<p class="kicker">Visual unit 3</p>
+<h3>Cross-Region inference profiles</h3>
+<p><b>First principle.</b> A profile ID names a set of Regions. A request that uses the profile can run in any Region in that set. The profile spreads load. It does not keep data in one place.</p>
+<div class="diagram"><svg viewBox="0 0 800 200" role="img" aria-label="Cross-Region profile"><rect class="box" x="10" y="70" width="160" height="60" rx="6"/><text class="t" x="90.0" y="96.0" text-anchor="middle" font-size="15">Request</text><text class="m" x="90.0" y="114.0" text-anchor="middle" font-size="12">profile ID</text><line class="flow" x1="170" y1="100" x2="260" y2="100"/><rect class="box-g" x="260" y="30" width="500" height="140" rx="6"/><text class="t" x="510.0" y="105.0" text-anchor="middle" font-size="15"></text><text class="t" x="275" y="52" font-size="14" text-anchor="start">Inference profile: listed Regions only</text><rect class="box" x="290" y="70" width="200" height="44" rx="6"/><text class="t" x="390.0" y="88.0" text-anchor="middle" font-size="15">Region A</text><text class="m" x="390.0" y="106.0" text-anchor="middle" font-size="12">listed</text><rect class="box" x="540" y="70" width="200" height="44" rx="6"/><text class="t" x="640.0" y="88.0" text-anchor="middle" font-size="15">Region B</text><text class="m" x="640.0" y="106.0" text-anchor="middle" font-size="12">listed</text><text class="m" x="290" y="150" font-size="12" text-anchor="start">Outside the list: not used</text></svg></div>
+<ul class="pts"><li>Call the profile ID, such as one with the us. or eu. prefix.</li><li>A geographic profile keeps routing inside its listed Regions.</li><li>A global profile can route outside a strict residency boundary.</li></ul>
+<p><b>Exam tie.</b> Domain 1 task 1.2 and Domain 4 task 4.1. Domain 3 task 3.2 covers data scope.</p>
+<div class="box"><b>Exam trap.</b> Cross-Region inference is not automatic failover for your app. Add retries and fallback in the application.</div>
+<div class="checkrow"><button class="checkbtn" data-unit="u3" aria-pressed="false">I understand this unit</button></div>
+</article>
+<article class="unit reveal" id="u4">
+<p class="kicker">Visual unit 4</p>
+<h3>Prompt caching: the stable prefix pays once</h3>
+<p><b>First principle.</b> A model reads the prompt from the start. If the start is the same as an earlier call, the system can reuse that work. The reused part must match exactly and sit before the changing text.</p>
+<div class="diagram"><svg viewBox="0 0 800 210" role="img" aria-label="Prompt cache layout"><rect class="box-g" x="10" y="50" width="250" height="70" rx="6"/><text class="t" x="135.0" y="81.0" text-anchor="middle" font-size="15">Static prefix</text><text class="m" x="135.0" y="99.0" text-anchor="middle" font-size="12">instructions, tools, documents</text><rect class="box-r" x="270" y="50" width="160" height="70" rx="6"/><text class="t" x="350.0" y="81.0" text-anchor="middle" font-size="15">Checkpoint</text><text class="m" x="350.0" y="99.0" text-anchor="middle" font-size="12">cache mark</text><rect class="box" x="440" y="50" width="170" height="70" rx="6"/><text class="t" x="525.0" y="81.0" text-anchor="middle" font-size="15">Variable message</text><text class="m" x="525.0" y="99.0" text-anchor="middle" font-size="12">changes each call</text><text class="t" x="10" y="150" font-size="14" text-anchor="start">Call 1: writes the prefix to cache. Call 2: reads it within 5 minutes.</text><text class="m" x="10" y="175" font-size="13" text-anchor="start">A date or user ID placed in the prefix forces a miss on every call.</text></svg></div>
+<ul class="pts"><li>Mark the static prefix with a cache checkpoint.</li><li>Keep the user message at the end.</li><li>The default time to live is 5 minutes.</li></ul>
+<p><b>Exam tie.</b> Domain 4 task 4.1 and Domain 2 task 2.5. Caching lowers the cost of a repeated prefix.</p>
+<div class="box"><b>Exam trap.</b> A changing value inside the prefix breaks the cache. Move it to the end.</div>
+<div class="checkrow"><button class="checkbtn" data-unit="u4" aria-pressed="false">I understand this unit</button></div>
+</article>
+<article class="unit reveal" id="u5">
+<p class="kicker">Visual unit 5</p>
+<h3>Semantic cache: match the meaning, not the words</h3>
+<p><b>First principle.</b> A semantic cache stores answers next to the embedding of each question. A new question is embedded. If a stored question is close enough, the stored answer returns. Otherwise the model answers and the pair is stored.</p>
+<div class="diagram"><svg viewBox="0 0 800 210" role="img" aria-label="Semantic cache flow"><rect class="box" x="10" y="70" width="130" height="50" rx="6"/><text class="t" x="75.0" y="100.0" text-anchor="middle" font-size="15">New question</text><line class="flow" x1="140" y1="95" x2="190" y2="95"/><rect class="box" x="190" y="70" width="150" height="50" rx="6"/><text class="t" x="265.0" y="100.0" text-anchor="middle" font-size="15">Embed</text><line class="flow" x1="340" y1="95" x2="390" y2="95"/><rect class="box" x="390" y="70" width="170" height="50" rx="6"/><text class="t" x="475.0" y="100.0" text-anchor="middle" font-size="15">Similarity lookup</text><line class="flow" x1="560" y1="80" x2="620" y2="50"/><line class="flow" x1="560" y1="110" x2="620" y2="150"/><rect class="box-g" x="620" y="25" width="170" height="44" rx="6"/><text class="t" x="705.0" y="52.0" text-anchor="middle" font-size="15">Hit: stored answer</text><rect class="box-r" x="620" y="140" width="170" height="44" rx="6"/><text class="t" x="705.0" y="167.0" text-anchor="middle" font-size="15">Miss: call model</text><text class="m" x="10" y="170" font-size="13" text-anchor="start">The threshold decides how close is close enough. Test it on a golden set.</text></svg></div>
+<ul class="pts"><li>Hit: return the stored answer. No model call.</li><li>Miss: call the model, then store the answer.</li><li>Works when many questions repeat with different words.</li></ul>
+<p><b>Exam tie.</b> Domain 4 task 4.1 and Domain 4 task 4.2. Embeddings come from Domain 1 task 1.4.</p>
+<div class="box"><b>Exam trap.</b> Personal or unique questions rarely hit. A semantic cache saves little for them.</div>
+<div class="checkrow"><button class="checkbtn" data-unit="u5" aria-pressed="false">I understand this unit</button></div>
+</article>
+<article class="unit reveal" id="u6">
+<p class="kicker">Visual unit 6</p>
+<h3>Chunk shape: fixed, hierarchical, and whole tables</h3>
+<p><b>First principle.</b> A chunk is one piece of a document that retrieval can return. A chunk must hold one complete answer. The shape of the document decides the shape of the chunk.</p>
+<div class="diagram"><svg viewBox="0 0 800 220" role="img" aria-label="Chunk shapes"><text class="t" x="10" y="20" font-size="13" text-anchor="start">Fixed size</text><rect class="box" x="10" y="30" width="70" height="40" rx="6"/><text class="t" x="45.0" y="55.0" text-anchor="middle" font-size="15">c1</text><rect class="box" x="88" y="30" width="70" height="40" rx="6"/><text class="t" x="123.0" y="55.0" text-anchor="middle" font-size="15">c2</text><rect class="box" x="166" y="30" width="70" height="40" rx="6"/><text class="t" x="201.0" y="55.0" text-anchor="middle" font-size="15">c3</text><rect class="box" x="244" y="30" width="70" height="40" rx="6"/><text class="t" x="279.0" y="55.0" text-anchor="middle" font-size="15">c4</text><rect class="box" x="322" y="30" width="70" height="40" rx="6"/><text class="t" x="357.0" y="55.0" text-anchor="middle" font-size="15">c5</text><text class="t" x="10" y="100" font-size="13" text-anchor="start">Hierarchical</text><rect class="box-g" x="10" y="100" width="380" height="90" rx="6"/><text class="t" x="200.0" y="118.0" text-anchor="middle" font-size="15">Parent chunk: section context</text><rect class="box" x="20" y="130" width="80" height="30" rx="6"/><text class="t" x="60.0" y="150.0" text-anchor="middle" font-size="15">child 1</text><rect class="box" x="110" y="130" width="80" height="30" rx="6"/><text class="t" x="150.0" y="150.0" text-anchor="middle" font-size="15">child 2</text><rect class="box" x="200" y="130" width="80" height="30" rx="6"/><text class="t" x="240.0" y="150.0" text-anchor="middle" font-size="15">child 3</text><rect class="box" x="290" y="130" width="80" height="30" rx="6"/><text class="t" x="330.0" y="150.0" text-anchor="middle" font-size="15">child 4</text><text class="t" x="430" y="100" font-size="13" text-anchor="start">Table kept whole</text><rect class="box-r" x="430" y="108" width="360" height="60" rx="6"/><text class="t" x="610.0" y="143.0" text-anchor="middle" font-size="15">One chunk: header and all rows</text><text class="m" x="430" y="190" font-size="13" text-anchor="start">Split table: rows lost</text></svg></div>
+<ul class="pts"><li>Fixed size suits FAQs and short text.</li><li>Hierarchical keeps small child chunks for matching and larger parents for context.</li><li>Custom Lambda chunking keeps a table or figure whole.</li></ul>
+<p><b>Exam tie.</b> Domain 1 task 1.3. Domain 5 task 5.2 traces quality drops to chunking.</p>
+<div class="box"><b>Exam trap.</b> A table split across two chunks loses its values. Each half can look correct alone.</div>
+<div class="checkrow"><button class="checkbtn" data-unit="u6" aria-pressed="false">I understand this unit</button></div>
+</article>
+<article class="unit reveal" id="u7">
+<p class="kicker">Visual unit 7</p>
+<h3>Hybrid search and reranking: a funnel</h3>
+<p><b>First principle.</b> Retrieval returns many candidates. Each search method finds different candidates. Merge the lists. Then score each candidate against the question and keep the best few.</p>
+<div class="diagram"><svg viewBox="0 0 800 220" role="img" aria-label="Hybrid search funnel"><rect class="box" x="10" y="40" width="240" height="40" rx="6"/><text class="t" x="130.0" y="65.0" text-anchor="middle" font-size="15">Keyword top 50</text><rect class="box" x="10" y="100" width="240" height="40" rx="6"/><text class="t" x="130.0" y="125.0" text-anchor="middle" font-size="15">Vector top 50</text><line class="flow" x1="250" y1="60" x2="300" y2="90"/><line class="flow" x1="250" y1="120" x2="300" y2="100"/><rect class="box" x="300" y="70" width="180" height="50" rx="6"/><text class="t" x="390.0" y="91.0" text-anchor="middle" font-size="15">Merge and dedupe</text><text class="m" x="390.0" y="109.0" text-anchor="middle" font-size="12">up to 100</text><line class="flow" x1="480" y1="95" x2="520" y2="95"/><rect class="box-r" x="520" y="70" width="130" height="50" rx="6"/><text class="t" x="585.0" y="91.0" text-anchor="middle" font-size="15">Reranker</text><text class="m" x="585.0" y="109.0" text-anchor="middle" font-size="12">score each</text><line class="flow" x1="650" y1="95" x2="690" y2="95"/><rect class="box-g" x="690" y="70" width="100" height="50" rx="6"/><text class="t" x="740.0" y="100.0" text-anchor="middle" font-size="15">Top 5</text><text class="m" x="10" y="190" font-size="13" text-anchor="start">Fewer chunks reach the model. Each chunk adds tokens and cost.</text></svg></div>
+<ul class="pts"><li>Keyword search finds exact codes and citation strings.</li><li>Vector search finds related meaning.</li><li>The reranker orders candidates by relevance. It does not add missing chunks.</li></ul>
+<p><b>Exam tie.</b> Domain 1 task 1.5. Domain 5 task 5.1 measures retriever quality.</p>
+<div class="box"><b>Exam trap.</b> Similarity is not relevance. Rerank before generation.</div>
+<div class="checkrow"><button class="checkbtn" data-unit="u7" aria-pressed="false">I understand this unit</button></div>
+</article>
+<article class="unit reveal" id="u8">
+<p class="kicker">Visual unit 8</p>
+<h3>Agent versions: DRAFT, version, alias</h3>
+<p><b>First principle.</b> Editing an agent changes DRAFT. Callers do not use DRAFT. A version is a frozen snapshot. An alias points to one version. Callers use the alias, so you can move traffic without changing the caller.</p>
+<div class="diagram"><svg viewBox="0 0 800 200" role="img" aria-label="Agent DRAFT, version, alias"><rect class="box" x="10" y="70" width="130" height="50" rx="6"/><text class="t" x="75.0" y="91.0" text-anchor="middle" font-size="15">DRAFT</text><text class="m" x="75.0" y="109.0" text-anchor="middle" font-size="12">edit here</text><line class="flow" x1="140" y1="95" x2="190" y2="95"/><rect class="box" x="190" y="70" width="130" height="50" rx="6"/><text class="t" x="255.0" y="91.0" text-anchor="middle" font-size="15">Version 1</text><text class="m" x="255.0" y="109.0" text-anchor="middle" font-size="12">frozen</text><line class="flow" x1="320" y1="95" x2="370" y2="95"/><rect class="box-g" x="370" y="70" width="130" height="50" rx="6"/><text class="t" x="435.0" y="91.0" text-anchor="middle" font-size="15">Alias prod</text><text class="m" x="435.0" y="109.0" text-anchor="middle" font-size="12">callers use this</text><line class="flow flow-r" x1="500" y1="95" x2="550" y2="95"/><rect class="box-r" x="550" y="70" width="220" height="50" rx="6"/><text class="t" x="660.0" y="91.0" text-anchor="middle" font-size="15">Version 2 later</text><text class="m" x="660.0" y="109.0" text-anchor="middle" font-size="12">alias moves here</text><text class="m" x="10" y="170" font-size="13" text-anchor="start">Callers send agentId and agentAliasId. Neither ID changes when the version changes.</text></svg></div>
+<ul class="pts"><li>Edit DRAFT, then prepare the agent.</li><li>Create a version from the prepared DRAFT.</li><li>Point the alias to the new version.</li></ul>
+<p><b>Exam tie.</b> Domain 2 task 2.1. Domain 5 task 5.2 covers the old-behavior symptom.</p>
+<div class="box"><b>Exam trap.</b> A passing console test on DRAFT does not prove the alias works.</div>
+<div class="checkrow"><button class="checkbtn" data-unit="u8" aria-pressed="false">I understand this unit</button></div>
+</article>
+<article class="unit reveal" id="u9">
+<p class="kicker">Visual unit 9</p>
+<h3>AgentCore components around one agent</h3>
+<p><b>First principle.</b> An agent needs a place to run, memory, tools, identity, rules, and traces. AgentCore puts those parts behind one service. Each part answers one question about the agent.</p>
+<div class="diagram"><svg viewBox="0 0 800 240" role="img" aria-label="AgentCore components"><rect class="box-r" x="300" y="90" width="200" height="60" rx="6"/><text class="t" x="400.0" y="116.0" text-anchor="middle" font-size="15">Agent</text><text class="m" x="400.0" y="134.0" text-anchor="middle" font-size="12">code on Runtime</text><rect class="box" x="40" y="20" width="170" height="46" rx="6"/><text class="t" x="125.0" y="48.0" text-anchor="middle" font-size="15">Memory</text><rect class="box" x="580" y="20" width="170" height="46" rx="6"/><text class="t" x="665.0" y="39.0" text-anchor="middle" font-size="15">Gateway</text><text class="m" x="665.0" y="57.0" text-anchor="middle" font-size="12">MCP tools</text><rect class="box" x="40" y="170" width="170" height="46" rx="6"/><text class="t" x="125.0" y="198.0" text-anchor="middle" font-size="15">Identity</text><rect class="box-r" x="580" y="170" width="170" height="46" rx="6"/><text class="t" x="665.0" y="189.0" text-anchor="middle" font-size="15">Policy</text><text class="m" x="665.0" y="207.0" text-anchor="middle" font-size="12">each tool call</text><rect class="box-g" x="300" y="10" width="200" height="40" rx="6"/><text class="t" x="400.0" y="35.0" text-anchor="middle" font-size="15">Observability</text><line class="flow" x1="210" y1="43" x2="300" y2="105"/><line class="flow" x1="580" y1="43" x2="500" y2="105"/><line class="flow" x1="210" y1="193" x2="300" y2="135"/><line class="flow flow-r" x1="580" y1="193" x2="500" y2="135"/><line class="flow" x1="400" y1="50" x2="400" y2="90"/></svg></div>
+<ul class="pts"><li>Runtime hosts the agent code from any framework.</li><li>Memory keeps context. Gateway exposes tools as MCP tools.</li><li>Identity decides who can call. Policy checks each tool call. Observability records traces.</li></ul>
+<p><b>Exam tie.</b> Domain 2 task 2.2. Domain 3 tasks 3.1 and 3.2. Domain 4 task 4.3.</p>
+<div class="box"><b>Exam trap.</b> AgentCore is not a model. It hosts and governs the agent around the model.</div>
+<div class="checkrow"><button class="checkbtn" data-unit="u9" aria-pressed="false">I understand this unit</button></div>
+</article>
+<article class="unit reveal" id="u10">
+<p class="kicker">Visual unit 10</p>
+<h3>Lambda limit versus a waiting workflow</h3>
+<p><b>First principle.</b> A Lambda invocation ends after at most 15 minutes for a standard function. A wait for a person can last days. A durable workflow stores its state and resumes later.</p>
+<div class="diagram"><svg viewBox="0 0 800 200" role="img" aria-label="Lambda and Step Functions timelines"><text class="t" x="10" y="22" font-size="13" text-anchor="start">Lambda, one invocation</text><rect class="bar" x="10" y="30" width="380" height="36" rx="4"/><text class="t" x="20" y="53" font-size="13" text-anchor="start">up to 15 minutes</text><text class="t" x="10" y="100" font-size="13" text-anchor="start">Step Functions, Standard</text><rect class="bar-g" x="10" y="108" width="760" height="36" rx="4"/><text class="t" x="20" y="131" font-size="13" text-anchor="start">wait for a callback task token, resume later, up to one year</text><circle class="pulse" cx="770" cy="170" r="8" style="fill:var(--rust)"/><text class="t" x="700" y="176" font-size="13" text-anchor="start">approval</text></svg></div>
+<ul class="pts"><li>Keep each Lambda step short.</li><li>Step Functions Standard keeps state for waits and runs up to one year.</li><li>A callback task token pauses the flow until a person or system responds.</li></ul>
+<p><b>Exam tie.</b> Domain 2 task 2.2 and Domain 1 task 1.6.</p>
+<div class="box"><b>Exam trap.</b> A Lambda that waits for a person pays for the wait and hits the limit.</div>
+<div class="checkrow"><button class="checkbtn" data-unit="u10" aria-pressed="false">I understand this unit</button></div>
+</article>
+<article class="unit reveal" id="u11">
+<p class="kicker">Visual unit 11</p>
+<h3>API Gateway timeout versus a stream</h3>
+<p><b>First principle.</b> An API Gateway REST integration has a default timeout of 29 seconds. A slow model call that runs longer loses its connection at that point. A stream that stays open can carry tokens for longer.</p>
+<div class="diagram"><svg viewBox="0 0 800 200" role="img" aria-label="API Gateway timeout"><text class="t" x="10" y="22" font-size="13" text-anchor="start">REST path</text><line x1="10" y1="60" x2="700" y2="60" style="stroke:var(--ink)" stroke-width="2"/><text class="t" x="10" y="50" font-size="12" text-anchor="start">0 s</text><text class="t" x="640" y="50" font-size="12" text-anchor="start">29 s default</text><line class="flow flow-r" x1="10" y1="60" x2="650" y2="60"/><text class="t" x="10" y="110" font-size="14" text-anchor="start">Async job: submit, get job ID, poll or receive result later</text><text class="t" x="10" y="135" font-size="14" text-anchor="start">WebSocket: keep the connection open and stream tokens</text><circle class="pulse" cx="660" cy="60" r="7" style="fill:var(--rust)"/></svg></div>
+<ul class="pts"><li>Raising the Lambda timeout does not change the gateway limit.</li><li>WebSocket APIs keep a connection open for streams.</li><li>An asynchronous job returns a job ID, then the client polls or receives the result.</li></ul>
+<p><b>Exam tie.</b> Domain 2 tasks 2.3 and 2.4.</p>
+<div class="box"><b>Exam trap.</b> Streaming improves perceived speed. It does not extend a REST timeout.</div>
+<div class="checkrow"><button class="checkbtn" data-unit="u11" aria-pressed="false">I understand this unit</button></div>
+</article>
+<article class="unit reveal" id="u12">
+<p class="kicker">Visual unit 12</p>
+<h3>Retry with backoff and jitter</h3>
+<p><b>First principle.</b> A failed call can succeed later. Retrying at once adds load to a service that is already busy. Waiting longer after each failure spreads the load. Random jitter stops many clients from retrying at the same moment.</p>
+<div class="diagram"><svg viewBox="0 0 800 200" role="img" aria-label="Retry with backoff"><rect class="box" x="10" y="40" width="120" height="40" rx="6"/><text class="t" x="70.0" y="65.0" text-anchor="middle" font-size="15">Attempt 1</text><rect class="box" x="170" y="40" width="120" height="40" rx="6"/><text class="t" x="230.0" y="65.0" text-anchor="middle" font-size="15">Wait 1 s</text><rect class="box" x="330" y="40" width="120" height="40" rx="6"/><text class="t" x="390.0" y="65.0" text-anchor="middle" font-size="15">Attempt 2</text><rect class="box" x="490" y="40" width="120" height="40" rx="6"/><text class="t" x="550.0" y="65.0" text-anchor="middle" font-size="15">Wait 4 s</text><rect class="box" x="650" y="40" width="120" height="40" rx="6"/><text class="t" x="710.0" y="65.0" text-anchor="middle" font-size="15">Attempt 3</text><line class="flow" x1="130" y1="60" x2="168" y2="60"/><line class="flow" x1="290" y1="60" x2="328" y2="60"/><line class="flow" x1="450" y1="60" x2="488" y2="60"/><line class="flow" x1="610" y1="60" x2="648" y2="60"/><text class="t" x="10" y="120" font-size="14" text-anchor="start">Jitter: each wait is a random value near the step, not the exact step.</text><text class="t" x="10" y="145" font-size="14" text-anchor="start">Maximum attempts reached: switch to a fallback model or cached answer.</text><rect class="bar-r" x="10" y="165" width="300" height="18" rx="4"/><text class="t" x="18" y="179.0" font-size="13">Retry storm: all clients at once</text><rect class="bar" x="330" y="165" width="300" height="18" rx="4"/><text class="t" x="338" y="179.0" font-size="13">With jitter: spread out</text></svg></div>
+<ul class="pts"><li>Wait longer after each failure.</li><li>Add random jitter to each wait.</li><li>Stop after a maximum number of attempts, then fall back.</li></ul>
+<p><b>Exam tie.</b> Domain 2 task 2.4. Domain 4 task 4.1 covers quotas and throttling.</p>
+<div class="box"><b>Exam trap.</b> A tight retry loop makes an overload worse. It is never the correct answer.</div>
+<div class="checkrow"><button class="checkbtn" data-unit="u12" aria-pressed="false">I understand this unit</button></div>
+</article>
+<article class="unit reveal" id="u13">
+<p class="kicker">Visual unit 13</p>
+<h3>Judge calibration before trust</h3>
+<p><b>First principle.</b> An LLM judge gives a score. A score means something only when it agrees with people. Rate a fixed golden set with humans. Run the judge on the same set. Compare the two.</p>
+<div class="diagram"><svg viewBox="0 0 800 200" role="img" aria-label="Judge calibration"><rect class="box" x="10" y="60" width="170" height="50" rx="6"/><text class="t" x="95.0" y="90.0" text-anchor="middle" font-size="15">Golden set</text><line class="flow" x1="180" y1="85" x2="230" y2="50"/><line class="flow" x1="180" y1="95" x2="230" y2="135"/><rect class="box" x="230" y="20" width="170" height="44" rx="6"/><text class="t" x="315.0" y="47.0" text-anchor="middle" font-size="15">Human ratings</text><rect class="box-r" x="230" y="130" width="170" height="44" rx="6"/><text class="t" x="315.0" y="157.0" text-anchor="middle" font-size="15">Judge scores</text><line class="flow" x1="400" y1="42" x2="460" y2="95"/><line class="flow" x1="400" y1="152" x2="460" y2="110"/><rect class="box-g" x="460" y="70" width="170" height="50" rx="6"/><text class="t" x="545.0" y="100.0" text-anchor="middle" font-size="15">Agreement?</text><line class="flow" x1="630" y1="95" x2="670" y2="95"/><rect class="box" x="670" y="70" width="120" height="50" rx="6"/><text class="t" x="730.0" y="100.0" text-anchor="middle" font-size="15">Trust or fix</text><text class="m" x="10" y="170" font-size="13" text-anchor="start">Agreement is measured on the same items, not on a different sample.</text></svg></div>
+<ul class="pts"><li>Low agreement means the judge is not valid for the claim.</li><li>Pin the judge model ID. A new judge gives new scores.</li><li>Human review covers tone and voice.</li></ul>
+<p><b>Exam tie.</b> Domain 5 task 5.1. Domain 3 task 3.4 uses judges for fairness checks.</p>
+<div class="box"><b>Exam trap.</b> An uncalibrated judge gives opinions, not measurements.</div>
+<div class="checkrow"><button class="checkbtn" data-unit="u13" aria-pressed="false">I understand this unit</button></div>
+</article>
+<article class="unit reveal" id="u14">
+<p class="kicker">Visual unit 14</p>
+<h3>Canary and rollback: release in steps</h3>
+<p><b>First principle.</b> A new version can fail on real users. A canary sends a small share of traffic to it first. Metrics decide the next step. If a metric breaks, traffic returns to the last approved version.</p>
+<div class="diagram"><svg viewBox="0 0 800 200" role="img" aria-label="Canary and rollback"><rect class="box-r" x="10" y="60" width="140" height="50" rx="6"/><text class="t" x="80.0" y="90.0" text-anchor="middle" font-size="15">Version 2</text><rect class="box" x="200" y="60" width="140" height="50" rx="6"/><text class="t" x="270.0" y="90.0" text-anchor="middle" font-size="15">10 percent</text><rect class="box-g" x="390" y="60" width="140" height="50" rx="6"/><text class="t" x="460.0" y="90.0" text-anchor="middle" font-size="15">100 percent</text><line class="flow" x1="150" y1="85" x2="198" y2="85"/><line class="flow" x1="340" y1="85" x2="388" y2="85"/><rect class="box-r" x="200" y="130" width="200" height="44" rx="6"/><text class="t" x="300.0" y="157.0" text-anchor="middle" font-size="15">Alarm fires</text><line class="flow flow-r" x1="300" y1="128" x2="300" y2="112"/><line class="flow flow-r" x1="200" y1="152" x2="150" y2="152"/><rect class="box" x="10" y="130" width="140" height="44" rx="6"/><text class="t" x="80.0" y="148.0" text-anchor="middle" font-size="15">Version 1</text><text class="m" x="80.0" y="166.0" text-anchor="middle" font-size="12">rollback target</text><text class="t" x="430" y="155" font-size="14" text-anchor="start">Traffic returns to version 1.</text></svg></div>
+<ul class="pts"><li>Start at a small share, such as 10 percent.</li><li>Move traffic only when the alarms stay quiet.</li><li>Rollback points traffic to the last approved version.</li></ul>
+<p><b>Exam tie.</b> Domain 5 tasks 5.1 and 5.2. Domain 2 task 2.3 covers AppConfig and aliases.</p>
+<div class="box"><b>Exam trap.</b> A re-sync or a prompt edit is a release. It needs the same gate.</div>
+<div class="checkrow"><button class="checkbtn" data-unit="u14" aria-pressed="false">I understand this unit</button></div>
+</article>
+<article class="unit reveal" id="u15">
+<p class="kicker">Visual unit 15</p>
+<h3>Four monitoring signals, four questions</h3>
+<p><b>First principle.</b> Each signal answers one question. Metrics count. Traces follow one request. Logs hold payloads. Quality checks score answers over time.</p>
+<div class="diagram"><svg viewBox="0 0 800 200" role="img" aria-label="Four monitoring signals"><rect class="box" x="10" y="60" width="170" height="70" rx="6"/><text class="t" x="95.0" y="91.0" text-anchor="middle" font-size="15">Metrics</text><text class="m" x="95.0" y="109.0" text-anchor="middle" font-size="12">how much, how fast</text><rect class="box" x="200" y="60" width="170" height="70" rx="6"/><text class="t" x="285.0" y="91.0" text-anchor="middle" font-size="15">Traces</text><text class="m" x="285.0" y="109.0" text-anchor="middle" font-size="12">which step</text><rect class="box" x="390" y="60" width="170" height="70" rx="6"/><text class="t" x="475.0" y="91.0" text-anchor="middle" font-size="15">Logs</text><text class="m" x="475.0" y="109.0" text-anchor="middle" font-size="12">what was sent</text><rect class="box-r" x="580" y="60" width="190" height="70" rx="6"/><text class="t" x="675.0" y="91.0" text-anchor="middle" font-size="15">Quality check</text><text class="m" x="675.0" y="109.0" text-anchor="middle" font-size="12">is it good</text><text class="t" x="10" y="160" font-size="13" text-anchor="start">CloudWatch metrics and alarms</text><text class="t" x="200" y="160" font-size="13" text-anchor="start">X-Ray traces</text><text class="t" x="390" y="160" font-size="13" text-anchor="start">Invocation logs, Logs Insights</text><text class="t" x="580" y="160" font-size="13" text-anchor="start">Judge, golden set</text></svg></div>
+<ul class="pts"><li>Metrics: is it slow or expensive?</li><li>Traces: which step is slow?</li><li>Logs: what did the model receive? Judge: is the answer good?</li></ul>
+<p><b>Exam tie.</b> Domain 4 task 4.3. Domain 5 task 5.2.</p>
+<div class="box"><b>Exam trap.</b> Metrics alone cannot rebuild a wrong answer. Keep the payloads.</div>
+<div class="checkrow"><button class="checkbtn" data-unit="u15" aria-pressed="false">I understand this unit</button></div>
+</article>
+<article class="unit reveal" id="u16">
+<p class="kicker">Visual unit 16</p>
+<h3>Who called versus what was sent</h3>
+<p><b>First principle.</b> CloudTrail records who called which API, when, and from where. Invocation logs record the prompt and the response. These are two different records. Each one answers a different audit question.</p>
+<div class="diagram"><svg viewBox="0 0 800 200" role="img" aria-label="CloudTrail and invocation logs"><rect class="box" x="10" y="60" width="220" height="70" rx="6"/><text class="t" x="120.0" y="91.0" text-anchor="middle" font-size="15">CloudTrail</text><text class="m" x="120.0" y="109.0" text-anchor="middle" font-size="12">who, when, which API</text><rect class="box-r" x="290" y="60" width="220" height="70" rx="6"/><text class="t" x="400.0" y="91.0" text-anchor="middle" font-size="15">Invocation logs</text><text class="m" x="400.0" y="109.0" text-anchor="middle" font-size="12">prompt and response</text><rect class="box-g" x="570" y="60" width="220" height="70" rx="6"/><text class="t" x="680.0" y="91.0" text-anchor="middle" font-size="15">KMS key</text><text class="m" x="680.0" y="109.0" text-anchor="middle" font-size="12">encrypts both</text><line class="flow" x1="230" y1="95" x2="288" y2="95"/><line class="flow" x1="510" y1="95" x2="568" y2="95"/><text class="t" x="10" y="165" font-size="14" text-anchor="start">Need the identity? CloudTrail. Need the words? Invocation logs.</text></svg></div>
+<ul class="pts"><li>CloudTrail answers identity and timing.</li><li>Invocation logs answer content.</li><li>Encryption with KMS protects both at rest.</li></ul>
+<p><b>Exam tie.</b> Domain 3 task 3.2 and task 3.3.</p>
+<div class="box"><b>Exam trap.</b> CloudTrail does not show row content. Invocation logs show the original request even when output is masked.</div>
+<div class="checkrow"><button class="checkbtn" data-unit="u16" aria-pressed="false">I understand this unit</button></div>
+</article>
+<article class="unit reveal" id="u17">
+<p class="kicker">Visual unit 17</p>
+<h3>PrivateLink and the VPC boundary</h3>
+<p><b>First principle.</b> A VPC endpoint gives private IP access to an AWS service. Traffic from the VPC stays on the AWS network. Each Bedrock plane has its own endpoint.</p>
+<div class="diagram"><svg viewBox="0 0 800 210" role="img" aria-label="PrivateLink boundary"><rect class="box-g" x="10" y="40" width="300" height="130" rx="6"/><text class="t" x="160.0" y="110.0" text-anchor="middle" font-size="15">VPC</text><rect class="box" x="40" y="70" width="240" height="40" rx="6"/><text class="t" x="160.0" y="95.0" text-anchor="middle" font-size="15">Application</text><rect class="box-r" x="40" y="120" width="240" height="40" rx="6"/><text class="t" x="160.0" y="136.0" text-anchor="middle" font-size="15">Interface endpoint</text><text class="m" x="160.0" y="154.0" text-anchor="middle" font-size="12">one per plane</text><line class="flow" x1="160" y1="110" x2="160" y2="118"/><rect class="box" x="480" y="40" width="300" height="46" rx="6"/><text class="t" x="630.0" y="68.0" text-anchor="middle" font-size="15">bedrock-runtime</text><rect class="box" x="480" y="100" width="300" height="46" rx="6"/><text class="t" x="630.0" y="128.0" text-anchor="middle" font-size="15">bedrock-agent-runtime</text><rect class="box" x="480" y="160" width="300" height="36" rx="6"/><text class="t" x="630.0" y="183.0" text-anchor="middle" font-size="15">bedrock (control)</text><line class="flow flow-r" x1="280" y1="140" x2="478" y2="123"/><text class="t" x="480" y="22" font-size="13" text-anchor="start">AWS service planes</text></svg></div>
+<ul class="pts"><li>bedrock-runtime serves model invocations.</li><li>bedrock-agent and bedrock-agent-runtime serve agents.</li><li>bedrock serves the control plane.</li></ul>
+<p><b>Exam tie.</b> Domain 3 task 3.2.</p>
+<div class="box"><b>Exam trap.</b> One runtime endpoint does not cover agent calls. Check each plane.</div>
+<div class="checkrow"><button class="checkbtn" data-unit="u17" aria-pressed="false">I understand this unit</button></div>
+</article>
+<article class="unit reveal" id="u18">
+<p class="kicker">Visual unit 18</p>
+<h3>Organization rules with SCPs and condition keys</h3>
+<p><b>First principle.</b> A service control policy sets the most a member account can do. A condition key limits one action. A condition on the guardrail identifier can make the guardrail mandatory on each call.</p>
+<div class="diagram"><svg viewBox="0 0 800 200" role="img" aria-label="SCP guardrail condition"><rect class="box" x="10" y="60" width="160" height="50" rx="6"/><text class="t" x="90.0" y="90.0" text-anchor="middle" font-size="15">Application</text><line class="flow" x1="170" y1="85" x2="230" y2="85"/><rect class="box-r" x="230" y="60" width="200" height="50" rx="6"/><text class="t" x="330.0" y="81.0" text-anchor="middle" font-size="15">Policy check</text><text class="m" x="330.0" y="99.0" text-anchor="middle" font-size="12">guardrail id required</text><line class="flow" x1="430" y1="85" x2="480" y2="85"/><rect class="box-g" x="480" y="60" width="130" height="50" rx="6"/><text class="t" x="545.0" y="90.0" text-anchor="middle" font-size="15">Allowed</text><rect class="box" x="640" y="60" width="150" height="50" rx="6"/><text class="t" x="715.0" y="81.0" text-anchor="middle" font-size="15">Denied</text><text class="m" x="715.0" y="99.0" text-anchor="middle" font-size="12">no id</text><line class="flow flow-r" x1="430" y1="100" x2="640" y2="100"/><text class="t" x="10" y="160" font-size="14" text-anchor="start">Set the rule once in the organization. Every account inherits it.</text></svg></div>
+<ul class="pts"><li>The IAM layer applies even if application code changes.</li><li>A call without the guardrail identifier is denied.</li><li>This is a rule across accounts, not a setting in one app.</li></ul>
+<p><b>Exam tie.</b> Domain 3 task 3.3.</p>
+<div class="box"><b>Exam trap.</b> A guardrail that only the app calls can be skipped. Enforce it in IAM.</div>
+<div class="checkrow"><button class="checkbtn" data-unit="u18" aria-pressed="false">I understand this unit</button></div>
+</article>
+<article class="unit reveal" id="u19">
+<p class="kicker">Visual unit 19</p>
+<h3>Outposts versus a Region</h3>
+<p><b>First principle.</b> A Region runs in AWS data centers. Outposts runs AWS services on your premises. Data processed on Outposts stays at the site for the rule that requires it.</p>
+<div class="diagram"><svg viewBox="0 0 800 200" role="img" aria-label="Outposts and Region"><rect class="box" x="10" y="60" width="300" height="90" rx="6"/><text class="t" x="160.0" y="101.0" text-anchor="middle" font-size="15">AWS Region</text><text class="m" x="160.0" y="119.0" text-anchor="middle" font-size="12">AWS data centers</text><rect class="box-g" x="490" y="60" width="300" height="90" rx="6"/><text class="t" x="640.0" y="101.0" text-anchor="middle" font-size="15">Outposts</text><text class="m" x="640.0" y="119.0" text-anchor="middle" font-size="12">your premises</text><text class="t" x="330" y="110" font-size="13" text-anchor="middle">Choice set by data rule</text><text class="t" x="10" y="175" font-size="14" text-anchor="start">Both use the same AWS APIs. The location of the data changes.</text></svg></div>
+<ul class="pts"><li>Use a Region for most workloads.</li><li>Use Outposts when a rule says the data stays on site.</li><li>The same AWS programming interfaces apply on Outposts.</li></ul>
+<p><b>Exam tie.</b> Domain 2 task 2.3.</p>
+<div class="box"><b>Exam trap.</b> A Region in the cloud does not keep data on your premises.</div>
+<div class="checkrow"><button class="checkbtn" data-unit="u19" aria-pressed="false">I understand this unit</button></div>
+</article>
+<article class="unit reveal" id="u20">
+<p class="kicker">Visual unit 20</p>
+<h3>Distillation and cascade routing</h3>
+<p><b>First principle.</b> A large model is accurate and costly. A small model is cheaper and faster. Distillation trains the small model to copy the large one on one task. Cascade routing tries the small model first and escalates only when needed.</p>
+<div class="diagram"><svg viewBox="0 0 800 210" role="img" aria-label="Distillation and cascade"><rect class="box" x="10" y="40" width="160" height="50" rx="6"/><text class="t" x="90.0" y="61.0" text-anchor="middle" font-size="15">Teacher</text><text class="m" x="90.0" y="79.0" text-anchor="middle" font-size="12">large model</text><line class="flow" x1="170" y1="65" x2="240" y2="65"/><rect class="box-r" x="240" y="40" width="170" height="50" rx="6"/><text class="t" x="325.0" y="61.0" text-anchor="middle" font-size="15">Student</text><text class="m" x="325.0" y="79.0" text-anchor="middle" font-size="12">small, trained</text><rect class="box" x="10" y="130" width="140" height="44" rx="6"/><text class="t" x="80.0" y="157.0" text-anchor="middle" font-size="15">Small model first</text><line class="flow" x1="150" y1="152" x2="220" y2="152"/><rect class="box-g" x="220" y="130" width="140" height="44" rx="6"/><text class="t" x="290.0" y="157.0" text-anchor="middle" font-size="15">Uncertain?</text><line class="flow" x1="360" y1="152" x2="420" y2="152"/><rect class="box" x="420" y="130" width="160" height="44" rx="6"/><text class="t" x="500.0" y="157.0" text-anchor="middle" font-size="15">Large model</text><text class="t" x="450" y="30" font-size="13" text-anchor="start">Distillation</text><text class="t" x="10" y="195" font-size="13" text-anchor="start">Cascade</text></svg></div>
+<ul class="pts"><li>Distillation builds a cheaper student for a narrow task.</li><li>Cascade escalates on uncertainty or complexity.</li><li>Routing needs a signal. Without a signal the router cannot decide.</li></ul>
+<p><b>Exam tie.</b> Domain 1 task 1.2. Domain 4 task 4.1 and task 4.2.</p>
+<div class="box"><b>Exam trap.</b> Sending every request to the largest model wastes money.</div>
+<div class="checkrow"><button class="checkbtn" data-unit="u20" aria-pressed="false">I understand this unit</button></div>
+</article>
+<h3>Which unit explains which component</h3>
+<table>
+<tr><th>Component or idea</th><th>Unit</th></tr>
+<tr><td>Converse, InvokeModel</td><td><a href="#u1">Unit 1</a></td></tr>
+<tr><td>Provisioned Throughput, on-demand, batch</td><td><a href="#u2">Unit 2</a></td></tr>
+<tr><td>Cross-Region inference profiles</td><td><a href="#u3">Unit 3</a></td></tr>
+<tr><td>Prompt caching</td><td><a href="#u4">Unit 4</a></td></tr>
+<tr><td>Semantic cache</td><td><a href="#u5">Unit 5</a></td></tr>
+<tr><td>Chunking</td><td><a href="#u6">Unit 6</a></td></tr>
+<tr><td>Hybrid search, reranker</td><td><a href="#u7">Unit 7</a></td></tr>
+<tr><td>Bedrock Agents DRAFT, version, alias</td><td><a href="#u8">Unit 8</a></td></tr>
+<tr><td>AgentCore components</td><td><a href="#u9">Unit 9</a></td></tr>
+<tr><td>Lambda, Step Functions</td><td><a href="#u10">Unit 10</a></td></tr>
+<tr><td>API Gateway</td><td><a href="#u11">Unit 11</a></td></tr>
+<tr><td>Retries and throttling</td><td><a href="#u12">Unit 12</a></td></tr>
+<tr><td>Judge calibration</td><td><a href="#u13">Unit 13</a></td></tr>
+<tr><td>Canary and rollback, AppConfig</td><td><a href="#u14">Unit 14</a></td></tr>
+<tr><td>CloudWatch, X-Ray, logs, judge</td><td><a href="#u15">Unit 15</a></td></tr>
+<tr><td>CloudTrail and invocation logs, KMS</td><td><a href="#u16">Unit 16</a></td></tr>
+<tr><td>PrivateLink</td><td><a href="#u17">Unit 17</a></td></tr>
+<tr><td>SCP and IAM condition keys</td><td><a href="#u18">Unit 18</a></td></tr>
+<tr><td>Outposts</td><td><a href="#u19">Unit 19</a></td></tr>
+<tr><td>Distillation, cascade routing</td><td><a href="#u20">Unit 20</a></td></tr>
+</table>
 </section>
 <section id="d1">
 <p class="kicker">Part 2 · Domain 1 · Weight 31 percent (repository README)</p>
@@ -1266,5 +1521,28 @@ svg line[stroke="#A4441C"]{stroke:var(--rust)}
 </section>
 
 </main>
+<script>
+(function(){
+  var loader=document.getElementById('loader');
+  setTimeout(function(){loader.classList.add('gone');},700);
+  var bar=document.getElementById('progress');
+  function onScroll(){var h=document.documentElement;var max=h.scrollHeight-h.clientHeight;bar.style.width=(max>0?(h.scrollTop/max*100):0)+'%';}
+  window.addEventListener('scroll',onScroll,{passive:true});
+  var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});},{threshold:0.12});
+  document.querySelectorAll('.reveal').forEach(function(el){io.observe(el);});
+  var key='aip-c01-units';
+  var done={};
+  try{done=JSON.parse(localStorage.getItem(key)||'{}');}catch(e){done={};}
+  var btns=document.querySelectorAll('.checkbtn');
+  var counter=document.getElementById('unit-counter');
+  function refresh(){
+    var n=0;
+    btns.forEach(function(b){var on=!!done[b.dataset.unit];b.setAttribute('aria-pressed',on?'true':'false');b.textContent=on?'Understood. Next unit.':'I understand this unit';if(on)n++;});
+    if(counter)counter.textContent='Units understood: '+n+' of '+btns.length;
+  }
+  btns.forEach(function(b){b.addEventListener('click',function(){done[b.dataset.unit]=!done[b.dataset.unit];try{localStorage.setItem(key,JSON.stringify(done));}catch(e){}refresh();});});
+  refresh();
+})();
+</script>
 </body>
 </html>
