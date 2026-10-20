@@ -8,7 +8,7 @@ The treatise is usable for overnight reading and a printout. It is not yet verif
 
 | File | Use | Size |
 |---|---|---|
-| aip-c01-print-2up.pdf | Print. Letter landscape, 77 sides, two 5.5 x 8.5 in pages per side | 9.8 MB |
+| aip-c01-print-2up.pdf | Print. Letter landscape, 78 sides, two 5.5 x 8.5 in pages per side | 9.8 MB |
 | aip-c01-print.docx | Edit. Page size 5.5 x 8.5 in, 0.5 in margins | 3.9 MB |
 | print.html | Source for both files | 269 KB |
 
@@ -18,9 +18,9 @@ The treatise is usable for overnight reading and a printout. It is not yet verif
 2. Print at 100 percent scale. Do not fit to page.
 3. Turn on two-sided printing.
 4. Choose the flip edge that gives a book layout in landscape view. Print sheet 1 first and check it.
-5. Print sheets 1 to 77.
+5. Print sheets 1 to 78.
 
-Side 77 holds one page only. The right half of that side is blank. The file has no blank page.
+Side 78 holds one page.only. The right half of that side is blank. The file has no blank page.
 
 ## Coverage
 
