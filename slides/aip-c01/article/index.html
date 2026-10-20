@@ -83,6 +83,9 @@ svg line[stroke="#A4441C"]{stroke:var(--rust)}
 <a href="#exam">0. The exam at a glance</a>
 <a href="#reading">1. How AWS asks questions</a>
 <a href="#atlas">1A. Components, architecture, and domain ties</a>
+<a href="#course">1B. Concepts course: tokens to evaluation</a>
+<a href="#services">1C. AWS AppConfig and Amazon SageMaker AI</a>
+<a href="#tie">1D. How lessons tie to domains</a>
 <a href="#d1">2. Domain 1 · Foundation model integration, data, compliance</a>
 <a href="#d2">3. Domain 2 · Implementation and integration</a>
 <a href="#d3">4. Domain 3 · Safety, security, governance</a>
@@ -275,6 +278,146 @@ svg line[stroke="#A4441C"]{stroke:var(--rust)}
 <tr><td>4. Operational efficiency</td><td>Provisioned Throughput, Cross-Region profiles, prompt caching, Batch, CloudWatch, X-Ray, AgentCore Observability</td><td>Architecture 5</td></tr>
 <tr><td>5. Testing, validation, troubleshooting</td><td>Judge evaluations, golden sets, CloudWatch Logs Insights, X-Ray, Glue Data Quality, Step Functions for release gates</td><td>Architectures 5 and 6</td></tr>
 </table>
+</section>
+<section id="course">
+<p class="kicker">Part 1B · Concepts course</p>
+<h2>Build the vocabulary first, then the services</h2>
+<p>Each lesson starts from one first principle. The next lesson depends on the one before it. Read the lessons in order. The exam uses these ideas in every domain. If a question uses a word you cannot define, return to the lesson for that word.</p>
+<h3>Lesson 1 · Tokens and the context window</h3>
+<p><b>First principle.</b> A model reads and writes tokens. A token is a piece of text, often a word part. The model has a fixed limit on the tokens it can hold in one call. That limit is the context window.</p>
+<p>Input tokens include the instructions, the conversation, and any retrieved text. Output tokens are the reply. Both count toward the context window. Both are billed. Output tokens usually cost more per token than input tokens. Count tokens before the call to avoid overflow. CountTokens estimates the count for a supported model.</p>
+<div class="diagram">
+<svg viewBox="0 0 800 120" role="img" aria-label="Tokens in a context window"><rect class="box" x="10" y="40" width="56" height="40"/><text class="t" x="38.0" y="60.0" text-anchor="middle" font-size="15">t1</text><rect class="box" x="72" y="40" width="56" height="40"/><text class="t" x="100.0" y="60.0" text-anchor="middle" font-size="15">t2</text><rect class="box" x="134" y="40" width="56" height="40"/><text class="t" x="162.0" y="60.0" text-anchor="middle" font-size="15">t3</text><rect class="box" x="196" y="40" width="56" height="40"/><text class="t" x="224.0" y="60.0" text-anchor="middle" font-size="15">t4</text><rect class="box" x="258" y="40" width="56" height="40"/><text class="t" x="286.0" y="60.0" text-anchor="middle" font-size="15">t5</text><rect class="box" x="320" y="40" width="56" height="40"/><text class="t" x="348.0" y="60.0" text-anchor="middle" font-size="15">t6</text><rect class="box" x="382" y="40" width="56" height="40"/><text class="t" x="410.0" y="60.0" text-anchor="middle" font-size="15">t7</text><rect class="box" x="444" y="40" width="56" height="40"/><text class="t" x="472.0" y="60.0" text-anchor="middle" font-size="15">t8</text><rect class="box" x="506" y="40" width="56" height="40"/><text class="t" x="534.0" y="60.0" text-anchor="middle" font-size="15">t9</text><rect class="box" x="568" y="40" width="56" height="40"/><text class="t" x="596.0" y="60.0" text-anchor="middle" font-size="15">t10</text><rect class="box" x="10" y="80" width="600" height="28"/><text class="t" x="310.0" y="94.0" text-anchor="middle" font-size="15">Context window: instructions, history, retrieved text, and question share one limit</text><text class="m" x="640" y="100" font-size="13">limit</text></svg>
+<div class="cap">Diagram: tokens fill one context window. Built in SVG for this treatise. Schematic, not official.</div>
+</div>
+<p><b>Exam tie.</b> Domain 4 task 4.1 uses token price. Domain 1 task 1.2 uses the context window as a model axis. Domain 5 task 5.2 uses token count for truncated output.</p>
+<div class="box"><b>Exam trap.</b> Context overflow drops the end of a long input. The output looks cut off or ignores the last section.</div>
+<h3>Lesson 2 · Inference</h3>
+<p><b>First principle.</b> Inference is the step where a trained model reads input and produces output. Each call has two phases. The model first reads the whole input. It then writes the output one token at a time.</p>
+<p>Time to first token depends mostly on the input length and the queue. Tokens per second depends on the model and capacity. Streaming sends each token as it appears, which improves perceived speed. It does not shorten the total generation time. Three AWS modes serve inference. On-demand charges per token and has no commitment. Provisioned Throughput reserves model units for a steady rate. Batch inference runs offline from S3 to S3 at a lower price for select models.</p>
+<div class="diagram">
+<svg viewBox="0 0 800 130" role="img" aria-label="Inference phases"><rect class="box" x="10" y="40" width="160" height="44"/><text class="t" x="90.0" y="62.0" text-anchor="middle" font-size="15">Input tokens</text><line class="flow" x1="170" y1="62" x2="200" y2="62"/><rect class="box" x="200" y="40" width="200" height="44"/><text class="t" x="300.0" y="58.0" text-anchor="middle" font-size="15">Prefill: read input</text><text class="m" x="300.0" y="76.0" text-anchor="middle" font-size="12">time to first token</text><line class="flow" x1="400" y1="62" x2="430" y2="62"/><rect class="box" x="430" y="40" width="200" height="44"/><text class="t" x="530.0" y="58.0" text-anchor="middle" font-size="15">Decode: write output</text><text class="m" x="530.0" y="76.0" text-anchor="middle" font-size="12">one token at a time</text><line class="flow" x1="630" y1="62" x2="660" y2="62"/><rect class="box" x="660" y="40" width="130" height="44"/><text class="t" x="725.0" y="62.0" text-anchor="middle" font-size="15">Stream or wait</text></svg>
+<div class="cap">Diagram: inference has a read phase and a write phase. Built in SVG for this treatise. Schematic, not official.</div>
+</div>
+<p><b>Exam tie.</b> Domain 2 task 2.2 chooses the mode. Domain 4 task 4.2 measures time to first token and throughput. Domain 4 task 4.1 uses the mode as a cost lever.</p>
+<div class="box"><b>Exam trap.</b> Buying Provisioned Throughput does not change the speed of one call. It changes the reserved capacity. The call must use the provisioned model ARN.</div>
+<h3>Lesson 3 · Embeddings and similarity</h3>
+<p><b>First principle.</b> An embedding maps text to a list of numbers, called a vector. Texts with similar meaning get vectors that point in similar directions. Similarity is a score that compares two vectors.</p>
+<p>Titan Text Embeddings v2 outputs 1024, 512, or 256 dimensions. More dimensions hold more detail and cost more storage and compute. Cohere Embed separates queries from documents with an input type value. Use search_query for questions and search_document for passages. Embedding calls use InvokeModel with an embedding model. Converse does not produce embeddings.</p>
+<div class="diagram">
+<svg viewBox="0 0 800 200" role="img" aria-label="Embedding similarity"><line x1="60" y1="170" x2="360" y2="170" style="stroke:var(--ink)"/><line x1="60" y1="170" x2="60" y2="20" style="stroke:var(--ink)"/><line class="flow" x1="60" y1="170" x2="250" y2="70"/><text class="t" x="260" y="66" font-size="14">reset password</text><line class="flow flow-r" x1="60" y1="170" x2="240" y2="80"/><text class="t" x="250" y="90" font-size="14">change credentials</text><line class="flow" x1="60" y1="170" x2="330" y2="130"/><text class="t" x="300" y="150" font-size="14">shipping cost</text><text class="m" x="10" y="195" font-size="13">Vectors point the same way when meaning matches.</text></svg>
+<div class="cap">Diagram: three vectors in a plane. Two requests with similar meaning point the same way. Built in SVG for this treatise. Schematic, not official.</div>
+</div>
+<p><b>Exam tie.</b> Domain 1 task 1.4 and task 1.5 test the dimension choice and the input type. Domain 2 task 2.3 tests the API choice.</p>
+<div class="box"><b>Exam trap.</b> A bigger embedding model does not fix a bad chunk. The chunk must hold one complete answer.</div>
+<h3>Lesson 4 · Vector search and reranking</h3>
+<p><b>First principle.</b> Vector search finds the stored vectors closest to a query vector. It returns the top-k results. Closest is not the same as most relevant. A reranker scores each candidate against the question.</p>
+<p>Hybrid search adds keyword matching to vector search. Keyword search finds exact codes and citation strings. Vector search finds related meaning. Metadata filters narrow the search. Check the store documentation for when the filter applies.</p>
+<p><b>Exam tie.</b> Domain 1 task 1.4 selects the store. Domain 1 task 1.5 selects hybrid search, reranking, and query rewrite.</p>
+<div class="box"><b>Exam trap.</b> Reranking fixes order. It does not add a chunk that retrieval missed.</div>
+<h3>Lesson 5 · Retrieval-augmented generation (RAG)</h3>
+<p><b>First principle.</b> A model answers from its weights, which are fixed at training time. RAG adds facts at query time. The system retrieves text from your documents and places it in the prompt. The model answers from that text and cites it.</p>
+<p>RAG has two paths. The ingest path runs ahead of time. It chunks, embeds, and stores documents. The query path runs per request. It embeds the question, retrieves chunks, optionally reranks, and generates an answer with citations. Knowledge Bases runs both paths for you.</p>
+<p>The RAG diagram in Part 2 shows both paths. Read it after this lesson.</p>
+<p><b>Exam tie.</b> Domain 1 tasks 1.4 and 1.5 cover RAG. Domain 3 task 3.1 uses grounding checks on the answer. Domain 5 task 5.1 splits retriever metrics from generator metrics.</p>
+<div class="box"><b>Exam trap.</b> Fine-tuning does not add changing facts. Use RAG for facts that change.</div>
+<h3>Lesson 6 · Chunking</h3>
+<p><b>First principle.</b> A chunk is the unit of text that retrieval returns. A chunk must hold one complete answer. Too large, and the chunk adds noise. Too small, and the chunk loses context.</p>
+<p>Fixed-size chunking works for short, self-contained text such as FAQs. Hierarchical chunking uses small child chunks for matching and larger parent chunks for context. It suits manuals and contracts. Semantic chunking splits on meaning and costs more to process. Custom chunking with Lambda keeps tables and figures whole. The chunking strategy is set when the data source is created. To change it, create a new data source and sync it.</p>
+<p><b>Exam tie.</b> Domain 1 task 1.3 selects the chunking strategy. Domain 5 task 5.2 traces quality drops to a changed chunking setting.</p>
+<div class="box"><b>Exam trap.</b> A table split across chunks can lose its values. A chunk can look correct alone and still be wrong.</div>
+<h3>Lesson 7 · Customization: from prompts to LoRA and distillation</h3>
+<p><b>First principle.</b> Customization changes the model or its input. Each rung changes more and costs more. Start with the cheapest rung. Stop when the requirement is met.</p>
+<p>Prompt engineering changes only the instructions. RAG adds facts at query time. Fine-tuning changes the model weights with labeled examples. LoRA is a parameter-efficient method. It freezes the base weights and trains small adapter matrices. The update is the product of two small matrices, so the adapter is much smaller than the base model. You can store several adapters and load the one that fits the task. Distillation trains a smaller student model to copy a larger teacher model on one task. The student is cheaper and faster for that task.</p>
+<div class="diagram">
+<svg viewBox="0 0 800 170" role="img" aria-label="LoRA adapter"><rect class="box" x="10" y="30" width="260" height="60"/><text class="t" x="140.0" y="56.0" text-anchor="middle" font-size="15">Base model weights</text><text class="m" x="140.0" y="74.0" text-anchor="middle" font-size="12">frozen</text><rect class="box" x="290" y="30" width="120" height="60"/><text class="t" x="350.0" y="56.0" text-anchor="middle" font-size="15">Adapter A</text><text class="m" x="350.0" y="74.0" text-anchor="middle" font-size="12">small</text><rect class="box" x="430" y="30" width="120" height="60"/><text class="t" x="490.0" y="56.0" text-anchor="middle" font-size="15">Adapter B</text><text class="m" x="490.0" y="74.0" text-anchor="middle" font-size="12">small</text><rect class="box-r" x="570" y="30" width="220" height="60"/><text class="t" x="680.0" y="56.0" text-anchor="middle" font-size="15">Tuned behavior</text><text class="m" x="680.0" y="74.0" text-anchor="middle" font-size="12">base plus B times A</text><line class="flow" x1="270" y1="60" x2="288" y2="60"/><line class="flow" x1="410" y1="60" x2="428" y2="60"/><line class="flow" x1="550" y1="60" x2="568" y2="60"/><rect class="box" x="290" y="110" width="260" height="44"/><text class="t" x="420.0" y="128.0" text-anchor="middle" font-size="15">Swap adapters per task</text><text class="m" x="420.0" y="146.0" text-anchor="middle" font-size="12">one base model</text></svg>
+<div class="cap">Diagram: LoRA keeps the base weights frozen and trains a small adapter. Built in SVG for this treatise. Schematic, not official.</div>
+</div>
+<p><b>Exam tie.</b> Domain 1 task 1.2 covers the customization ladder. Domain 2 task 2.2 covers SageMaker AI deployment of a custom model. Domain 3 task 3.4 covers model documentation for a tuned model.</p>
+<div class="box"><b>Exam trap.</b> LoRA does not fix facts that change. A tuned adapter still holds the facts from its training data. Use RAG for changing facts.</div>
+<h3>Lesson 8 · Agents and tools</h3>
+<p><b>First principle.</b> An agent is a loop. The model reasons about the next step. It calls a tool. It observes the result. It repeats until a stop condition is met. A loop needs limits, because each step costs time and money.</p>
+<p>A tool has a schema, which names its inputs. An action group in Bedrock Agents links the agent to a Lambda function. AgentCore Gateway exposes tools through MCP. Each tool call can pass through Policy in AgentCore before it runs. Trace records each step, the chosen tool, and the observation.</p>
+<p><b>Exam tie.</b> Domain 2 task 2.1 covers the agent loop, action groups, and aliases. Domain 2 task 2.2 covers AgentCore. Domain 3 task 3.1 covers the policy check.</p>
+<div class="box"><b>Exam trap.</b> A prompt that says "stop after three steps" is not a control. Enforce the limit in the workflow or the tool layer.</div>
+<h3>Lesson 9 · Safety layers</h3>
+<p><b>First principle.</b> No single control stops every failure. Each layer checks something different. Input checks run before the model. Output checks run after it. Data controls protect storage and access.</p>
+<p>Guardrails apply six policy types on input and output. Contextual grounding checks test whether the answer is supported by the source. The prompt attack filter detects jailbreak and injection patterns on input. Comprehend detects PII in text. Macie finds sensitive data in S3 at rest. KMS encrypts data at rest. PrivateLink keeps API traffic inside the VPC.</p>
+<p><b>Exam tie.</b> Domain 3 tasks 3.1 and 3.2 cover these layers. Domain 3 task 3.3 covers the audit side.</p>
+<div class="box"><b>Exam trap.</b> A denied topic is not a prompt attack detector. Use the prompt attack filter for attacks.</div>
+<h3>Lesson 10 · Evaluation</h3>
+<p><b>First principle.</b> An evaluation compares outputs with a standard. The standard can be a known answer, a rubric, or a human judgment. The method must match the claim.</p>
+<p>Automatic metrics suit facts with known answers. An LLM judge scores qualities such as faithfulness at scale. A judge must be calibrated against human ratings first. A golden set holds trusted prompts and answers. Regression suites rerun the golden set on each change. Canary releases send a small share of traffic to a new version.</p>
+<p><b>Exam tie.</b> Domain 5 tasks 5.1 and 5.2 cover evaluation methods, golden sets, and release gates.</p>
+<div class="box"><b>Exam trap.</b> An uncalibrated judge gives opinions, not measurements.</div>
+<h3>Lesson 11 · Operations signals</h3>
+<p><b>First principle.</b> A production system emits three kinds of signal. Metrics count things over time. Traces follow one request across services. Logs hold the payloads. Each signal answers a different question.</p>
+<p>CloudWatch metrics track tokens, invocations, and throttles. Anomaly detection builds a band from history and alarms when a value leaves it. X-Ray traces requests and downstream calls. Invocation logs hold prompts and completions. Logs Insights searches them. Model Monitor watches drift in structured features, not free-text quality.</p>
+<p><b>Exam tie.</b> Domain 4 task 4.3 covers monitoring. Domain 5 task 5.2 covers debugging.</p>
+<div class="box"><b>Exam trap.</b> Metrics alone cannot rebuild what the model received. Keep the payload logs under access control.</div>
+</section>
+<section id="services">
+<p class="kicker">Part 1C · Service deep dives</p>
+<h2>AWS AppConfig and Amazon SageMaker AI, from first principles</h2>
+<p>Both services appear in many questions. AppConfig controls how a running application reads its settings. SageMaker AI hosts and prepares models. Read each service from the purpose, then the parts, then the exam tie.</p>
+<h3>AWS AppConfig</h3>
+<p><b>First principle.</b> A running application reads its settings from somewhere. If a setting changes, the application must pick up the change without a code release. AppConfig is the place that holds the settings and rolls them out.</p>
+<p><b>Parts.</b> A configuration profile defines where the settings live. The stores are the AppConfig hosted configuration store, AWS Secrets Manager, Systems Manager Parameter Store, and Amazon S3. A deployment strategy sets how fast a change reaches the application. It can roll out in steps over a period of time. Validators check the configuration before deployment. They check syntax and meaning. Alarms watch CloudWatch metrics during a deployment. If an alarm fires, AppConfig rolls the change back. Feature flags let you release a capability to some users first.</p>
+<figure>
+<img src="img/AppConfigHowItWorks.png" alt="AWS AppConfig how it works diagram" width="1200" height="600">
+<figcaption>Official AWS image. Source: <a href="https://docs.aws.amazon.com/appconfig/latest/userguide/what-is-appconfig.html">What is AWS AppConfig</a>. Use for the deployment flow.</figcaption>
+</figure>
+<div class="diagram">
+<svg viewBox="0 0 800 190" role="img" aria-label="AppConfig deployment flow"><rect class="box" x="10" y="30" width="150" height="50"/><text class="t" x="85.0" y="51.0" text-anchor="middle" font-size="15">Config profile</text><text class="m" x="85.0" y="69.0" text-anchor="middle" font-size="12">where settings live</text><line class="flow" x1="160" y1="55" x2="188" y2="55"/><rect class="box-r" x="190" y="30" width="150" height="50"/><text class="t" x="265.0" y="51.0" text-anchor="middle" font-size="15">Validator</text><text class="m" x="265.0" y="69.0" text-anchor="middle" font-size="12">syntax and meaning</text><line class="flow" x1="340" y1="55" x2="368" y2="55"/><rect class="box" x="370" y="30" width="160" height="50"/><text class="t" x="450.0" y="51.0" text-anchor="middle" font-size="15">Deployment</text><text class="m" x="450.0" y="69.0" text-anchor="middle" font-size="12">strategy over time</text><line class="flow" x1="530" y1="55" x2="558" y2="55"/><rect class="box" x="560" y="30" width="220" height="50"/><text class="t" x="670.0" y="51.0" text-anchor="middle" font-size="15">Application</text><text class="m" x="670.0" y="69.0" text-anchor="middle" font-size="12">reads settings</text><rect class="box-r" x="370" y="120" width="160" height="44"/><text class="t" x="450.0" y="138.0" text-anchor="middle" font-size="15">CloudWatch alarm</text><text class="m" x="450.0" y="156.0" text-anchor="middle" font-size="12">watches the rollout</text><line class="flow flow-r" x1="450" y1="118" x2="450" y2="82"/><rect class="box-r" x="190" y="120" width="150" height="44"/><text class="t" x="265.0" y="138.0" text-anchor="middle" font-size="15">Rollback</text><text class="m" x="265.0" y="156.0" text-anchor="middle" font-size="12">on alarm</text><line class="flow flow-r" x1="370" y1="142" x2="342" y2="142"/></svg>
+<div class="cap">Diagram: a configuration change passes a validator, rolls out over a strategy, and rolls back on an alarm. Built in SVG for this treatise. Schematic, based on the official overview.</div>
+</div>
+<p><b>Model switch pattern.</b> Store the model ID in a hosted configuration profile. The Lambda function reads the ID at runtime. A change to the ID rolls out with a deployment strategy. A CloudWatch alarm on errors rolls it back. No code release is needed. This is the pattern in Domain 1 task 1.2.</p>
+<div class="box"><b>Exam trap.</b> AppConfig controls settings. It does not route traffic to a model by prompt complexity. It does not host the model.</div>
+<h3>Amazon SageMaker AI</h3>
+<p><b>First principle.</b> A custom or fine-tuned model needs a place to run, a way to track versions, and a way to watch its behavior. SageMaker AI covers those three needs. Read its parts in that order.</p>
+<p><b>Hosting.</b> A real-time endpoint serves steady traffic with autoscaling. A serverless endpoint serves intermittent traffic and scales to zero. Its memory runs from 1 GB to 6 GB. Provisioned Concurrency keeps capacity warm for predictable bursts. The first request after idle time can have a cold start. An asynchronous endpoint queues long requests. Its payload comes from S3. The result goes to S3. It supports processing times up to one hour and near real-time latency.</p>
+<figure>
+<img src="img/serverless-endpoints-how-it-works.png" alt="SageMaker serverless endpoint how it works" width="1200" height="700">
+<figcaption>Official AWS image. Source: <a href="https://docs.aws.amazon.com/sagemaker/latest/dg/serverless-endpoints.html">SageMaker AI serverless endpoints</a>.</figcaption>
+</figure>
+<figure>
+<img src="img/async-architecture.png" alt="SageMaker asynchronous inference architecture" width="1200" height="700">
+<figcaption>Official AWS image. Source: <a href="https://docs.aws.amazon.com/sagemaker/latest/dg/async-inference.html">SageMaker AI asynchronous inference</a>.</figcaption>
+</figure>
+<p><b>Registry.</b> The model registry groups model versions. Each version has an approval status. A registry can share versions across accounts. Pipelines can require approval before deployment. A rollback points the endpoint to an earlier approved version.</p>
+<figure>
+<img src="img/model_registry_cross_account.png" alt="SageMaker model registry cross-account diagram" width="1200" height="700">
+<figcaption>Official AWS image. Source: <a href="https://docs.aws.amazon.com/sagemaker/latest/dg/model-registry-version.html">SageMaker Model Registry versions</a>. Use for sharing versions across accounts.</figcaption>
+</figure>
+<p><b>Monitoring.</b> Model Monitor watches drift in structured features and predictions. It does not score free-text answer quality. The SageMaker documentation states that Model Monitor is no longer open to new customers. Check that status before you rely on it.</p>
+<figure>
+<img src="img/mmv2-architecture.png" alt="SageMaker Model Monitor architecture" width="1200" height="700">
+<figcaption>Official AWS image. Source: <a href="https://docs.aws.amazon.com/sagemaker/latest/dg/model-monitor.html">SageMaker AI Model Monitor</a>. Use for the monitoring flow.</figcaption>
+</figure>
+<figure>
+<img src="img/mmv2-architecture-batch.png" alt="SageMaker Model Monitor batch architecture" width="1200" height="700">
+<figcaption>Official AWS image. Source: <a href="https://docs.aws.amazon.com/sagemaker/latest/dg/model-monitor.html">SageMaker AI Model Monitor</a>.</figcaption>
+</figure>
+<p><b>Customization.</b> SageMaker AI fine-tunes a model. LoRA trains small adapters on top of frozen base weights. Distillation trains a smaller student from a teacher. Register each tuned version. Deploy it to an endpoint. Track the approval status.</p>
+<div class="box"><b>Exam trap.</b> SageMaker AI endpoints host models. Bedrock hosts the managed foundation models. Pick by who owns the model.</div>
+</section>
+<section id="tie">
+<p class="kicker">Part 1D · Tie-in</p>
+<h2>How the lessons and services connect to the domains</h2>
+<table>
+<tr><th>Idea</th><th>Lesson</th><th>Service</th><th>Domain and task</th></tr>
+<tr><td>Inference modes and cost</td><td>2</td><td>Bedrock on-demand, Provisioned Throughput, Batch</td><td>2.2, 4.1, 4.2</td></tr>
+<tr><td>Tokens and context window</td><td>1</td><td>Bedrock Converse, CountTokens</td><td>1.2, 4.1, 5.2</td></tr>
+<tr><td>Embeddings and vector search</td><td>3, 4</td><td>Titan Text Embeddings v2, Cohere Embed, OpenSearch Serverless, S3 Vectors</td><td>1.4, 1.5</td></tr>
+<tr><td>RAG and citations</td><td>5, 6</td><td>Knowledge Bases, RetrieveAndGenerate</td><td>1.5, 5.1</td></tr>
+<tr><td>LoRA and distillation</td><td>7</td><td>SageMaker AI fine-tuning, Model Registry, endpoints</td><td>1.2, 2.2, 3.4</td></tr>
+<tr><td>Agents and tools</td><td>8</td><td>Bedrock Agents, AgentCore Gateway, Policy, Memory</td><td>2.1, 2.2, 3.1</td></tr>
+<tr><td>Safety layers</td><td>9</td><td>Guardrails, Comprehend, Macie, KMS, PrivateLink</td><td>3.1, 3.2</td></tr>
+<tr><td>Evaluation and judges</td><td>10</td><td>Model evaluation jobs, golden sets, canary releases</td><td>5.1, 5.2</td></tr>
+<tr><td>Runtime configuration and rollback</td><td>1 and 11</td><td>AppConfig, CloudWatch alarms</td><td>1.2, 4.3, 5.2</td></tr>
+<tr><td>Monitoring signals</td><td>11</td><td>CloudWatch, X-Ray, invocation logs, Model Monitor</td><td>4.3, 5.2</td></tr>
+</table>
+<p>Read the table from left to right. A question that names one idea points to one lesson, one service, and one task.</p>
 </section>
 <section id="d1">
 <p class="kicker">Part 2 · Domain 1 · Weight 31 percent (repository README)</p>
