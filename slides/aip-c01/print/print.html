@@ -166,6 +166,7 @@ h2,h3{page-break-after:avoid}
 <a href="#traps">7. Traps AWS reuses</a>
 <a href="#method">8. Method for each question</a>
 <a href="#gapunits">8A2. Four gap units from the cursor branch</a>
+<a href="#pass1">8A3. Cursor branch read, pass 1</a>
 <a href="#terms">8A. Reference terms from the question bank</a>
 <a href="#steps">8B. Console and API steps confirmed in this pass</a>
 <a href="#glossary">8C. Glossary</a>
@@ -2257,6 +2258,36 @@ h2,h3{page-break-after:avoid}
 <p><b>Choice rule (design guidance).</b> Traffic is spiky or unknown: on-demand. Traffic is steady and measured: Provisioned Throughput. The user waits for a reply: real-time calls, not batch.</p>
 <p><b>Exam tie.</b> Domain 1 task 1.2 (customization ladder), Domain 4 task 4.1 (cost levers).</p>
 <p class="trap"><b>Exam trap.</b> A commitment does not fit spiky traffic. Batch does not fit a user waiting on a reply.</p>
+</article>
+</section>
+
+<section id="pass1">
+<p class="kicker">Part 8A3</p>
+<h2>Cursor branch read, pass 1: errors, batch input, and the GenAI lens</h2>
+<p>Pass 1 covers three topics from the cursor volumes that the master did not state. Facts come from the official AWS pages named in each unit.</p>
+<article class="unit" id="h1">
+<h3>H1 · Error codes: which errors to retry</h3>
+<p><b>First principle.</b> An error tells you who must act. A quota error needs a slower rate, a capacity error needs a retry, and an input error needs a code fix. Retrying an input error never works.</p>
+<p><b>Facts.</b> ThrottlingException (HTTP 429) means the request exceeded an account quota. The docs recommend retries with exponential backoff and random jitter, a quota increase, or Provisioned Throughput for sustained traffic. ServiceUnavailable (503) and overloaded_error (529) are capacity errors, not quota errors. Retry them with backoff and jitter, and consider cross-Region inference. ValidationError (400) means the input breaks a constraint. Fix the request, do not retry. AccessDeniedException (403) means missing IAM permissions. ResourceNotFound (404) means a wrong model ID or resource name. Source: <a href="https://docs.aws.amazon.com/bedrock/latest/userguide/troubleshooting-api-error-codes.html">Troubleshooting Amazon Bedrock API error codes</a>.</p>
+<p><b>Facts.</b> NAT gateways, interface VPC endpoints, and Network Load Balancers drop idle TCP connections after 350 seconds. Enable TCP keep-alive in the SDK client and set the OS keep-alive interval below 350 seconds. Both settings are needed. Source: the same page, section on connection timeouts.</p>
+<p><b>Exam tie.</b> Domain 4 task 4.3 (monitoring), Domain 5 task 5.2 (troubleshooting), Domain 2 task 2.4 (resilient API integration).</p>
+<p class="trap"><b>Exam trap.</b> A 429 quota error and a 503 capacity error need different fixes. Quota: request an increase or buy capacity. Capacity: retry with backoff, or change Region.</p>
+</article>
+<article class="unit" id="h2">
+<h3>H2 · Batch input: the JSONL file</h3>
+<p><b>First principle.</b> A batch job reads files from S3. Each line is one record. The record has an ID and a model input in the format of the chosen API.</p>
+<p><b>Facts.</b> The input is one or more JSONL files in S3. Each line has a recordId and a modelInput. If you omit recordId, Bedrock adds one to the output. The output order is not guaranteed to match the input order. The modelInput format matches the InvokeModel body (the default type) or the Converse request body (type Converse). Quotas apply to records per file, records per job, and file size. Source: <a href="https://docs.aws.amazon.com/bedrock/latest/userguide/batch-inference-data.html">Format and upload your batch inference data</a>.</p>
+<p><b>Facts.</b> Batch does not support Provisioned Throughput models. Batch with Converse does not support tool calling. Use the InvokeModel type for tool calls in batch. Source: <a href="https://docs.aws.amazon.com/bedrock/latest/userguide/batch-inference.html">Process multiple prompts with batch inference</a>.</p>
+<p><b>Exam tie.</b> Domain 2 task 2.2 (deployment), Domain 4 task 4.1 (cost).</p>
+<p class="trap"><b>Exam trap.</b> Sort the output by your input order only after you map recordId. Do not assume the order matches.</p>
+</article>
+<article class="unit" id="h3">
+<h3>H3 · The Well-Architected Generative AI Lens</h3>
+<p><b>First principle.</b> A lens extends the Well-Architected Framework to one workload type. Its questions use the six pillars.</p>
+<p><b>Facts.</b> The Generative AI Lens covers LLM applications. It excludes model training and advanced customization. Its six pillars are operational excellence, security, reliability, performance efficiency, cost optimization, and sustainability. It runs across lifecycle phases from scoping to continuous improvement. Source: <a href="https://docs.aws.amazon.com/wellarchitected/latest/generative-ai-lens/generative-ai-lens.html">Generative AI Lens, AWS Well-Architected</a>.</p>
+<p><b>Not in source.</b> The full list of design principles. The official design-principles page surfaced only partly in this build. Controlled autonomy and observability are named in secondary coverage only.</p>
+<p><b>Exam tie.</b> Domain 1 task 1.1 (task 1.1.3 names the Generative AI Lens).</p>
+<p class="trap"><b>Exam trap.</b> The lens does not cover model training. A training question points to another source.</p>
 </article>
 </section>
 
