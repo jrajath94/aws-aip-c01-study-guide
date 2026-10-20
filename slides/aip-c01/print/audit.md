@@ -70,6 +70,15 @@ Not yet. Most exam facts are confirmed. Official sample questions are still not 
 - SageMaker Model Registry approval: console and API steps confirmed (section 8B).
 - Guardrail creation: the official page fetched did not show steps. Still Not in source.
 
+
+## Master content scope (this pass)
+
+- Gemini question set (250+ questions): not found. The repo, its branches, and origin/main have no such set. Upload it to check it.
+- Branch codex/aip-c01-visual-course: not on origin for aws-aip-c01-study-guide. It may sit in another repo, which this session cannot reach. Not checked.
+- Branch cursor/visual-treatise-3ba5: reachable. It holds eleven volumes and the same 200-question bank. Heading screen: 1,739 headings. 47 have no keyword match in the master. Most are verification logs, a glossary, and a cheat sheet. The master now has a glossary (section 8C). Real topic gaps still open: binary vectors and FP16 quantization, transparency as a design topic, red-teaming basics with AWS tooling, security hardening chapter, and decision ladders chapter. The keyword screen is weak. It does not check claims.
+- Question check: the 200-question bank was checked earlier by term. Eleven terms were missing. Section 8A covers nine. Two stay Not in source.
+- Confidence the master covers the exam alone: 3 of 10. The exam has 75 questions. The sample sets were not available. The official sample questions are not in source.
+
 ## Checks not done
 
 - The remaining "Not in source" items. Most are console-field gaps in the practical units. The official pages fetched did not answer them.
