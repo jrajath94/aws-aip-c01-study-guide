@@ -20,7 +20,7 @@ The treatise is usable for overnight reading and a printout. It is not yet verif
 4. Choose the flip edge that gives a book layout in landscape view. Print sheet 1 first and check it.
 5. Print sheets 1 to 78.
 
-Side 78 holds one page.only. The right half of that side is blank. The file has no blank page.
+Side 78 holds one page only. The right half of that side is blank. The file has no blank page.
 
 ## Coverage
 
