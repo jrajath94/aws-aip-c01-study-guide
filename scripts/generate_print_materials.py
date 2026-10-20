@@ -53,88 +53,88 @@ def build_print_html():
     }}
     body {{
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-      font-size: 8.5pt;
-      line-height: 1.32;
+      font-size: 8.1pt;
+      line-height: 1.25;
       color: #111;
       background: #fff;
     }}
     h1.doc-title {{
-      font-size: 16pt;
+      font-size: 14pt;
       font-weight: 800;
       text-transform: uppercase;
       letter-spacing: -0.01em;
       border-bottom: 2pt solid #111;
-      padding-bottom: 3pt;
-      margin-bottom: 4pt;
+      padding-bottom: 2pt;
+      margin-bottom: 3pt;
     }}
     .doc-meta {{
-      font-size: 8pt;
+      font-size: 7.8pt;
       color: #444;
       display: flex;
       justify-content: space-between;
-      margin-bottom: 8pt;
+      margin-bottom: 6pt;
       border-bottom: 0.5pt solid #888;
-      padding-bottom: 3pt;
+      padding-bottom: 2pt;
     }}
     .compact-columns {{
       column-count: 2;
-      column-gap: 6mm;
+      column-gap: 5mm;
       column-rule: 0.5pt solid #ddd;
     }}
     .domain-header {{
       background: #222;
       color: #fff;
-      padding: 3pt 6pt;
-      font-size: 10pt;
+      padding: 2.5pt 5pt;
+      font-size: 9.2pt;
       font-weight: 700;
-      margin: 8pt 0 4pt;
+      margin: 6pt 0 3pt;
       break-after: avoid;
       border-radius: 2pt;
     }}
     .topic-card {{
       border: 0.5pt solid #bbb;
-      border-radius: 3pt;
-      padding: 4pt 6pt;
-      margin-bottom: 5pt;
+      border-radius: 2pt;
+      padding: 3pt 5pt;
+      margin-bottom: 3.5pt;
       break-inside: avoid;
       background: #fafafa;
     }}
     .topic-title {{
-      font-size: 9.5pt;
+      font-size: 9pt;
       font-weight: 700;
       color: #0b2545;
-      margin-bottom: 2pt;
+      margin-bottom: 1.5pt;
       display: flex;
       justify-content: space-between;
     }}
     .topic-skills {{
-      font-size: 7.5pt;
+      font-size: 7.2pt;
       font-weight: normal;
       color: #666;
     }}
     .topic-lead {{
-      font-size: 8.2pt;
+      font-size: 7.9pt;
       font-weight: 600;
       color: #222;
-      margin-bottom: 2pt;
+      margin-bottom: 1.5pt;
     }}
     .topic-points {{
-      padding-left: 10pt;
-      margin-bottom: 3pt;
+      padding-left: 9pt;
+      margin-bottom: 2pt;
     }}
     .topic-points li {{
-      margin-bottom: 1.5pt;
-      font-size: 8pt;
+      margin-bottom: 1pt;
+      font-size: 7.7pt;
     }}
     .rd-box {{
       border-left: 2pt solid #2457d6;
-      padding-left: 4pt;
-      margin: 2pt 0;
+      padding-left: 3pt;
+      margin: 1.5pt 0;
       background: #f0f4fd;
-      font-size: 7.8pt;
+      font-size: 7.5pt;
     }}
     .rd-row {{
-      margin-bottom: 1.5pt;
+      margin-bottom: 1pt;
     }}
     .rd-tag {{
       font-weight: 700;
@@ -143,9 +143,9 @@ def build_print_html():
     .trap-box {{
       background: #fff8eb;
       border: 0.5pt solid #f59e0b;
-      padding: 2pt 4pt;
-      font-size: 7.8pt;
-      margin-top: 2pt;
+      padding: 2pt 3pt;
+      font-size: 7.5pt;
+      margin-top: 1.5pt;
       border-radius: 2pt;
     }}
     .trap-box strong {{
@@ -153,29 +153,29 @@ def build_print_html():
     }}
     .img-box {{
       text-align: center;
-      margin: 3pt 0;
+      margin: 2pt 0;
       break-inside: avoid;
     }}
     .img-box img {{
       max-width: 95%;
-      max-height: 85pt;
+      max-height: 72pt;
       object-fit: contain;
       border: 0.5pt solid #ccc;
       border-radius: 2pt;
     }}
     .lab-card {{
       border: 1pt solid #10b981;
-      border-radius: 3pt;
-      padding: 5pt 7pt;
-      margin-bottom: 6pt;
+      border-radius: 2pt;
+      padding: 3.5pt 5pt;
+      margin-bottom: 4pt;
       break-inside: avoid;
       background: #f0fdf4;
     }}
     .lab-title {{
-      font-size: 9.5pt;
+      font-size: 9pt;
       font-weight: 800;
       color: #065f46;
-      margin-bottom: 2pt;
+      margin-bottom: 1.5pt;
     }}
     .lab-steps {{
       padding-left: 11pt;
@@ -432,6 +432,66 @@ def build_print_html():
       </tbody>
     </table>
     """
+
+    # Section 6: Direct 250-Question Bank Master Knowledge Key & Edge-Case Traps
+    qb_keys = [
+        ("KB Data Connectors & Crawlers", "Enterprise Sources & Urgent Ingestion", [
+            "<strong>Data Connectors:</strong> Knowledge Bases natively connect to Amazon S3, Atlassian Confluence, Microsoft SharePoint, Salesforce, and Web Crawler.",
+            "<strong>Web Crawler Data Source:</strong> Crawls public websites/documentation portals on a scheduled cadence (e.g. weekly) without building custom crawlers. Respects robots.txt.",
+            "<strong>Event-Driven Ingestion:</strong> For urgent amendments needing indexing within 1 hour, configure S3 Event Notifications (s3:ObjectCreated:*) or EventBridge to trigger an AWS Lambda function calling <code>bedrock-agent.start_ingestion_job()</code>.",
+            "<strong>Multilingual Embeddings:</strong> When corpus spans multiple languages (e.g. 12+), choose <code>cohere.embed-multilingual-v3</code>. MANDATORY: set <code>input_type='search_query'</code> for runtime queries and <code>input_type='search_document'</code> for ingested texts."
+        ]),
+        ("SageMaker Inference Taxonomy", "Real-Time vs Serverless vs Async vs Batch", [
+            "<strong>Real-time Endpoint:</strong> Persistent compute, sustained 24/7 traffic, strict sub-100ms latency budgets.",
+            "<strong>Serverless Inference:</strong> Automatic scale-to-zero for intermittent, bursty traffic with idle periods. Pay only for compute seconds.",
+            "<strong>Async Inference:</strong> Built for large payloads (up to 1GB) and long execution times (30 to 60 minutes, up to 1 hour, e.g. long video summarization). Queues requests, writes results directly to S3, and sends completion alerts via Amazon SNS.",
+            "<strong>Batch Transform:</strong> Non-real-time bulk scoring across static datasets stored in S3. Compute cluster spins up, processes dataset, and shuts down completely."
+        ]),
+        ("Enterprise Orchestration & Multi-Agent", "Bedrock Flows vs Step Functions", [
+            "<strong>Bedrock Flows:</strong> Visual, low-code/no-code prompt chaining and branching (e.g. Summarize -> Classify -> Draft Reply). Best for prompt engineering workflows without custom code.",
+            "<strong>AWS Step Functions:</strong> Enterprise workflow engine. MANDATORY when requiring human-in-the-loop approval waits (using <code>.waitForTaskToken</code> callback with e.g. 4-hour timeout), complex retries, and auditable decision history.",
+            "<strong>Multi-Agent Supervisor Topology:</strong> When serving multiple isolated departments (clinical, billing, scheduling), deploy one Supervisor Agent that uses natural language intent to route to specialized Collaborator Agents, each with its own domain-isolated Knowledge Base."
+        ]),
+        ("Governance, Lake Formation & Responsible AI", "Fine-Grained Access & Continuous Monitoring", [
+            "<strong>AWS Lake Formation:</strong> Enforces granular column-level and row-level access control on data lake tables (e.g. Team B sees salary column, Team A does not). Standard IAM policies only grant coarse table/bucket access.",
+            "<strong>Continuous Bias Drift Monitoring:</strong> Passing launch-time tests is insufficient. Enterprise compliance requires continuous bias and fairness drift monitoring with automated CloudWatch alerts.",
+            "<strong>Model Cards:</strong> Standardized documentation recording intended use cases, training data provenance, operational limitations, ethical considerations, and evaluation metrics for regulatory scrutiny.",
+            "<strong>The Obfuscation Trap:</strong> Running text through Amazon Translate to another language does NOT redact PII; semantic meaning and PII remain intact! Always use Bedrock Guardrails PII anonymization/blocking.",
+            "<strong>Responsible AI Core Pillars:</strong> Fairness, Veracity (factuality), Transparency, Explainability, Robustness, Privacy & Security, Safety."
+        ]),
+        ("Tool Hosting & MCP Architecture", "Lambda vs ECS Container Hosting", [
+            "<strong>Lightweight Utility Tools:</strong> Host on AWS Lambda (serverless, sub-second spin-up, 15-minute runtime ceiling).",
+            "<strong>Heavy / Stateful Compute Tools:</strong> Host on Amazon ECS / AWS Fargate containerized MCP servers (e.g. complex pricing engines, long-running simulations, or code execution sandboxes)."
+        ]),
+        ("Prerequisite Foundations Refresher Key", "Cloud Architecture & ML Core", [
+            "<strong>S3 Lifecycle:</strong> Transition objects older than 30 days to S3 Glacier Flexible Retrieval; expire after 7 years for compliance.",
+            "<strong>S3 Presigned URLs:</strong> Generate temporary download links (e.g. 24-hour expiry) for private objects without modifying IAM.",
+            "<strong>VPC Network ACL (NACL):</strong> Subnet-level stateless firewall. Deny abusive IPs immediately with a low rule number (evaluated before Security Groups).",
+            "<strong>SSE-KMS Customer Managed Key (CMK):</strong> Guarantees CloudTrail decryption audit logging and instant administrative key revocation.",
+            "<strong>AWS Organizations:</strong> Consolidated billing, volume discount tiering, and Cost Allocation Tags per team for chargebacks.",
+            "<strong>SQS Dead-Letter Queue (DLQ):</strong> Isolate poison-pill messages after exceeding <code>maxReceiveCount</code> to unblock queue consumers.",
+            "<strong>Streaming Ingestion:</strong> Amazon Kinesis Data Streams + Kinesis Data Firehose -> S3 -> AWS Glue DataBrew for visual, no-code data preparation.",
+            "<strong>High-Cardinality Features:</strong> When a column has 8,000 distinct categories (e.g. cities), use entity embeddings or the feature hashing trick (NOT one-hot encoding which creates 8,000 sparse columns).",
+            "<strong>Tabular Churn Prediction:</strong> Use XGBoost (Gradient Boosted Decision Trees), the state-of-the-art algorithm for structured tabular datasets.",
+            "<strong>Image Synthesis:</strong> Diffusion models (e.g. Amazon Titan Image Generator) are designed for generating images from natural language text."
+        ])
+    ]
+
+    html += f"""
+    <div class="domain-header" style="background:#0e7490;">
+      Part 6: 250-Question Bank Master Knowledge Key & Blueprint Refresher
+    </div>
+    """
+    for qb_title, qb_sub, qb_items in qb_keys:
+        items_html = "".join([f"<li>{it}</li>" for it in qb_items])
+        html += f"""
+        <div class="topic-card" style="border-left: 2.5pt solid #0891b2;">
+          <div class="topic-title" style="color:#0e7490;"><span>🔑 {qb_title}</span><span class="topic-skills">{qb_sub}</span></div>
+          <ul class="topic-points" style="margin-top:3pt;">
+            {items_html}
+          </ul>
+        </div>
+        """
 
     html += """
   </div>
