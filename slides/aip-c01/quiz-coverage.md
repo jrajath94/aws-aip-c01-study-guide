@@ -1,14 +1,14 @@
 # Question-bank coverage check, 250 items
 
-This file records one check of the 250 review questions against the master treatise (`article/index.html`). The question text came from the shared quiz batch files, not from this repo. Each status is a topic check. The check used keyword and context search, not a full read of each stem.
+This file records the check of the 250 review questions against the master treatise (`article/index.html`). The question text came from the shared quiz batch files, not from this repo. Each status is a topic check against the treatise. The check used keyword and context search, plus official pages for new units. It was not a full read of every stem.
 
 ## Result
 
 | Status | Count |
 |---|---|
-| covered | 200 |
-| partial | 29 |
-| gap | 21 |
+| covered | 222 |
+| partial | 27 |
+| gap | 1 |
 | total | 250 |
 
 Items 1 to 220 are AIP-C01 exam-scope questions and ML basics. Items 221 to 250 are AWS and ML prerequisites (domain 0), which are not exam domains.
@@ -16,14 +16,12 @@ Items 1 to 220 are AIP-C01 exam-scope questions and ML basics. Items 221 to 250 
 | Items | Covered | Partial | Gap |
 |---|---|---|---|
 | 1 to 50 | 47 | 3 | 0 |
-| 51 to 100 | 45 | 4 | 1 |
-| 101 to 150 | 40 | 9 | 1 |
-| 151 to 200 | 43 | 6 | 1 |
-| 201 to 250 | 25 | 7 | 18 |
+| 51 to 100 | 46 | 4 | 0 |
+| 101 to 150 | 41 | 9 | 0 |
+| 151 to 200 | 46 | 4 | 0 |
+| 201 to 250 | 42 | 7 | 1 |
 
-Status meanings: covered means the treatise states the tested fact or rule. Partial means the topic is present but a tested detail is missing or thin. Gap means the treatise does not state the tested fact.
-
-Units Q1 to Q8 (Part 8A4 of the treatise) close the gaps for items 26, 40, 46, 60, 64, 65, 138, 139, 158, 169, 189, 201, 203, 207, 213, 242, 243. Items 38 and 156 stay partial because the official cross-Region page does not state which Region's quota applies.
+Status meanings. Covered: the treatise states the tested fact or rule. Partial: the topic is present, but a tested detail is missing, thin, or not confirmed. Gap: the treatise does not state the tested fact.
 
 ## Item table
 
@@ -50,7 +48,7 @@ Units Q1 to Q8 (Part 8A4 of the treatise) close the gaps for items 26, 40, 46, 6
 | 019 | q-d1-021 | covered | KB managed hybrid search |
 | 020 | q-d1-022 | covered | per-tenant KB plus IAM |
 | 021 | q-d1-024 | covered | pgvector Aurora |
-| 022 | q-d1-025 | partial | urgent amendments need event-driven ingestion, treatise has one mention |
+| 022 | q-d1-025 | partial | Q17 incremental sync confirmed, no automatic S3 event trigger on page |
 | 023 | q-d1-026 | covered | RAG citations plus contextual grounding |
 | 024 | q-d1-027 | covered | Neptune GraphRAG |
 | 025 | q-d1-031 | covered | hierarchical chunking |
@@ -108,7 +106,7 @@ Units Q1 to Q8 (Part 8A4 of the treatise) close the gaps for items 26, 40, 46, 6
 | 077 | q-d2-019 | covered | SageMaker async inference |
 | 078 | q-d2-025 | covered | CloudTrail is audit, not pipeline |
 | 079 | q-d2-030 | covered | provisioned model ARN |
-| 080 | q-d2-036 | gap | S3 versioning for draft history, AppSync covered, versioning not in treatise |
+| 080 | q-d2-036 | covered | Q9 S3 versioning |
 | 081 | q-d3-001 | covered | denied topics |
 | 082 | q-d3-002 | covered | sensitive info filter mask |
 | 083 | q-d3-003 | covered | word filters |
@@ -147,14 +145,14 @@ Units Q1 to Q8 (Part 8A4 of the treatise) close the gaps for items 26, 40, 46, 6
 | 116 | q-d4-008 | covered | temperature 0 and PT |
 | 117 | q-d4-009 | covered | streaming |
 | 118 | q-d4-010 | covered | PT not consistency |
-| 119 | q-d4-013 | partial | token metrics covered, per-feature tagging and billing reconciliation thin |
+| 119 | q-d4-013 | partial | Q16 request metadata is not a cost allocation tag, answer needs correction |
 | 120 | q-d4-014 | covered | anomaly detection, evaluation jobs |
 | 121 | q-d4-015 | covered | X-Ray and agent trace |
 | 122 | q-d4-016 | covered | Model Monitor not for text |
 | 123 | q-d4-007 | covered | caching plus routing plus PT |
 | 124 | q-d4-012 | partial | query preprocessing and hybrid covered, index sharding not in treatise |
 | 125 | q-d4-017 | covered | invocation logging forensic |
-| 126 | q-d5-010 | partial | AccessDenied covered, model-not-in-region case not explicit |
+| 126 | q-d5-010 | partial | Q17 official error page gives no region cause, answer not confirmed |
 | 127 | q-d5-001 | covered | programmatic metrics fixed dataset |
 | 128 | q-d5-002 | covered | judge calibrated to humans |
 | 129 | q-d5-003 | covered | human eval for brand voice |
@@ -172,8 +170,8 @@ Units Q1 to Q8 (Part 8A4 of the treatise) close the gaps for items 26, 40, 46, 6
 | 141 | q-d1-202 | partial | embedding dims and multilingual choice covered, process thin |
 | 142 | q-d1-204 | covered | query decomposition |
 | 143 | q-d1-205 | covered | reject fine-tuning, RAG re-sync |
-| 144 | q-d1-207 | partial | structure-aware custom chunking not explicit |
-| 145 | q-d1-209 | gap | Data Automation custom blueprints, not in treatise |
+| 144 | q-d1-207 | covered | Q17 custom transformation Lambda for structure |
+| 145 | q-d1-209 | partial | Q10 BDA, blueprint schema Not in source |
 | 146 | q-d1-210 | covered | metadata filter before vector search |
 | 147 | q-d1-212 | covered | AppConfig plus canary |
 | 148 | q-d1-213 | covered | GenAI Lens review standard |
@@ -207,9 +205,9 @@ Units Q1 to Q8 (Part 8A4 of the treatise) close the gaps for items 26, 40, 46, 6
 | 176 | q-d3-211 | covered | prompt-attack filter vs exact word |
 | 177 | q-d3-201 | covered | ApplyGuardrail external model |
 | 178 | q-d3-202 | covered | denied, word filter, sensitive info, prompt attack |
-| 179 | q-d3-204 | partial | SCP and guardrail identifier covered, CloudFormation StackSets not in treatise |
+| 179 | q-d3-204 | covered | Q15 StackSets and SCPs |
 | 180 | q-d3-208 | partial | guardrail regional scope, EU-limited failover thin |
-| 181 | q-d4-202 | partial | prompt cache TTL covered, cachePoint syntax not in treatise |
+| 181 | q-d4-202 | covered | Q14 prompt caching checkpoints and TTL |
 | 182 | q-d4-203 | covered | intelligent prompt routing |
 | 183 | q-d4-204 | covered | S3 Vectors for infrequent search |
 | 184 | q-d4-205 | partial | anomaly detection covered, CloudWatch metric filters per tool not in treatise |
@@ -227,7 +225,7 @@ Units Q1 to Q8 (Part 8A4 of the treatise) close the gaps for items 26, 40, 46, 6
 | 196 | q-d5-207 | covered | automatic metrics plus judge budget plan |
 | 197 | q-d3-212 | covered | guardrail detect mode notifications |
 | 198 | q-d2-214 | covered | Flows deterministic, KB node |
-| 199 | q-d3-213 | gap | query guardrail logs by date and user with Athena, Athena not in treatise |
+| 199 | q-d3-213 | covered | Q11 logs with Athena, retention period Not in source |
 | 200 | q-d4-208 | covered | provisioned model ARN in Converse |
 | 201 | pq-d1-1 | covered | Q8 supervised learning and classification |
 | 202 | pq-d1-2 | covered | batch inference |
@@ -246,45 +244,46 @@ Units Q1 to Q8 (Part 8A4 of the treatise) close the gaps for items 26, 40, 46, 6
 | 215 | pq-d3-15 | covered | RAG phase 1 |
 | 216 | pq-d3-16 | covered | Agents action groups phase 2 |
 | 217 | pq-d4-17 | covered | SageMaker Clarify bias |
-| 218 | pq-d4-18 | gap | responsible AI features list incl. veracity, veracity not in treatise |
-| 219 | pq-d5-19 | gap | shared responsibility, not in treatise |
+| 218 | pq-d4-18 | gap | Q12 cannot confirm the exam guide list |
+| 219 | pq-d5-19 | covered | Q13 shared responsibility |
 | 220 | pq-d5-20 | covered | CloudTrail |
 | 221 | foundations-map-check | partial | region and AZ basics, D0 prerequisite |
-| 222 | shared-responsibility-check | gap | shared responsibility, D0 prerequisite |
-| 223 | iam-role-check | gap | Lambda role instead of env-var key, D0 prerequisite |
-| 224 | iam-boundary-check | gap | permissions boundary, D0 prerequisite |
-| 225 | s3-lifecycle-check | gap | S3 Glacier lifecycle and storage classes, D0 prerequisite |
-| 226 | s3-share-check | gap | presigned URL, D0 prerequisite |
-| 227 | ec2-storage-check | gap | EFS, D0 prerequisite |
-| 228 | ec2-pricing-check | gap | Spot, D0 prerequisite |
-| 229 | vpc-nat-check | partial | NAT gateway mentioned, D0 prerequisite |
-| 230 | vpc-sg-nacl-check | gap | NACL, D0 prerequisite |
-| 231 | db-pick-check | gap | DynamoDB Global Tables, D0 prerequisite |
+| 222 | shared-responsibility-check | covered | Q13 shared responsibility, D0 prerequisite |
+| 223 | iam-role-check | partial | P5 execution role, env var encryption Not in source, D0 prerequisite |
+| 224 | iam-boundary-check | covered | P5 permissions boundary, D0 prerequisite |
+| 225 | s3-lifecycle-check | covered | P1 Glacier Flexible Retrieval, D0 prerequisite |
+| 226 | s3-share-check | covered | P1 presigned URL, D0 prerequisite |
+| 227 | ec2-storage-check | covered | P1 EFS, D0 prerequisite |
+| 228 | ec2-pricing-check | covered | P2 Spot, D0 prerequisite |
+| 229 | vpc-nat-check | partial | P3 NAT placement Not in source, D0 prerequisite |
+| 230 | vpc-sg-nacl-check | covered | P3 NACL stateless, D0 prerequisite |
+| 231 | db-pick-check | covered | P4 DynamoDB global tables, D0 prerequisite |
 | 232 | lambda-trigger-check | partial | S3 event trigger mentioned once, D0 prerequisite |
 | 233 | observability-check | covered | CloudTrail, D0 prerequisite |
-| 234 | messaging-check | gap | SNS fan-out, D0 prerequisite |
+| 234 | messaging-check | covered | P4 SNS fan-out, D0 prerequisite |
 | 235 | apigw-check | covered | usage plans and API keys, D0 prerequisite |
-| 236 | kms-check | partial | KMS covered, SSE-KMS and key revocation thin, D0 prerequisite |
+| 236 | kms-check | covered | P1 SSE-KMS, D0 prerequisite |
 | 237 | cfn-check | covered | CloudFormation drift, D0 prerequisite |
-| 238 | billing-check | gap | Organizations consolidated billing, D0 prerequisite |
-| 239 | final-01 | partial | interface endpoints covered, gateway endpoint for DynamoDB not, D0 prerequisite |
-| 240 | final-02 | gap | security group stateful and NACL rules, D0 prerequisite |
-| 241 | final-03 | partial | Object Lock and lifecycle covered, Glacier tier thin, D0 prerequisite |
+| 238 | billing-check | covered | P4 Organizations, D0 prerequisite |
+| 239 | final-01 | covered | P3 gateway endpoint DynamoDB, D0 prerequisite |
+| 240 | final-02 | covered | P3 security groups stateful, D0 prerequisite |
+| 241 | final-03 | partial | P1 Glacier covered, Object Lock details thin, D0 prerequisite |
 | 242 | final-04 | covered | Q3 IAM Identity Center permission sets, D0 prerequisite |
 | 243 | final-05 | covered | Q4 DLQ maxReceiveCount, D0 prerequisite |
-| 244 | pq-data | gap | Kinesis, Firehose, DataBrew, D0 prerequisite |
-| 245 | pq-features | gap | hashing trick and encoding, D0 prerequisite |
-| 246 | pq-training | gap | XGBoost, D0 prerequisite |
-| 247 | pq-eval | gap | precision and recall, D0 prerequisite |
+| 244 | pq-data | covered | P4 Firehose and DataBrew, Kinesis Not in source, D0 prerequisite |
+| 245 | pq-features | partial | P6 hashing and embeddings are general, Not in source, D0 prerequisite |
+| 246 | pq-training | covered | P6 XGBoost, D0 prerequisite |
+| 247 | pq-eval | covered | Q8 precision and recall, D0 prerequisite |
 | 248 | pq-deploy | covered | real-time endpoint, D0 prerequisite |
 | 249 | pq-monitor | covered | data drift, D0 prerequisite |
 | 250 | pq-final | partial | real-time endpoint covered, recall tuning thin, D0 prerequisite |
 
-## Open items
+## Open items that remain
 
-- Items 221 to 250 are prerequisites. Most have no unit in this treatise. Decide whether to add a prerequisite unit.
-- Item 218 (responsible AI feature list, veracity): Not in source. Confirm against the official exam guide.
-- Item 145 (Data Automation custom blueprints) and item 199 (Athena query of guardrail logs): gap, no unit yet.
-- Item 80 (S3 versioning for draft history): gap, no unit yet.
-- Items 38 and 156 (quota Region for routed requests): Not in source on the cross-Region page.
-- Item 149 (web crawler weekly schedule): Not in source.
+- Item 218: the AWS exam guide list of responsible AI features is not confirmed. The term veracity is not confirmed as an AWS name.
+- Items 38 and 156: the official cross-Region page does not say which Region's quota applies to a routed request.
+- Item 22: the sync page confirms incremental sync and does not name an automatic S3 event trigger.
+- Item 126: the official error page gives no region-based cause for AccessDeniedException. The quiz answer is not confirmed.
+- Item 119: the official page says per-request tags are not cost allocation tags. The quiz answer needs correction. Unit Q16 gives the correction.
+- Items 28, 54, 72, 98, 99, 104, 108, 124, 130, 141, 145, 149, 180, 184, 186: partial. The page for each was not fetched in this pass, or the official source does not state the detail. Items 99 and 108 are Not in source for the stated claims.
+- Items 221, 223, 229, 232, 241, 245, 250: partial prerequisites. Some details are Not in source in this build.

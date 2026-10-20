@@ -146,6 +146,7 @@ h2,h3{page-break-after:avoid}
 <a href="#gapunits">8A2. Four gap units from the cursor branch</a>
 <a href="#pass1">8A3. Cursor branch read, pass 1</a>
 <a href="#qgaps">8A4. Question-bank gap units</a>
+<a href="#pgaps">8A5. Gap units, round 2</a>
 <a href="#terms">8A. Reference terms from the question bank</a>
 <a href="#steps">8B. Console and API steps confirmed in this pass</a>
 <a href="#glossary">8C. Glossary</a>
@@ -2421,6 +2422,145 @@ h2,h3{page-break-after:avoid}
 <p><b>Not in source.</b> AWS-specific names for these methods. The treatise does not confirm an AWS service for each one.</p>
 <p><b>Exam tie.</b> Domain 1 task 1.1 (foundation model basics) and task 1.3 (input formatting and prompts).</p>
 <p class="trap"><b>Exam trap.</b> High accuracy on imbalanced data hides missed positives. Read precision and recall first.</p>
+</article>
+</section>
+
+<section id="pgaps">
+<p class="kicker">Part 8A5</p>
+<h2>Gap units, round 2: versioning, data preparation, logs, shared responsibility, and prerequisites</h2>
+<p>Each unit is short. Facts come from the official AWS pages named in the unit. Design guidance is labeled. Items marked Not in source are not confirmed in this build.</p>
+<article class="unit" id="q9">
+<h3>Q9 · S3 versioning: keep every version of a draft</h3>
+<p><b>First principle.</b> An overwrite destroys the old data unless the store keeps it. Versioning keeps each version, so you can restore an earlier draft.</p>
+<p><b>Facts.</b> With versioning enabled, an overwrite creates a new version, and the previous version stays. A delete adds a delete marker, and the object data stays until you delete the version. Versioning is off by default. After you enable it, a bucket can only be suspended, not returned to unversioned. Each stored version is billed. Source: <a href="https://docs.aws.amazon.com/AmazonS3/latest/userguide/Versioning.html">S3 Versioning</a>.</p>
+<p><b>Design guidance.</b> For draft history, enable versioning on the bucket that holds the drafts. Add a lifecycle rule that expires noncurrent versions after a set age, so cost stays bounded.</p>
+<p><b>Exam tie.</b> Domain 2 task 2.3 (secure and governed storage) and task 5.2 (rollback).</p>
+<p class="trap"><b>Exam trap.</b> Versioning is not a live collaboration tool. For real-time editing, use a sync service such as AppSync with DynamoDB, and use S3 versioning for the history.</p>
+</article>
+<article class="unit" id="q10">
+<h3>Q10 · Bedrock Data Automation: managed extraction from documents</h3>
+<p><b>First principle.</b> Documents are unstructured. Extraction turns them into fields that a system can store and check. Data Automation runs that extraction as a managed service.</p>
+<p><b>Facts.</b> Bedrock Data Automation (BDA) uses generative AI to convert documents, images, video, and audio into structured formats through one API. It includes built-in safeguards such as visual grounding and confidence scores. You can customize the output to fit your systems. Source: <a href="https://docs.aws.amazon.com/bedrock/latest/userguide/bda.html">Bedrock Data Automation</a>.</p>
+<p><b>Not in source.</b> The exact custom blueprint mechanics, including how a blueprint defines a fixed invoice schema. The blueprint page did not load in this pass. Confirm the blueprint steps in the console before the exam.</p>
+<p><b>Exam tie.</b> Domain 1 task 1.3 (data pipelines) and task 2.5 (integration).</p>
+<p class="trap"><b>Exam trap.</b> For document fields, choose BDA or a parser. Guardrails filter content and do not extract fields.</p>
+</article>
+<article class="unit" id="q11">
+<h3>Q11 · Invocation logs: query them with Athena, and keep them as long as required</h3>
+<p><b>First principle.</b> A log that you cannot search does not answer an audit question. Choose a store that you can query by date and user.</p>
+<p><b>Facts.</b> Model invocation logging is off by default. It records requests and responses for Converse, ConverseStream, InvokeModel, and InvokeModelWithResponseStream. Logs go to S3, CloudWatch Logs, or both. Logs stay until you delete the logging configuration. The S3 delivery is gzipped JSON, and Amazon S3 Select and Amazon Athena can query it. Each entry records the identity ARN, request metadata, and token counts. Source: <a href="https://docs.aws.amazon.com/bedrock/latest/userguide/model-invocation-logging.html">Monitor model invocation using CloudWatch Logs and Amazon S3</a>.</p>
+<p><b>Facts.</b> The Converse response includes a trace object with guardrail results, when a guardrail runs. Source: <a href="https://docs.aws.amazon.com/bedrock/latest/APIReference/API_runtime_Converse.html">Converse API reference</a>.</p>
+<p><b>Design guidance.</b> For a seven-year rule, set an S3 retention or lifecycle rule on the log bucket. Query by date and user with Athena.</p>
+<p><b>Not in source.</b> A Bedrock retention period for logs. The logging page says logs stay until the configuration is deleted.</p>
+<p><b>Exam tie.</b> Domain 3 task 3.3 (governance and audit) and task 4.3 (monitoring).</p>
+<p class="trap"><b>Exam trap.</b> Logs in CloudWatch Logs Insights answer operations questions. For a long audit trail, use S3 with Athena.</p>
+</article>
+<article class="unit" id="q12">
+<h3>Q12 · Responsible AI features: what this build confirms</h3>
+<p><b>First principle.</b> A responsibility list is only useful if the exam guide names it. This build does not confirm the exact list.</p>
+<p><b>Confirmed in this build.</b> The treatise uses three checks: transparency through sources and traces, fairness through defined metrics, and policy checks through Guardrails and Automated Reasoning. Bedrock Data Automation names confidence scores and visual grounding as safeguards. Sources are the pages named in Parts 3 and 8A4.</p>
+<p><b>Not in source.</b> The AWS exam guide list of responsible AI features. The term veracity is not confirmed as an AWS feature name. A search for the exam guide did not return its responsible AI section.</p>
+<p><b>Exam tie.</b> Domain 3, tasks 3.1 to 3.4.</p>
+<p class="trap"><b>Exam trap.</b> Do not memorize a feature name that this guide cannot confirm. Check the official exam guide before the exam.</p>
+</article>
+<article class="unit" id="q13">
+<h3>Q13 · Shared responsibility: who patches, who controls data access</h3>
+<p><b>First principle.</b> AWS and the customer each own part of security. The split depends on the service type.</p>
+<p><b>Facts.</b> AWS protects the infrastructure that runs all AWS services. On Amazon EC2, the customer manages the guest operating system, including updates and security patches. Source: <a href="https://aws.amazon.com/compliance/shared-responsibility-model/">AWS Shared Responsibility Model</a>.</p>
+<p><b>Design guidance.</b> The customer always controls who can read its data. Use IAM policies, KMS key policies, and bucket policies to set that control. A managed service does not remove this duty.</p>
+<p><b>Exam tie.</b> Domain 3 task 3.2 (data protection) and task 3.3 (governance).</p>
+<p class="trap"><b>Exam trap.</b> A managed service still needs your IAM policy. AWS does not decide who in your company reads the training bucket.</p>
+</article>
+<article class="unit" id="p1">
+<h3>P1 · Storage: presigned URLs, EFS, Glacier, and SSE-KMS</h3>
+<p><b>First principle.</b> Storage choices depend on who reads the data, how fast, and how long it stays.</p>
+<p><b>Presigned URLs.</b> A presigned URL grants time-limited access to one object without changing the bucket policy. The creator's credentials sign it. A URL created with the console lasts from 1 minute to 12 hours. A URL created with the CLI or SDK can last up to 7 days. The URL stops working when the signing credentials expire. Source: <a href="https://docs.aws.amazon.com/AmazonS3/latest/userguide/using-presigned-url.html">Download and upload objects with presigned URLs</a>.</p>
+<p><b>Shared files.</b> Amazon EFS is a shared file system over NFSv4. Many EC2, ECS, EKS, and Lambda clients can mount it. A Regional file system stores data across multiple Availability Zones. Source: <a href="https://docs.aws.amazon.com/efs/latest/ug/whatisefs.html">What is Amazon EFS</a>.</p>
+<p><b>Archive.</b> S3 Glacier Flexible Retrieval is for archives that need minutes to hours of retrieval. Objects must be restored before access. The minimum storage duration is 90 days. Each archived object adds 40 KB of metadata. Source: <a href="https://docs.aws.amazon.com/AmazonS3/latest/userguide/storage-class-intro.html">Understanding S3 storage classes</a>.</p>
+<p><b>Encryption.</b> SSE-KMS encrypts S3 objects with a KMS key. The caller needs kms:Decrypt to read the object. Disabling or changing the key policy revokes access. Source: <a href="https://docs.aws.amazon.com/AmazonS3/latest/userguide/UsingKMSEncryption.html">Using SSE-KMS</a>.</p>
+<p><b>Exam tie.</b> Domain 3 task 3.2 and Domain 2 task 2.3.</p>
+<p class="trap"><b>Exam trap.</b> A presigned URL does not outlive its signing credentials. Revoke the key or the role to stop access.</p>
+</article>
+<article class="unit" id="p2">
+<h3>P2 · Compute pricing: Spot instances for interruptible batch work</h3>
+<p><b>First principle.</b> A cheaper price usually comes with a risk. Spot trades lower price for the chance of interruption.</p>
+<p><b>Facts.</b> A Spot Instance uses spare EC2 capacity at a price below On-Demand. Amazon EC2 can interrupt it when capacity is needed, with a two-minute interruption notice. Savings Plans do not apply to Spot. Spot suits batch jobs and background work that can restart. Source: <a href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-spot-instances.html">Spot Instances</a>.</p>
+<p><b>Exam tie.</b> Domain 4 task 4.1 (cost).</p>
+<p class="trap"><b>Exam trap.</b> Spot is wrong for a user waiting on a reply. It fits a retryable batch job.</p>
+</article>
+<article class="unit" id="p3">
+<h3>P3 · Network: security groups, network ACLs, and DynamoDB endpoints</h3>
+<p><b>First principle.</b> Traffic passes two filters in a VPC. A network ACL filters at the subnet edge, and a security group filters at the instance.</p>
+<p><b>Facts.</b> A network ACL is stateless. It checks each rule in order by rule number, from lowest to highest. The first matching rule applies. A security group is stateful. Return traffic for an allowed request is allowed. Source: <a href="https://docs.aws.amazon.com/vpc/latest/userguide/vpc-network-acls.html">Control subnet traffic with network ACLs</a>.</p>
+<p><b>Facts.</b> A gateway VPC endpoint for DynamoDB adds a route to the route table. It needs no internet gateway and no NAT device. It has no extra charge. It does not serve on-premises networks, peered VPCs, or transit gateways. Source: <a href="https://docs.aws.amazon.com/vpc/latest/privatelink/vpc-endpoints-ddb.html">Gateway endpoints for DynamoDB</a>.</p>
+<p><b>Not in source.</b> The NAT gateway placement rule. Confirm it in the VPC NAT page before the exam.</p>
+<p><b>Exam tie.</b> Domain 3 task 3.2 (private network paths).</p>
+<p class="trap"><b>Exam trap.</b> A timeout to DynamoDB from a private subnet often means a missing route, not a security group rule.</p>
+</article>
+<article class="unit" id="p4">
+<h3>P4 · Data and messaging: DynamoDB global tables, SNS fan-out, Firehose, DataBrew, Organizations</h3>
+<p><b>First principle.</b> Replicate data for speed or survival, fan out events for independent consumers, and centralize billing for many accounts.</p>
+<p><b>Global tables.</b> A global table holds replicas in several Regions. Writes replicate to all replicas, usually within seconds. Cross-Region reads are eventually consistent. Strongly consistent reads must stay in one Region. Conflicts resolve by last writer wins. Transactions apply only within the Region where they start. Source: <a href="https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/globaltables_HowItWorks.html">Global tables: How it works</a>.</p>
+<p><b>Fan-out.</b> Amazon SNS sends a message from one topic to many subscribers, such as SQS queues, Lambda, Firehose, and HTTP endpoints. Each queue scales and fails on its own. Source: <a href="https://docs.aws.amazon.com/sns/latest/dg/welcome.html">What is Amazon SNS</a>.</p>
+<p><b>Streaming and cleaning.</b> Amazon Data Firehose delivers streaming records to S3, Redshift, OpenSearch, and other destinations. AWS Glue DataBrew cleans data with more than 250 visual transforms, with no code. Its output goes to S3. Sources: <a href="https://docs.aws.amazon.com/firehose/latest/dev/what-is-this-service.html">What is Amazon Data Firehose</a> and <a href="https://docs.aws.amazon.com/databrew/latest/dg/what-is.html">What is AWS Glue DataBrew</a>.</p>
+<p><b>Accounts.</b> AWS Organizations gives one consolidated bill for all accounts. It groups accounts into organizational units and applies service control policies. Use cost allocation tags and Cost Explorer for per-team cost. Source: <a href="https://docs.aws.amazon.com/organizations/latest/userguide/orgs_introduction.html">What is AWS Organizations</a>.</p>
+<p><b>Not in source.</b> Kinesis Data Streams details. This pass did not fetch that page.</p>
+<p><b>Exam tie.</b> Domain 1 task 1.3, Domain 2 task 2.2, and Domain 4 task 4.1.</p>
+<p class="trap"><b>Exam trap.</b> Global tables do not give cross-Region transactions. Keep writes to one Region when you need strong consistency.</p>
+</article>
+<article class="unit" id="p5">
+<h3>P5 · Permissions boundaries and the wrong place for a secret</h3>
+<p><b>First principle.</b> A boundary sets a ceiling. It grants nothing alone. A permission applies only when every layer allows it.</p>
+<p><b>Facts.</b> A permissions boundary is a managed policy that sets the maximum permissions for a user or role. The effective permissions are the intersection of the identity policy and the boundary. An explicit deny in either policy wins. A boundary does not limit a resource-based policy that grants access to a role session. Source: <a href="https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_boundaries.html">Permissions boundaries for IAM entities</a>.</p>
+<p><b>Design guidance.</b> Keep a long-term access key out of environment variables. Give the Lambda function an execution role instead. Use Secrets Manager for secrets that the function must read.</p>
+<p><b>Not in source.</b> Lambda environment variable encryption details. This pass did not fetch that page.</p>
+<p><b>Exam tie.</b> Domain 3 task 3.2 and Domain 2 task 2.3.</p>
+<p class="trap"><b>Exam trap.</b> A boundary does not grant access on its own. An allow in the identity policy and the boundary are both needed.</p>
+</article>
+<article class="unit" id="p6">
+<h3>P6 · ML basics for the prerequisite items: XGBoost and category encoding</h3>
+<p><b>First principle.</b> Pick the simplest model that fits the data type. Tabular data with labels often suits gradient-boosted trees.</p>
+<p><b>Facts.</b> XGBoost is a gradient-boosted trees algorithm for supervised learning. It handles regression, binary and multiclass classification, and ranking. SageMaker AI provides it as a built-in algorithm. Source: <a href="https://docs.aws.amazon.com/sagemaker/latest/dg/xgboost.html">XGBoost algorithm with Amazon SageMaker AI</a>.</p>
+<p><b>General definition, not an AWS claim.</b> A column with many distinct values, such as a city column with 8,000 values, can be encoded with embeddings or the hashing trick. Both produce a fixed number of features. Not in source for an AWS page that names this rule.</p>
+<p><b>Exam tie.</b> Domain 1 task 1.1 (foundation model basics) for the ML terms only.</p>
+<p class="trap"><b>Exam trap.</b> One-hot encoding a column with thousands of values makes the feature set too large. Use a compact encoding.</p>
+</article>
+<article class="unit" id="q14">
+<h3>Q14 · Prompt caching: checkpoints, TTL, and the prefix rule</h3>
+<p><b>First principle.</b> A cache reuses a prefix that matches exactly. Put the static text first, and put the changing text last.</p>
+<p><b>Facts.</b> Implicit caching is on by default and is best effort. Explicit caching uses cache checkpoints. In Converse, add a cachePoint block. In InvokeModel for Claude, add cache_control. A checkpoint needs a minimum of 512 to 4,096 tokens before it, depending on the model. Claude models allow up to four checkpoints per request. Checkpoints are processed in this order: tools, system, then messages. Source: <a href="https://docs.aws.amazon.com/bedrock/latest/userguide/prompt-caching.html">Prompt caching for faster model inference</a>.</p>
+<p><b>Facts.</b> The default TTL is five minutes, and each cache hit resets it. Some models also accept a one-hour TTL with "ttl": "1h". Adding the ttl field to a model that supports only five minutes causes a ValidationException. Caching works for on-demand inference, not batch inference. Cached tokens are billed at the cache-read rate. The inputTokens field excludes cached tokens, so total input equals inputTokens plus cacheReadInputTokens plus cacheWriteInputTokens. Source: the same page.</p>
+<p><b>Design guidance.</b> For calls that arrive more than five minutes apart, use the one-hour TTL on a supported model. For a steady stream of calls, the five-minute TTL stays warm at no extra cost.</p>
+<p><b>Exam tie.</b> Domain 4 task 4.1 (cost) and task 4.2 (performance).</p>
+<p class="trap"><b>Exam trap.</b> A timestamp or a user name at the top of the prompt changes the prefix on every call. The cache then misses on every call.</p>
+</article>
+<article class="unit" id="q15">
+<h3>Q15 · Deploy across accounts: StackSets and service control policies</h3>
+<p><b>First principle.</b> One template can deploy the same stack to many accounts. A policy at the organization level sets the ceiling for those accounts.</p>
+<p><b>Facts.</b> CloudFormation StackSets create, update, or delete stacks across many accounts and Regions with one operation. An administrator account defines the template. Source: <a href="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/what-is-cfnstacksets.html">Managing stacks across accounts and Regions with StackSets</a>.</p>
+<p><b>Facts.</b> A service control policy (SCP) grants no permissions. It sets the maximum permissions for IAM users and roles in member accounts. SCPs do not affect the management account. SCPs do not affect service-linked roles. A user still needs an identity policy that allows the action. Source: <a href="https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies_scps.html">Service control policies</a>.</p>
+<p><b>Design guidance.</b> To force a guardrail on every team, deploy the guardrail with a StackSet and deny the model calls that omit the guardrail identifier in an SCP. Test the SCP on one organizational unit first.</p>
+<p><b>Exam tie.</b> Domain 3 task 3.1 (controls) and task 3.3 (governance).</p>
+<p class="trap"><b>Exam trap.</b> An SCP does not give a team access. It only limits what the team's identity policies can grant.</p>
+</article>
+<article class="unit" id="q16">
+<h3>Q16 · Cost attribution: request metadata or inference profiles</h3>
+<p><b>First principle.</b> Attribution has two jobs. One job is per-call detail for analysis. The other is a line on the bill that finance can read.</p>
+<p><b>Facts.</b> Request metadata attaches up to 16 key-value pairs to a call. The pairs appear in model invocation logs. They are not delivered as AWS cost allocation tags and do not appear in Cost Explorer or the Cost and Usage Report. Source: <a href="https://docs.aws.amazon.com/bedrock/latest/userguide/cost-mgmt-request-metadata.html">Per-request metadata tagging</a>.</p>
+<p><b>Facts.</b> The same page names application inference profiles, projects, and workspaces as the route to cost allocation tags in Cost Explorer and the Cost and Usage Report.</p>
+<p><b>Correction.</b> The quiz answer for item 119 says to tag token metrics per feature and reconcile them with the bill. The official page says per-request tags do not reach the bill. For bill-level attribution per feature, use an application inference profile per feature. Reconcile logs to the bill at the model and usage-type level.</p>
+<p><b>Exam tie.</b> Domain 4 task 4.1 (cost) and task 4.3 (monitoring).</p>
+<p class="trap"><b>Exam trap.</b> Request metadata is not a cost allocation tag. Choose an inference profile when finance needs the bill split by feature.</p>
+</article>
+<article class="unit" id="q17">
+<h3>Q17 · Knowledge base freshness, chunking limits, and error causes</h3>
+<p><b>First principle.</b> A knowledge base answers from its last sync. Freshness depends on when you run the sync, and chunk settings decide what a result contains.</p>
+<p><b>Facts.</b> Sync is incremental. Amazon Bedrock processes only added, modified, or deleted documents since the last sync. A deleted document leaves the vector store. Start a sync with the console Sync button or with StartIngestionJob. Track it with GetIngestionJob. The page names no automatic S3 event trigger. Source: <a href="https://docs.aws.amazon.com/bedrock/latest/userguide/kb-data-source-sync-ingest.html">Sync your data with your knowledge base</a>.</p>
+<p><b>Facts.</b> Default chunking makes chunks of about 300 tokens and keeps sentences whole. No chunking treats each document as one chunk. Hierarchical chunking uses parent and child chunks, and it is not recommended with an S3 vector bucket. For content that needs custom structure, use a custom transformation Lambda function. Source: <a href="https://docs.aws.amazon.com/bedrock/latest/userguide/kb-chunking.html">How content chunking works</a>.</p>
+<p><b>Facts.</b> AccessDeniedException (403) means missing or expired IAM permissions. ResourceNotFound (404) means a wrong model ID or resource identifier. The error page lists no region-based cause for AccessDeniedException. Source: <a href="https://docs.aws.amazon.com/bedrock/latest/userguide/troubleshooting-api-error-codes.html">Troubleshooting Amazon Bedrock API error codes</a>.</p>
+<p><b>Correction.</b> The quiz answer for item 126 says a model that is not in the Region causes AccessDeniedException. The official error page does not say that. Confirm the Region availability of the model before you rely on that answer.</p>
+<p><b>Exam tie.</b> Domain 1 task 1.4 (vector store freshness), task 1.5 (chunking), and task 5.2 (troubleshooting).</p>
+<p class="trap"><b>Exam trap.</b> A re-sync is needed after every file change. Syncing once a quarter does not keep urgent changes searchable.</p>
 </article>
 </section>
 

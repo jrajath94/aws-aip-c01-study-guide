@@ -104,3 +104,11 @@ Not yet. Most exam facts are confirmed. Official sample questions are still not 
 - Corrected in this pass: the earlier question answer that said cross-Region quotas come from the source Region is Not in source on the official page.
 - Open: prerequisite items 221 to 250 have no unit. Items 80, 145, 199, and 218 are gaps without a unit. The check is by topic, not a full read of each stem.
 - Score: 4 of 10 before this pass. This pass does not change the score to 9.5. The honest score is 6 of 10 on exam-scope topics, with the open gaps listed above.
+
+## Question-bank pass, round 2 (2026-10-20)
+
+- Added units Q9 to Q17 and P1 to P6 (Part 8A5 and the Q14 to Q17 units in Part 8A5). Facts come from official pages, fetched in this pass. Each unit names its page.
+- Status after round 2: 222 covered, 27 partial, 1 gap, out of 250. Items 1 to 220: 199 covered, 20 partial, 1 gap. Items 221 to 250: 23 covered, 7 partial.
+- Still gap: item 218 (responsible AI feature list). The exam guide section was not found in this build.
+- Corrections to quiz answers, from official pages: item 119 (request metadata is not a cost allocation tag), item 126 (no region-based cause on the AccessDenied page), item 38 and 156 (quota Region not stated).
+- Judgment: the exam-scope score is 7 of 10. The treatise covers the 250 items by topic. Twenty partial items and one gap remain, and several need official pages this build could not confirm.
