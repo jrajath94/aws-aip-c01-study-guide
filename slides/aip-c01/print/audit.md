@@ -43,26 +43,27 @@ Side 77 holds one page only. The right half of that side is blank. The file has 
 
 ## Verdict
 
-Not yet. The exam facts and service status are now confirmed. The bank coverage, domain tables, and official sample questions are not closed.
+Not yet. Most exam facts are confirmed. Official sample questions are still not found. Several console and pricing details are still Not in source.
 
 ## Checks done
 
-- Domain weights (31, 26, 20, 12, 11 percent) match the official AWS exam guide.
-- The exam has 75 questions: 65 scored and 10 unscored. The pass mark is 750 on a 100 to 1,000 scale. The official guide confirms both.
-- The exam length is 180 minutes. The fee is 300 USD. The official AWS certification page confirms both.
-- Every task number in the treatise (1.1 to 5.2) exists in the official guide. Each "Domain N task X.Y" reference matches its domain.
+- Domain weights, exam counts, pass mark, length, and fee match the official AWS pages.
+- Every task number in the treatise exists in the official guide. Each domain reference matches its domain.
 - Units 55 to 68 were checked against the official task statements. Seven exam-tie lines were corrected.
-- Amazon Kendra, Amazon Q Business, SageMaker Model Monitor, and Bedrock Agents Classic are closed to new customers. The treatise states this correctly for each.
-- The 200 repo questions were parsed. Terms in their answer explanations were compared with the treatise text. Eleven terms are absent: CloudFormation, Textract, Cognito, Clarify, continued pre-training, top-p, max tokens, BLEU, ROUGE, Verified Permissions, and Pricing. Twenty-two questions use at least one of them.
+- Kendra, Q Business, SageMaker Model Monitor, and Bedrock Agents Classic are closed to new customers. The treatise states this correctly.
+- The 200 repo questions were parsed. Eleven terms in their answers were missing from the treatise. Each now has a section (8A) with an official source, except BLEU, ROUGE, and Pricing. Those stay Not in source.
+- All 391 domain and reference table rows were read. Three rows still said "No unit yet" after units 55 to 57 were added. Those labels are removed.
+- The batch discount claim was not on the official batch docs page. The treatise now says Not in source for the exact percentage. Batch is not supported for provisioned models. The treatise now says so.
+- ElastiCache durability matches the official durability page. Durability needs node-based clusters.
 
 ## Checks not done
 
 - Official sample questions. None were found. Search returns third-party banks only.
-- Domain tables. Task numbers are checked. Claims are not checked line by line against the official skill wording.
-- Question-to-unit mapping. The term check above is not a per-question map.
-- The 44 "Not in source" items. Most are console-field gaps in the practical units, or per-domain sample-question gaps. None were closed.
-- API Gateway 29 second integration timeout. Not confirmed on the quotas page in this build.
-- Knowledge Base web crawler date (after 2026-09-30). It comes from one search result. Not confirmed.
+- Table rows were read for consistency. They were not fetched and checked against the official pages one by one. Rows that still need a fetch: intelligent prompt routing, CloudWatch metric names, Provisioned Throughput billing terms, and the Comprehend 100 KB limit.
+- The 44 "Not in source" items. Most are console-field gaps in the practical units. Those need UI pages that this build could not read.
+- API Gateway 29 second integration timeout. The quotas page does not list it. It stays Not in source.
+- Knowledge Base web crawler end date. The docs page gave no date. It stays Not in source.
+- Whether Amazon Bedrock uses prompts for model training. The sources did not settle this.
 - Several units give design guidance, not AWS facts. Those units say so.
 - The brand font is not installed. The files use Inter.
 - The publication-clean and watermark-remover skills are not present in this environment, so no watermark pass ran.
