@@ -1,6 +1,6 @@
-Title: Overview - Amazon Bedrock
+Title: What are Automated Reasoning checks in Amazon Bedrock Guardrails?
 
-URL Source: https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-automated-reasoning-check.html
+URL Source: https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-automated-reasoning-checks.html
 
 Markdown Content:
 ## Select your cookie preferences
@@ -73,25 +73,25 @@ If you want to change your cookie preferences, try again later using the link in
 
 Dismiss
 
-[Skip to main content](https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-automated-reasoning-check.html#skip-link)
+[Skip to main content](https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-automated-reasoning-checks.html#skip-link)
 
-[English](https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-automated-reasoning-check.html# "Language Selector. Currently set to: English")
+[English](https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-automated-reasoning-checks.html# "Language Selector. Currently set to: English")
 
-[Preferences](https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-automated-reasoning-check.html#)
+[Preferences](https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-automated-reasoning-checks.html#)
 
 [Contact Us](https://aws.amazon.com/contact-us/?cmpid=docs_headercta_contactus)
 
-[Feedback](https://docs.aws.amazon.com/feedback/doc-feedback.html?hidden_service_name=Bedrock&topic_url=https%3A%2F%2Fdocs.aws.amazon.com%2Fbedrock%2Flatest%2Fuserguide%2Fwhat-is-bedrock.html)
+[Feedback](https://docs.aws.amazon.com/feedback/doc-feedback.html?hidden_service_name=Bedrock&topic_url=https%3A%2F%2Fdocs.aws.amazon.com%2Fbedrock%2Flatest%2Fuserguide%2Fguardrails-automated-reasoning-checks.html)
 
-[![Image 8: AWS Documentation](https://docs.aws.amazon.com/assets/r/images/aws_logo_light.svg)](https://docs.aws.amazon.com/)
+[![Image 1: AWS Documentation](https://docs.aws.amazon.com/assets/r/images/aws_logo_light.svg)](https://docs.aws.amazon.com/)
 
-[Get started](https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-automated-reasoning-check.html#)
+[Get started](https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-automated-reasoning-checks.html#)
 
-[Service guides](https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-automated-reasoning-check.html#)
+[Service guides](https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-automated-reasoning-checks.html#)
 
-[Developer tools](https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-automated-reasoning-check.html#)
+[Developer tools](https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-automated-reasoning-checks.html#)
 
-[AI resources](https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-automated-reasoning-check.html#)
+[AI resources](https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-automated-reasoning-checks.html#)
 
 Search
 
@@ -1908,178 +1908,186 @@ Search
 2.   [Amazon Bedrock](https://docs.aws.amazon.com/bedrock/index.html) 
 3.   User Guide 
 
-# Overview
+# What are Automated Reasoning checks in Amazon Bedrock Guardrails?
 
-[PDF](https://docs.aws.amazon.com/pdfs/bedrock/latest/userguide/bedrock-ug.pdf#what-is-bedrock)
+[PDF](https://docs.aws.amazon.com/pdfs/bedrock/latest/userguide/bedrock-ug.pdf#guardrails-automated-reasoning-checks)
 
 [RSS](https://docs.aws.amazon.com/bedrock/latest/userguide/bedrock-ug.rss)
 
-[Markdown](https://docs.aws.amazon.com/bedrock/latest/userguide/what-is-bedrock.md "Download Markdown")
+[Markdown](https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-automated-reasoning-checks.md "Download Markdown")
 
 Agent Setup Up-to-date AWS docs, tested procedures, and IAM guardrails via a single setup prompt in your AI coding agent.
 
 - [x] Focus mode
 
-Overview - Amazon Bedrock
+What are Automated Reasoning checks in Amazon Bedrock Guardrails? - Amazon Bedrock
 
-[](https://docs.aws.amazon.com/pdfs/bedrock/latest/userguide/bedrock-ug.pdf#what-is-bedrock "Open PDF")
+[](https://docs.aws.amazon.com/pdfs/bedrock/latest/userguide/bedrock-ug.pdf#guardrails-automated-reasoning-checks "Open PDF")
 
 [Documentation](https://docs.aws.amazon.com/index.html)[Amazon Bedrock](https://docs.aws.amazon.com/bedrock/index.html)[User Guide](https://docs.aws.amazon.com/bedrock/latest/userguide/what-is-bedrock.html)
 
-[Quickstart](https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-automated-reasoning-check.html#quickstart)[Supported models](https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-automated-reasoning-check.html#featured-models)[What's new?](https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-automated-reasoning-check.html#whats-new)[Start building](https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-automated-reasoning-check.html#start-building)
+[What Automated Reasoning checks do](https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-automated-reasoning-checks.html#automated-reasoning-what-it-does)[When to use Automated Reasoning checks](https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-automated-reasoning-checks.html#automated-reasoning-when-to-use)[What Automated Reasoning checks don't do](https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-automated-reasoning-checks.html#automated-reasoning-what-it-doesnt-do)[End-to-end workflow overview](https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-automated-reasoning-checks.html#automated-reasoning-workflow-overview)[Availability and language support](https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-automated-reasoning-checks.html#automated-reasoning-availability)[Limitations and considerations](https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-automated-reasoning-checks.html#automated-reasoning-limitations)[Pricing](https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-automated-reasoning-checks.html#automated-reasoning-pricing)[Cross-Region inference](https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-automated-reasoning-checks.html#automated-reasoning-cross-region-inference)
 
-Amazon Bedrock is a fully managed service that provides secure, enterprise-grade access to [high-performing foundation models](https://docs.aws.amazon.com/bedrock/latest/userguide/models.html) from leading AI companies, enabling you to build and scale generative AI applications.
+## What Automated Reasoning checks do
 
-## Quickstart
+A key challenge with large language models (LLMs) is ensuring the accuracy of their responses. Without validation, LLMs can produce hallucinations or inaccurate information that undermines trust. Automated Reasoning checks in Amazon Bedrock Guardrails help solve this problem by using mathematical techniques to validate natural language content against policies you define.
 
-Read the [Quickstart](https://docs.aws.amazon.com/bedrock/latest/userguide/getting-started.html) to write your first API call using Amazon Bedrock in under five minutes. For new applications, we recommend the [bedrock-runtime](https://docs.aws.amazon.com/bedrock/latest/userguide/endpoints.html) endpoint.
+Unlike traditional guardrail components that block or filter content based on pattern matching, Automated Reasoning checks use formal logic to provide structured feedback about _why_ a response is correct or incorrect. This feedback can be used to steer an LLM towards generating content that is provably consistent with your policy. Specifically, Automated Reasoning checks can:
 
-Messages API
-```
-from anthropic import Anthropic
-from aws_bedrock_token_generator import provide_token
+*   **Detect factually incorrect statements** in LLM responses by mathematically proving that generated content contradicts your policy rules.
 
-token = provide_token(region="us-east-1")
+*   **Highlight unstated assumptions** where a response is consistent with your policy but doesn't address all relevant rules, indicating the response may be incomplete.
 
-client = Anthropic(
-    base_url="https://bedrock-runtime.us-east-1.amazonaws.com/anthropic",
-    api_key=token,
-)
+*   **Provide mathematically verifiable explanations** for why accurate statements are correct, citing the specific policy rules and variable assignments that support the conclusion.
 
-response = client.messages.create(
-    model="global.anthropic.claude-opus-4-7",
-    max_tokens=1024,
-    messages=[{"role": "user", "content": "Can you explain the features of Amazon Bedrock?"}]
-)
-print(response)
-```
-Responses API
-```
-from openai import OpenAI
+These capabilities make Automated Reasoning checks different from other Amazon Bedrock Guardrails components. Content filters and topic policies act as binary gates — they block or allow content. Automated Reasoning checks act as a verification layer that provides detailed, actionable feedback you can use to improve responses programmatically.
 
-client = OpenAI()
+## When to use Automated Reasoning checks
 
-response = client.responses.create(
-    model="global.openai.gpt-5.6-sol",
-    input="Can you explain the features of Amazon Bedrock?"
-    )
-print(response)
-```
-Chat Completions API
-```
-from openai import OpenAI
+Automated Reasoning checks are most valuable when you need to demonstrate the factual basis for an LLM's response. Consider using them when your application involves:
 
-client = OpenAI()
+*   **Regulated industries** such as healthcare, human resources, and financial services, where incorrect information can have legal or compliance consequences.
 
-response = client.chat.completions.create(
-    model="global.openai.gpt-5.6-sol",
-    messages=[{"role": "user", "content": "Can you explain the features of Amazon Bedrock?"}]
-    )
-print(response)
-```
-Converse API
-```
-import boto3
+*   **Complex rule sets** such as mortgage approvals, zoning laws, insurance eligibility, or employee benefits, where multiple conditions interact to determine an outcome.
 
-client = boto3.client('bedrock-runtime', region_name='us-east-1')
-response = client.converse(
-    modelId='anthropic.claude-opus-4-7',
-    messages=[
-        {
-            'role': 'user',
-            'content': [{'text': 'Can you explain the features of Amazon Bedrock?'}]
-        }
-    ]
-)
-print(response)
-```
-Invoke API
-```
-import json
-import boto3
+*   **Compliance scenarios** that require auditable AI responses with mathematically verifiable proof that the response is consistent with your policies.
 
-client = boto3.client('bedrock-runtime', region_name='us-east-1')
-response = client.invoke_model(
-    modelId='anthropic.claude-opus-4-7',
-    body=json.dumps({
-            'anthropic_version': 'bedrock-2023-05-31',
-            'messages': [{ 'role': 'user', 'content': 'Can you explain the features of Amazon Bedrock?'}],
-            'max_tokens': 1024
-    })
- )
- print(json.loads(response['body'].read()))
-```
+*   **Customer-facing applications** where incorrect guidance could erode trust, such as chatbots that answer questions about company policies, product eligibility, or service terms.
 
-[anchor](https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-automated-reasoning-check.html)[anchor](https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-automated-reasoning-check.html)[anchor](https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-automated-reasoning-check.html)[anchor](https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-automated-reasoning-check.html)[anchor](https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-automated-reasoning-check.html)
+## What Automated Reasoning checks don't do
 
-*   Messages API 
-*   Responses API 
-*   Chat Completions API 
-*   Converse API 
-*   Invoke API 
+To set the right expectations, be aware of the following limitations:
+
+*   **No prompt injection protection.** Automated Reasoning checks validate exactly what you send them. If malicious or manipulated content is provided as input, the validation is performed on that content as-is. To detect and block prompt injection attacks, use [Content filters](https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-components.html#guardrails-content-filters) in combination with Automated Reasoning checks.
+
+*   **No support for encoded or obfuscated text.** Automated Reasoning checks evaluate content as plaintext natural language. If _any part_ of the submitted content is encoded or obfuscated — for example, Base64 (`ZG9ncw==`), hexadecimal escape sequences (`\x63\x61\x74\x73`), or percent-encoding (`%4d%65%78%69%63%6f`) — the **entire submission, including any surrounding plaintext, might not be evaluated**. Make sure all content you send to Automated Reasoning checks is plaintext.
+
+*   **No off-topic detection.** Automated Reasoning only analyzes text that is relevant to the policy. It ignores unrelated content and cannot tell you whether a response is off-topic. To detect off-topic responses, use [topic policies](https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-components.html#guardrails-topic-policies).
+
+*   **No streaming support.** Automated Reasoning checks do not support streaming APIs. You must validate complete responses.
+
+*   **English only.** Automated Reasoning checks currently support English (US) only.
+
+*   **Scope limited to your policy.** A `VALID` result guarantees validity only for the parts of the input captured through policy variables. Statements that fall outside the scope of your policy's variables are not validated. For example, "I can submit my homework late because I have a fake doctor's note" might be deemed valid if the policy has no variable to capture whether the doctor's note is fake.
+
+Automated Reasoning checks complement other Amazon Bedrock Guardrails features like content filters and topic policies. For the best protection, use them together. For more information, see [Guardrail components](https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-components.html).
+
+## End-to-end workflow overview
+
+Using Automated Reasoning checks involves four phases: creating a policy, testing it, deploying it in a guardrail, and integrating it into your application.
 
 ```
-from anthropic import Anthropic
-from aws_bedrock_token_generator import provide_token
-
-token = provide_token(region="us-east-1")
-
-client = Anthropic(
-    base_url="https://bedrock-runtime.us-east-1.amazonaws.com/anthropic",
-    api_key=token,
-)
-
-response = client.messages.create(
-    model="global.anthropic.claude-opus-4-7",
-    max_tokens=1024,
-    messages=[{"role": "user", "content": "Can you explain the features of Amazon Bedrock?"}]
-)
-print(response)
+Source Document ──► Extracted Policy ──► Testing ──► Deployment ──► Integration
+    (rules)          (formal logic)      (verify)    (guardrail)    (validate responses
+                                                                     and act on feedback)
 ```
 
-## Supported models
+1.   **Create a policy.** Upload a source document that contains the rules you want to enforce. Automated Reasoning extracts formal logic rules and a schema of variables from your document. A fidelity report is automatically generated that measures how accurately the extracted policy represents your source documents, with coverage and accuracy scores and detailed grounding that links each rule and variable back to the specific statements in your source content. Review the extracted policy and fidelity report to ensure the policy captures your rules correctly. For more information, see [Create your Automated Reasoning policy](https://docs.aws.amazon.com/bedrock/latest/userguide/create-automated-reasoning-policy.html).
 
-Amazon Bedrock supports [100+ foundation models](https://docs.aws.amazon.com/bedrock/latest/userguide/models.html) from industry-leading providers, including Amazon, Anthropic, DeepSeek, Moonshot AI, MiniMax, OpenAI, and xAI.
+2.   **Test and refine.** Tests help ensure that your policy can accurately validate generated content even while you make changes to the policy itself. Create tests that mimic the questions your users will ask and the responses your LLM might generate. Automated Reasoning checks use multiple foundation models to translate natural language into logic representations. Use generated scenarios to validate rule correctness and QnA tests to validate the natural language to logic translation accuracy. Refine your policy based on test results. For more information, see [Test an Automated Reasoning policy](https://docs.aws.amazon.com/bedrock/latest/userguide/test-automated-reasoning-policy.html).
 
-![Image 9: Amazon logo.](https://docs.aws.amazon.com/images/bedrock/latest/userguide/images/what-is/nova2pro.png)
+3.   **Deploy.** Save an immutable version of your tested policy and attach it to a guardrail. You can automate deployment using CloudFormation or CI/CD pipelines. For more information, see [Deploy your Automated Reasoning policy in your application](https://docs.aws.amazon.com/bedrock/latest/userguide/deploy-automated-reasoning-policy.html).
 
-**Amazon Nova**![Image 10: Anthropic logo.](https://docs.aws.amazon.com/images/bedrock/latest/userguide/images/models/claude.png)
+4.   **Integrate.** At runtime, Automated Reasoning findings are returned through APIs that support an Amazon Bedrock Guardrails configuration, including `Converse` and `InvokeModel`, and through the standalone `ApplyGuardrail` API. Inspect the findings to decide whether to serve the response, rewrite it using the feedback, or ask the user for clarification. Automated Reasoning checks operate in _detect mode_ only—they return findings and feedback rather than blocking content. For more information on how to integrate Automated Reasoning checks in your application, see [Integrate Automated Reasoning checks in your application](https://docs.aws.amazon.com/bedrock/latest/userguide/integrate-automated-reasoning-checks.html). For more information on the permissions required to enable Automated Reasoning checks, see [Permissions for Automated Reasoning policies with ApplyGuardrail](https://docs.aws.amazon.com/bedrock/latest/userguide/guardrail-automated-reasoning-permissions.html).
 
-**Claude**![Image 11: DeepSeek logo.](https://docs.aws.amazon.com/images/bedrock/latest/userguide/images/what-is/deepseek.png)
+## Availability and language support
 
-**DeepSeek**![Image 12: Moonshot AI logo.](https://docs.aws.amazon.com/images/bedrock/latest/userguide/images/what-is/kimik2.5.png)
+Automated Reasoning checks in Amazon Bedrock Guardrails are generally available in the following Regions:
 
-**Kimi**![Image 13: MiniMax logo.](https://docs.aws.amazon.com/images/bedrock/latest/userguide/images/what-is/minimax2.1.png)
+*   US East (N. Virginia)
 
-**MiniMax**![Image 14: OpenAI logo.](https://docs.aws.amazon.com/images/bedrock/latest/userguide/images/models/openai.png)
+*   US West (Oregon)
 
-**OpenAI**![Image 15: xAI logo.](https://docs.aws.amazon.com/images/bedrock/latest/userguide/images/models/xai.png)
+*   US East (Ohio)
 
-**xAI**
+*   EU (Frankfurt)
 
-## What's new?
+*   EU (Paris)
 
-*   [OpenAI GPT-6 Astra is now generally available on Amazon Bedrock](https://aws.amazon.com/about-aws/whats-new/2026/09/openai-gpt-6-astra-on-amazon-bedrock/): GPT-6 Astra is OpenAI's newest and most capable model. It can reason through hard choices in business tasks. It can write and design polished content. It can also use computers and web browsers. The model has a 1,050,000-token context window shared between input and output, with up to 128,000 output tokens. See the [GPT-6 Astra](https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-openai-gpt-6-astra.html) model card for details.
+*   EU (Ireland)
 
-*   [Grok 4.6 from xAI now available in Amazon Bedrock](https://aws.amazon.com/about-aws/whats-new/2026/08/amazon-bedrock-grok-4-6/): xAI's latest flagship model, built for long-running agents, coding, and knowledge work, with a 500K context window and configurable reasoning efforts (low, medium, high, xhigh). Available in all AWS Regions where Amazon Bedrock is offered. See the [Grok 4.6](https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-xai-grok-4-6.html) model card for details.
+*   Asia Pacific (Sydney)
 
-*   [Amazon Bedrock expands API support and adds cross-Region inference for OpenAI models](https://aws.amazon.com/about-aws/whats-new/2026/08/amazon-bedrock-cross-region-openai-v2/): OpenAI GPT-5.6 Sol, Terra, and Luna are now available on the [bedrock-runtime](https://docs.aws.amazon.com/bedrock/latest/userguide/endpoints.html) endpoint through the Responses, Converse, and Chat Completions APIs, and now support Global and Geo cross-Region inference for higher throughput and lower per-token cost (including new US Geo CRIS). See [Cross-Region inference](https://docs.aws.amazon.com/bedrock/latest/userguide/cross-region-inference.html) for details.
+Automated Reasoning checks currently support English (US) only.
 
-*   [Daybreak Red and Daybreak Blue from OpenAI now available in Amazon Bedrock (limited availability)](https://aws.amazon.com/about-aws/whats-new/2026/08/openai-daybreak-red-and-blue-on-amazon-bedrock/): Specialized cybersecurity models from OpenAI's Daybreak initiative, available to eligible customers. Daybreak Red (GPT-5.6 Cyber) is purpose-trained for vulnerability research, exploit reproduction, and mitigation development. Daybreak Blue (GPT-5.6 Sol) has safeguards calibrated for defensive cybersecurity work. See the [Daybreak Red: GPT-5.6 Cyber](https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-openai-gpt-56-cyber.html) and [Daybreak Blue: GPT-5.6 Sol](https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-openai-gpt-daybreak-blue-56-sol.html) model cards for details.
+## Limitations and considerations
 
-*   [Web Search now available in Amazon Bedrock](https://aws.amazon.com/about-aws/whats-new/2026/08/amazon-bedrock-web/): A built-in server-side tool that grounds OpenAI GPT models on Amazon Bedrock in current web knowledge through a single tool-use parameter in the Responses API, with no third-party search vendor to onboard. Search uses an AWS-hosted web index, and Fetch can optionally retrieve from the external web under explicit IAM control. Available in US East (N. Virginia), US East (Ohio), and US West (Oregon). See [Web Search](https://docs.aws.amazon.com/bedrock/latest/userguide/web-search.html) for details.
+Before implementing Automated Reasoning checks, be aware of these technical limitations:
 
-*   [OpenAI GPT-5.6 Sol, Terra, and Luna now available in Amazon Bedrock](https://aws.amazon.com/about-aws/whats-new/2026/07/openai-gpt-sol-terra/): A family of models from OpenAI that ranges from advanced reasoning to fast, cost-effective inference, now generally available through the Responses API on Amazon Bedrock. See the [GPT-5.6 Sol](https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-openai-gpt-56-sol.html), [GPT-5.6 Terra](https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-openai-gpt-56-terra.html), and [GPT-5.6 Luna](https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-openai-gpt-56-luna.html) model cards for details.
+*   **Document complexity.** Source documents should be well-structured with clear, unambiguous rules. Highly complex documents with nested conditions or contradictory statements may not extract cleanly into formal logic. Input documents are limited to 5 MB in size and 50,000 characters. You can split larger documents and merge each section into your policy. Images and tables in documents also impact the number of input characters.
 
-## Start building
+*   **Processing time.** Automated Reasoning checks validation adds latency to your application responses. Plan for additional processing time, especially for complex policies with many variables. The number of variables in a policy directly contributes to increases in validation latency.
 
-![Image 16: Cloud icon with bidirectional arrows indicating sync or data transfer.](https://docs.aws.amazon.com/images/bedrock/latest/userguide/images/what-is/apis.jpg)Explore the [APIs](https://docs.aws.amazon.com/bedrock/latest/userguide/apis.html) and [Endpoints](https://docs.aws.amazon.com/bedrock/latest/userguide/endpoints.html) supported by Amazon Bedrock.
-![Image 17: Wrench and screwdriver icon on purple background.](https://docs.aws.amazon.com/images/bedrock/latest/userguide/images/what-is/build.jpg)Build using the [Making inference requests](https://docs.aws.amazon.com/bedrock/latest/userguide/inference.html) operations provided by Amazon Bedrock.
-![Image 18: Amazon Bedrock model customization options including fine-tuning, continued pre-training, and distillation.](https://docs.aws.amazon.com/images/bedrock/latest/userguide/images/what-is/customize.png)[Customize your model to improve its performance for your use case](https://docs.aws.amazon.com/bedrock/latest/userguide/custom-models.html)
+*   **Policy scope.** To create policies that are easier to maintain, each policy should focus on a specific domain (for example, HR, finance, legal) rather than trying to cover multiple unrelated areas in a single policy.
+
+*   **Variable and rules limits.** Policies with excessive numbers of variables or overly complex rule interactions may hit processing limits or return TOO_COMPLEX results. See [Amazon Bedrock limits documentation](https://docs.aws.amazon.com/general/latest/gr/bedrock.html#limits_bedrock) and [Validation results reference](https://docs.aws.amazon.com/bedrock/latest/userguide/automated-reasoning-checks-concepts.html#ar-concept-validation-results).
+
+*   **Natural language dependency.** The accuracy of validation depends on how well natural language in user prompts and model responses can be translated to your policy's formal logic variables. Automated Reasoning checks use foundational models to translate natural language into logic representations. Variable descriptions influence the quality of this translation.
+
+*   **Non-linear arithmetic.** Automated Reasoning checks might timeout or return TOO_COMPLEX if constraints involve reasoning with non-linear arithmetic (for example, irrational numbers or exponents).
+
+## Pricing
+
+Automated Reasoning checks in Amazon Bedrock Guardrails are charged based on the number of validation requests processed. For current pricing information, see the [Amazon Bedrock pricing page](https://aws.amazon.com/bedrock/pricing/).
+
+Charges are incurred for each validation request, regardless of the result (for example, VALID, INVALID, TRANSLATION_AMBIGUOUS). To optimize costs:
+
+*   Use appropriate confidence thresholds to balance accuracy with processing requirements.
+
+*   Consider caching validation results for identical or similar queries when appropriate for your use case.
+
+*   Monitor usage patterns and adjust policies to reduce unnecessary validation requests.
+
+## Cross-Region inference
+
+Automated Reasoning uses cross-Region inference to optimize the performance and availability of policy creation, policy testing, and runtime validation. These operations automatically distribute processing across multiple AWS Regions to ensure reliable service delivery.
+
+The following Automated Reasoning operations use cross-Region inference:
+
+*   `StartAutomatedReasoningPolicyBuildWorkflow` — Invoked during policy creation and compilation from source documents.
+
+*   `StartAutomatedReasoningPolicyTestWorkflow` — Invoked during policy validation and testing procedures.
+
+*   Runtime validation — Invoked when a guardrail that includes an Automated Reasoning policy checks content.
+
+These operations use large language models. The models extract formal logic rules from source documents and translate natural language into logic that Automated Reasoning checks against your policy. The following table shows where Automated Reasoning might process a request, based on the Region where the request originates.
+
+Where Automated Reasoning processes requests
+| Request originates in | Automated Reasoning might process the request in |
+| --- | --- |
+| US East (N. Virginia), US West (Oregon), US East (Ohio) | Any supported US Region |
+| EU (Frankfurt), EU (Paris), EU (Ireland) | Any supported EU Region |
+| Asia Pacific (Sydney) | Any supported Region in Australia |
+
+###### Important
+
+Customer data remains within the geographic boundary where the request originates (the United States, the European Union, or Australia). AWS processes this data in accordance with AWS data residency commitments.
+
+Cross-Region inference operates transparently without requiring customer configuration. API functionality remains consistent regardless of the specific Region that processes the request.
+
+###### Topics
+
+*   [Automated Reasoning checks concepts](https://docs.aws.amazon.com/bedrock/latest/userguide/automated-reasoning-checks-concepts.html)
+
+*   [Create your Automated Reasoning policy](https://docs.aws.amazon.com/bedrock/latest/userguide/create-automated-reasoning-policy.html)
+
+*   [Automated Reasoning policy best practices](https://docs.aws.amazon.com/bedrock/latest/userguide/automated-reasoning-policy-best-practices.html)
+
+*   [Test an Automated Reasoning policy](https://docs.aws.amazon.com/bedrock/latest/userguide/test-automated-reasoning-policy.html)
+
+*   [Troubleshoot and refine your Automated Reasoning policy](https://docs.aws.amazon.com/bedrock/latest/userguide/address-failed-automated-reasoning-tests.html)
+
+*   [Use Kiro CLI with an Automated Reasoning policy](https://docs.aws.amazon.com/bedrock/latest/userguide/kiro-cli-automated-reasoning-policy.html)
+
+*   [Deploy your Automated Reasoning policy in your application](https://docs.aws.amazon.com/bedrock/latest/userguide/deploy-automated-reasoning-policy.html)
+
+*   [Integrate Automated Reasoning checks in your application](https://docs.aws.amazon.com/bedrock/latest/userguide/integrate-automated-reasoning-checks.html)
 
 [Document Conventions](https://docs.aws.amazon.com/general/latest/gr/docconventions.html)
 
-Quickstart
+Options for handling harmful content
+
+Automated Reasoning checks concepts
 
 Did this page help you? - Yes
 
@@ -2096,17 +2104,25 @@ If you've got a moment, please tell us how we can make the documentation better.
 *   
 ### On this page
 
-    1.   [Quickstart](https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-automated-reasoning-check.html#quickstart)
-    2.   [Supported models](https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-automated-reasoning-check.html#featured-models)
-    3.   [What's new?](https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-automated-reasoning-check.html#whats-new)
-    4.   [Start building](https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-automated-reasoning-check.html#start-building)
+    1.   [What Automated Reasoning checks do](https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-automated-reasoning-checks.html#automated-reasoning-what-it-does)
+    2.   [When to use Automated Reasoning checks](https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-automated-reasoning-checks.html#automated-reasoning-when-to-use)
+    3.   [What Automated Reasoning checks don't do](https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-automated-reasoning-checks.html#automated-reasoning-what-it-doesnt-do)
+    4.   [End-to-end workflow overview](https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-automated-reasoning-checks.html#automated-reasoning-workflow-overview)
+    5.   [Availability and language support](https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-automated-reasoning-checks.html#automated-reasoning-availability)
+    6.   [Limitations and considerations](https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-automated-reasoning-checks.html#automated-reasoning-limitations)
+    7.   [Pricing](https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-automated-reasoning-checks.html#automated-reasoning-pricing)
+    8.   [Cross-Region inference](https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-automated-reasoning-checks.html#automated-reasoning-cross-region-inference)
 
 *   ### Related resources [Amazon Bedrock API Reference](https://docs.aws.amazon.com/bedrock/latest/APIReference/index.html) [AWS CLI commands for Amazon Bedrock](https://docs.aws.amazon.com/cli/latest/reference/bedrock/) [SDKs & Tools](https://aws.amazon.com/tools/)    
-*   Did this page help you?   Yes No       [Provide feedback](https://docs.aws.amazon.com/feedback/doc-feedback.html?hidden_service_name=Bedrock&topic_url=https%3A%2F%2Fdocs.aws.amazon.com%2Fbedrock%2Flatest%2Fuserguide%2Fwhat-is-bedrock.html)     
+*   Did this page help you?   Yes No       [Provide feedback](https://docs.aws.amazon.com/feedback/doc-feedback.html?hidden_service_name=Bedrock&topic_url=https%3A%2F%2Fdocs.aws.amazon.com%2Fbedrock%2Flatest%2Fuserguide%2Fguardrails-automated-reasoning-checks.html)     
 
 #### Next topic:
 
-[Quickstart](https://docs.aws.amazon.com/bedrock/latest/userguide/getting-started.html)
+[Automated Reasoning checks concepts](https://docs.aws.amazon.com/bedrock/latest/userguide/automated-reasoning-checks-concepts.html)
+
+#### Previous topic:
+
+[Options for handling harmful content](https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-harmful-content-handling-options.html)
 
 ## Get Started
 
@@ -2146,7 +2162,7 @@ If you've got a moment, please tell us how we can make the documentation better.
 
 [Site terms](https://aws.amazon.com/terms)
 
-[Cookie preferences](https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-automated-reasoning-check.html#)
+[Cookie preferences](https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-automated-reasoning-checks.html#)
 
  © 2026, Amazon Web Services, Inc. or its affiliates. All rights reserved.
 

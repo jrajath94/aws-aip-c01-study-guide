@@ -1,6 +1,6 @@
-Title: Overview - Amazon Bedrock
+Title: Use metrics to understand RAG system performance
 
-URL Source: https://docs.aws.amazon.com/bedrock/latest/userguide/evaluation-kb-metrics.html
+URL Source: https://docs.aws.amazon.com/bedrock/latest/userguide/knowledge-base-evaluation-metrics.html
 
 Markdown Content:
 ## Select your cookie preferences
@@ -73,25 +73,25 @@ If you want to change your cookie preferences, try again later using the link in
 
 Dismiss
 
-[Skip to main content](https://docs.aws.amazon.com/bedrock/latest/userguide/evaluation-kb-metrics.html#skip-link)
+[Skip to main content](https://docs.aws.amazon.com/bedrock/latest/userguide/knowledge-base-evaluation-metrics.html#skip-link)
 
-[English](https://docs.aws.amazon.com/bedrock/latest/userguide/evaluation-kb-metrics.html# "Language Selector. Currently set to: English")
+[English](https://docs.aws.amazon.com/bedrock/latest/userguide/knowledge-base-evaluation-metrics.html# "Language Selector. Currently set to: English")
 
-[Preferences](https://docs.aws.amazon.com/bedrock/latest/userguide/evaluation-kb-metrics.html#)
+[Preferences](https://docs.aws.amazon.com/bedrock/latest/userguide/knowledge-base-evaluation-metrics.html#)
 
 [Contact Us](https://aws.amazon.com/contact-us/?cmpid=docs_headercta_contactus)
 
-[Feedback](https://docs.aws.amazon.com/feedback/doc-feedback.html?hidden_service_name=Bedrock&topic_url=https%3A%2F%2Fdocs.aws.amazon.com%2Fbedrock%2Flatest%2Fuserguide%2Fwhat-is-bedrock.html)
+[Feedback](https://docs.aws.amazon.com/feedback/doc-feedback.html?hidden_service_name=Bedrock&topic_url=https%3A%2F%2Fdocs.aws.amazon.com%2Fbedrock%2Flatest%2Fuserguide%2Fknowledge-base-evaluation-metrics.html)
 
-[![Image 8: AWS Documentation](https://docs.aws.amazon.com/assets/r/images/aws_logo_light.svg)](https://docs.aws.amazon.com/)
+[![Image 1: AWS Documentation](https://docs.aws.amazon.com/assets/r/images/aws_logo_light.svg)](https://docs.aws.amazon.com/)
 
-[Get started](https://docs.aws.amazon.com/bedrock/latest/userguide/evaluation-kb-metrics.html#)
+[Get started](https://docs.aws.amazon.com/bedrock/latest/userguide/knowledge-base-evaluation-metrics.html#)
 
-[Service guides](https://docs.aws.amazon.com/bedrock/latest/userguide/evaluation-kb-metrics.html#)
+[Service guides](https://docs.aws.amazon.com/bedrock/latest/userguide/knowledge-base-evaluation-metrics.html#)
 
-[Developer tools](https://docs.aws.amazon.com/bedrock/latest/userguide/evaluation-kb-metrics.html#)
+[Developer tools](https://docs.aws.amazon.com/bedrock/latest/userguide/knowledge-base-evaluation-metrics.html#)
 
-[AI resources](https://docs.aws.amazon.com/bedrock/latest/userguide/evaluation-kb-metrics.html#)
+[AI resources](https://docs.aws.amazon.com/bedrock/latest/userguide/knowledge-base-evaluation-metrics.html#)
 
 Search
 
@@ -1908,178 +1908,55 @@ Search
 2.   [Amazon Bedrock](https://docs.aws.amazon.com/bedrock/index.html) 
 3.   User Guide 
 
-# Overview
+# Use metrics to understand RAG system performance
 
-[PDF](https://docs.aws.amazon.com/pdfs/bedrock/latest/userguide/bedrock-ug.pdf#what-is-bedrock)
+[PDF](https://docs.aws.amazon.com/pdfs/bedrock/latest/userguide/bedrock-ug.pdf#knowledge-base-evaluation-metrics)
 
 [RSS](https://docs.aws.amazon.com/bedrock/latest/userguide/bedrock-ug.rss)
 
-[Markdown](https://docs.aws.amazon.com/bedrock/latest/userguide/what-is-bedrock.md "Download Markdown")
+[Markdown](https://docs.aws.amazon.com/bedrock/latest/userguide/knowledge-base-evaluation-metrics.md "Download Markdown")
 
 Agent Setup Up-to-date AWS docs, tested procedures, and IAM guardrails via a single setup prompt in your AI coding agent.
 
 - [x] Focus mode
 
-Overview - Amazon Bedrock
+Use metrics to understand RAG system performance - Amazon Bedrock
 
-[](https://docs.aws.amazon.com/pdfs/bedrock/latest/userguide/bedrock-ug.pdf#what-is-bedrock "Open PDF")
+[](https://docs.aws.amazon.com/pdfs/bedrock/latest/userguide/bedrock-ug.pdf#knowledge-base-evaluation-metrics "Open PDF")
 
 [Documentation](https://docs.aws.amazon.com/index.html)[Amazon Bedrock](https://docs.aws.amazon.com/bedrock/index.html)[User Guide](https://docs.aws.amazon.com/bedrock/latest/userguide/what-is-bedrock.html)
 
-[Quickstart](https://docs.aws.amazon.com/bedrock/latest/userguide/evaluation-kb-metrics.html#quickstart)[Supported models](https://docs.aws.amazon.com/bedrock/latest/userguide/evaluation-kb-metrics.html#featured-models)[What's new?](https://docs.aws.amazon.com/bedrock/latest/userguide/evaluation-kb-metrics.html#whats-new)[Start building](https://docs.aws.amazon.com/bedrock/latest/userguide/evaluation-kb-metrics.html#start-building)
+When you run a RAG evaluation job, the evaluator model you select uses a set of metrics to characterize the performance of the RAG systems being evaluated. Amazon Bedrock provides a number of built-in metrics you can choose from, or you can define your own metrics.
 
-Amazon Bedrock is a fully managed service that provides secure, enterprise-grade access to [high-performing foundation models](https://docs.aws.amazon.com/bedrock/latest/userguide/models.html) from leading AI companies, enabling you to build and scale generative AI applications.
+Amazon Bedrock RAG evaluations offers two types of evaluation job, retrieve only and retrieve and generate. Each type of job has its own set of built-in metrics you can select from.
 
-## Quickstart
+The following tables list the available built-in metrics for each evaluation type. To learn more about using custom metrics for RAG evaluation jobs, see [Create a prompt for a custom metric](https://docs.aws.amazon.com/bedrock/latest/userguide/kb-evaluation-custom-metrics-prompt-formats.html).
 
-Read the [Quickstart](https://docs.aws.amazon.com/bedrock/latest/userguide/getting-started.html) to write your first API call using Amazon Bedrock in under five minutes. For new applications, we recommend the [bedrock-runtime](https://docs.aws.amazon.com/bedrock/latest/userguide/endpoints.html) endpoint.
+Built-in metrics for retrieve-only RAG evaluation jobs
+| Metric | Description |
+| :--- | :--- |
+| Context relevance (`Builtin.ContextRelevance`) | Measures how contextually relevant the retrieved texts are to the questions. |
+| Context coverage (`Builtin.ContextCoverage`) | Measures how much the retrieved texts cover all the information in the ground truth texts. You must supply a ground truth in your prompt dataset to use this metric. |
 
-Messages API
-```
-from anthropic import Anthropic
-from aws_bedrock_token_generator import provide_token
-
-token = provide_token(region="us-east-1")
-
-client = Anthropic(
-    base_url="https://bedrock-runtime.us-east-1.amazonaws.com/anthropic",
-    api_key=token,
-)
-
-response = client.messages.create(
-    model="global.anthropic.claude-opus-4-7",
-    max_tokens=1024,
-    messages=[{"role": "user", "content": "Can you explain the features of Amazon Bedrock?"}]
-)
-print(response)
-```
-Responses API
-```
-from openai import OpenAI
-
-client = OpenAI()
-
-response = client.responses.create(
-    model="global.openai.gpt-5.6-sol",
-    input="Can you explain the features of Amazon Bedrock?"
-    )
-print(response)
-```
-Chat Completions API
-```
-from openai import OpenAI
-
-client = OpenAI()
-
-response = client.chat.completions.create(
-    model="global.openai.gpt-5.6-sol",
-    messages=[{"role": "user", "content": "Can you explain the features of Amazon Bedrock?"}]
-    )
-print(response)
-```
-Converse API
-```
-import boto3
-
-client = boto3.client('bedrock-runtime', region_name='us-east-1')
-response = client.converse(
-    modelId='anthropic.claude-opus-4-7',
-    messages=[
-        {
-            'role': 'user',
-            'content': [{'text': 'Can you explain the features of Amazon Bedrock?'}]
-        }
-    ]
-)
-print(response)
-```
-Invoke API
-```
-import json
-import boto3
-
-client = boto3.client('bedrock-runtime', region_name='us-east-1')
-response = client.invoke_model(
-    modelId='anthropic.claude-opus-4-7',
-    body=json.dumps({
-            'anthropic_version': 'bedrock-2023-05-31',
-            'messages': [{ 'role': 'user', 'content': 'Can you explain the features of Amazon Bedrock?'}],
-            'max_tokens': 1024
-    })
- )
- print(json.loads(response['body'].read()))
-```
-
-[anchor](https://docs.aws.amazon.com/bedrock/latest/userguide/evaluation-kb-metrics.html)[anchor](https://docs.aws.amazon.com/bedrock/latest/userguide/evaluation-kb-metrics.html)[anchor](https://docs.aws.amazon.com/bedrock/latest/userguide/evaluation-kb-metrics.html)[anchor](https://docs.aws.amazon.com/bedrock/latest/userguide/evaluation-kb-metrics.html)[anchor](https://docs.aws.amazon.com/bedrock/latest/userguide/evaluation-kb-metrics.html)
-
-*   Messages API 
-*   Responses API 
-*   Chat Completions API 
-*   Converse API 
-*   Invoke API 
-
-```
-from anthropic import Anthropic
-from aws_bedrock_token_generator import provide_token
-
-token = provide_token(region="us-east-1")
-
-client = Anthropic(
-    base_url="https://bedrock-runtime.us-east-1.amazonaws.com/anthropic",
-    api_key=token,
-)
-
-response = client.messages.create(
-    model="global.anthropic.claude-opus-4-7",
-    max_tokens=1024,
-    messages=[{"role": "user", "content": "Can you explain the features of Amazon Bedrock?"}]
-)
-print(response)
-```
-
-## Supported models
-
-Amazon Bedrock supports [100+ foundation models](https://docs.aws.amazon.com/bedrock/latest/userguide/models.html) from industry-leading providers, including Amazon, Anthropic, DeepSeek, Moonshot AI, MiniMax, OpenAI, and xAI.
-
-![Image 9: Amazon logo.](https://docs.aws.amazon.com/images/bedrock/latest/userguide/images/what-is/nova2pro.png)
-
-**Amazon Nova**![Image 10: Anthropic logo.](https://docs.aws.amazon.com/images/bedrock/latest/userguide/images/models/claude.png)
-
-**Claude**![Image 11: DeepSeek logo.](https://docs.aws.amazon.com/images/bedrock/latest/userguide/images/what-is/deepseek.png)
-
-**DeepSeek**![Image 12: Moonshot AI logo.](https://docs.aws.amazon.com/images/bedrock/latest/userguide/images/what-is/kimik2.5.png)
-
-**Kimi**![Image 13: MiniMax logo.](https://docs.aws.amazon.com/images/bedrock/latest/userguide/images/what-is/minimax2.1.png)
-
-**MiniMax**![Image 14: OpenAI logo.](https://docs.aws.amazon.com/images/bedrock/latest/userguide/images/models/openai.png)
-
-**OpenAI**![Image 15: xAI logo.](https://docs.aws.amazon.com/images/bedrock/latest/userguide/images/models/xai.png)
-
-**xAI**
-
-## What's new?
-
-*   [OpenAI GPT-6 Astra is now generally available on Amazon Bedrock](https://aws.amazon.com/about-aws/whats-new/2026/09/openai-gpt-6-astra-on-amazon-bedrock/): GPT-6 Astra is OpenAI's newest and most capable model. It can reason through hard choices in business tasks. It can write and design polished content. It can also use computers and web browsers. The model has a 1,050,000-token context window shared between input and output, with up to 128,000 output tokens. See the [GPT-6 Astra](https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-openai-gpt-6-astra.html) model card for details.
-
-*   [Grok 4.6 from xAI now available in Amazon Bedrock](https://aws.amazon.com/about-aws/whats-new/2026/08/amazon-bedrock-grok-4-6/): xAI's latest flagship model, built for long-running agents, coding, and knowledge work, with a 500K context window and configurable reasoning efforts (low, medium, high, xhigh). Available in all AWS Regions where Amazon Bedrock is offered. See the [Grok 4.6](https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-xai-grok-4-6.html) model card for details.
-
-*   [Amazon Bedrock expands API support and adds cross-Region inference for OpenAI models](https://aws.amazon.com/about-aws/whats-new/2026/08/amazon-bedrock-cross-region-openai-v2/): OpenAI GPT-5.6 Sol, Terra, and Luna are now available on the [bedrock-runtime](https://docs.aws.amazon.com/bedrock/latest/userguide/endpoints.html) endpoint through the Responses, Converse, and Chat Completions APIs, and now support Global and Geo cross-Region inference for higher throughput and lower per-token cost (including new US Geo CRIS). See [Cross-Region inference](https://docs.aws.amazon.com/bedrock/latest/userguide/cross-region-inference.html) for details.
-
-*   [Daybreak Red and Daybreak Blue from OpenAI now available in Amazon Bedrock (limited availability)](https://aws.amazon.com/about-aws/whats-new/2026/08/openai-daybreak-red-and-blue-on-amazon-bedrock/): Specialized cybersecurity models from OpenAI's Daybreak initiative, available to eligible customers. Daybreak Red (GPT-5.6 Cyber) is purpose-trained for vulnerability research, exploit reproduction, and mitigation development. Daybreak Blue (GPT-5.6 Sol) has safeguards calibrated for defensive cybersecurity work. See the [Daybreak Red: GPT-5.6 Cyber](https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-openai-gpt-56-cyber.html) and [Daybreak Blue: GPT-5.6 Sol](https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-openai-gpt-daybreak-blue-56-sol.html) model cards for details.
-
-*   [Web Search now available in Amazon Bedrock](https://aws.amazon.com/about-aws/whats-new/2026/08/amazon-bedrock-web/): A built-in server-side tool that grounds OpenAI GPT models on Amazon Bedrock in current web knowledge through a single tool-use parameter in the Responses API, with no third-party search vendor to onboard. Search uses an AWS-hosted web index, and Fetch can optionally retrieve from the external web under explicit IAM control. Available in US East (N. Virginia), US East (Ohio), and US West (Oregon). See [Web Search](https://docs.aws.amazon.com/bedrock/latest/userguide/web-search.html) for details.
-
-*   [OpenAI GPT-5.6 Sol, Terra, and Luna now available in Amazon Bedrock](https://aws.amazon.com/about-aws/whats-new/2026/07/openai-gpt-sol-terra/): A family of models from OpenAI that ranges from advanced reasoning to fast, cost-effective inference, now generally available through the Responses API on Amazon Bedrock. See the [GPT-5.6 Sol](https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-openai-gpt-56-sol.html), [GPT-5.6 Terra](https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-openai-gpt-56-terra.html), and [GPT-5.6 Luna](https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-openai-gpt-56-luna.html) model cards for details.
-
-## Start building
-
-![Image 16: Cloud icon with bidirectional arrows indicating sync or data transfer.](https://docs.aws.amazon.com/images/bedrock/latest/userguide/images/what-is/apis.jpg)Explore the [APIs](https://docs.aws.amazon.com/bedrock/latest/userguide/apis.html) and [Endpoints](https://docs.aws.amazon.com/bedrock/latest/userguide/endpoints.html) supported by Amazon Bedrock.
-![Image 17: Wrench and screwdriver icon on purple background.](https://docs.aws.amazon.com/images/bedrock/latest/userguide/images/what-is/build.jpg)Build using the [Making inference requests](https://docs.aws.amazon.com/bedrock/latest/userguide/inference.html) operations provided by Amazon Bedrock.
-![Image 18: Amazon Bedrock model customization options including fine-tuning, continued pre-training, and distillation.](https://docs.aws.amazon.com/images/bedrock/latest/userguide/images/what-is/customize.png)[Customize your model to improve its performance for your use case](https://docs.aws.amazon.com/bedrock/latest/userguide/custom-models.html)
+Built-in metrics for retrieve-and-generate RAG evaluation jobs
+| Metric | Description |
+| :--- | :--- |
+| Correctness (`Builtin.Correctness`) | Measures how accurate the responses are in answering questions. |
+| Completeness (`Builtin.Completeness`) | Measures how well the responses answer and resolve all aspects of the questions. |
+| Helpfulness (`Builtin.Helpfulness`) | Measures holistically how useful responses are in answering questions. |
+| Logical coherence (`Builtin.LogicalCoherence`) | Measures whether the responses are free from logical gaps, inconsistencies or contradictions. |
+| Faithfulness (`Builtin.Faithfulness`) | Measures how well responses avoid hallucination with respect to the retrieved texts. |
+| Citation precision (`Builtin.CitationPrecision`) | Measures how many of the cited passages were correctly cited. |
+| Citation coverage (`Builtin.CitationCoverage`) | Measures how well the response is supported by the cited passages and if there are any missing citations. |
+| Harmfulness (`Builtin.Harmfulness`) | Measures harmful content in the responses, including hate, insults, violence, or sexual content. |
+| Stereotyping (`Builtin.Stereotyping`) | Measures generalized statements about individuals or groups of people in responses. |
+| Refusal (`Builtin.Refusal`) | Measures how evasive the responses are in answering questions. |
 
 [Document Conventions](https://docs.aws.amazon.com/general/latest/gr/docconventions.html)
 
-Quickstart
+Retrieve and generate
+
+Evaluator prompts
 
 Did this page help you? - Yes
 
@@ -2093,20 +1970,16 @@ Thanks for letting us know this page needs work. We're sorry we let you down.
 
 If you've got a moment, please tell us how we can make the documentation better.
 
-*   
-### On this page
-
-    1.   [Quickstart](https://docs.aws.amazon.com/bedrock/latest/userguide/evaluation-kb-metrics.html#quickstart)
-    2.   [Supported models](https://docs.aws.amazon.com/bedrock/latest/userguide/evaluation-kb-metrics.html#featured-models)
-    3.   [What's new?](https://docs.aws.amazon.com/bedrock/latest/userguide/evaluation-kb-metrics.html#whats-new)
-    4.   [Start building](https://docs.aws.amazon.com/bedrock/latest/userguide/evaluation-kb-metrics.html#start-building)
-
 *   ### Related resources [Amazon Bedrock API Reference](https://docs.aws.amazon.com/bedrock/latest/APIReference/index.html) [AWS CLI commands for Amazon Bedrock](https://docs.aws.amazon.com/cli/latest/reference/bedrock/) [SDKs & Tools](https://aws.amazon.com/tools/)    
-*   Did this page help you?   Yes No       [Provide feedback](https://docs.aws.amazon.com/feedback/doc-feedback.html?hidden_service_name=Bedrock&topic_url=https%3A%2F%2Fdocs.aws.amazon.com%2Fbedrock%2Flatest%2Fuserguide%2Fwhat-is-bedrock.html)     
+*   Did this page help you?   Yes No       [Provide feedback](https://docs.aws.amazon.com/feedback/doc-feedback.html?hidden_service_name=Bedrock&topic_url=https%3A%2F%2Fdocs.aws.amazon.com%2Fbedrock%2Flatest%2Fuserguide%2Fknowledge-base-evaluation-metrics.html)     
 
 #### Next topic:
 
-[Quickstart](https://docs.aws.amazon.com/bedrock/latest/userguide/getting-started.html)
+[Evaluator prompts](https://docs.aws.amazon.com/bedrock/latest/userguide/kb-eval-prompt.html)
+
+#### Previous topic:
+
+[Retrieve and generate](https://docs.aws.amazon.com/bedrock/latest/userguide/knowledge-base-evaluation-prompt-retrieve-generate.html)
 
 ## Get Started
 
@@ -2146,7 +2019,7 @@ If you've got a moment, please tell us how we can make the documentation better.
 
 [Site terms](https://aws.amazon.com/terms)
 
-[Cookie preferences](https://docs.aws.amazon.com/bedrock/latest/userguide/evaluation-kb-metrics.html#)
+[Cookie preferences](https://docs.aws.amazon.com/bedrock/latest/userguide/knowledge-base-evaluation-metrics.html#)
 
  © 2026, Amazon Web Services, Inc. or its affiliates. All rights reserved.
 

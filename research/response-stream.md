@@ -1,8 +1,6 @@
-Title: What is Amazon API Gateway?
+Title: Stream the integration response for your proxy integrations in API Gateway
 
-URL Source: https://docs.aws.amazon.com/apigateway/latest/developerguide/response-streaming.html
-
-Published Time: Wed, 30 Sep 2026 10:27:52 GMT
+URL Source: https://docs.aws.amazon.com/apigateway/latest/developerguide/response-transfer-mode.html
 
 Markdown Content:
 ## Select your cookie preferences
@@ -75,25 +73,25 @@ If you want to change your cookie preferences, try again later using the link in
 
 Dismiss
 
-[Skip to main content](https://docs.aws.amazon.com/apigateway/latest/developerguide/response-streaming.html#skip-link)
+[Skip to main content](https://docs.aws.amazon.com/apigateway/latest/developerguide/response-transfer-mode.html#skip-link)
 
-[English](https://docs.aws.amazon.com/apigateway/latest/developerguide/response-streaming.html# "Language Selector. Currently set to: English")
+[English](https://docs.aws.amazon.com/apigateway/latest/developerguide/response-transfer-mode.html# "Language Selector. Currently set to: English")
 
-[Preferences](https://docs.aws.amazon.com/apigateway/latest/developerguide/response-streaming.html#)
+[Preferences](https://docs.aws.amazon.com/apigateway/latest/developerguide/response-transfer-mode.html#)
 
 [Contact Us](https://aws.amazon.com/contact-us/?cmpid=docs_headercta_contactus)
 
-[Feedback](https://docs.aws.amazon.com/feedback/doc-feedback.html?hidden_service_name=API+Gateway&topic_url=https%3A%2F%2Fdocs.aws.amazon.com%2Fapigateway%2Flatest%2Fdeveloperguide%2Fwelcome.html)
+[Feedback](https://docs.aws.amazon.com/feedback/doc-feedback.html?hidden_service_name=API+Gateway&topic_url=https%3A%2F%2Fdocs.aws.amazon.com%2Fapigateway%2Flatest%2Fdeveloperguide%2Fresponse-transfer-mode.html)
 
 [![Image 1: AWS Documentation](https://docs.aws.amazon.com/assets/r/images/aws_logo_light.svg)](https://docs.aws.amazon.com/)
 
-[Get started](https://docs.aws.amazon.com/apigateway/latest/developerguide/response-streaming.html#)
+[Get started](https://docs.aws.amazon.com/apigateway/latest/developerguide/response-transfer-mode.html#)
 
-[Service guides](https://docs.aws.amazon.com/apigateway/latest/developerguide/response-streaming.html#)
+[Service guides](https://docs.aws.amazon.com/apigateway/latest/developerguide/response-transfer-mode.html#)
 
-[Developer tools](https://docs.aws.amazon.com/apigateway/latest/developerguide/response-streaming.html#)
+[Developer tools](https://docs.aws.amazon.com/apigateway/latest/developerguide/response-transfer-mode.html#)
 
-[AI resources](https://docs.aws.amazon.com/apigateway/latest/developerguide/response-streaming.html#)
+[AI resources](https://docs.aws.amazon.com/apigateway/latest/developerguide/response-transfer-mode.html#)
 
 Search
 
@@ -804,133 +802,79 @@ Search
 2.   [Amazon API Gateway](https://docs.aws.amazon.com/apigateway/index.html) 
 3.   Developer Guide 
 
-# What is Amazon API Gateway?
+# Stream the integration response for your proxy integrations in API Gateway
 
-[PDF](https://docs.aws.amazon.com/pdfs/apigateway/latest/developerguide/apigateway-dg.pdf#welcome)
+[PDF](https://docs.aws.amazon.com/pdfs/apigateway/latest/developerguide/apigateway-dg.pdf#response-transfer-mode)
 
 [RSS](https://docs.aws.amazon.com/apigateway/latest/developerguide/amazon-apigateway-release-notes.rss)
 
-[Markdown](https://docs.aws.amazon.com/apigateway/latest/developerguide/welcome.md "Download Markdown")
+[Markdown](https://docs.aws.amazon.com/apigateway/latest/developerguide/response-transfer-mode.md "Download Markdown")
 
 Agent Setup Up-to-date AWS docs, tested procedures, and IAM guardrails via a single setup prompt in your AI coding agent.
 
 - [x] Focus mode
 
-What is Amazon API Gateway? - Amazon API Gateway
+Stream the integration response for your proxy integrations in API Gateway - Amazon API Gateway
 
-[](https://docs.aws.amazon.com/pdfs/apigateway/latest/developerguide/apigateway-dg.pdf#welcome "Open PDF")
+[](https://docs.aws.amazon.com/pdfs/apigateway/latest/developerguide/apigateway-dg.pdf#response-transfer-mode "Open PDF")
 
 [Documentation](https://docs.aws.amazon.com/index.html)[Amazon API Gateway](https://docs.aws.amazon.com/apigateway/index.html)[Developer Guide](https://docs.aws.amazon.com/apigateway/latest/developerguide/welcome.html)
 
-[Architecture of API Gateway](https://docs.aws.amazon.com/apigateway/latest/developerguide/response-streaming.html#api-gateway-overview-aws-backbone)[Features of API Gateway](https://docs.aws.amazon.com/apigateway/latest/developerguide/response-streaming.html#api-gateway-overview-features)[Accessing API Gateway](https://docs.aws.amazon.com/apigateway/latest/developerguide/response-streaming.html#introduction-accessing-apigateway)[Part of AWS serverless infrastructure](https://docs.aws.amazon.com/apigateway/latest/developerguide/response-streaming.html#api-gateway-overview-a-serverless-pillar)[How to get started with Amazon API Gateway](https://docs.aws.amazon.com/apigateway/latest/developerguide/response-streaming.html#welcome-how-to-get-started)
+[Considerations for response payload streaming](https://docs.aws.amazon.com/apigateway/latest/developerguide/response-transfer-mode.html#response-transfer-mode-considerations)
 
-Amazon API Gateway is an AWS service for creating, publishing, maintaining, monitoring, and securing REST, HTTP, and WebSocket APIs at any scale. API developers can create APIs that access AWS or other web services, as well as data stored in the [AWS Cloud](https://aws.amazon.com/what-is-cloud-computing/). As an API Gateway API developer, you can create APIs for use in your own client applications. Or you can make your APIs available to third-party app developers. For more information, see [Who uses API Gateway?](https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-overview-developer-experience.html#apigateway-who-uses-api-gateway).
+You can configure your proxy integration to control how API Gateway returns your integration response. By default, API Gateway waits to receive the complete response before beginning transmission. However, if you set your integration's response transfer mode to `STREAM`, API Gateway doesn't wait for a response to be completely computed before sending it to the client. Response streaming works for all REST API endpoint types.
 
-API Gateway creates RESTful APIs that:
+Use response streaming for the following use cases:
 
-*   Are HTTP-based.
+*   Lower the time-to-first-byte (TTFB) for generative AI applications like chatbots.
 
-*   Enable stateless client-server communication.
+*   Stream large image, video, or music files without using an S3 pre-signed URL.
 
-*   Implement standard HTTP methods such as GET, POST, PUT, PATCH, and DELETE.
+*   Perform long-running operations while reporting incremental progress like server-sent events (SSE).
 
-For more information about API Gateway REST APIs and HTTP APIs, see [Choose between REST APIs and HTTP APIs](https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-vs-rest.html), [API Gateway HTTP APIs](https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api.html), [Use API Gateway to create REST APIs](https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-overview-developer-experience.html#api-gateway-overview-rest), and [Develop REST APIs in API Gateway](https://docs.aws.amazon.com/apigateway/latest/developerguide/rest-api-develop.html).
+*   Exceed API Gateway's 10 MB response payload limit.
 
-API Gateway creates WebSocket APIs that:
+*   Exceed API Gateway's 29 second timeout limit without requesting an integration timeout limit increase.
 
-*   Adhere to the [WebSocket](https://datatracker.ietf.org/doc/html/rfc6455) protocol, which enables stateful, full-duplex communication between client and server.
+*   Receive a binary payload without configuring the binary media types.
 
-*   Route incoming messages based on message content.
+## Considerations for response payload streaming
 
-For more information about API Gateway WebSocket APIs, see [Use API Gateway to create WebSocket APIs](https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-overview-developer-experience.html#api-gateway-overview-websocket) and [Overview of WebSocket APIs in API Gateway](https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-websocket-api-overview.html).
+The following considerations might impact your use of response payload streaming:
 
-###### Topics
+*   You can only use response payload streaming for `HTTP_PROXY` or `AWS_PROXY` integration types. This includes Lambda proxy integrations and private integrations that use `HTTP_PROXY` integrations.
 
-*   [Architecture of API Gateway](https://docs.aws.amazon.com/apigateway/latest/developerguide/response-streaming.html#api-gateway-overview-aws-backbone)
+*   The default transfer mode setting is `BUFFERED`. To use response streaming you must change the response transfer mode to `STREAM`.
 
-*   [Features of API Gateway](https://docs.aws.amazon.com/apigateway/latest/developerguide/response-streaming.html#api-gateway-overview-features)
+*   Response streaming is only supported for REST APIs.
 
-*   [API Gateway use cases](https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-overview-developer-experience.html)
+*   Request streaming isn't supported.
 
-*   [Accessing API Gateway](https://docs.aws.amazon.com/apigateway/latest/developerguide/response-streaming.html#introduction-accessing-apigateway)
+*   You can stream your response for up to 15 minutes.
 
-*   [Part of AWS serverless infrastructure](https://docs.aws.amazon.com/apigateway/latest/developerguide/response-streaming.html#api-gateway-overview-a-serverless-pillar)
+*   Your streams are subject to idle timeouts. For Regional or private endpoints, the timeout is 5 minutes. For edge-optimized endpoints, the timeout is 30 seconds.
 
-*   [How to get started with Amazon API Gateway](https://docs.aws.amazon.com/apigateway/latest/developerguide/response-streaming.html#welcome-how-to-get-started)
+*   If you use response streaming for a Regional REST API with your own CloudFront distribution, you can achieve an idle time out greater than 30 seconds by increasing the response timeout of your CloudFront distribution. For more information, see [Response timeout](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/DownloadDistValuesOrigin.html#DownloadDistValuesOriginResponseTimeout).
 
-*   [Amazon API Gateway concepts](https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-basic-concept.html)
+*   When the response transfer mode is set to `STREAM`, API Gateway can’t support features that require buffering the entire integration response. Because of this, the following features aren't supported with response streaming:
 
-*   [Choose between REST APIs and HTTP APIs](https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-vs-rest.html)
+    *   Endpoint caching
 
-*   [Get started with the REST API console](https://docs.aws.amazon.com/apigateway/latest/developerguide/getting-started-rest-new-console.html)
+    *   Content encoding. If you want to compress your integration response, do this in your integration.
 
-## Architecture of API Gateway
+    *   Response transformation with VTL
 
-The following diagram shows API Gateway architecture.
+*   Within each streaming response, the first 10MB of response payload is not subject to any bandwidth restrictions. Response payload data exceeding 10MB is restricted to 2MB/s.
 
-![Image 2: API Gateway architecture diagram](https://docs.aws.amazon.com/images/apigateway/latest/developerguide/images/Product-Page-Diagram_Amazon-API-Gateway-How-Works.png)
+*   When the connection between the client and API Gateway or between API Gateway and Lambda is closed due to timeout, the Lambda function might continue to execute. For more information, see [Configure Lambda function timeout](https://docs.aws.amazon.com/lambda/latest/dg/configuration-timeout.html).
 
-This diagram illustrates how the APIs you build in Amazon API Gateway provide you or your developer customers with an integrated and consistent developer experience for building AWS serverless applications. API Gateway handles all the tasks involved in accepting and processing up to hundreds of thousands of concurrent API calls. These tasks include traffic management, authorization and access control, monitoring, and API version management.
-
-API Gateway acts as a "front door" for applications to access data, business logic, or functionality from your backend services, such as workloads running on Amazon Elastic Compute Cloud (Amazon EC2), code running on AWS Lambda, any web application, or real-time communication applications.
-
-## Features of API Gateway
-
-Amazon API Gateway offers features such as the following:
-
-*   Support for stateful ([WebSocket](https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-websocket-api.html)) and stateless ([HTTP](https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api.html) and [REST](https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-rest-api.html)) APIs.
-
-*   Powerful, flexible [authentication](https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-control-access-to-api.html) mechanisms, such as AWS Identity and Access Management policies, Lambda authorizer functions, and Amazon Cognito user pools.
-
-*   [Canary release deployments](https://docs.aws.amazon.com/apigateway/latest/developerguide/canary-release.html) for safely rolling out changes.
-
-*   [CloudTrail](https://docs.aws.amazon.com/apigateway/latest/developerguide/cloudtrail.html) logging and monitoring of API usage and API changes.
-
-*   CloudWatch access logging and execution logging, including the ability to set alarms. For more information, see [Monitor REST API execution with Amazon CloudWatch metrics](https://docs.aws.amazon.com/apigateway/latest/developerguide/monitoring-cloudwatch.html) and [Monitor WebSocket API execution with CloudWatch metrics](https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-websocket-api-logging.html).
-
-*   Ability to use CloudFormation templates to enable API creation. For more information, see [Amazon API Gateway Resource Types Reference](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/AWS_ApiGateway.html) and [Amazon API Gateway V2 Resource Types Reference](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/AWS_ApiGatewayV2.html).
-
-*   Support for [custom domain names](https://docs.aws.amazon.com/apigateway/latest/developerguide/how-to-custom-domains.html).
-
-*   Integration with [AWS WAF](https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-control-access-aws-waf.html) for protecting your APIs against common web exploits.
-
-*   Integration with [AWS X-Ray](https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-xray.html) for understanding and triaging performance latencies.
-
-For a complete list of API Gateway feature releases, see [Document history](https://docs.aws.amazon.com/apigateway/latest/developerguide/history.html).
-
-## Accessing API Gateway
-
-You can access Amazon API Gateway in the following ways:
-
-*   **AWS Management Console** – The AWS Management Console provides a web interface for creating and managing APIs. After you complete the steps in [Set up to use API Gateway](https://docs.aws.amazon.com/apigateway/latest/developerguide/setting-up.html), you can access the API Gateway console at [https://console.aws.amazon.com/apigateway](https://console.aws.amazon.com/apigateway).
-
-*   **AWS SDKs** – If you're using a programming language that AWS provides an SDK for, you can use an SDK to access API Gateway. SDKs simplify authentication, integrate easily with your development environment, and provide access to API Gateway commands. For more information, see [Tools for Amazon Web Services](https://aws.amazon.com/developer/tools/).
-
-*   **API Gateway V1 and V2 APIs** – If you're using a programming language that an SDK isn't available for, see the [Amazon API Gateway Version 1 API Reference](https://docs.aws.amazon.com/apigateway/latest/api/API_Operations.html) and [Amazon API Gateway Version 2 API Reference](https://docs.aws.amazon.com/apigatewayv2/latest/api-reference/api-reference.html).
-
-*   **AWS Command Line Interface** – For more information, see [Getting Set Up with the AWS Command Line Interface](https://docs.aws.amazon.com/cli/latest/userguide/) in the _AWS Command Line Interface User Guide_.
-
-*   **AWS Tools for Windows PowerShell** – For more information, see [Setting Up the AWS Tools for Windows PowerShell](https://docs.aws.amazon.com/powershell/latest/userguide/) in the _AWS Tools for PowerShell User Guide_.
-
-## Part of AWS serverless infrastructure
-
-Together with [AWS Lambda](https://docs.aws.amazon.com/lambda/latest/dg/), API Gateway forms the app-facing part of the AWS serverless infrastructure. To learn more about getting started with serverless, see the [Serverless Developer Guide](https://docs.aws.amazon.com/serverless/latest/devguide/welcome.html).
-
-For an app to call publicly available AWS services, you can use Lambda to interact with required services and expose Lambda functions through API methods in API Gateway. AWS Lambda runs your code on a highly available computing infrastructure. It performs the necessary execution and administration of computing resources. To enable serverless applications, API Gateway supports [streamlined proxy integrations](https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-set-up-simple-proxy.html) with AWS Lambda and HTTP endpoints.
-
-## How to get started with Amazon API Gateway
-
-For an introduction to Amazon API Gateway, see the following:
-
-*   [Get started with API Gateway](https://docs.aws.amazon.com/apigateway/latest/developerguide/getting-started.html), which provides a walkthrough for creating an HTTP API.
-
-*   [Serverless land](https://serverlessland.com/video?tag=Amazon%20API%20Gateway), which provides instructional videos.
-
-*   [Happy Little API Shorts](https://www.youtube.com/playlist?list=PLJo-rJlep0EDFw7t0-IBHffVYKcPMDXHY), which is a series of brief instructional videos.
+*   Response streaming incurs a cost. For more information, see [API Gateway Pricing](https://aws.amazon.com/api-gateway/pricing/).
 
 [Document Conventions](https://docs.aws.amazon.com/general/latest/gr/docconventions.html)
 
-API Gateway use cases
+HTTP integration
+
+Set up an HTTP proxy integration with payload response streaming
 
 Did this page help you? - Yes
 
@@ -947,18 +891,18 @@ If you've got a moment, please tell us how we can make the documentation better.
 *   
 ### On this page
 
-    1.   [Architecture of API Gateway](https://docs.aws.amazon.com/apigateway/latest/developerguide/response-streaming.html#api-gateway-overview-aws-backbone)
-    2.   [Features of API Gateway](https://docs.aws.amazon.com/apigateway/latest/developerguide/response-streaming.html#api-gateway-overview-features)
-    3.   [Accessing API Gateway](https://docs.aws.amazon.com/apigateway/latest/developerguide/response-streaming.html#introduction-accessing-apigateway)
-    4.   [Part of AWS serverless infrastructure](https://docs.aws.amazon.com/apigateway/latest/developerguide/response-streaming.html#api-gateway-overview-a-serverless-pillar)
-    5.   [How to get started with Amazon API Gateway](https://docs.aws.amazon.com/apigateway/latest/developerguide/response-streaming.html#welcome-how-to-get-started)
+    1.   [Considerations for response payload streaming](https://docs.aws.amazon.com/apigateway/latest/developerguide/response-transfer-mode.html#response-transfer-mode-considerations)
 
 *   ### Related resources [Amazon API Gateway API Reference](https://docs.aws.amazon.com/apigateway/api-reference/index.html) [AWS CLI commands for Amazon API Gateway](https://docs.aws.amazon.com/cli/latest/reference/apigateway/) [SDKs & Tools](https://aws.amazon.com/tools/)    
-*   Did this page help you?   Yes No       [Provide feedback](https://docs.aws.amazon.com/feedback/doc-feedback.html?hidden_service_name=API+Gateway&topic_url=https%3A%2F%2Fdocs.aws.amazon.com%2Fapigateway%2Flatest%2Fdeveloperguide%2Fwelcome.html)     
+*   Did this page help you?   Yes No       [Provide feedback](https://docs.aws.amazon.com/feedback/doc-feedback.html?hidden_service_name=API+Gateway&topic_url=https%3A%2F%2Fdocs.aws.amazon.com%2Fapigateway%2Flatest%2Fdeveloperguide%2Fresponse-transfer-mode.html)     
 
 #### Next topic:
 
-[API Gateway use cases](https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-overview-developer-experience.html)
+[Set up an HTTP proxy integration with payload response streaming](https://docs.aws.amazon.com/apigateway/latest/developerguide/response-streaming-http.html)
+
+#### Previous topic:
+
+[HTTP integration](https://docs.aws.amazon.com/apigateway/latest/developerguide/setup-http-integrations.html)
 
 ## Get Started
 
@@ -998,7 +942,7 @@ If you've got a moment, please tell us how we can make the documentation better.
 
 [Site terms](https://aws.amazon.com/terms)
 
-[Cookie preferences](https://docs.aws.amazon.com/apigateway/latest/developerguide/response-streaming.html#)
+[Cookie preferences](https://docs.aws.amazon.com/apigateway/latest/developerguide/response-transfer-mode.html#)
 
  © 2026, Amazon Web Services, Inc. or its affiliates. All rights reserved.
 
@@ -1007,9 +951,3 @@ English
 Language selector
 
 Top
-
-## API Gateway architecture diagram
-
-![Image 4: API Gateway architecture diagram](https://docs.aws.amazon.com/images/apigateway/latest/developerguide/images/Product-Page-Diagram_Amazon-API-Gateway-How-Works.png)
-
-Close
