@@ -9,8 +9,8 @@ Reader: A candidate who needs concept explanations, practical procedures, and sc
 | Item | Content |
 |---|---|
 | HTML treatise | Beginner primer, 24 chapters, interactive diagrams, source library, and practice tools |
-| Core PDF | 231 logical pages, 116 printed sides, 58 duplex sheets |
-| Practice PDF | 250 repository questions, 142 logical pages, 71 printed sides, 36 duplex sheets |
+| Core PDF | 341 logical pages, 171 printed sides, 86 duplex sheets |
+| Practice PDF | 250 repository questions, 249 logical pages, 125 printed sides, 63 duplex sheets |
 | Word document | Editable course and question appendix with embedded Anthropic Sans fonts |
 
 ## Audit method
@@ -33,7 +33,7 @@ The chapter dependency graph now follows concept dependencies rather than an art
 | Published skills | 98 mapped and reviewed |
 | Detailed chapters | 24 |
 | Practical walkthroughs | 24, proposed and not executed |
-| AWS diagrams | 17 selected figures |
+| AWS diagrams | 18 selected figures |
 | AWS console screenshots | 11 selected figures |
 | Native diagrams | 26 definitions, 48 interactive scenes |
 | Service entries | 106 |
@@ -69,12 +69,16 @@ Current official service documentation takes precedence over inherited absolutes
 ## Print checks
 
 Both PDFs contain two logical pages per physical side without a reduction in logical font size.
-The logical page uses 20-point margins and 9.5-point body text.
-The PDF review covers all 373 logical pages and representative enlarged figure pages.
+The logical page uses 24-point side and top margins, a 26-point bottom margin, and 10.5-point body text.
+The layout revision uses justified text, 14-point line spacing, clean question numbers, and selective bold and italic emphasis.
+Structural checks cover every PDF page. Visual samples cover questions, chapters, diagrams, and page transitions.
 The review found no blank pages, gross clipping, or oversized images.
 Dense AWS labels benefit from the HTML image enlargement control.
 The Word review identified merged diagram labels. The final revision separates titles and descriptions with clear table boundaries.
 The final export also prevents diagram rows from a split across pages.
+Four Anthropic Sans faces support regular, bold, italic, and bold italic text.
+Navy marks headings. Teal marks decision rules. Rust italics mark limits.
+The 250 question numbers remain in order. Their options, keys, rationale text, and review records match the prior release.
 
 1. Select landscape US Letter.
 2. Select actual size.
@@ -97,7 +101,7 @@ Two days of reading cannot certify production experience or guarantee a pass.
 The file review checks known Unicode carriers and supported metadata indicators.
 It also inspects supported C2PA and AI metadata indicators.
 The cleaned copies preserve the originals.
-All 28 selected source images retain identical decoded pixels after metadata cleanup.
+All 29 selected source images retain identical decoded pixels after metadata cleanup.
 Pixel watermarks, proprietary statistical marks, and universal provenance removal remain unverified.
 Clear metadata locally before any external upload.
 

@@ -12,6 +12,7 @@ def question_stem(text):
  if m:text=text[m.end():]
  return clean_text(text).strip(' ,·')
 def question_topic(q):
+ if q.get('topic'):return clean_text(q['topic'])
  m=re.search(r'\b[1-5]\.[1-6]\s+(.+?)\s+Q\d+[.)]',q['title'])
  return clean_text(m.group(1)) if m else 'Foundations and practical decisions'
 def text_runs(text,emphasis=True):

@@ -49,3 +49,5 @@ Every concept across the 95 lessons is taught from physical first principles:
 - **Rebuild Course Data**: `python3 scripts/build_course.py`
 - **Generate Print Materials (PDF & DOCX)**: `python3 scripts/generate_print_materials.py`
 - **Run Playwright Verification Suite**: `node scripts/test_course.mjs`
+
+The revised editions use justified Anthropic Sans text, more line space, clean question numbers, and semantic color cues.

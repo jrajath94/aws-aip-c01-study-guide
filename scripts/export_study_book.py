@@ -1,5 +1,5 @@
 from pathlib import Path
-import json,re,html,math
+import json,re,html,math,copy
 from xml.sax.saxutils import escape
 from reportlab.platypus import SimpleDocTemplate,Paragraph,Spacer,Image,Table,TableStyle,KeepTogether
 from reportlab.lib.styles import getSampleStyleSheet,ParagraphStyle
@@ -45,6 +45,17 @@ D.styles['Normal'].paragraph_format.alignment=WD_ALIGN_PARAGRAPH.JUSTIFY
 for heading in ['Title','Heading 1','Heading 2','Heading 3']:D.styles[heading].paragraph_format.alignment=WD_ALIGN_PARAGRAPH.LEFT
 D.styles['Title'].font.size=Pt(24);D.styles['Title'].font.color.rgb=RGBColor(0,0,0)
 D.styles['Caption'].font.size=Pt(8.3)
+# Remove theme substitutions and template decoration from Word styles.
+for st in D.styles:
+ if st.type not in (1,2):continue
+ st.font.name='Anthropic Sans'
+ if st.element.rPr is not None and st.element.rPr.rFonts is not None:
+  rf=st.element.rPr.rFonts
+  for key in list(rf.attrib):
+   if 'theme' in key.lower():del rf.attrib[key]
+  for key in ('ascii','hAnsi','eastAsia','cs'):rf.set(qn('w:'+key),'Anthropic Sans')
+ for border in list(st.element.xpath('.//w:pBdr')):border.getparent().remove(border)
+
 settings=D.settings.element
 el=OxmlElement('w:autoHyphenation');el.set(qn('w:val'),'true');settings.append(el)
 for prop in ('author','last_modified_by','title','subject','keywords','comments','category'):setattr(D.core_properties,prop,'')
@@ -58,7 +69,9 @@ def p(s,style='BodyCompact',target=None,word=True,keep=False):
  pieces=text_runs(s,emphasis)
  if style=='Option' and re.match(r'^[A-E]\. ',s):pieces=[(s[:3],True)]+text_runs(s[3:],True)
  markup=''.join('<b>'+escape(t)+'</b>' if strong else escape(t) for t,strong in pieces)
- target.append(Paragraph(markup,styles[style]))
+ paragraph_style=copy.copy(styles[style]) if keep else styles[style]
+ if keep:paragraph_style.keepWithNext=True
+ target.append(Paragraph(markup,paragraph_style))
  if word:
   ws={'H1Compact':'Heading 1','H2Compact':'Heading 2','H3Compact':'Heading 3','CaptionCompact':'Caption','TitleStudy':'Title'}.get(style,'Normal')
   para=D.add_paragraph(style=ws)
@@ -66,10 +79,10 @@ def p(s,style='BodyCompact',target=None,word=True,keep=False):
   if keep or style in ['QuestionMeta','Scenario','Answer']:para.paragraph_format.keep_with_next=True
   if style in ['Option','Procedure']:
    indent=16 if style=='Option' else 14;para.paragraph_format.left_indent=Pt(indent);para.paragraph_format.first_line_indent=Pt(-indent)
-  fullbold=style in ['Remember','Answer'];italic=style in ['Caution','Limit','QuestionMeta']
+  fullbold=style in ['Remember','Answer','TitleStudy'] or style.startswith('H');italic=style in ['Caution','Limit','QuestionMeta']
   col={'Remember':TEAL,'Answer':TEAL,'Scenario':NAVY,'Caution':RUST,'Limit':RUST,'QuestionMeta':'#505A64'}.get(style)
   for text,strong in pieces:
-   run=para.add_run(text);run.bold=fullbold or strong;run.italic=italic
+   run=para.add_run(text);run.font.name='Anthropic Sans';run.bold=fullbold or strong;run.italic=italic
    if col:run.font.color.rgb=RGBColor.from_string(col[1:])
    elif strong:run.font.color.rgb=RGBColor.from_string(NAVY[1:])
 def prose(text,target=None,word=True,style='BodyCompact'):
@@ -88,7 +101,11 @@ def sources(ids,target=None,word=True):
   if url:
    if url not in source_entries:source_entries[url]=len(source_entries)+1
    refs.append(str(source_entries[url]))
- if refs:p('Sources ['+', '.join(dict.fromkeys(refs))+'].','CaptionCompact',target,word)
+ if refs:
+  line='Sources ['+', '.join(sorted(set(refs),key=int))+'].'
+  destination=flows if target is None else target
+  if destination and isinstance(destination[-1],Paragraph) and destination[-1].getPlainText()==line:return
+  p(line,'CaptionCompact',target,word)
 def picture(f):
  path=(ROOT/'course'/f['path']).resolve()
  if not path.exists():return
@@ -147,7 +164,7 @@ dossier_by={d['skill']:d for d in C['dossiers']};printed=set()
 figure_map={'agent-build-time':11,'agent-runtime':11,'rag-ingestion':5,'rag-runtime':4,'saga-orchestration':12,'supervisor-pattern':11,'genbi-managed':14,'genbi-custom':14,'agent-infrastructure-ops':12,'app-builder-dashboard':14,'app-builder-dashboard-vpc':17,'text-app':3,'text-app-vpc':17,'agent-app':11,'agent-app-vpc':17,'mcp-server-app':12,'agent-builder-deploy':13}
 for ix,ch in enumerate(C['deep'],1):
  h(f'Chapter {ix}. {ch["title"]}',1);stats['chapterIds'].append(ch['id'])
- p(ch['idea'],'Remember')
+ p(ch['idea'],'Remember',keep=True)
  for section in ch['sections']:
   h(section['title'],3)
   for text in section['paragraphs']:p(text)

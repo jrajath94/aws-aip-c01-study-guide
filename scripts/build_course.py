@@ -268,7 +268,7 @@ for mid in mock:
   q=next((x for x in quizzes if x['domain']==q['domain'] and x['id'].startswith('volume-question-bank') and not x.get('keyUnsettled') and x['id'] not in used and x['id'] not in mock),q)
  if q['id'] not in used:reviewed_mock.append(q['id']);used.add(q['id'])
 mock=reviewed_mock
-report['questionSpecificCorrections']=len(question_errata)
+report['questionSpecificCorrections']=sum(bool(q.get('reviewCorrection')) for q in quizzes)
 report['questionReviewItems']=len(question_reviews)
 for e in question_errata:
  for sid in e.get('sources',[]):

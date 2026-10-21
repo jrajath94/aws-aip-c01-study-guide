@@ -11,8 +11,10 @@ Reader: A candidate who needs first-principles explanations and exam review.
 | [Word book](AIP-C01-Study-Book.docx) | Editable course and practice appendix |
 | [Audit](AIP-C01-Audit.md) | Coverage evidence, limits, and print procedure |
 
-The course contains 24 chapters, 98 skill cases, 24 practical walkthroughs, and 28 AWS images.
+The course contains 24 chapters, 98 skill cases, 24 practical walkthroughs, and 29 AWS images.
 The question review adds 87 specific corrections.
+The revised editions use Anthropic Sans, justified paragraphs, clearer spacing, and clean question numbers.
+Navy marks headings. Teal marks decision rules. Rust italics mark limits.
 Eight unsettled keys remain discussion cases and stay outside the timed mock.
 
 ## Print
@@ -24,7 +26,7 @@ Eight unsettled keys remain discussion cases and stay outside the timed mock.
 5. Print a test sheet.
 
 Each PDF side already contains two logical pages.
-The core book uses 58 duplex sheets.
+The core book uses 86 duplex sheets.
 The practice booklet is separate so you can choose which material to print.
 
 ## Limits
