@@ -1,0 +1,1573 @@
+{
+ "schemaVersion": 1,
+ "itemId": "volume-d5-testing-validation",
+ "itemKind": "lesson",
+ "revision": "0fcd5a3978ba26e5c5c89039ed6155564a61f6a759f3c433c34a149a5904f4c4",
+ "sections": [
+  {
+   "anchor": "volume-d5-testing-validation-intro-p01",
+   "title": "Domain 5: Testing, Validation, and Troubleshooting",
+   "minutes": 1,
+   "endAnchor": "volume-d5-testing-validation-intro-end",
+   "blocks": [
+    {
+     "anchor": "volume-d5-testing-validation-intro-p01",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "scored questions",
+     "definition": "The exam questions that count toward the score. Domain 5 has about 7 of 65.",
+     "anchor": "volume-d5-testing-validation-intro-p01"
+    },
+    {
+     "term": "automatic metrics",
+     "definition": "Programmatic scores computed by code against ground truth labels.",
+     "anchor": "volume-d5-testing-validation-intro-p03"
+    },
+    {
+     "term": "CreateEvaluationJob",
+     "definition": "The Bedrock API that starts an evaluation job.",
+     "anchor": "volume-d5-testing-validation-intro-p03"
+    }
+   ],
+   "recall": [
+    {
+     "id": "volume-d5-testing-validation-intro-r1",
+     "question": "How many scored Domain 5 questions are on the exam?",
+     "answer": "About 7 of the 65 scored questions.",
+     "anchor": "volume-d5-testing-validation-intro-p01"
+    },
+    {
+     "id": "volume-d5-testing-validation-intro-r2",
+     "question": "Which evaluation features were fact-checked against live AWS docs on 2026-09-28?",
+     "answer": "Automatic metrics, LLM-as-a-judge metric names, human workflows, BYO datasets, and CreateEvaluationJob.",
+     "anchor": "volume-d5-testing-validation-intro-p03"
+    }
+   ]
+  },
+  {
+   "anchor": "the-domain-in-one-paragraph",
+   "title": "The domain in one paragraph",
+   "minutes": 1,
+   "endAnchor": "the-domain-in-one-paragraph-end",
+   "blocks": [
+    {
+     "anchor": "the-domain-in-one-paragraph-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    },
+    {
+     "anchor": "the-domain-in-one-paragraph-p01",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "evaluation",
+     "definition": "The proof half of the domain. It measures whether the GenAI application works.",
+     "anchor": "the-domain-in-one-paragraph-p01"
+    },
+    {
+     "term": "troubleshooting",
+     "definition": "The fix half of the domain. It repairs the application when it does not work.",
+     "anchor": "the-domain-in-one-paragraph-p03"
+    },
+    {
+     "term": "LLM-as-a-judge",
+     "definition": "A second model that grades outputs, giving human-like quality at scale.",
+     "anchor": "the-domain-in-one-paragraph-p02"
+    },
+    {
+     "term": "RAG-specific evaluations",
+     "definition": "Evaluations that check retrieval quality and faithfulness in RAG pipelines.",
+     "anchor": "the-domain-in-one-paragraph-p02"
+    }
+   ],
+   "recall": [
+    {
+     "id": "the-domain-in-one-paragraph-r1",
+     "question": "What one question does Domain 5 ask in many forms?",
+     "answer": "How do you prove a GenAI application works, and how do you fix it when it does not work.",
+     "anchor": "the-domain-in-one-paragraph-p01"
+    },
+    {
+     "id": "the-domain-in-one-paragraph-r2",
+     "question": "Name two proof-half tools and what each is for.",
+     "answer": "Automatic metrics do objective checks. LLM-as-a-judge gives human-like quality at scale.",
+     "anchor": "the-domain-in-one-paragraph-p02"
+    }
+   ]
+  },
+  {
+   "anchor": "1-why-testing-generative-ai-is-different",
+   "title": "1. Why testing generative AI is different",
+   "minutes": 3,
+   "endAnchor": "1-why-testing-generative-ai-is-different-end",
+   "blocks": [
+    {
+     "anchor": "1-why-testing-generative-ai-is-different-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    },
+    {
+     "anchor": "1-why-testing-generative-ai-is-different-p08",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "eval",
+     "definition": "The unit of measurement. It has a prompt dataset, a run, and a scoring step.",
+     "anchor": "1-why-testing-generative-ai-is-different-p08"
+    },
+    {
+     "term": "ground truth",
+     "definition": "The known-correct answer attached to a prompt for scoring.",
+     "anchor": "1-why-testing-generative-ai-is-different-p13"
+    },
+    {
+     "term": "deterministic",
+     "definition": "Same input always gives the same output. True of traditional tests, not model calls.",
+     "anchor": "1-why-testing-generative-ai-is-different-p01"
+    },
+    {
+     "term": "temperature",
+     "definition": "The generation setting that controls randomness. It shapes wording, never correctness.",
+     "anchor": "1-why-testing-generative-ai-is-different-p05"
+    },
+    {
+     "term": "exact-match",
+     "definition": "A test style that fails open-ended outputs. Never use it there.",
+     "anchor": "1-why-testing-generative-ai-is-different-p04"
+    }
+   ],
+   "recall": [
+    {
+     "id": "1-why-testing-generative-ai-is-different-r1",
+     "question": "What are the three parts of an eval?",
+     "answer": "A dataset of prompts, a run that feeds each prompt to the model, and a scoring step that judges each output.",
+     "anchor": "1-why-testing-generative-ai-is-different-p08"
+    },
+    {
+     "id": "1-why-testing-generative-ai-is-different-r2",
+     "question": "A checkout total must equal 42.50 character for character. Why does this test style not fit GenAI?",
+     "answer": "It is a deterministic assertion: one input, one correct output, pass or fail. GenAI has many valid outputs and nondeterministic wording.",
+     "anchor": "1-why-testing-generative-ai-is-different-p02"
+    },
+    {
+     "id": "1-why-testing-generative-ai-is-different-r3",
+     "question": "What does temperature control, and what does it never do?",
+     "answer": "It controls randomness and shapes wording. It never shapes correctness and is never a cost control.",
+     "anchor": "1-why-testing-generative-ai-is-different-p14"
+    }
+   ]
+  },
+  {
+   "anchor": "what-aws-actually-tests-the-evaluation-matrix",
+   "title": "What AWS actually tests (the evaluation matrix)",
+   "minutes": 1,
+   "endAnchor": "what-aws-actually-tests-the-evaluation-matrix-end",
+   "blocks": [
+    {
+     "anchor": "what-aws-actually-tests-the-evaluation-matrix-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    },
+    {
+     "anchor": "what-aws-actually-tests-the-evaluation-matrix-p01",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "evaluation matrix",
+     "definition": "The table mapping each method to what it measures. It is the main part of Task 5.1.",
+     "anchor": "what-aws-actually-tests-the-evaluation-matrix-fig01"
+    },
+    {
+     "term": "automatic",
+     "definition": "Programmatic evaluation of accuracy, stability, and toxicity against ground truth labels.",
+     "anchor": "what-aws-actually-tests-the-evaluation-matrix-table02"
+    },
+    {
+     "term": "Task 5.1",
+     "definition": "The exam task that the evaluation matrix covers.",
+     "anchor": "what-aws-actually-tests-the-evaluation-matrix-fig01"
+    }
+   ],
+   "recall": [
+    {
+     "id": "what-aws-actually-tests-the-evaluation-matrix-r1",
+     "question": "What does the evaluation matrix map?",
+     "answer": "Each evaluation method to what it measures and when AWS wants it.",
+     "anchor": "what-aws-actually-tests-the-evaluation-matrix-p01"
+    },
+    {
+     "id": "what-aws-actually-tests-the-evaluation-matrix-r2",
+     "question": "How do you read the three-family diagram?",
+     "answer": "The left column names quality, safety, and groundedness with their metrics. The right box names automatic metrics, LLM-as-judge, and human review. Arrows link each family to all three methods.",
+     "anchor": "what-aws-actually-tests-the-evaluation-matrix-walk01"
+    }
+   ]
+  },
+  {
+   "anchor": "how-aws-asks-this-domain",
+   "title": "How AWS asks this domain",
+   "minutes": 1,
+   "endAnchor": "how-aws-asks-this-domain-end",
+   "blocks": [
+    {
+     "anchor": "how-aws-asks-this-domain-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    },
+    {
+     "anchor": "how-aws-asks-this-domain-p03",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "golden dataset",
+     "definition": "A fixed set of trusted prompts that you rerun after every change.",
+     "anchor": "how-aws-asks-this-domain-p02"
+    },
+    {
+     "term": "canary",
+     "definition": "A release to a small part of traffic before full rollout.",
+     "anchor": "how-aws-asks-this-domain-p02"
+    },
+    {
+     "term": "scenario-based",
+     "definition": "The exam question style. Every question hides a team situation, not a bare definition.",
+     "anchor": "how-aws-asks-this-domain-p01"
+    }
+   ],
+   "recall": [
+    {
+     "id": "how-aws-asks-this-domain-r1",
+     "question": "A team must compare two models for summarization quality and brand voice. Which two methods?",
+     "answer": "LLM-as-a-judge for scale and human evaluation for brand voice.",
+     "anchor": "how-aws-asks-this-domain-p01"
+    },
+    {
+     "id": "how-aws-asks-this-domain-r2",
+     "question": "What is the domain-wide trap in every troubleshooting question?",
+     "answer": "One wrong answer debugs GenAI like a traditional app. Temperature does not fix bad retrieval. Bigger models do not fix broken chunking. Provisioned Throughput does not fix output randomness.",
+     "anchor": "how-aws-asks-this-domain-p03"
+    }
+   ]
+  },
+  {
+   "anchor": "1-automatic-programmatic-evaluation-in-bedrock",
+   "title": "2. Automatic (programmatic) evaluation in Bedrock",
+   "minutes": 5,
+   "endAnchor": "1-automatic-programmatic-evaluation-in-bedrock-end",
+   "blocks": [
+    {
+     "anchor": "1-automatic-programmatic-evaluation-in-bedrock-p14",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    },
+    {
+     "anchor": "1-automatic-programmatic-evaluation-in-bedrock-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "automatic evaluation",
+     "definition": "Bedrock's cheapest and fastest mode. Code computes metrics with no humans or judge.",
+     "anchor": "1-automatic-programmatic-evaluation-in-bedrock-p02"
+    },
+    {
+     "term": "ground truth label",
+     "definition": "The correct answer you already know, attached to each prompt in the dataset.",
+     "anchor": "1-automatic-programmatic-evaluation-in-bedrock-p04"
+    },
+    {
+     "term": "regression gate",
+     "definition": "A pipeline step that stops a deployment if quality scores drop.",
+     "anchor": "1-automatic-programmatic-evaluation-in-bedrock-p10"
+    },
+    {
+     "term": "robustness",
+     "definition": "The Bedrock console name for the stability metric.",
+     "anchor": "1-automatic-programmatic-evaluation-in-bedrock-p05"
+    },
+    {
+     "term": "JSONL",
+     "definition": "JSON Lines, one record per line. The S3 format for prompt datasets.",
+     "anchor": "1-automatic-programmatic-evaluation-in-bedrock-p06"
+    },
+    {
+     "term": "toxicity",
+     "definition": "A built-in metric that checks outputs for toxic content.",
+     "anchor": "1-automatic-programmatic-evaluation-in-bedrock-p05"
+    }
+   ],
+   "recall": [
+    {
+     "id": "1-automatic-programmatic-evaluation-in-bedrock-r1",
+     "question": "What four items does an evaluation job need?",
+     "answer": "The model to evaluate, the prompt dataset in S3 as JSONL, an output S3 location, and the evaluation configuration naming the metrics.",
+     "anchor": "1-automatic-programmatic-evaluation-in-bedrock-p06"
+    },
+    {
+     "id": "1-automatic-programmatic-evaluation-in-bedrock-r2",
+     "question": "A 1,000-prompt ticket classifier scores 0.93 accuracy. What does that number mean, and what did it cost?",
+     "answer": "930 of 1,000 outputs matched the ground truth label exactly. It cost a few dollars at most and finished in minutes.",
+     "anchor": "1-automatic-programmatic-evaluation-in-bedrock-p16"
+    },
+    {
+     "id": "1-automatic-programmatic-evaluation-in-bedrock-r3",
+     "question": "When must you NOT use automatic evaluation?",
+     "answer": "For subjective quality like brand voice, style, or helpfulness. Programmatic scorers compare labels and cannot judge tone.",
+     "anchor": "1-automatic-programmatic-evaluation-in-bedrock-ask01"
+    }
+   ]
+  },
+  {
+   "anchor": "questions-1-automatic-programmatic-evaluation-in-bedrock",
+   "title": "Questions",
+   "minutes": 2,
+   "endAnchor": "questions-1-automatic-programmatic-evaluation-in-bedrock-end",
+   "blocks": [
+    {
+     "anchor": "questions-1-automatic-programmatic-evaluation-in-bedrock-p07",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "accuracy metric",
+     "definition": "The built-in metric for correct-answer rate against labeled data.",
+     "anchor": "questions-1-automatic-programmatic-evaluation-in-bedrock-ol01"
+    },
+    {
+     "term": "toxicity metric",
+     "definition": "The metric to add when outputs contain toxic phrases.",
+     "anchor": "questions-1-automatic-programmatic-evaluation-in-bedrock-ol02"
+    },
+    {
+     "term": "labeled dataset",
+     "definition": "Prompts with known-correct answers. The signal for automatic evaluation.",
+     "anchor": "questions-1-automatic-programmatic-evaluation-in-bedrock-ol01"
+    }
+   ],
+   "recall": [
+    {
+     "id": "questions-1-automatic-programmatic-evaluation-in-bedrock-r1",
+     "question": "EASY: 3,000 labeled customer questions, cheap repeatable benchmark to pick between two small models. Correct approach?",
+     "answer": "Run a Bedrock automatic evaluation job with the accuracy metric on the labeled dataset.",
+     "anchor": "questions-1-automatic-programmatic-evaluation-in-bedrock-ol01"
+    },
+    {
+     "id": "questions-1-automatic-programmatic-evaluation-in-bedrock-r2",
+     "question": "MEDIUM: 0.97 accuracy but toxic phrases in apologies, and the job used only accuracy. What must the team do?",
+     "answer": "Add the toxicity metric to the evaluation configuration and run the job again.",
+     "anchor": "questions-1-automatic-programmatic-evaluation-in-bedrock-ol02"
+    },
+    {
+     "id": "questions-1-automatic-programmatic-evaluation-in-bedrock-r3",
+     "question": "HARD: two true statements about automatic evaluation as a regression gate?",
+     "answer": "It needs ground truth labels to compute metrics like accuracy, and it supports built-in metrics including accuracy, stability, and toxicity.",
+     "anchor": "questions-1-automatic-programmatic-evaluation-in-bedrock-ol03"
+    }
+   ]
+  },
+  {
+   "anchor": "4-bring-your-own-datasets-and-choosing-metrics",
+   "title": "3. Bring-your-own datasets and choosing metrics",
+   "minutes": 5,
+   "endAnchor": "4-bring-your-own-datasets-and-choosing-metrics-end",
+   "blocks": [
+    {
+     "anchor": "4-bring-your-own-datasets-and-choosing-metrics-p15",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    },
+    {
+     "anchor": "4-bring-your-own-datasets-and-choosing-metrics-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "BYO",
+     "definition": "Bring-your-own. You supply the evaluation prompts as JSONL in S3.",
+     "anchor": "4-bring-your-own-datasets-and-choosing-metrics-p02"
+    },
+    {
+     "term": "BYOI",
+     "definition": "Bring-your-own-inference. You supply prompts and your own responses. It trains nothing.",
+     "anchor": "4-bring-your-own-datasets-and-choosing-metrics-p03"
+    },
+    {
+     "term": "F1 score",
+     "definition": "The harmonic mean of precision and recall. It tells the truth on imbalanced data.",
+     "anchor": "4-bring-your-own-datasets-and-choosing-metrics-p08"
+    },
+    {
+     "term": "precision",
+     "definition": "Of the items labeled X, how many are truly X.",
+     "anchor": "4-bring-your-own-datasets-and-choosing-metrics-p08"
+    },
+    {
+     "term": "recall",
+     "definition": "How many X items the system labeled X.",
+     "anchor": "4-bring-your-own-datasets-and-choosing-metrics-p08"
+    },
+    {
+     "term": "ROUGE",
+     "definition": "The summarization metric measuring overlap between generated and reference summaries.",
+     "anchor": "4-bring-your-own-datasets-and-choosing-metrics-p10"
+    }
+   ],
+   "recall": [
+    {
+     "id": "4-bring-your-own-datasets-and-choosing-metrics-r1",
+     "question": "The worked ticket-classifier example: 1,000 tickets, 950 correct, but urgent-class F1 is 0.44. What is the exam lesson?",
+     "answer": "Accuracy lies on imbalanced data. F1 tells the truth.",
+     "anchor": "4-bring-your-own-datasets-and-choosing-metrics-p15"
+    },
+    {
+     "id": "4-bring-your-own-datasets-and-choosing-metrics-r2",
+     "question": "A fraud classifier sees 1 percent fraud. Which metric, and why not accuracy?",
+     "answer": "F1 or precision and recall. Accuracy is dominated by the majority class.",
+     "anchor": "4-bring-your-own-datasets-and-choosing-metrics-ask02"
+    },
+    {
+     "id": "4-bring-your-own-datasets-and-choosing-metrics-r3",
+     "question": "What does BYOI let you evaluate, and what does it not do?",
+     "answer": "Any system: a model outside Bedrock, a full RAG pipeline, an agent with tools, or replayed production responses. It trains nothing.",
+     "anchor": "4-bring-your-own-datasets-and-choosing-metrics-p04"
+    }
+   ]
+  },
+  {
+   "anchor": "questions-4-bring-your-own-datasets-and-choosing-metrics",
+   "title": "Questions",
+   "minutes": 2,
+   "endAnchor": "questions-4-bring-your-own-datasets-and-choosing-metrics-end",
+   "blocks": [
+    {
+     "anchor": "questions-4-bring-your-own-datasets-and-choosing-metrics-p07",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "BYO dataset",
+     "definition": "The team's own labeled tickets, brought for evaluation.",
+     "anchor": "questions-4-bring-your-own-datasets-and-choosing-metrics-ol01"
+    },
+    {
+     "term": "fraud class",
+     "definition": "The rare class where recall matters more than accuracy.",
+     "anchor": "questions-4-bring-your-own-datasets-and-choosing-metrics-ol02"
+    },
+    {
+     "term": "prompt-response pairs",
+     "definition": "What BYOI submits for evaluation.",
+     "anchor": "questions-4-bring-your-own-datasets-and-choosing-metrics-ol03"
+    }
+   ],
+   "recall": [
+    {
+     "id": "questions-4-bring-your-own-datasets-and-choosing-metrics-r1",
+     "question": "EASY: 2,000 labeled tickets routed into 12 categories. Correct setup?",
+     "answer": "Bring the labeled tickets as a BYO dataset and run automatic evaluation with accuracy and F1.",
+     "anchor": "questions-4-bring-your-own-datasets-and-choosing-metrics-ol01"
+    },
+    {
+     "id": "questions-4-bring-your-own-datasets-and-choosing-metrics-r2",
+     "question": "MEDIUM: 0.99 accuracy on old data but most fraud still passes, and only 0.5 percent of transactions are fraud. Best metric change?",
+     "answer": "Change to F1 score with emphasis on recall for the fraud class.",
+     "anchor": "questions-4-bring-your-own-datasets-and-choosing-metrics-ol02"
+    }
+   ]
+  },
+  {
+   "anchor": "2-llm-as-a-judge-evaluation",
+   "title": "4. LLM-as-a-judge evaluation",
+   "minutes": 6,
+   "endAnchor": "2-llm-as-a-judge-evaluation-end",
+   "blocks": [
+    {
+     "anchor": "2-llm-as-a-judge-evaluation-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    },
+    {
+     "anchor": "2-llm-as-a-judge-evaluation-p08",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "LLM-as-a-judge",
+     "definition": "A foundation model scores another model's outputs against a rubric you define.",
+     "anchor": "2-llm-as-a-judge-evaluation-fig01"
+    },
+    {
+     "term": "faithfulness",
+     "definition": "The anti-hallucination metric. The source supports every claim.",
+     "anchor": "2-llm-as-a-judge-evaluation-fig02"
+    },
+    {
+     "term": "position bias",
+     "definition": "Judges favor the first answer. Bedrock fights it by randomizing order.",
+     "anchor": "2-llm-as-a-judge-evaluation-p12"
+    },
+    {
+     "term": "verbosity bias",
+     "definition": "Judges favor longer answers.",
+     "anchor": "2-llm-as-a-judge-evaluation-p12"
+    },
+    {
+     "term": "completeness",
+     "definition": "The metric for covering all requests in the prompt.",
+     "anchor": "2-llm-as-a-judge-evaluation-p03"
+    },
+    {
+     "term": "refusal",
+     "definition": "The metric for correctly declining what the model should decline.",
+     "anchor": "2-llm-as-a-judge-evaluation-p03"
+    }
+   ],
+   "recall": [
+    {
+     "id": "2-llm-as-a-judge-evaluation-r1",
+     "question": "What are the four flow stages of a judge evaluation?",
+     "answer": "Candidate generation, judge prompt assembly, judgment, and aggregation.",
+     "anchor": "2-llm-as-a-judge-evaluation-p09"
+    },
+    {
+     "id": "2-llm-as-a-judge-evaluation-r2",
+     "question": "The RAG summarizer example: 500 prompts, small candidate, flagship judge. What did the numbers show?",
+     "answer": "Total cost about $10.50 in under one hour. Correctness 4.2 of 5, faithfulness 3.6 of 5, style 4.5 of 5. The faithfulness gap pointed to retrieval grounding, not tone.",
+     "anchor": "2-llm-as-a-judge-evaluation-p14"
+    },
+    {
+     "id": "2-llm-as-a-judge-evaluation-r3",
+     "question": "What are the two traps when using judge models?",
+     "answer": "Do not treat judge scores as true data without human spot-check calibration, and do not use the same small model as both candidate and judge.",
+     "anchor": "2-llm-as-a-judge-evaluation-p19"
+    }
+   ]
+  },
+  {
+   "anchor": "questions-2-llm-as-a-judge-evaluation",
+   "title": "Questions",
+   "minutes": 2,
+   "endAnchor": "questions-2-llm-as-a-judge-evaluation-end",
+   "blocks": [
+    {
+     "anchor": "questions-2-llm-as-a-judge-evaluation-p08",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "faithfulness and refusal metrics",
+     "definition": "The judge metrics for the 4,000-response RAG check.",
+     "anchor": "questions-2-llm-as-a-judge-evaluation-ol01"
+    },
+    {
+     "term": "weak judge",
+     "definition": "A small model grading outputs. It cannot grade reliably and may share blind spots.",
+     "anchor": "questions-2-llm-as-a-judge-evaluation-ol02"
+    },
+    {
+     "term": "calibrate the judge",
+     "definition": "Compare judge scores with human labels on a sample before trusting full runs.",
+     "anchor": "questions-2-llm-as-a-judge-evaluation-ol03"
+    }
+   ],
+   "recall": [
+    {
+     "id": "questions-2-llm-as-a-judge-evaluation-r1",
+     "question": "EASY: 4,000 responses, faithfulness and correct refusal, no true labels. Best method?",
+     "answer": "LLM-as-a-judge evaluation with faithfulness and refusal metrics.",
+     "anchor": "questions-2-llm-as-a-judge-evaluation-ol01"
+    },
+    {
+     "id": "questions-2-llm-as-a-judge-evaluation-r2",
+     "question": "MEDIUM: same small model as candidate and judge, scores too high versus human spot-check. Most probable cause?",
+     "answer": "A weak judge model cannot reliably grade outputs and may share the candidate's blind spots.",
+     "anchor": "questions-2-llm-as-a-judge-evaluation-ol02"
+    }
+   ]
+  },
+  {
+   "anchor": "3-human-evaluation-workflows",
+   "title": "5. Human evaluation workflows",
+   "minutes": 5,
+   "endAnchor": "3-human-evaluation-workflows-end",
+   "blocks": [
+    {
+     "anchor": "3-human-evaluation-workflows-p16",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    },
+    {
+     "anchor": "3-human-evaluation-workflows-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "inter-rater agreement",
+     "definition": "How often reviewers agree. It shows whether the instructions are clear.",
+     "anchor": "3-human-evaluation-workflows-p04"
+    },
+    {
+     "term": "work team",
+     "definition": "The reviewers: your employees or an AWS-managed team.",
+     "anchor": "3-human-evaluation-workflows-p03"
+    },
+    {
+     "term": "SageMaker Ground Truth",
+     "definition": "The AWS-managed crowd reviewers for human evaluation.",
+     "anchor": "3-human-evaluation-workflows-p04"
+    },
+    {
+     "term": "reviewer-hours",
+     "definition": "The budget unit: responses times reviewers per response times minutes per rating, over 60.",
+     "anchor": "3-human-evaluation-workflows-p10"
+    },
+    {
+     "term": "anchors",
+     "definition": "Concrete score meanings, like 5 equals a full example, written into rating instructions.",
+     "anchor": "3-human-evaluation-workflows-ol01"
+    }
+   ],
+   "recall": [
+    {
+     "id": "3-human-evaluation-workflows-r1",
+     "question": "How do you budget a human evaluation?",
+     "answer": "Reviewer-hours equals responses times reviewers per response times minutes per rating, divided by 60. The example: 300 times 3 times 2 minutes equals 30 reviewer-hours.",
+     "anchor": "3-human-evaluation-workflows-callout01"
+    },
+    {
+     "id": "3-human-evaluation-workflows-r2",
+     "question": "Agreement is 0.82 on accuracy but 0.54 on warmth. What does that tell you?",
+     "answer": "The warmth instructions are vague. Rewrite the anchors with concrete examples and re-run.",
+     "anchor": "3-human-evaluation-workflows-p14"
+    },
+    {
+     "id": "3-human-evaluation-workflows-r3",
+     "question": "State the standard pattern for the three methods.",
+     "answer": "Automatic metrics for the main part, LLM-as-a-judge for subjective scale, human evaluation for samples, calibration, and final approval.",
+     "anchor": "3-human-evaluation-workflows-p18"
+    }
+   ]
+  },
+  {
+   "anchor": "questions-3-human-evaluation-workflows",
+   "title": "Questions",
+   "minutes": 2,
+   "endAnchor": "questions-3-human-evaluation-workflows-end",
+   "blocks": [
+    {
+     "anchor": "questions-3-human-evaluation-workflows-p07",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "brand voice",
+     "definition": "The subjective quality the AWS-managed team reviews.",
+     "anchor": "questions-3-human-evaluation-workflows-p03"
+    },
+    {
+     "term": "AWS-managed review team",
+     "definition": "The reviewers to use when no employees are available.",
+     "anchor": "questions-3-human-evaluation-workflows-ol01"
+    },
+    {
+     "term": "final sign-off",
+     "definition": "Human evaluation's role for subjective qualities on high-risk responses.",
+     "anchor": "questions-3-human-evaluation-workflows-ol03"
+    }
+   ],
+   "recall": [
+    {
+     "id": "questions-3-human-evaluation-workflows-r1",
+     "question": "EASY: marketing text, brand voice matters most, no employees can review. Best setup?",
+     "answer": "LLM-as-a-judge for general comparison plus human evaluation with an AWS-managed review team for brand voice.",
+     "anchor": "questions-3-human-evaluation-workflows-ol01"
+    },
+    {
+     "id": "questions-3-human-evaluation-workflows-r2",
+     "question": "MEDIUM: agreement 0.85 for correctness, 0.51 for helpfulness. Best next step?",
+     "answer": "Rewrite the helpfulness rating instructions with clear examples, then run again on a sample.",
+     "anchor": "questions-3-human-evaluation-workflows-ol02"
+    }
+   ]
+  },
+  {
+   "anchor": "5-rag-evaluation-retrieval-quality-faithfulness-relevance",
+   "title": "6. RAG evaluation: retrieval quality, faithfulness, relevance",
+   "minutes": 5,
+   "endAnchor": "5-rag-evaluation-retrieval-quality-faithfulness-relevance-end",
+   "blocks": [
+    {
+     "anchor": "5-rag-evaluation-retrieval-quality-faithfulness-relevance-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    },
+    {
+     "anchor": "5-rag-evaluation-retrieval-quality-faithfulness-relevance-p10",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "RAG evaluation",
+     "definition": "Scoring retrieval and generation separately instead of only the final answer.",
+     "anchor": "5-rag-evaluation-retrieval-quality-faithfulness-relevance-fig01"
+    },
+    {
+     "term": "recall at k",
+     "definition": "How many chunks with the answer appear in the top k retrieved chunks.",
+     "anchor": "5-rag-evaluation-retrieval-quality-faithfulness-relevance-p03"
+    },
+    {
+     "term": "answer relevance",
+     "definition": "The metric checking whether the answer addresses the question.",
+     "anchor": "5-rag-evaluation-retrieval-quality-faithfulness-relevance-fig01"
+    },
+    {
+     "term": "faithfulness",
+     "definition": "Every factual claim in the answer must come from the retrieved context.",
+     "anchor": "5-rag-evaluation-retrieval-quality-faithfulness-relevance-p03"
+    },
+    {
+     "term": "context relevance",
+     "definition": "Whether the retrieved chunks are on topic for the question.",
+     "anchor": "5-rag-evaluation-retrieval-quality-faithfulness-relevance-fig01"
+    }
+   ],
+   "recall": [
+    {
+     "id": "5-rag-evaluation-retrieval-quality-faithfulness-relevance-r1",
+     "question": "How do you read the retrieval and faithfulness score pair?",
+     "answer": "Low retrieval plus low faithfulness means fix retrieval: chunking, embeddings, hybrid search, or reranking. High retrieval plus low faithfulness means fix generation: grounding instructions or contextual grounding checks.",
+     "anchor": "5-rag-evaluation-retrieval-quality-faithfulness-relevance-p10"
+    },
+    {
+     "id": "5-rag-evaluation-retrieval-quality-faithfulness-relevance-r2",
+     "question": "The support RAG example: recall at 5 of 0.70, faithfulness 0.62. What fixed it?",
+     "answer": "Changing chunking from fixed-size to hierarchical and adding a reranker. Recall at 5 rose to 0.88 and faithfulness to 0.81, with no generator or prompt change.",
+     "anchor": "5-rag-evaluation-retrieval-quality-faithfulness-relevance-p11"
+    },
+    {
+     "id": "5-rag-evaluation-retrieval-quality-faithfulness-relevance-r3",
+     "question": "What is the most common Domain 5 trap?",
+     "answer": "Fixing bad retrieval by changing the generation model. If retrieved chunks are not relevant, no model can make a correct answer.",
+     "anchor": "5-rag-evaluation-retrieval-quality-faithfulness-relevance-p14"
+    }
+   ]
+  },
+  {
+   "anchor": "questions-5-rag-evaluation-retrieval-quality-faithfulness-relevance",
+   "title": "Questions",
+   "minutes": 2,
+   "endAnchor": "questions-5-rag-evaluation-retrieval-quality-faithfulness-relevance-end",
+   "blocks": [
+    {
+     "anchor": "questions-5-rag-evaluation-retrieval-quality-faithfulness-relevance-p07",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "generation faithfulness",
+     "definition": "What to evaluate when answers cite facts not in the documents.",
+     "anchor": "questions-5-rag-evaluation-retrieval-quality-faithfulness-relevance-ol01"
+    },
+    {
+     "term": "expected chunks",
+     "definition": "The chunks with answers that recall at k compares against.",
+     "anchor": "questions-5-rag-evaluation-retrieval-quality-faithfulness-relevance-ol03"
+    }
+   ],
+   "recall": [
+    {
+     "id": "questions-5-rag-evaluation-retrieval-quality-faithfulness-relevance-r1",
+     "question": "EASY: fluent answers cite policy details not in retrieved documents, but retrieval relevance is high. Evaluate and fix what first?",
+     "answer": "Evaluate generation faithfulness and strengthen grounding of answers to retrieved context.",
+     "anchor": "questions-5-rag-evaluation-retrieval-quality-faithfulness-relevance-ol01"
+    },
+    {
+     "id": "questions-5-rag-evaluation-retrieval-quality-faithfulness-relevance-r2",
+     "question": "MEDIUM: after a chunking change, recall at 5 drops from 0.90 to 0.71 while faithfulness stays 0.85. Correct interpretation?",
+     "answer": "The new chunking made retrieval bad. The generator uses the information it gets. Change or adjust chunking.",
+     "anchor": "questions-5-rag-evaluation-retrieval-quality-faithfulness-relevance-ol02"
+    }
+   ]
+  },
+  {
+   "anchor": "6-eval-loops-and-iteration-regression-canary-golden-datasets",
+   "title": "7. Eval loops and iteration: regression, canary, golden datasets",
+   "minutes": 5,
+   "endAnchor": "6-eval-loops-and-iteration-regression-canary-golden-datasets-end",
+   "blocks": [
+    {
+     "anchor": "6-eval-loops-and-iteration-regression-canary-golden-datasets-p03",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    },
+    {
+     "anchor": "6-eval-loops-and-iteration-regression-canary-golden-datasets-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "evaluation loop",
+     "definition": "A continuous process that re-runs the quality suite on every change.",
+     "anchor": "6-eval-loops-and-iteration-regression-canary-golden-datasets-p01"
+    },
+    {
+     "term": "regression testing",
+     "definition": "Re-running a fixed suite and comparing results to the last good baseline.",
+     "anchor": "6-eval-loops-and-iteration-regression-canary-golden-datasets-p03"
+    },
+    {
+     "term": "golden datasets",
+     "definition": "A curated, versioned set of prompts with trusted expected outputs.",
+     "anchor": "6-eval-loops-and-iteration-regression-canary-golden-datasets-p03"
+    },
+    {
+     "term": "canary testing",
+     "definition": "Releasing the change to a small part of traffic first and watching real metrics.",
+     "anchor": "6-eval-loops-and-iteration-regression-canary-golden-datasets-p03"
+    },
+    {
+     "term": "semantic drift",
+     "definition": "Slow quality decay when user behavior or source documents change with no prompt edits.",
+     "anchor": "6-eval-loops-and-iteration-regression-canary-golden-datasets-p12"
+    }
+   ],
+   "recall": [
+    {
+     "id": "6-eval-loops-and-iteration-regression-canary-golden-datasets-r1",
+     "question": "What are the five stages of the loop?",
+     "answer": "Curate the golden dataset, baseline, change and compare, canary, promote or roll back.",
+     "anchor": "6-eval-loops-and-iteration-regression-canary-golden-datasets-p07"
+    },
+    {
+     "id": "6-eval-loops-and-iteration-regression-canary-golden-datasets-r2",
+     "question": "The support-assistant example: what failed the gate and why?",
+     "answer": "Faithfulness dropped from 0.88 to 0.79 and refusal correctness from 0.97 to 0.91, past the 0.03 threshold, because the shortened prompt removed the grounding instruction.",
+     "anchor": "6-eval-loops-and-iteration-regression-canary-golden-datasets-p14"
+    },
+    {
+     "id": "6-eval-loops-and-iteration-regression-canary-golden-datasets-r3",
+     "question": "The suite passes but users report new failure modes. What is the gap?",
+     "answer": "The golden dataset lacks those failure modes. Add prompts from every production incident to the dataset.",
+     "anchor": "6-eval-loops-and-iteration-regression-canary-golden-datasets-p18"
+    }
+   ]
+  },
+  {
+   "anchor": "questions-6-eval-loops-and-iteration-regression-canary-golden-datasets",
+   "title": "Questions",
+   "minutes": 2,
+   "endAnchor": "questions-6-eval-loops-and-iteration-regression-canary-golden-datasets-end",
+   "blocks": [
+    {
+     "anchor": "questions-6-eval-loops-and-iteration-regression-canary-golden-datasets-p07",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "regression testing",
+     "definition": "Running a versioned golden-dataset suite on every prompt change and gating deployment.",
+     "anchor": "questions-6-eval-loops-and-iteration-regression-canary-golden-datasets-ol01"
+    },
+    {
+     "term": "production baseline",
+     "definition": "What the golden-dataset suite compares metrics against.",
+     "anchor": "questions-6-eval-loops-and-iteration-regression-canary-golden-datasets-ol03"
+    }
+   ],
+   "recall": [
+    {
+     "id": "questions-6-eval-loops-and-iteration-regression-canary-golden-datasets-r1",
+     "question": "EASY: weekly system-prompt edits need an automated check before users see problems. What should they implement?",
+     "answer": "Regression testing: run a versioned golden-dataset evaluation suite on every prompt change and gate deployment on the scores.",
+     "anchor": "questions-6-eval-loops-and-iteration-regression-canary-golden-datasets-ol01"
+    },
+    {
+     "id": "questions-6-eval-loops-and-iteration-regression-canary-golden-datasets-r2",
+     "question": "MEDIUM: the suite passes every time but users report multi-turn failures. Most probable gap?",
+     "answer": "The golden dataset has no multi-turn prompts, so the loop cannot see this failure mode.",
+     "anchor": "questions-6-eval-loops-and-iteration-regression-canary-golden-datasets-ol02"
+    }
+   ]
+  },
+  {
+   "anchor": "7-ab-testing-prompts-and-models",
+   "title": "8. A/B testing prompts and models",
+   "minutes": 4,
+   "endAnchor": "7-ab-testing-prompts-and-models-end",
+   "blocks": [
+    {
+     "anchor": "7-ab-testing-prompts-and-models-p12",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    },
+    {
+     "anchor": "7-ab-testing-prompts-and-models-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "A/B testing",
+     "definition": "Online experimentation that serves versions to different live-traffic parts and compares results.",
+     "anchor": "7-ab-testing-prompts-and-models-p01"
+    },
+    {
+     "term": "prompt variants",
+     "definition": "Parallel prompt choices for comparison, made in Bedrock Prompt Management.",
+     "anchor": "7-ab-testing-prompts-and-models-p05"
+    },
+    {
+     "term": "prompt versions",
+     "definition": "Fixed snapshots for release and rollback. Sequential, not parallel.",
+     "anchor": "7-ab-testing-prompts-and-models-p02"
+    },
+    {
+     "term": "sticky routing",
+     "definition": "Keeping one session on one variant so the comparison stays valid.",
+     "anchor": "7-ab-testing-prompts-and-models-p13"
+    },
+    {
+     "term": "statistical significance",
+     "definition": "What the winner needs before it is declared.",
+     "anchor": "7-ab-testing-prompts-and-models-p16"
+    }
+   ],
+   "recall": [
+    {
+     "id": "7-ab-testing-prompts-and-models-r1",
+     "question": "The two-prompt example: variant A has 78 percent resolution at $0.0050, variant B 76 percent at $0.0028. Who wins and why?",
+     "answer": "Variant B. The 2-point resolution gap is not significant at this sample size, but cost differs 44 percent, saving about $2.20 per 1,000 conversations with no measurable quality loss.",
+     "anchor": "7-ab-testing-prompts-and-models-p08"
+    },
+    {
+     "id": "7-ab-testing-prompts-and-models-r2",
+     "question": "What breaks an A/B test without sticky routing?",
+     "answer": "One user's session mixes variants, so answers change style mid-conversation and the comparison is invalid.",
+     "anchor": "7-ab-testing-prompts-and-models-p13"
+    },
+    {
+     "id": "7-ab-testing-prompts-and-models-r3",
+     "question": "Versions versus variants: what is the difference?",
+     "answer": "Versions are fixed snapshots for release and rollback. Variants are parallel choices for comparison.",
+     "anchor": "7-ab-testing-prompts-and-models-p12"
+    }
+   ]
+  },
+  {
+   "anchor": "questions-7-ab-testing-prompts-and-models",
+   "title": "Questions",
+   "minutes": 2,
+   "endAnchor": "questions-7-ab-testing-prompts-and-models-end",
+   "blocks": [
+    {
+     "anchor": "questions-7-ab-testing-prompts-and-models-p07",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "Prompt Management variants",
+     "definition": "How to serve two prompts to live traffic with minimal code changes.",
+     "anchor": "questions-7-ab-testing-prompts-and-models-ol01"
+    },
+    {
+     "term": "sticky per session",
+     "definition": "Traffic routing where users experience one variant all the time.",
+     "anchor": "questions-7-ab-testing-prompts-and-models-ol03"
+    }
+   ],
+   "recall": [
+    {
+     "id": "questions-7-ab-testing-prompts-and-models-r1",
+     "question": "EASY: two system prompts, similar offline scores, real traffic must decide, and marketing needs no-deploy wording changes. Best method?",
+     "answer": "Use Bedrock Prompt Management variants for the two prompts, split live traffic, and compare resolution, cost, and safety metrics.",
+     "anchor": "questions-7-ab-testing-prompts-and-models-ol01"
+    },
+    {
+     "id": "questions-7-ab-testing-prompts-and-models-r2",
+     "question": "MEDIUM: answers change style mid-conversation during an A/B test. Most probable cause?",
+     "answer": "The router is not sticky, so one session changes between variants.",
+     "anchor": "questions-7-ab-testing-prompts-and-models-ol02"
+    }
+   ]
+  },
+  {
+   "anchor": "8-troubleshooting-common-failures",
+   "title": "9. Troubleshooting common failures",
+   "minutes": 5,
+   "endAnchor": "8-troubleshooting-common-failures-end",
+   "blocks": [
+    {
+     "anchor": "8-troubleshooting-common-failures-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    },
+    {
+     "anchor": "8-troubleshooting-common-failures-p05",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    },
+    {
+     "anchor": "8-troubleshooting-common-failures-ol02",
+     "kind": "steps",
+     "reveal": "stepwise"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "signature",
+     "definition": "The specific error pattern that points to the failing layer.",
+     "anchor": "8-troubleshooting-common-failures-p01"
+    },
+    {
+     "term": "throttling exceptions",
+     "definition": "Bedrock errors when requests exceed allocated capacity.",
+     "anchor": "8-troubleshooting-common-failures-ol01"
+    },
+    {
+     "term": "provisioned model ARN",
+     "definition": "The identifier the code must invoke to actually use purchased capacity.",
+     "anchor": "8-troubleshooting-common-failures-ol02"
+    },
+    {
+     "term": "prepare-agent",
+     "definition": "The step to run after changing an agent's action groups.",
+     "anchor": "8-troubleshooting-common-failures-ol01"
+    },
+    {
+     "term": "sync job",
+     "definition": "What to check when knowledge base answers go stale.",
+     "anchor": "8-troubleshooting-common-failures-p12"
+    },
+    {
+     "term": "enableTrace",
+     "definition": "The agent setting that surfaces failures in the trace.",
+     "anchor": "8-troubleshooting-common-failures-ol02"
+    }
+   ],
+   "recall": [
+    {
+     "id": "8-troubleshooting-common-failures-r1",
+     "question": "A team buys Provisioned Throughput but still gets throttled, and the code calls invoke_model with the base model ID. What is the fix?",
+     "answer": "Route invocations to the provisioned model ARN. Capacity was not the problem. Routing was.",
+     "anchor": "8-troubleshooting-common-failures-p07"
+    },
+    {
+     "id": "8-troubleshooting-common-failures-r2",
+     "question": "Knowledge base answers are stale after document updates. What is the fix, and what is the distractor?",
+     "answer": "Check the sync job. Switching the generation model is the distractor.",
+     "anchor": "8-troubleshooting-common-failures-p11"
+    },
+    {
+     "id": "8-troubleshooting-common-failures-r3",
+     "question": "What is the debug order for any GenAI incident?",
+     "answer": "Read the error, not the symptom. Throttling exceptions name the quota, guardrail blocks name the policy, agent failures appear with enableTrace, and KB sync status is in the console.",
+     "anchor": "8-troubleshooting-common-failures-p05"
+    }
+   ]
+  },
+  {
+   "anchor": "questions-8-troubleshooting-common-failures",
+   "title": "Questions",
+   "minutes": 2,
+   "endAnchor": "questions-8-troubleshooting-common-failures-end",
+   "blocks": [
+    {
+     "anchor": "questions-8-troubleshooting-common-failures-p07",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "prepare-agent step",
+     "definition": "What must run after adding an action group to a Bedrock agent.",
+     "anchor": "questions-8-troubleshooting-common-failures-ol01"
+    },
+    {
+     "term": "base model ID",
+     "definition": "What the code invokes instead of the provisioned ARN.",
+     "anchor": "questions-8-troubleshooting-common-failures-p06"
+    },
+    {
+     "term": "vector index",
+     "definition": "What must be rebuilt after switching embedding models.",
+     "anchor": "questions-8-troubleshooting-common-failures-ol03"
+    }
+   ],
+   "recall": [
+    {
+     "id": "questions-8-troubleshooting-common-failures-r1",
+     "question": "EASY: a new action group is added, the agent never calls the tool, and Lambda works directly. Most probable cause?",
+     "answer": "The prepare-agent step was not run after the configuration change. The agent still uses the old prepared version.",
+     "anchor": "questions-8-troubleshooting-common-failures-ol01"
+    },
+    {
+     "id": "questions-8-troubleshooting-common-failures-r2",
+     "question": "HARD: the embedding model is switched, ingestion fails, and search collapses. Two correct statements?",
+     "answer": "Rebuild the vector index because the new model makes different-dimension vectors, and re-embed the corpus because old vectors cannot be reused.",
+     "anchor": "questions-8-troubleshooting-common-failures-ol03"
+    }
+   ]
+  },
+  {
+   "anchor": "9-debugging-with-cloudwatch-logs-and-cloudtrail",
+   "title": "10. Debugging with CloudWatch Logs and CloudTrail",
+   "minutes": 4,
+   "endAnchor": "9-debugging-with-cloudwatch-logs-and-cloudtrail-end",
+   "blocks": [
+    {
+     "anchor": "9-debugging-with-cloudwatch-logs-and-cloudtrail-p07",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    },
+    {
+     "anchor": "9-debugging-with-cloudwatch-logs-and-cloudtrail-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "CloudWatch",
+     "definition": "The metrics and logs service. It tells you what the application did.",
+     "anchor": "9-debugging-with-cloudwatch-logs-and-cloudtrail-p01"
+    },
+    {
+     "term": "CloudTrail",
+     "definition": "The audit service. It tells you who called what, when, and from where.",
+     "anchor": "9-debugging-with-cloudwatch-logs-and-cloudtrail-p01"
+    },
+    {
+     "term": "model invocation logging",
+     "definition": "Recording full Bedrock requests and responses to S3 or CloudWatch Logs.",
+     "anchor": "9-debugging-with-cloudwatch-logs-and-cloudtrail-p03"
+    },
+    {
+     "term": "anomaly detection",
+     "definition": "CloudWatch alarms that catch token bursts or cost spikes.",
+     "anchor": "9-debugging-with-cloudwatch-logs-and-cloudtrail-p03"
+    },
+    {
+     "term": "Logs Insights",
+     "definition": "The query tool for prompts, guardrail blocks, and error groups.",
+     "anchor": "9-debugging-with-cloudwatch-logs-and-cloudtrail-p02"
+    }
+   ],
+   "recall": [
+    {
+     "id": "9-debugging-with-cloudwatch-logs-and-cloudtrail-r1",
+     "question": "How do the two services divide the debug loop?",
+     "answer": "CloudWatch shows the anomaly, Logs Insights shows the content, CloudTrail shows the actor.",
+     "anchor": "9-debugging-with-cloudwatch-logs-and-cloudtrail-p07"
+    },
+    {
+     "id": "9-debugging-with-cloudwatch-logs-and-cloudtrail-r2",
+     "question": "The token bill triples overnight with no traffic increase. What is the debug path?",
+     "answer": "OutputTokenCount shows the spike started at 02:00. Logs Insights shows one session looping 40,000-token responses. The agent trace shows a tool error retried forever. CloudTrail rules out a config change. The fix is a Step Functions stopping condition that caps iterations.",
+     "anchor": "9-debugging-with-cloudwatch-logs-and-cloudtrail-p11"
+    },
+    {
+     "id": "9-debugging-with-cloudwatch-logs-and-cloudtrail-r3",
+     "question": "Which service answers which IAM role invoked which model at 3 AM?",
+     "answer": "CloudTrail. It records every API call with the caller, time, source, and parameters.",
+     "anchor": "9-debugging-with-cloudwatch-logs-and-cloudtrail-p04"
+    }
+   ]
+  },
+  {
+   "anchor": "questions-9-debugging-with-cloudwatch-logs-and-cloudtrail",
+   "title": "Questions",
+   "minutes": 2,
+   "endAnchor": "questions-9-debugging-with-cloudwatch-logs-and-cloudtrail-end",
+   "blocks": [
+    {
+     "anchor": "questions-9-debugging-with-cloudwatch-logs-and-cloudtrail-p07",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "API call history",
+     "definition": "What CloudTrail is queried for to find who changed a guardrail policy.",
+     "anchor": "questions-9-debugging-with-cloudwatch-logs-and-cloudtrail-ol01"
+    },
+    {
+     "term": "token-count metrics",
+     "definition": "What CloudWatch anomaly detection watches for spend alerts.",
+     "anchor": "questions-9-debugging-with-cloudwatch-logs-and-cloudtrail-ol02"
+    }
+   ],
+   "recall": [
+    {
+     "id": "questions-9-debugging-with-cloudwatch-logs-and-cloudtrail-r1",
+     "question": "EASY: which IAM principal changed a guardrail policy last Tuesday?",
+     "answer": "AWS CloudTrail, by querying the API call history for the guardrail update.",
+     "anchor": "questions-9-debugging-with-cloudwatch-logs-and-cloudtrail-ol01"
+    },
+    {
+     "id": "questions-9-debugging-with-cloudwatch-logs-and-cloudtrail-r2",
+     "question": "MEDIUM: near-real-time token-spend alerts plus the prompts behind them. Correct combination?",
+     "answer": "CloudWatch anomaly detection on token-count metrics with an alarm, plus Bedrock model invocation logging queried in Logs Insights.",
+     "anchor": "questions-9-debugging-with-cloudwatch-logs-and-cloudtrail-ol02"
+    }
+   ]
+  },
+  {
+   "anchor": "10-validating-grounding-and-hallucination-control",
+   "title": "11. Validating grounding and hallucination control",
+   "minutes": 4,
+   "endAnchor": "10-validating-grounding-and-hallucination-control-end",
+   "blocks": [
+    {
+     "anchor": "10-validating-grounding-and-hallucination-control-p06",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    },
+    {
+     "anchor": "10-validating-grounding-and-hallucination-control-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "grounding",
+     "definition": "The property that every fact in the response uses source content.",
+     "anchor": "10-validating-grounding-and-hallucination-control-p01"
+    },
+    {
+     "term": "hallucination",
+     "definition": "A claim with no source support: invented facts, wrong numbers, or answers from missing context.",
+     "anchor": "10-validating-grounding-and-hallucination-control-p01"
+    },
+    {
+     "term": "contextual grounding checks",
+     "definition": "The Bedrock Guardrails policy that scores grounding automatically.",
+     "anchor": "10-validating-grounding-and-hallucination-control-p01"
+    },
+    {
+     "term": "grounding score",
+     "definition": "The per-response score compared against the threshold you set.",
+     "anchor": "10-validating-grounding-and-hallucination-control-p09"
+    },
+    {
+     "term": "faithfulness",
+     "definition": "The RAG evaluation metric measuring the same groundedness property offline.",
+     "anchor": "10-validating-grounding-and-hallucination-control-p10"
+    }
+   ],
+   "recall": [
+    {
+     "id": "10-validating-grounding-and-hallucination-control-r1",
+     "question": "The product-support example: threshold 0.75, 300-question golden set, 40 traps. What happened?",
+     "answer": "The check blocked 37 of 40 traps, a 0.925 recall, but falsely blocked 8 correct answers. At 0.70, traps caught fell to 35 and false blocks to 3. The business accepted 35 of 40.",
+     "anchor": "10-validating-grounding-and-hallucination-control-p11"
+    },
+    {
+     "id": "10-validating-grounding-and-hallucination-control-r2",
+     "question": "Why does a grounding check not replace RAG evaluation?",
+     "answer": "The check enforces at runtime. The evaluation measures across the dataset. You need both.",
+     "anchor": "10-validating-grounding-and-hallucination-control-p16"
+    },
+    {
+     "id": "10-validating-grounding-and-hallucination-control-r3",
+     "question": "Verify the answer has support from the retrieved documents, versus verify the answer obeys the formal refund policy written as logic. Which control is which?",
+     "answer": "The first is contextual grounding. The second is Automated Reasoning.",
+     "anchor": "10-validating-grounding-and-hallucination-control-ask01"
+    }
+   ]
+  },
+  {
+   "anchor": "questions-10-validating-grounding-and-hallucination-control",
+   "title": "Questions",
+   "minutes": 2,
+   "endAnchor": "questions-10-validating-grounding-and-hallucination-control-end",
+   "blocks": [
+    {
+     "anchor": "questions-10-validating-grounding-and-hallucination-control-p07",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "contextual grounding checks",
+     "definition": "The Guardrails control for runtime hallucination enforcement.",
+     "anchor": "questions-10-validating-grounding-and-hallucination-control-ol01"
+    },
+    {
+     "term": "Automated Reasoning checks",
+     "definition": "The control that verifies answers obey formal policy rules written as logic.",
+     "anchor": "questions-10-validating-grounding-and-hallucination-control-ol02"
+    }
+   ],
+   "recall": [
+    {
+     "id": "questions-10-validating-grounding-and-hallucination-control-r1",
+     "question": "EASY: a RAG assistant invents product details, and the team needs runtime enforcement of source support. What should they use?",
+     "answer": "Bedrock Guardrails contextual grounding checks with a configured threshold.",
+     "anchor": "questions-10-validating-grounding-and-hallucination-control-ol01"
+    },
+    {
+     "id": "questions-10-validating-grounding-and-hallucination-control-r2",
+     "question": "MEDIUM: answers must use the help articles, and refund decisions must follow logical policy rules. Correct pair?",
+     "answer": "First contextual grounding checks, then Automated Reasoning checks.",
+     "anchor": "questions-10-validating-grounding-and-hallucination-control-ol02"
+    }
+   ]
+  },
+  {
+   "anchor": "11-testing-safety-red-teaming-basics-with-aws-tooling",
+   "title": "12. Testing safety: red-teaming basics with AWS tooling",
+   "minutes": 4,
+   "endAnchor": "11-testing-safety-red-teaming-basics-with-aws-tooling-end",
+   "blocks": [
+    {
+     "anchor": "11-testing-safety-red-teaming-basics-with-aws-tooling-p05",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    },
+    {
+     "anchor": "11-testing-safety-red-teaming-basics-with-aws-tooling-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "red-teaming",
+     "definition": "Systematic adversarial testing. You try to make your GenAI app misbehave, then fix what breaks.",
+     "anchor": "11-testing-safety-red-teaming-basics-with-aws-tooling-p01"
+    },
+    {
+     "term": "indirect prompt injection",
+     "definition": "Malicious instructions hidden in retrieved documents or tool outputs.",
+     "anchor": "11-testing-safety-red-teaming-basics-with-aws-tooling-p08"
+    },
+    {
+     "term": "harmfulness and refusal metrics",
+     "definition": "The evaluation metrics scoring how the app handles adversarial prompts.",
+     "anchor": "11-testing-safety-red-teaming-basics-with-aws-tooling-p03"
+    },
+    {
+     "term": "blue team",
+     "definition": "The side that builds the defenses.",
+     "anchor": "11-testing-safety-red-teaming-basics-with-aws-tooling-p03"
+    }
+   ],
+   "recall": [
+    {
+     "id": "11-testing-safety-red-teaming-basics-with-aws-tooling-r1",
+     "question": "The finance-assistant example: 150 adversarial prompts, 22 break. What was the real finding and fix?",
+     "answer": "15 of the 22 were indirect prompt injections hidden in KB documents that the input guardrail never saw. The fix: scan retrieved context too, and add an instruction-hierarchy note. Re-run: 3 of 150 break.",
+     "anchor": "11-testing-safety-red-teaming-basics-with-aws-tooling-p13"
+    },
+    {
+     "id": "11-testing-safety-red-teaming-basics-with-aws-tooling-r2",
+     "question": "Why is the claim our guardrails passed the default tests, so we are safe a trap?",
+     "answer": "Default tests cover default attacks. Red-teaming must cover every input channel: user messages, retrieved documents, tool outputs, and multi-turn history.",
+     "anchor": "11-testing-safety-red-teaming-basics-with-aws-tooling-p17"
+    },
+    {
+     "id": "11-testing-safety-red-teaming-basics-with-aws-tooling-r3",
+     "question": "Is red-teaming a one-time event?",
+     "answer": "No. New attack techniques appear constantly, so the suite must be re-run and every successful attack becomes a new test case.",
+     "anchor": "11-testing-safety-red-teaming-basics-with-aws-tooling-p19"
+    }
+   ]
+  },
+  {
+   "anchor": "questions-11-testing-safety-red-teaming-basics-with-aws-tooling",
+   "title": "Questions",
+   "minutes": 2,
+   "endAnchor": "questions-11-testing-safety-red-teaming-basics-with-aws-tooling-end",
+   "blocks": [
+    {
+     "anchor": "questions-11-testing-safety-red-teaming-basics-with-aws-tooling-p07",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "adversarial prompt suite",
+     "definition": "The test set for jailbreak and prompt-injection resistance.",
+     "anchor": "questions-11-testing-safety-red-teaming-basics-with-aws-tooling-ol01"
+    },
+    {
+     "term": "retrieved content",
+     "definition": "What guardrail scanning and red-team coverage must extend to.",
+     "anchor": "questions-11-testing-safety-red-teaming-basics-with-aws-tooling-ol02"
+    }
+   ],
+   "recall": [
+    {
+     "id": "questions-11-testing-safety-red-teaming-basics-with-aws-tooling-r1",
+     "question": "EASY: check jailbreak and prompt-injection resistance before launch. Most correct approach?",
+     "answer": "Build an adversarial prompt suite, evaluate it with harmfulness and refusal metrics, and add human red-team review.",
+     "anchor": "questions-11-testing-safety-red-teaming-basics-with-aws-tooling-ol01"
+    },
+    {
+     "id": "questions-11-testing-safety-red-teaming-basics-with-aws-tooling-r2",
+     "question": "HARD: two practices for an ongoing red-team program?",
+     "answer": "Re-run the adversarial suite on every important change to prompt, model, or retrieval, and make every successful attack a permanent regression test case.",
+     "anchor": "questions-11-testing-safety-red-teaming-basics-with-aws-tooling-ol03"
+    }
+   ]
+  },
+  {
+   "anchor": "12-cicd-for-genai-apps-prompt-versioning-and-eval-gates",
+   "title": "13. CI/CD for GenAI apps: prompt versioning and eval gates",
+   "minutes": 5,
+   "endAnchor": "12-cicd-for-genai-apps-prompt-versioning-and-eval-gates-end",
+   "blocks": [
+    {
+     "anchor": "12-cicd-for-genai-apps-prompt-versioning-and-eval-gates-p02",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    },
+    {
+     "anchor": "12-cicd-for-genai-apps-prompt-versioning-and-eval-gates-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "prompt versioning",
+     "definition": "Treating prompts as released items with immutable published versions.",
+     "anchor": "12-cicd-for-genai-apps-prompt-versioning-and-eval-gates-p02"
+    },
+    {
+     "term": "eval gates",
+     "definition": "Pipeline stages that run the evaluation suite and stop deployment if scores worsen.",
+     "anchor": "12-cicd-for-genai-apps-prompt-versioning-and-eval-gates-p02"
+    },
+    {
+     "term": "Prompt Management",
+     "definition": "The Bedrock service that stores prompt versions.",
+     "anchor": "12-cicd-for-genai-apps-prompt-versioning-and-eval-gates-p02"
+    },
+    {
+     "term": "version ARN",
+     "definition": "The immutable version identifier the application deploys. Rollback is a repoint.",
+     "anchor": "12-cicd-for-genai-apps-prompt-versioning-and-eval-gates-ol01"
+    },
+    {
+     "term": "canary",
+     "definition": "Putting 5 percent of live traffic on the new version to validate real phrasing.",
+     "anchor": "12-cicd-for-genai-apps-prompt-versioning-and-eval-gates-p04"
+    }
+   ],
+   "recall": [
+    {
+     "id": "12-cicd-for-genai-apps-prompt-versioning-and-eval-gates-r1",
+     "question": "The worked example: 400-prompt golden eval, gate thresholds, 11 of 46 publishes blocked. What did the numbers show?",
+     "answer": "The eval took about 20 minutes and $8 in judge costs per publish. Thresholds: no metric down more than 0.03, zero harmfulness, cost per conversation up at most 10 percent. Post-mortems showed 9 of the 11 blocked publishes would have caused user-visible regressions.",
+     "anchor": "12-cicd-for-genai-apps-prompt-versioning-and-eval-gates-p08"
+    },
+    {
+     "id": "12-cicd-for-genai-apps-prompt-versioning-and-eval-gates-r2",
+     "question": "Why does a prompt rollback need a redeploy when prompts are hardcoded strings?",
+     "answer": "Prompts are configuration and need their own versioning. With version ARNs, rollback is a pointer change taking less than a minute.",
+     "anchor": "12-cicd-for-genai-apps-prompt-versioning-and-eval-gates-p11"
+    },
+    {
+     "id": "12-cicd-for-genai-apps-prompt-versioning-and-eval-gates-r3",
+     "question": "Marketing must change wording often without engineering deploys, and every change must be tested. Correct solution?",
+     "answer": "Bedrock Prompt Management versioning plus a CodePipeline eval gate.",
+     "anchor": "12-cicd-for-genai-apps-prompt-versioning-and-eval-gates-ask02"
+    }
+   ]
+  },
+  {
+   "anchor": "questions-12-cicd-for-genai-apps-prompt-versioning-and-eval-gates",
+   "title": "Questions",
+   "minutes": 2,
+   "endAnchor": "questions-12-cicd-for-genai-apps-prompt-versioning-and-eval-gates-end",
+   "blocks": [
+    {
+     "anchor": "questions-12-cicd-for-genai-apps-prompt-versioning-and-eval-gates-p07",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "published versions",
+     "definition": "What Prompt Management provides for weekly wording updates.",
+     "anchor": "questions-12-cicd-for-genai-apps-prompt-versioning-and-eval-gates-ol01"
+    },
+    {
+     "term": "evaluation gate",
+     "definition": "What runs Bedrock evaluations on a golden dataset against the production baseline.",
+     "anchor": "questions-12-cicd-for-genai-apps-prompt-versioning-and-eval-gates-ol02"
+    },
+    {
+     "term": "CloudTrail records",
+     "definition": "What provides the audit trail of version publishes and deployments.",
+     "anchor": "questions-12-cicd-for-genai-apps-prompt-versioning-and-eval-gates-ol03"
+    }
+   ],
+   "recall": [
+    {
+     "id": "questions-12-cicd-for-genai-apps-prompt-versioning-and-eval-gates-r1",
+     "question": "EASY: a non-technical team updates wording weekly without code deploys, and quality must be validated first. Most appropriate?",
+     "answer": "Manage prompts in Bedrock Prompt Management with published versions, and gate deployment on Bedrock evaluation jobs in CodePipeline.",
+     "anchor": "questions-12-cicd-for-genai-apps-prompt-versioning-and-eval-gates-ol01"
+    },
+    {
+     "id": "questions-12-cicd-for-genai-apps-prompt-versioning-and-eval-gates-r2",
+     "question": "HARD: instant rollback plus a full audit trail. Which two mechanisms?",
+     "answer": "Reference immutable prompt version ARNs so rollback is a pointer change, and use CloudTrail records of version publishes and deployments for the audit trail.",
+     "anchor": "questions-12-cicd-for-genai-apps-prompt-versioning-and-eval-gates-ol03"
+    }
+   ]
+  }
+ ]
+}

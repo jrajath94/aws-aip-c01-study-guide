@@ -1,0 +1,1706 @@
+{
+ "schemaVersion": 1,
+ "itemId": "volume-d4-optimization",
+ "itemKind": "lesson",
+ "revision": "c9c1e06f02ae1390321afbde7418de68a7e0c432005126e51fa0dc644df18c6e",
+ "sections": [
+  {
+   "anchor": "volume-d4-optimization-intro-p01",
+   "title": "Domain 4: Operational Efficiency and Optimization for GenAI Applications",
+   "minutes": 2,
+   "endAnchor": "volume-d4-optimization-intro-end",
+   "blocks": [
+    {
+     "anchor": "volume-d4-optimization-intro-p01",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    },
+    {
+     "anchor": "volume-d4-optimization-intro-takeaway01",
+     "kind": "summary",
+     "reveal": "fade"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "on-demand",
+     "definition": "Pay-per-token Bedrock pricing with no commitment, where idle hours cost nothing.",
+     "anchor": "volume-d4-optimization-intro-p05"
+    },
+    {
+     "term": "token efficiency",
+     "definition": "Using the fewest tokens that still complete the job, the first free cost control.",
+     "anchor": "volume-d4-optimization-intro-p05"
+    },
+    {
+     "term": "Provisioned Throughput",
+     "definition": "Reserved Bedrock capacity bought per model unit per hour for one to six months.",
+     "anchor": "volume-d4-optimization-intro-p03"
+    }
+   ],
+   "recall": [
+    {
+     "id": "volume-d4-optimization-intro-r1",
+     "question": "What trade-off does every Domain 4 scenario require?",
+     "answer": "Choosing between cost, latency, and quality, then picking the correct control for the scenario's limit.",
+     "anchor": "volume-d4-optimization-intro-p01"
+    },
+    {
+     "id": "volume-d4-optimization-intro-r2",
+     "question": "What is the volume's one-sentence summary of the levers?",
+     "answer": "On-demand charges per token for spiky traffic, token efficiency is the first free control, then retrieval tuning, prompt caching, semantic caching, batch, provisioned throughput, smaller models with routing, and fine-tuning last.",
+     "anchor": "volume-d4-optimization-intro-takeaway01"
+    }
+   ]
+  },
+  {
+   "anchor": "the-domain-4-decision-map",
+   "title": "The Domain 4 decision map",
+   "minutes": 3,
+   "endAnchor": "the-domain-4-decision-map-end",
+   "blocks": [
+    {
+     "anchor": "the-domain-4-decision-map-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    },
+    {
+     "anchor": "the-domain-4-decision-map-p02",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    },
+    {
+     "anchor": "the-domain-4-decision-map-takeaway01",
+     "kind": "summary",
+     "reveal": "fade"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "decision map",
+     "definition": "The table that maps each scenario limit to one lever, worth memorizing before the rest of the domain.",
+     "anchor": "the-domain-4-decision-map-fig01"
+    },
+    {
+     "term": "prompt caching",
+     "definition": "A Bedrock feature that bills repeated static prompt prefixes at a discounted input rate.",
+     "anchor": "the-domain-4-decision-map-table02"
+    },
+    {
+     "term": "semantic caching",
+     "definition": "An architecture that returns stored answers for repeated meanings without calling the model.",
+     "anchor": "the-domain-4-decision-map-table02"
+    },
+    {
+     "term": "provisioned throughput",
+     "definition": "Reserved model capacity bought hourly for a one to six month term.",
+     "anchor": "the-domain-4-decision-map-table02"
+    }
+   ],
+   "recall": [
+    {
+     "id": "the-domain-4-decision-map-r1",
+     "question": "What should you memorize before reading the rest of the domain?",
+     "answer": "The decision map, which answers half of the domain by mapping each scenario limit to one lever.",
+     "anchor": "the-domain-4-decision-map-p02"
+    },
+    {
+     "id": "the-domain-4-decision-map-r2",
+     "question": "What are the pricing controls in order?",
+     "answer": "Token efficiency, retrieval tuning, prompt caching, semantic caching, batch, provisioned throughput, smaller models and routers, then fine-tuning.",
+     "anchor": "the-domain-4-decision-map-takeaway01"
+    }
+   ]
+  },
+  {
+   "anchor": "01-on-demand-inference-pricing-and-token-economics",
+   "title": "01. On-demand inference pricing and token economics",
+   "minutes": 5,
+   "endAnchor": "01-on-demand-inference-pricing-and-token-economics-end",
+   "blocks": [
+    {
+     "anchor": "01-on-demand-inference-pricing-and-token-economics-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    },
+    {
+     "anchor": "01-on-demand-inference-pricing-and-token-economics-p09",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "on-demand inference",
+     "definition": "Bedrock's pay-as-you-go pricing where you pay per token with zero cost when idle.",
+     "anchor": "01-on-demand-inference-pricing-and-token-economics-p06"
+    },
+    {
+     "term": "input tokens",
+     "definition": "All data sent to the model, including the system prompt, history, tools, and user message.",
+     "anchor": "01-on-demand-inference-pricing-and-token-economics-p04"
+    },
+    {
+     "term": "output tokens",
+     "definition": "All data the model generates, billed at a higher rate than input tokens.",
+     "anchor": "01-on-demand-inference-pricing-and-token-economics-p01"
+    },
+    {
+     "term": "cost equation",
+     "definition": "Cost per call equals input tokens times input price plus output tokens times output price.",
+     "anchor": "01-on-demand-inference-pricing-and-token-economics-callout01"
+    }
+   ],
+   "recall": [
+    {
+     "id": "01-on-demand-inference-pricing-and-token-economics-r1",
+     "question": "Why does the bill grow when nobody changes the model?",
+     "answer": "The whole conversation history is re-billed as input tokens on every turn, a silent multiplier.",
+     "anchor": "01-on-demand-inference-pricing-and-token-economics-p09"
+    },
+    {
+     "id": "01-on-demand-inference-pricing-and-token-economics-r2",
+     "question": "When is on-demand the cheapest choice?",
+     "answer": "When traffic is spiky, unpredictable, or low, because idle hours cost nothing while provisioned throughput charges for idle capacity.",
+     "anchor": "01-on-demand-inference-pricing-and-token-economics-p20"
+    }
+   ]
+  },
+  {
+   "anchor": "11-token-efficiency-and-prompt-optimization",
+   "title": "02. Token efficiency and prompt optimization",
+   "minutes": 4,
+   "endAnchor": "11-token-efficiency-and-prompt-optimization-end",
+   "blocks": [
+    {
+     "anchor": "11-token-efficiency-and-prompt-optimization-ol01",
+     "kind": "steps",
+     "reveal": "stepwise"
+    },
+    {
+     "anchor": "11-token-efficiency-and-prompt-optimization-p10",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "token efficiency",
+     "definition": "Using the fewest tokens that still complete the job, the free lever pulled first.",
+     "anchor": "11-token-efficiency-and-prompt-optimization-p02"
+    },
+    {
+     "term": "context pruning",
+     "definition": "Removing irrelevant conversation history or document parts instead of resending them every call.",
+     "anchor": "11-token-efficiency-and-prompt-optimization-ol01"
+    },
+    {
+     "term": "prompt compression",
+     "definition": "Rewriting long instructions as short ones without changing the meaning.",
+     "anchor": "11-token-efficiency-and-prompt-optimization-ol01"
+    },
+    {
+     "term": "maxTokens",
+     "definition": "The inference setting that caps output length and limits output token spend.",
+     "anchor": "11-token-efficiency-and-prompt-optimization-ol01"
+    }
+   ],
+   "recall": [
+    {
+     "id": "11-token-efficiency-and-prompt-optimization-r1",
+     "question": "Why is token efficiency the first lever to use?",
+     "answer": "It costs nothing to use and it makes every other pricing lever work better.",
+     "anchor": "11-token-efficiency-and-prompt-optimization-p10"
+    },
+    {
+     "id": "11-token-efficiency-and-prompt-optimization-r2",
+     "question": "Why is prompt compression a process rather than a one-time change?",
+     "answer": "You must re-evaluate after each step, since removing too much history trades cost for wrong answers.",
+     "anchor": "11-token-efficiency-and-prompt-optimization-p14"
+    }
+   ]
+  },
+  {
+   "anchor": "02-prompt-caching",
+   "title": "03. Prompt caching",
+   "minutes": 5,
+   "endAnchor": "02-prompt-caching-end",
+   "blocks": [
+    {
+     "anchor": "02-prompt-caching-p02",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    },
+    {
+     "anchor": "02-prompt-caching-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "prompt caching",
+     "definition": "A Bedrock pricing feature that discounts repeated static input tokens via a marked cache point.",
+     "anchor": "02-prompt-caching-p02"
+    },
+    {
+     "term": "cache point",
+     "definition": "The marker in the request before which Bedrock stores computed state for reuse.",
+     "anchor": "02-prompt-caching-p02"
+    },
+    {
+     "term": "TTL",
+     "definition": "Time to live, about five minutes by default, after which the cached prefix must be recomputed.",
+     "anchor": "02-prompt-caching-p09"
+    },
+    {
+     "term": "cache-write surcharge",
+     "definition": "A small extra charge on the first call that writes the cached prefix state.",
+     "anchor": "02-prompt-caching-p08"
+    }
+   ],
+   "recall": [
+    {
+     "id": "02-prompt-caching-r1",
+     "question": "What two things break prompt caching?",
+     "answer": "Any change to the prefix content before the cache point, and the TTL expiring between calls.",
+     "anchor": "02-prompt-caching-p10"
+    },
+    {
+     "id": "02-prompt-caching-r2",
+     "question": "Why is prompt caching the wrong fix for throttling?",
+     "answer": "It is a cost control that discounts repeated input tokens, not a capacity control, so peak throttling needs provisioned throughput or rate-limit handling.",
+     "anchor": "02-prompt-caching-ask01"
+    }
+   ]
+  },
+  {
+   "anchor": "12-semantic-caching",
+   "title": "04. Semantic caching",
+   "minutes": 5,
+   "endAnchor": "12-semantic-caching-end",
+   "blocks": [
+    {
+     "anchor": "12-semantic-caching-p04",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    },
+    {
+     "anchor": "12-semantic-caching-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "semantic caching",
+     "definition": "Storing model responses and reusing them for new questions that mean the same thing.",
+     "anchor": "12-semantic-caching-p02"
+    },
+    {
+     "term": "embedding",
+     "definition": "A numeric vector representing the meaning of a question for similarity comparison.",
+     "anchor": "12-semantic-caching-p03"
+    },
+    {
+     "term": "cosine similarity",
+     "definition": "The similarity measure comparing a new question's embedding to cached embeddings.",
+     "anchor": "12-semantic-caching-p08"
+    },
+    {
+     "term": "similarity threshold",
+     "definition": "The minimum similarity, for example 0.95, that counts a cached question as a hit.",
+     "anchor": "12-semantic-caching-p08"
+    },
+    {
+     "term": "hit rate",
+     "definition": "The share of questions answered from cache, measured on real traffic before adopting the architecture.",
+     "anchor": "12-semantic-caching-code01"
+    }
+   ],
+   "recall": [
+    {
+     "id": "12-semantic-caching-r1",
+     "question": "When does semantic caching fail?",
+     "answer": "When queries are highly personalized and unique, the hit rate collapses and the cache adds complexity for no savings.",
+     "anchor": "12-semantic-caching-p16"
+    },
+    {
+     "id": "12-semantic-caching-r2",
+     "question": "What is the key difference between semantic caching and prompt caching?",
+     "answer": "Semantic caching removes the call completely for repeated meanings, while prompt caching discounts input tokens on calls you still make.",
+     "anchor": "12-semantic-caching-p18"
+    }
+   ]
+  },
+  {
+   "anchor": "05-retrieval-tuning-fewer-better-chunks",
+   "title": "05. Retrieval tuning: fewer, better chunks",
+   "minutes": 4,
+   "endAnchor": "05-retrieval-tuning-fewer-better-chunks-end",
+   "blocks": [
+    {
+     "anchor": "05-retrieval-tuning-fewer-better-chunks-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    },
+    {
+     "anchor": "05-retrieval-tuning-fewer-better-chunks-p05",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "retrieval tuning",
+     "definition": "Using the fewest context tokens that still contain the answer, starting with the cheapest change.",
+     "anchor": "05-retrieval-tuning-fewer-better-chunks-p05"
+    },
+    {
+     "term": "top-k",
+     "definition": "The number of chunks the retriever returns per query, cut when the answer sits in the top few.",
+     "anchor": "05-retrieval-tuning-fewer-better-chunks-p06"
+    },
+    {
+     "term": "reranker",
+     "definition": "A small model that scores candidate chunks for relevance so only the best few reach the prompt.",
+     "anchor": "05-retrieval-tuning-fewer-better-chunks-p08"
+    },
+    {
+     "term": "metadata filtering",
+     "definition": "Shrinking the candidate set by document metadata before vector search, needing a smaller top-k.",
+     "anchor": "05-retrieval-tuning-fewer-better-chunks-p13"
+    }
+   ],
+   "recall": [
+    {
+     "id": "05-retrieval-tuning-fewer-better-chunks-r1",
+     "question": "What is the cheapest retrieval-tuning lever?",
+     "answer": "Lowering top-k, for example from 10 to 3 when the answer is always in the top three, cutting retrieval token cost by 70 percent.",
+     "anchor": "05-retrieval-tuning-fewer-better-chunks-p06"
+    },
+    {
+     "id": "05-retrieval-tuning-fewer-better-chunks-r2",
+     "question": "Why should you not add more chunks to fix wrong answers?",
+     "answer": "More chunks raise cost and often lower quality through noise, so fix retrieval with a lower top-k, reranking, or denser chunking.",
+     "anchor": "05-retrieval-tuning-fewer-better-chunks-p15"
+    }
+   ]
+  },
+  {
+   "anchor": "08-right-sizing-models-and-cascading-with-routers",
+   "title": "06. Right-sizing models and cascading with routers",
+   "minutes": 4,
+   "endAnchor": "08-right-sizing-models-and-cascading-with-routers-end",
+   "blocks": [
+    {
+     "anchor": "08-right-sizing-models-and-cascading-with-routers-p04",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    },
+    {
+     "anchor": "08-right-sizing-models-and-cascading-with-routers-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "right-sizing",
+     "definition": "Matching the model to the task's difficulty instead of using the flagship for everything.",
+     "anchor": "08-right-sizing-models-and-cascading-with-routers-p02"
+    },
+    {
+     "term": "model cascading",
+     "definition": "Routing simple requests to a cheap model and escalating only complex ones to the flagship.",
+     "anchor": "08-right-sizing-models-and-cascading-with-routers-p02"
+    },
+    {
+     "term": "prompt router",
+     "definition": "Bedrock's managed router that sends each prompt to the cheapest model that can handle it.",
+     "anchor": "08-right-sizing-models-and-cascading-with-routers-p03"
+    },
+    {
+     "term": "escalation",
+     "definition": "The low-confidence path that moves a request from the small model up to the flagship.",
+     "anchor": "08-right-sizing-models-and-cascading-with-routers-p09"
+    }
+   ],
+   "recall": [
+    {
+     "id": "08-right-sizing-models-and-cascading-with-routers-r1",
+     "question": "What makes cascading cut the bill by about 70 percent?",
+     "answer": "A router sends 80 percent of traffic to a model 10 times cheaper with no measurable quality drop, but the router itself must be almost free.",
+     "anchor": "08-right-sizing-models-and-cascading-with-routers-p10"
+    },
+    {
+     "id": "08-right-sizing-models-and-cascading-with-routers-r2",
+     "question": "What is the real risk of a cascade?",
+     "answer": "Router misclassification sending hard questions to the small model, controlled by per-route quality monitoring and low-confidence escalation.",
+     "anchor": "08-right-sizing-models-and-cascading-with-routers-p14"
+    }
+   ]
+  },
+  {
+   "anchor": "07-fine-tuning-a-small-model-for-your-workload",
+   "title": "07. Fine-tuning a small model for your workload",
+   "minutes": 4,
+   "endAnchor": "07-fine-tuning-a-small-model-for-your-workload-end",
+   "blocks": [
+    {
+     "anchor": "07-fine-tuning-a-small-model-for-your-workload-p01",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    },
+    {
+     "anchor": "07-fine-tuning-a-small-model-for-your-workload-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "fine-tuning",
+     "definition": "Training a model on labeled examples so a behavior becomes part of the weights, not the prompt.",
+     "anchor": "07-fine-tuning-a-small-model-for-your-workload-fig01"
+    },
+    {
+     "term": "distillation",
+     "definition": "Training a small cheap student model to imitate a large teacher model on one narrow task.",
+     "anchor": "07-fine-tuning-a-small-model-for-your-workload-p03"
+    },
+    {
+     "term": "Provisioned Throughput",
+     "definition": "Reserved capacity, usually required before a fine-tuned custom model can be invoked at all.",
+     "anchor": "07-fine-tuning-a-small-model-for-your-workload-p06"
+    },
+    {
+     "term": "example quality",
+     "definition": "Better training examples beat more examples, since the model learns your habits at scale.",
+     "anchor": "07-fine-tuning-a-small-model-for-your-workload-p10"
+    }
+   ],
+   "recall": [
+    {
+     "id": "07-fine-tuning-a-small-model-for-your-workload-r1",
+     "question": "When does fine-tuning pay off?",
+     "answer": "Only for a narrow, repeated behavior with stable rules at huge volume, where one-time training plus the hourly serving commitment is smaller than the flagship tokens saved.",
+     "anchor": "07-fine-tuning-a-small-model-for-your-workload-p06"
+    },
+    {
+     "id": "07-fine-tuning-a-small-model-for-your-workload-r2",
+     "question": "Why is fine-tuning on changing documents wrong?",
+     "answer": "Documents that update monthly go stale in the weights and cannot cite sources, so that is RAG's job.",
+     "anchor": "07-fine-tuning-a-small-model-for-your-workload-p08"
+    }
+   ]
+  },
+  {
+   "anchor": "06-latency-vs-throughput-streaming-and-perceived-speed",
+   "title": "08. Latency vs throughput: streaming and perceived speed",
+   "minutes": 6,
+   "endAnchor": "06-latency-vs-throughput-streaming-and-perceived-speed-end",
+   "blocks": [
+    {
+     "anchor": "06-latency-vs-throughput-streaming-and-perceived-speed-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    },
+    {
+     "anchor": "06-latency-vs-throughput-streaming-and-perceived-speed-p05",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "perceived latency",
+     "definition": "What users feel, driven by time to first token rather than total generation time.",
+     "anchor": "06-latency-vs-throughput-streaming-and-perceived-speed-p01"
+    },
+    {
+     "term": "TTFT",
+     "definition": "Time to first token, the delay before the first token appears including prompt processing.",
+     "anchor": "06-latency-vs-throughput-streaming-and-perceived-speed-p05"
+    },
+    {
+     "term": "streaming",
+     "definition": "Sending tokens as the model generates them, so users see words in about a second.",
+     "anchor": "06-latency-vs-throughput-streaming-and-perceived-speed-fig01"
+    },
+    {
+     "term": "total latency",
+     "definition": "The delay until the last token, which streaming does not change.",
+     "anchor": "06-latency-vs-throughput-streaming-and-perceived-speed-p05"
+    },
+    {
+     "term": "temperature",
+     "definition": "The randomness control, where 0 is the most deterministic setting, not a cost control.",
+     "anchor": "06-latency-vs-throughput-streaming-and-perceived-speed-p16"
+    }
+   ],
+   "recall": [
+    {
+     "id": "06-latency-vs-throughput-streaming-and-perceived-speed-r1",
+     "question": "What is the difference between perceived latency and total latency?",
+     "answer": "Perceived latency is time to first token and total latency is time to the last token, so streaming improves perception without changing total generation time.",
+     "anchor": "06-latency-vs-throughput-streaming-and-perceived-speed-p05"
+    },
+    {
+     "id": "06-latency-vs-throughput-streaming-and-perceived-speed-r2",
+     "question": "Why is streaming alone wrong for a hard sub-3-second SLA?",
+     "answer": "Streaming changes when the user sees output, not total time, so the guarantee needs a smaller model plus provisioned throughput plus streaming.",
+     "anchor": "06-latency-vs-throughput-streaming-and-perceived-speed-p29"
+    }
+   ]
+  },
+  {
+   "anchor": "03-batch-inference",
+   "title": "09. Batch inference",
+   "minutes": 4,
+   "endAnchor": "03-batch-inference-end",
+   "blocks": [
+    {
+     "anchor": "03-batch-inference-p03",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    },
+    {
+     "anchor": "03-batch-inference-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "batch inference",
+     "definition": "Bedrock's asynchronous discounted inference mode, about half price with hours of latency.",
+     "anchor": "03-batch-inference-p02"
+    },
+    {
+     "term": "JSON Lines",
+     "definition": "The file format for batch input, with one complete model invocation per line.",
+     "anchor": "03-batch-inference-p02"
+    },
+    {
+     "term": "CreateModelInvocationJob",
+     "definition": "The API that starts a batch job with an input S3 URI and an output S3 URI.",
+     "anchor": "03-batch-inference-p06"
+    },
+    {
+     "term": "spare capacity",
+     "definition": "The idle capacity windows AWS schedules batch work into, which is why batch costs less.",
+     "anchor": "03-batch-inference-p07"
+    }
+   ],
+   "recall": [
+    {
+     "id": "03-batch-inference-r1",
+     "question": "What is the batch inference price and latency trade?",
+     "answer": "About 50 percent lower than on-demand for the same model, but results arrive hours later with no latency SLA.",
+     "anchor": "03-batch-inference-p03"
+    },
+    {
+     "id": "03-batch-inference-r2",
+     "question": "What is the main batch trap on the exam?",
+     "answer": "Using batch for an interactive workload to save money, since hours-scale latency breaks the product even though the discount is real.",
+     "anchor": "03-batch-inference-p19"
+    }
+   ]
+  },
+  {
+   "anchor": "04-provisioned-throughput",
+   "title": "10. Provisioned Throughput",
+   "minutes": 5,
+   "endAnchor": "04-provisioned-throughput-end",
+   "blocks": [
+    {
+     "anchor": "04-provisioned-throughput-p13",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "Provisioned Throughput",
+     "definition": "Reserved inference capacity on Bedrock bought per model unit per hour for one to six months.",
+     "anchor": "04-provisioned-throughput-p03"
+    },
+    {
+     "term": "model units",
+     "definition": "The purchase unit of provisioned capacity, each with fixed processing capacity for one model.",
+     "anchor": "04-provisioned-throughput-p03"
+    },
+    {
+     "term": "provisioned model ARN",
+     "definition": "The identifier your code must invoke to use reserved capacity, not the base model ID.",
+     "anchor": "04-provisioned-throughput-p05"
+    },
+    {
+     "term": "autoscaling",
+     "definition": "Policies that add or remove model units as utilization crosses thresholds, within set limits.",
+     "anchor": "04-provisioned-throughput-p11"
+    },
+    {
+     "term": "hybrid pattern",
+     "definition": "Provisioned Throughput for the predictable baseline plus on-demand overflow for spikes.",
+     "anchor": "04-provisioned-throughput-p13"
+    }
+   ],
+   "recall": [
+    {
+     "id": "04-provisioned-throughput-r1",
+     "question": "What is the exam's most correct production pattern for steady traffic with spikes?",
+     "answer": "Provisioned Throughput for the predictable baseline plus on-demand overflow for spikes, provisioning for the floor and never the peak.",
+     "anchor": "04-provisioned-throughput-p13"
+    },
+    {
+     "id": "04-provisioned-throughput-r2",
+     "question": "Why does throttling continue after buying provisioned throughput?",
+     "answer": "The code still calls the base model ID instead of the provisioned model ARN, so traffic stays on the on-demand pool.",
+     "anchor": "04-provisioned-throughput-p10"
+    }
+   ]
+  },
+  {
+   "anchor": "05-inference-profiles-and-cross-region-routing",
+   "title": "11. Inference profiles and cross-region routing",
+   "minutes": 5,
+   "endAnchor": "05-inference-profiles-and-cross-region-routing-end",
+   "blocks": [
+    {
+     "anchor": "05-inference-profiles-and-cross-region-routing-p04",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    },
+    {
+     "anchor": "05-inference-profiles-and-cross-region-routing-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "inference profile",
+     "definition": "A Bedrock routing identifier that sends a request to a model in one of several regions.",
+     "anchor": "05-inference-profiles-and-cross-region-routing-p02"
+    },
+    {
+     "term": "geographic prefixes",
+     "definition": "The us., eu., apac., and global. profile prefixes that route within data-residency boundaries.",
+     "anchor": "05-inference-profiles-and-cross-region-routing-p04"
+    },
+    {
+     "term": "application profile",
+     "definition": "A self-created profile wrapping one region or system profile that adds tags and metrics.",
+     "anchor": "05-inference-profiles-and-cross-region-routing-p11"
+    },
+    {
+     "term": "data-residency",
+     "definition": "The scope decision keeping data inside required regions, such as EU data in EU regions.",
+     "anchor": "05-inference-profiles-and-cross-region-routing-p09"
+    }
+   ],
+   "recall": [
+    {
+     "id": "05-inference-profiles-and-cross-region-routing-r1",
+     "question": "How do inference profiles improve resilience?",
+     "answer": "They pool capacity across regions with automatic failover, so a throttled region retries in another profile region transparently.",
+     "anchor": "05-inference-profiles-and-cross-region-routing-p12"
+    },
+    {
+     "id": "05-inference-profiles-and-cross-region-routing-r2",
+     "question": "How do you distinguish the three routing concepts?",
+     "answer": "Inference profiles route across regions for availability, prompt routers route by complexity for cost, and provisioned throughput reserves capacity.",
+     "anchor": "05-inference-profiles-and-cross-region-routing-p21"
+    }
+   ]
+  },
+  {
+   "anchor": "07-rate-limits-quotas-and-throttling-with-retries",
+   "title": "12. Rate limits, quotas, and throttling with retries",
+   "minutes": 4,
+   "endAnchor": "07-rate-limits-quotas-and-throttling-with-retries-end",
+   "blocks": [
+    {
+     "anchor": "07-rate-limits-quotas-and-throttling-with-retries-p03",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    },
+    {
+     "anchor": "07-rate-limits-quotas-and-throttling-with-retries-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "throttling",
+     "definition": "AWS rejecting requests above the quota, a signal to slow down rather than a bug.",
+     "anchor": "07-rate-limits-quotas-and-throttling-with-retries-p01"
+    },
+    {
+     "term": "ThrottlingException",
+     "definition": "The error Bedrock returns when a client exceeds its request quota.",
+     "anchor": "07-rate-limits-quotas-and-throttling-with-retries-p02"
+    },
+    {
+     "term": "exponential backoff",
+     "definition": "Waiting longer before each retry, about 1 second, then 2, then 4, until attempts run out.",
+     "anchor": "07-rate-limits-quotas-and-throttling-with-retries-p03"
+    },
+    {
+     "term": "jitter",
+     "definition": "A small random offset added to each wait so many clients do not retry at once.",
+     "anchor": "07-rate-limits-quotas-and-throttling-with-retries-p03"
+    },
+    {
+     "term": "usage plans",
+     "definition": "API Gateway rate limits and API keys that protect the backend from client bursts.",
+     "anchor": "07-rate-limits-quotas-and-throttling-with-retries-p09"
+    }
+   ],
+   "recall": [
+    {
+     "id": "07-rate-limits-quotas-and-throttling-with-retries-r1",
+     "question": "How should a client handle ThrottlingException?",
+     "answer": "Retry with exponential backoff and jitter, waiting about 1 second, then 2, then 4, with a random offset so clients do not retry together.",
+     "anchor": "07-rate-limits-quotas-and-throttling-with-retries-p06"
+    },
+    {
+     "id": "07-rate-limits-quotas-and-throttling-with-retries-r2",
+     "question": "When is a quota increase the wrong answer?",
+     "answer": "During brief sub-minute spikes, which retries absorb, since quota increases are for sustained legitimate growth.",
+     "anchor": "07-rate-limits-quotas-and-throttling-with-retries-p21"
+    }
+   ]
+  },
+  {
+   "anchor": "09-cloudwatch-metrics-for-bedrock",
+   "title": "13. CloudWatch metrics for Bedrock",
+   "minutes": 4,
+   "endAnchor": "09-cloudwatch-metrics-for-bedrock-end",
+   "blocks": [
+    {
+     "anchor": "09-cloudwatch-metrics-for-bedrock-p01",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    },
+    {
+     "anchor": "09-cloudwatch-metrics-for-bedrock-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "Invocations",
+     "definition": "The CloudWatch metric for the number of model calls, your volume baseline.",
+     "anchor": "09-cloudwatch-metrics-for-bedrock-p02"
+    },
+    {
+     "term": "InputTokenCount",
+     "definition": "The CloudWatch metric for input tokens, your cost baseline with OutputTokenCount.",
+     "anchor": "09-cloudwatch-metrics-for-bedrock-p02"
+    },
+    {
+     "term": "OutputTokenCount",
+     "definition": "The CloudWatch metric for output tokens, where a 3x jump with flat invocations means longer responses.",
+     "anchor": "09-cloudwatch-metrics-for-bedrock-p02"
+    },
+    {
+     "term": "InvocationThrottles",
+     "definition": "The CloudWatch metric counting throttled requests, signaling quota limits.",
+     "anchor": "09-cloudwatch-metrics-for-bedrock-p02"
+    },
+    {
+     "term": "anomaly detection",
+     "definition": "CloudWatch machine-learning baselines that flag unusual spikes without manual thresholds.",
+     "anchor": "09-cloudwatch-metrics-for-bedrock-p03"
+    }
+   ],
+   "recall": [
+    {
+     "id": "09-cloudwatch-metrics-for-bedrock-r1",
+     "question": "What does an OutputTokenCount spike with flat invocations mean?",
+     "answer": "Responses became longer, a prompt or maxTokens regression, not a traffic or capacity problem.",
+     "anchor": "09-cloudwatch-metrics-for-bedrock-p05"
+    },
+    {
+     "id": "09-cloudwatch-metrics-for-bedrock-r2",
+     "question": "Which tools are wrong for token-spend and quality monitoring?",
+     "answer": "CloudTrail, the audit plane without token counts, and SageMaker Model Monitor, which is for tabular ML and not GenAI text.",
+     "anchor": "09-cloudwatch-metrics-for-bedrock-p16"
+    }
+   ]
+  },
+  {
+   "anchor": "10-model-invocation-logging-and-x-ray-tracing",
+   "title": "14. Model invocation logging and X-Ray tracing",
+   "minutes": 4,
+   "endAnchor": "10-model-invocation-logging-and-x-ray-tracing-end",
+   "blocks": [
+    {
+     "anchor": "10-model-invocation-logging-and-x-ray-tracing-p01",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "model invocation logging",
+     "definition": "Recording full Bedrock request and response bodies to S3 or CloudWatch Logs for forensics.",
+     "anchor": "10-model-invocation-logging-and-x-ray-tracing-p02"
+    },
+    {
+     "term": "X-Ray",
+     "definition": "Distributed tracing that follows one request across services and records each step's timing.",
+     "anchor": "10-model-invocation-logging-and-x-ray-tracing-p02"
+    },
+    {
+     "term": "trace ID",
+     "definition": "The identifier given to each request so every service call becomes a timed segment.",
+     "anchor": "10-model-invocation-logging-and-x-ray-tracing-p08"
+    },
+    {
+     "term": "KMS encryption",
+     "definition": "The encryption expected on invocation log destinations for healthcare and finance workloads.",
+     "anchor": "10-model-invocation-logging-and-x-ray-tracing-p07"
+    },
+    {
+     "term": "CloudWatch Logs Insights",
+     "definition": "The query tool for searching invocation logs to find expensive or long responses.",
+     "anchor": "10-model-invocation-logging-and-x-ray-tracing-p07"
+    }
+   ],
+   "recall": [
+    {
+     "id": "10-model-invocation-logging-and-x-ray-tracing-r1",
+     "question": "What question does each observability plane answer?",
+     "answer": "Metrics show what moved, invocation logs show what was said, and traces show where the time went.",
+     "anchor": "10-model-invocation-logging-and-x-ray-tracing-p13"
+    },
+    {
+     "id": "10-model-invocation-logging-and-x-ray-tracing-r2",
+     "question": "What must a healthcare team do about invocation logs?",
+     "answer": "Encrypt the destination with KMS or disable logging, since raw prompts and responses can contain PII.",
+     "anchor": "10-model-invocation-logging-and-x-ray-tracing-p07"
+    }
+   ]
+  },
+  {
+   "anchor": "13-best-practices-the-cost-ladder",
+   "title": "15. Best practices: the cost ladder",
+   "minutes": 6,
+   "endAnchor": "13-best-practices-the-cost-ladder-end",
+   "blocks": [
+    {
+     "anchor": "13-best-practices-the-cost-ladder-p02",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    },
+    {
+     "anchor": "13-best-practices-the-cost-ladder-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "ladder",
+     "definition": "The ordered list of optimization levers from the cheapest free actions to the most expensive commitments.",
+     "anchor": "13-best-practices-the-cost-ladder-p01"
+    },
+    {
+     "term": "hybrid",
+     "definition": "The exam's most correct pattern, matching each traffic shape to its own pricing lever.",
+     "anchor": "13-best-practices-the-cost-ladder-p14"
+    },
+    {
+     "term": "measure first",
+     "definition": "The ladder's first step, using CloudWatch metrics and anomaly detection before optimizing.",
+     "anchor": "13-best-practices-the-cost-ladder-ol01"
+    },
+    {
+     "term": "streaming",
+     "definition": "The latency lever that shows tokens as they arrive, improving perceived speed.",
+     "anchor": "13-best-practices-the-cost-ladder-p05"
+    }
+   ],
+   "recall": [
+    {
+     "id": "13-best-practices-the-cost-ladder-r1",
+     "question": "What is the ladder rule for exam answers?",
+     "answer": "The correct answer is the cheapest action that fits the scenario's limits, so go down the ladder and never up.",
+     "anchor": "13-best-practices-the-cost-ladder-p02"
+    },
+    {
+     "id": "13-best-practices-the-cost-ladder-r2",
+     "question": "What comes after fine-tuning on the cost ladder?",
+     "answer": "Defer with batch inference, guarantee with provisioned throughput, route with inference profiles, then stream, retry, and govern spend.",
+     "anchor": "13-best-practices-the-cost-ladder-p08"
+    }
+   ]
+  },
+  {
+   "anchor": "questions-topic-01-on-demand-pricing-and-token-economics",
+   "title": "Questions: Topic 01, On-demand pricing and token economics",
+   "minutes": 5,
+   "endAnchor": "questions-topic-01-on-demand-pricing-and-token-economics-end",
+   "blocks": [
+    {
+     "anchor": "questions-topic-01-on-demand-pricing-and-token-economics-p16",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    },
+    {
+     "anchor": "questions-topic-01-on-demand-pricing-and-token-economics-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "on-demand inference",
+     "definition": "Pay-per-token pricing with no commitment, cheapest for spiky or experimental traffic.",
+     "anchor": "questions-topic-01-on-demand-pricing-and-token-economics-p03"
+    },
+    {
+     "term": "provisioned throughput",
+     "definition": "Reserved capacity with an hourly fee for the full term, paid whether used or not.",
+     "anchor": "questions-topic-01-on-demand-pricing-and-token-economics-p02"
+    },
+    {
+     "term": "batch inference",
+     "definition": "Async S3-based inference at about half price, unsuitable for interactive chat.",
+     "anchor": "questions-topic-01-on-demand-pricing-and-token-economics-p04"
+    },
+    {
+     "term": "InputTokenCount",
+     "definition": "The CloudWatch metric for input tokens, analyzed per tenant for chargeback.",
+     "anchor": "questions-topic-01-on-demand-pricing-and-token-economics-p47"
+    }
+   ],
+   "recall": [
+    {
+     "id": "questions-topic-01-on-demand-pricing-and-token-economics-r1",
+     "question": "A startup prototypes a chat feature with unpredictable usage. Which pricing model is correct?",
+     "answer": "On-demand inference, because it charges only for tokens used and idle hours cost nothing, while provisioned throughput would charge hourly for quiet days.",
+     "anchor": "questions-topic-01-on-demand-pricing-and-token-economics-p06"
+    },
+    {
+     "id": "questions-topic-01-on-demand-pricing-and-token-economics-r2",
+     "question": "What is the approximate monthly saving of cascading 3M calls with 85 percent on a lightweight model?",
+     "answer": "About $21,000, from $27,000 all-flagship down to about $5,962.50 cascaded.",
+     "anchor": "questions-topic-01-on-demand-pricing-and-token-economics-p26"
+    }
+   ]
+  },
+  {
+   "anchor": "questions-topic-11-token-efficiency",
+   "title": "Questions: Topic 02, Token efficiency",
+   "minutes": 4,
+   "endAnchor": "questions-topic-11-token-efficiency-end",
+   "blocks": [
+    {
+     "anchor": "questions-topic-11-token-efficiency-p16",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "context pruning",
+     "definition": "Removing input tokens from every call, for example keeping only recent turns.",
+     "anchor": "questions-topic-11-token-efficiency-p06"
+    },
+    {
+     "term": "prompt compression",
+     "definition": "An optimization loop of shrinking the prompt, evaluating, and stopping when quality changes.",
+     "anchor": "questions-topic-11-token-efficiency-p08"
+    },
+    {
+     "term": "maxTokens",
+     "definition": "The setting that limits output tokens per call, paired with concise-answer instructions.",
+     "anchor": "questions-topic-11-token-efficiency-p12"
+    },
+    {
+     "term": "top-p",
+     "definition": "A sampling control that changes diversity, not token counts or cost.",
+     "anchor": "questions-topic-11-token-efficiency-p27"
+    }
+   ],
+   "recall": [
+    {
+     "id": "questions-topic-11-token-efficiency-r1",
+     "question": "A chatbot sends 3,000 tokens of history every call. What is the simplest cost cut?",
+     "answer": "Use the last 6 turns or summarize older turns, since context pruning removes input tokens from every call at no cost.",
+     "anchor": "questions-topic-11-token-efficiency-p06"
+    },
+    {
+     "id": "questions-topic-11-token-efficiency-r2",
+     "question": "Which two changes improve RAG token use without hurting quality?",
+     "answer": "Get fewer, better-ranked chunks with hybrid search and reranking, and shorten the instruction text around the chunks.",
+     "anchor": "questions-topic-11-token-efficiency-p35"
+    }
+   ]
+  },
+  {
+   "anchor": "questions-topic-02-prompt-caching",
+   "title": "Questions: Topic 03, Prompt caching",
+   "minutes": 4,
+   "endAnchor": "questions-topic-02-prompt-caching-end",
+   "blocks": [
+    {
+     "anchor": "questions-topic-02-prompt-caching-p16",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "prompt caching",
+     "definition": "The Bedrock feature discounting repeated input tokens before a cache point.",
+     "anchor": "questions-topic-02-prompt-caching-p03"
+    },
+    {
+     "term": "cache point",
+     "definition": "The Converse marker that makes the prefix the cached portion.",
+     "anchor": "questions-topic-02-prompt-caching-p03"
+    },
+    {
+     "term": "TTL",
+     "definition": "The cache lifetime, about five minutes by default, expiring between infrequent calls.",
+     "anchor": "questions-topic-02-prompt-caching-p17"
+    },
+    {
+     "term": "cache hits",
+     "definition": "Reuses of the cached prefix, lost when anything before the cache point changes.",
+     "anchor": "questions-topic-02-prompt-caching-p09"
+    }
+   ],
+   "recall": [
+    {
+     "id": "questions-topic-02-prompt-caching-r1",
+     "question": "An agent resends a 10,000-token tool spec every turn. What cuts the input-token cost?",
+     "answer": "Prompt caching with a cache point before the tool specification, since the same static text repeats many times.",
+     "anchor": "questions-topic-02-prompt-caching-p06"
+    },
+    {
+     "id": "questions-topic-02-prompt-caching-r2",
+     "question": "Why did prompt caching produce almost no cache hits when the timestamp sits at the start?",
+     "answer": "Any change before the cache point invalidates the cache, so move the dynamic fields after the cache point to keep the prefix identical.",
+     "anchor": "questions-topic-02-prompt-caching-p14"
+    }
+   ]
+  },
+  {
+   "anchor": "questions-topic-12-semantic-caching",
+   "title": "Questions: Topic 04, Semantic caching",
+   "minutes": 4,
+   "endAnchor": "questions-topic-12-semantic-caching-end",
+   "blocks": [
+    {
+     "anchor": "questions-topic-12-semantic-caching-p16",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "semantic cache",
+     "definition": "A layer before the model that matches questions by meaning and skips the call.",
+     "anchor": "questions-topic-12-semantic-caching-p02"
+    },
+    {
+     "term": "similarity threshold",
+     "definition": "The matching line, raised when users get answers to similar but different questions.",
+     "anchor": "questions-topic-12-semantic-caching-p09"
+    },
+    {
+     "term": "hit rate",
+     "definition": "The share of repeated questions served from cache, collapsing when queries are unique.",
+     "anchor": "questions-topic-12-semantic-caching-p13"
+    },
+    {
+     "term": "ElastiCache",
+     "definition": "The store giving sub-millisecond lookups for the hot cache path.",
+     "anchor": "questions-topic-12-semantic-caching-p12"
+    }
+   ],
+   "recall": [
+    {
+     "id": "questions-topic-12-semantic-caching-r1",
+     "question": "A FAQ bot gets millions of repeated questions in different words. What reduces cost and latency?",
+     "answer": "A semantic cache with similarity matching in front of the model, since hits skip the model call completely.",
+     "anchor": "questions-topic-12-semantic-caching-p06"
+    },
+    {
+     "id": "questions-topic-12-semantic-caching-r2",
+     "question": "Why will semantic caching fail for a personalized recommendation engine?",
+     "answer": "Each query is unique to a user, so the hit rate collapses and the cache adds complexity with no savings.",
+     "anchor": "questions-topic-12-semantic-caching-p18"
+    }
+   ]
+  },
+  {
+   "anchor": "questions-topic-05-retrieval-tuning",
+   "title": "Questions: Topic 05, Retrieval tuning",
+   "minutes": 4,
+   "endAnchor": "questions-topic-05-retrieval-tuning-end",
+   "blocks": [
+    {
+     "anchor": "questions-topic-05-retrieval-tuning-p15",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "top-k",
+     "definition": "The chunk count per query, lowered when the answer sits in the top few chunks.",
+     "anchor": "questions-topic-05-retrieval-tuning-p03"
+    },
+    {
+     "term": "rerank",
+     "definition": "Scoring candidates by relevance and keeping only the top few for the prompt.",
+     "anchor": "questions-topic-05-retrieval-tuning-p09"
+    },
+    {
+     "term": "evaluation",
+     "definition": "The re-check after tuning that guards answer quality on a golden test set.",
+     "anchor": "questions-topic-05-retrieval-tuning-p03"
+    },
+    {
+     "term": "metadata filtering",
+     "definition": "Shrinking candidates by document date before vector search.",
+     "anchor": "questions-topic-05-retrieval-tuning-p33"
+    }
+   ],
+   "recall": [
+    {
+     "id": "questions-topic-05-retrieval-tuning-r1",
+     "question": "A RAG app sends 10 chunks of 500 tokens but the answer is usually in the top 3. What is the cheapest first step?",
+     "answer": "Make top-k 3 from 10 and re-evaluate, removing 70 percent of retrieval tokens for no cost.",
+     "anchor": "questions-topic-05-retrieval-tuning-p07"
+    },
+    {
+     "id": "questions-topic-05-retrieval-tuning-r2",
+     "question": "What is the correct fix when cutting top-k from 10 to 3 drops accuracy from 92 to 81 percent?",
+     "answer": "Retrieve broadly, rerank with precision, and truncate, since recall is good at top 10 but precision at top 3 lost the answer chunk.",
+     "anchor": "questions-topic-05-retrieval-tuning-p19"
+    }
+   ]
+  },
+  {
+   "anchor": "questions-topic-08-right-sizing-and-cascading",
+   "title": "Questions: Topic 06, Right-sizing and cascading",
+   "minutes": 4,
+   "endAnchor": "questions-topic-08-right-sizing-and-cascading-end",
+   "blocks": [
+    {
+     "anchor": "questions-topic-08-right-sizing-and-cascading-p16",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "cascade",
+     "definition": "Routing simple queries to a cheap model and complex ones to the flagship.",
+     "anchor": "questions-topic-08-right-sizing-and-cascading-p09"
+    },
+    {
+     "term": "router",
+     "definition": "The classifier whose cost must be almost free compared to the calls it routes.",
+     "anchor": "questions-topic-08-right-sizing-and-cascading-p09"
+    },
+    {
+     "term": "escalation",
+     "definition": "The low-confidence path moving requests up to the flagship model.",
+     "anchor": "questions-topic-08-right-sizing-and-cascading-p18"
+    },
+    {
+     "term": "misclassification",
+     "definition": "The router sending complex questions to the small model, fixed by better criteria.",
+     "anchor": "questions-topic-08-right-sizing-and-cascading-p33"
+    }
+   ],
+   "recall": [
+    {
+     "id": "questions-topic-08-right-sizing-and-cascading-r1",
+     "question": "80 percent of requests are simple FAQ lookups on an expensive flagship. What is the most cost-effective change?",
+     "answer": "Route simple queries to the lightweight model and keep complex ones on the flagship, saving about 10x per-token cost on most traffic.",
+     "anchor": "questions-topic-08-right-sizing-and-cascading-p06"
+    },
+    {
+     "id": "questions-topic-08-right-sizing-and-cascading-r2",
+     "question": "What is wrong when the router model costs as much as the flagship?",
+     "answer": "The router cost can erase the savings, so the router must be almost free, such as rules, a small model, or the managed prompt router.",
+     "anchor": "questions-topic-08-right-sizing-and-cascading-p12"
+    }
+   ]
+  },
+  {
+   "anchor": "questions-topic-07-fine-tuning",
+   "title": "Questions: Topic 07, Fine-tuning for cost",
+   "minutes": 4,
+   "endAnchor": "questions-topic-07-fine-tuning-end",
+   "blocks": [
+    {
+     "anchor": "questions-topic-07-fine-tuning-p15",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "fine-tuning",
+     "definition": "The last lever, for stable narrow repetition at very high volume.",
+     "anchor": "questions-topic-07-fine-tuning-p21"
+    },
+    {
+     "term": "distillation",
+     "definition": "Copying a teacher's behavior into a small student model for a narrow task.",
+     "anchor": "questions-topic-07-fine-tuning-p23"
+    },
+    {
+     "term": "provisioned throughput",
+     "definition": "The hourly serving commitment usually needed to invoke a custom model.",
+     "anchor": "questions-topic-07-fine-tuning-p08"
+    },
+    {
+     "term": "training cost",
+     "definition": "The one-time cost paid back only when monthly volume is large enough.",
+     "anchor": "questions-topic-07-fine-tuning-p16"
+    }
+   ],
+   "recall": [
+    {
+     "id": "questions-topic-07-fine-tuning-r1",
+     "question": "A company sends 50M responses a month with a large stable brand-voice prompt. What is most correct?",
+     "answer": "Fine-tune a small model on brand-voice examples so the style lives in the weights and the prompt shrinks.",
+     "anchor": "questions-topic-07-fine-tuning-p06"
+    },
+    {
+     "id": "questions-topic-07-fine-tuning-r2",
+     "question": "Why is distilling the 800k per month classifier wrong at $0.006 per flagship call?",
+     "answer": "The distilled serving cost is $400 plus $14,400 per month for provisioned throughput, totaling $14,800, more than the current $4,800.",
+     "anchor": "questions-topic-07-fine-tuning-p21"
+    }
+   ]
+  },
+  {
+   "anchor": "questions-topic-06-latency-throughput-streaming",
+   "title": "Questions: Topic 08, Latency, throughput, streaming",
+   "minutes": 4,
+   "endAnchor": "questions-topic-06-latency-throughput-streaming-end",
+   "blocks": [
+    {
+     "anchor": "questions-topic-06-latency-throughput-streaming-p15",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "streaming",
+     "definition": "Tokens shown one by one, the fix for a chatbot that feels slow.",
+     "anchor": "questions-topic-06-latency-throughput-streaming-p02"
+    },
+    {
+     "term": "TTFT",
+     "definition": "Time to first token, lowered by a smaller model or prompt caching.",
+     "anchor": "questions-topic-06-latency-throughput-streaming-p31"
+    },
+    {
+     "term": "provisioned throughput",
+     "definition": "Guaranteed capacity for a hard sub-3-second SLA, not perception.",
+     "anchor": "questions-topic-06-latency-throughput-streaming-p03"
+    },
+    {
+     "term": "perceived latency",
+     "definition": "What streaming improves, without changing total generation time.",
+     "anchor": "questions-topic-06-latency-throughput-streaming-p17"
+    }
+   ],
+   "recall": [
+    {
+     "id": "questions-topic-06-latency-throughput-streaming-r1",
+     "question": "Users say a chatbot feels slow with correct answers taking 10 seconds. What is the first change?",
+     "answer": "Turn on streaming with ConverseStream so tokens show one by one, since it is a perceived-latency problem.",
+     "anchor": "questions-topic-06-latency-throughput-streaming-p06"
+    },
+    {
+     "id": "questions-topic-06-latency-throughput-streaming-r2",
+     "question": "Which two actions lower time to first token for a voice assistant?",
+     "answer": "Use a smaller model for faster tokens and prompt caching to skip prefix recomputation.",
+     "anchor": "questions-topic-06-latency-throughput-streaming-p35"
+    }
+   ]
+  },
+  {
+   "anchor": "questions-topic-03-batch-inference",
+   "title": "Questions: Topic 09, Batch inference",
+   "minutes": 4,
+   "endAnchor": "questions-topic-03-batch-inference-end",
+   "blocks": [
+    {
+     "anchor": "questions-topic-03-batch-inference-p16",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "batch inference",
+     "definition": "S3 input and output at about 50 percent off for offline work.",
+     "anchor": "questions-topic-03-batch-inference-p03"
+    },
+    {
+     "term": "JSONL",
+     "definition": "The line-per-request file format, where a small error fraction means malformed lines.",
+     "anchor": "questions-topic-03-batch-inference-p08"
+    },
+    {
+     "term": "IAM role",
+     "definition": "The role giving Bedrock read access to input and write access to output S3 locations.",
+     "anchor": "questions-topic-03-batch-inference-p12"
+    },
+    {
+     "term": "S3",
+     "definition": "The storage for batch input files and output results as JSONL.",
+     "anchor": "questions-topic-03-batch-inference-p03"
+    }
+   ],
+   "recall": [
+    {
+     "id": "questions-topic-03-batch-inference-r1",
+     "question": "A media company must classify 500,000 tickets in 24 hours. What is the most cost-effective method?",
+     "answer": "Batch inference with S3 input and output, about 50 percent less than on-demand.",
+     "anchor": "questions-topic-03-batch-inference-p06"
+    },
+    {
+     "id": "questions-topic-03-batch-inference-r2",
+     "question": "A batch job finishes with 2 percent line errors on a 100,000-line JSONL. What is the fix?",
+     "answer": "Individual lines were malformed, so fix those lines and resubmit only those lines.",
+     "anchor": "questions-topic-03-batch-inference-p13"
+    }
+   ]
+  },
+  {
+   "anchor": "questions-topic-04-provisioned-throughput",
+   "title": "Questions: Topic 10, Provisioned Throughput",
+   "minutes": 5,
+   "endAnchor": "questions-topic-04-provisioned-throughput-end",
+   "blocks": [
+    {
+     "anchor": "questions-topic-04-provisioned-throughput-p16",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "provisioned throughput",
+     "definition": "Reserved hourly capacity, sized for the baseline with on-demand overflow for peaks.",
+     "anchor": "questions-topic-04-provisioned-throughput-p03"
+    },
+    {
+     "term": "model units",
+     "definition": "The capacity purchase unit, added by autoscaling when utilization crosses a threshold.",
+     "anchor": "questions-topic-04-provisioned-throughput-p10"
+    },
+    {
+     "term": "provisioned model ARN",
+     "definition": "The identifier calls must use, or traffic stays on the throttled on-demand pool.",
+     "anchor": "questions-topic-04-provisioned-throughput-p11"
+    },
+    {
+     "term": "autoscaling",
+     "definition": "Adding or removing units within minimum and maximum bounds as the API grows.",
+     "anchor": "questions-topic-04-provisioned-throughput-p32"
+    }
+   ],
+   "recall": [
+    {
+     "id": "questions-topic-04-provisioned-throughput-r1",
+     "question": "A team bought provisioned throughput but throttles continue on the base model ID. What is wrong?",
+     "answer": "The application still uses the base model ID instead of the provisioned model ARN, so buying capacity does not help until routing changes.",
+     "anchor": "questions-topic-04-provisioned-throughput-p12"
+    },
+    {
+     "id": "questions-topic-04-provisioned-throughput-r2",
+     "question": "Why is sizing provisioned throughput for the 2,000 RPM Friday spike wrong?",
+     "answer": "PT bills 24/7, so reserving peak capacity for a 4-hour weekly spike pays peak prices for about 164 idle hours, and the correct design provisions the 300 RPM floor.",
+     "anchor": "questions-topic-04-provisioned-throughput-p21"
+    }
+   ]
+  },
+  {
+   "anchor": "questions-topic-05-inference-profiles-and-routing",
+   "title": "Questions: Topic 11, Inference profiles and routing",
+   "minutes": 4,
+   "endAnchor": "questions-topic-05-inference-profiles-and-routing-end",
+   "blocks": [
+    {
+     "anchor": "questions-topic-05-inference-profiles-and-routing-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    },
+    {
+     "anchor": "questions-topic-05-inference-profiles-and-routing-p16",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "inference profile",
+     "definition": "Cross-region routing with automatic failover, called by profile ID.",
+     "anchor": "questions-topic-05-inference-profiles-and-routing-p03"
+    },
+    {
+     "term": "prompt router",
+     "definition": "Complexity-based routing for cost and quality, distinct from profiles.",
+     "anchor": "questions-topic-05-inference-profiles-and-routing-p18"
+    },
+    {
+     "term": "data-residency",
+     "definition": "The compliance decision, for example the eu. prefix keeping EU data in EU regions.",
+     "anchor": "questions-topic-05-inference-profiles-and-routing-p14"
+    },
+    {
+     "term": "quota increase",
+     "definition": "Raising the ceiling for sustained growth, one way to add capacity without rewriting code.",
+     "anchor": "questions-topic-05-inference-profiles-and-routing-p34"
+    }
+   ],
+   "recall": [
+    {
+     "id": "questions-topic-05-inference-profiles-and-routing-r1",
+     "question": "A model is in only two regions and the app needs failover with minimal code changes. What must it call?",
+     "answer": "The inference profile ID, for example with a us. prefix, which routes across regions and fails over automatically.",
+     "anchor": "questions-topic-05-inference-profiles-and-routing-p06"
+    },
+    {
+     "id": "questions-topic-05-inference-profiles-and-routing-r2",
+     "question": "A healthcare app must keep inference data inside the EU. Which prefix is correct?",
+     "answer": "The eu. prefix, which limits routing to EU regions, since global. could route anywhere.",
+     "anchor": "questions-topic-05-inference-profiles-and-routing-p10"
+    }
+   ]
+  },
+  {
+   "anchor": "questions-topic-07-rate-limits-quotas-retries",
+   "title": "Questions: Topic 12, Rate limits, quotas, retries",
+   "minutes": 4,
+   "endAnchor": "questions-topic-07-rate-limits-quotas-retries-end",
+   "blocks": [
+    {
+     "anchor": "questions-topic-07-rate-limits-quotas-retries-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    },
+    {
+     "anchor": "questions-topic-07-rate-limits-quotas-retries-p15",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "ThrottlingException",
+     "definition": "The error during short spikes, fixed with SDK retries rather than provisioned throughput.",
+     "anchor": "questions-topic-07-rate-limits-quotas-retries-p01"
+    },
+    {
+     "term": "exponential backoff",
+     "definition": "Waiting 1 second, then 2, then 4, spreading retries over time.",
+     "anchor": "questions-topic-07-rate-limits-quotas-retries-p03"
+    },
+    {
+     "term": "jitter",
+     "definition": "The random offset stopping synchronized retry waves across thousands of clients.",
+     "anchor": "questions-topic-07-rate-limits-quotas-retries-fig01"
+    },
+    {
+     "term": "API Gateway throttling",
+     "definition": "Per-method rate limits and usage plans protecting the backend at the edge.",
+     "anchor": "questions-topic-07-rate-limits-quotas-retries-p31"
+    }
+   ],
+   "recall": [
+    {
+     "id": "questions-topic-07-rate-limits-quotas-retries-r1",
+     "question": "An app gets ThrottlingException during spikes under one minute. What is the smallest correct fix?",
+     "answer": "SDK retries with exponential backoff and jitter, the default SDK behavior for temporary spikes.",
+     "anchor": "questions-topic-07-rate-limits-quotas-retries-p06"
+    },
+    {
+     "id": "questions-topic-07-rate-limits-quotas-retries-r2",
+     "question": "Which two structural actions fix a hard, hours-long overload?",
+     "answer": "Set provisioned throughput for the long baseline or ask AWS Support for a quota increase, since retries cannot fix sustained overload.",
+     "anchor": "questions-topic-07-rate-limits-quotas-retries-p43"
+    }
+   ]
+  },
+  {
+   "anchor": "questions-topic-09-cloudwatch-metrics",
+   "title": "Questions: Topic 13, CloudWatch metrics",
+   "minutes": 3,
+   "endAnchor": "questions-topic-09-cloudwatch-metrics-end",
+   "blocks": [
+    {
+     "anchor": "questions-topic-09-cloudwatch-metrics-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    },
+    {
+     "anchor": "questions-topic-09-cloudwatch-metrics-p17",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "CloudWatch metrics",
+     "definition": "The managed near-real-time view of token spend and throttling with minimal work.",
+     "anchor": "questions-topic-09-cloudwatch-metrics-p03"
+    },
+    {
+     "term": "anomaly detection",
+     "definition": "Learning normal patterns and flagging deviations without manual thresholds.",
+     "anchor": "questions-topic-09-cloudwatch-metrics-p19"
+    },
+    {
+     "term": "InputTokenCount",
+     "definition": "The token metric showing spend, missed by static alarms on invocations alone.",
+     "anchor": "questions-topic-09-cloudwatch-metrics-p06"
+    },
+    {
+     "term": "CloudTrail",
+     "definition": "The audit plane, wrong for performance or cost monitoring.",
+     "anchor": "questions-topic-09-cloudwatch-metrics-p02"
+    }
+   ],
+   "recall": [
+    {
+     "id": "questions-topic-09-cloudwatch-metrics-r1",
+     "question": "OutputTokenCount tripled while invocations and throttles are flat. What is the most probable cause?",
+     "answer": "Responses became longer, since a prompt change removed length limits or raised maxTokens, not a capacity shortage.",
+     "anchor": "questions-topic-09-cloudwatch-metrics-p12"
+    },
+    {
+     "id": "questions-topic-09-cloudwatch-metrics-r2",
+     "question": "Which two mistakes does the exam test in monitoring?",
+     "answer": "Using CloudTrail for token-spend monitoring and SageMaker Model Monitor for GenAI text quality drift, instead of CloudWatch and Bedrock evaluations.",
+     "anchor": "questions-topic-09-cloudwatch-metrics-p44"
+    }
+   ]
+  },
+  {
+   "anchor": "questions-topic-10-invocation-logging-and-tracing",
+   "title": "Questions: Topic 14, Invocation logging and tracing",
+   "minutes": 4,
+   "endAnchor": "questions-topic-10-invocation-logging-and-tracing-end",
+   "blocks": [
+    {
+     "anchor": "questions-topic-10-invocation-logging-and-tracing-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    },
+    {
+     "anchor": "questions-topic-10-invocation-logging-and-tracing-p16",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "invocation logging",
+     "definition": "Bedrock model invocation logging records request and response bodies for forensics.",
+     "anchor": "questions-topic-10-invocation-logging-and-tracing-fig01"
+    },
+    {
+     "term": "X-Ray",
+     "definition": "Distributed tracing showing timing for each step of a multi-step agent.",
+     "anchor": "questions-topic-10-invocation-logging-and-tracing-p09"
+    },
+    {
+     "term": "KMS encryption",
+     "definition": "The expected protection for invocation logs containing PII in regulated workloads.",
+     "anchor": "questions-topic-10-invocation-logging-and-tracing-p18"
+    },
+    {
+     "term": "CloudTrail",
+     "definition": "Records who called which API, but never prompt or response bodies.",
+     "anchor": "questions-topic-10-invocation-logging-and-tracing-p02"
+    }
+   ],
+   "recall": [
+    {
+     "id": "questions-topic-10-invocation-logging-and-tracing-r1",
+     "question": "A team must audit the exact prompts and responses for a cost spike. What must they enable?",
+     "answer": "Bedrock model invocation logging to S3 or CloudWatch Logs, the prompt forensics plane.",
+     "anchor": "questions-topic-10-invocation-logging-and-tracing-p06"
+    },
+    {
+     "id": "questions-topic-10-invocation-logging-and-tracing-r2",
+     "question": "Which two steps find the problem when an agent gives wrong answers sometimes?",
+     "answer": "Turn on agent tracing with enableTrace to see reasoning steps and tool calls, and query invocation logs in CloudWatch Logs Insights for the failing prompts and responses.",
+     "anchor": "questions-topic-10-invocation-logging-and-tracing-p38"
+    }
+   ]
+  },
+  {
+   "anchor": "questions-topic-13-production-operations",
+   "title": "Questions: Topic 15, Production operations",
+   "minutes": 4,
+   "endAnchor": "questions-topic-13-production-operations-end",
+   "blocks": [
+    {
+     "anchor": "questions-topic-13-production-operations-p16",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "portfolio",
+     "definition": "Each workload gets its matching lever, the exam's most correct multi-constraint answer.",
+     "anchor": "questions-topic-13-production-operations-p01"
+    },
+    {
+     "term": "temperature",
+     "definition": "Set to 0 for consistency, since capacity tools do not control randomness.",
+     "anchor": "questions-topic-13-production-operations-p10"
+    },
+    {
+     "term": "optimization ladder",
+     "definition": "The ordered levers, cheapest free actions first, committed capacity last.",
+     "anchor": "questions-topic-13-production-operations-p39"
+    },
+    {
+     "term": "streaming",
+     "definition": "The interactive lever for the chatbot, never for batch work.",
+     "anchor": "questions-topic-13-production-operations-p03"
+    }
+   ],
+   "recall": [
+    {
+     "id": "questions-topic-13-production-operations-r1",
+     "question": "What portfolio serves a chatbot, a nightly job, and a steady API with an SLA?",
+     "answer": "Streaming plus right-sized models for the chatbot, batch inference for the nightly job, and provisioned throughput for the steady API.",
+     "anchor": "questions-topic-13-production-operations-p06"
+    },
+    {
+     "id": "questions-topic-13-production-operations-r2",
+     "question": "Which two orderings follow the optimization ladder correctly?",
+     "answer": "Measure, prune the prompt, then consider caching, cascading, batch, and provisioned throughput, and skip calls with semantic cache before discounting tokens with prompt caching.",
+     "anchor": "questions-topic-13-production-operations-p44"
+    }
+   ]
+  }
+ ]
+}
