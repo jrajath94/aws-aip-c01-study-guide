@@ -9,8 +9,13 @@ REL='http://schemas.openxmlformats.org/package/2006/relationships'
 CT='http://schemas.openxmlformats.org/package/2006/content-types'
 def embed(path):
  with ZipFile(path) as z:files={n:z.read(n) for n in z.namelist()}
- tree=etree.fromstring(files['word/fontTable.xml']);font=etree.SubElement(tree,'{'+W+'}font');font.set('{'+W+'}name','Anthropic Sans')
+ tree=etree.fromstring(files['word/fontTable.xml'])
+ for old in list(tree):
+  if old.get('{'+W+'}name')=='Anthropic Sans':tree.remove(old)
+ font=etree.SubElement(tree,'{'+W+'}font');font.set('{'+W+'}name','Anthropic Sans')
  relpath='word/_rels/fontTable.xml.rels';rels=etree.fromstring(files[relpath]) if relpath in files else etree.Element('{'+REL+'}Relationships',nsmap={None:REL})
+ for old in list(rels):
+  if old.get('Id','').startswith('rIdEmbedded'):rels.remove(old)
  for i,(style,file) in enumerate([('embedRegular','AnthropicSans-Regular.ttf'),('embedBold','AnthropicSans-Bold.ttf')],1):
   uid=uuid.uuid4();key=uid.bytes[::-1];data=bytearray((ROOT/'assets/typography'/file).read_bytes())
   for k in range(32):data[k]^=key[k%16]

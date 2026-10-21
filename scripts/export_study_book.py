@@ -37,7 +37,7 @@ footer=sec.footer.paragraphs[0];footer.alignment=2
 field=OxmlElement('w:fldSimple');field.set(qn('w:instr'),'PAGE');footer._p.append(field)
 flows=[];practice=[];stats={'chapterIds':[],'skillIds':[],'labIds':[],'figureIds':[],'quizIds':[]}
 def clean(s):
- s=html.unescape(re.sub('<[^>]+>','',str(s)))
+ s=html.unescape(str(s))
  return s.replace('—','. ').replace('–',' to ').replace(';',',').replace('\u00a0',' ')
 def p(s,style='BodyCompact',target=None,word=True):
  target=flows if target is None else target;s=clean(s)
@@ -54,6 +54,8 @@ def sources(ids,target=None,word=True):
  for i in ids:
   src=C['sources'].get(i,{})
   url=src.get('url')
+  if url and url.startswith('../source-repo/'):url='https://github.com/jrajath94/aws-aip-c01-study-guide/blob/823006efa64f98b560dd4fe40445e6a8042ef79b/'+url.removeprefix('../source-repo/')
+  if url and '/jrajath94/aws-aip-c01-study-guide/blob/' in url:url=url.split('#')[0]
   if url:
    if url not in source_entries:source_entries[url]=len(source_entries)+1
    refs.append(str(source_entries[url]))
@@ -167,9 +169,14 @@ for key,dia in C['diagrams'].items():
  if len(rows[-1])<2:rows[-1].append('')
  t=Table(rows,colWidths=[178,178],hAlign='LEFT');t.setStyle(TableStyle([('VALIGN',(0,0),(-1,-1),'TOP'),('GRID',(0,0),(-1,-1),.4,colors.HexColor('#999999')),('LEFTPADDING',(0,0),(-1,-1),5),('RIGHTPADDING',(0,0),(-1,-1),5)]));flows.append(t)
  table=D.add_table(rows=0, cols=2)
- for row in rows:
+ table.style='Table Grid'
+ for ri,row in enumerate(rows):
   cellsw=table.add_row().cells
-  for j,v in enumerate(row):cellsw[j].text=clean(v.getPlainText()) if hasattr(v,'getPlainText') else ''
+  for j,v in enumerate(row):
+   si=ri*2+j
+   if si<len(dia['steps']):
+    name,body=dia['steps'][si];cellsw[j].text=str(si+1)+'. '+clean(name)+'\n'+clean(body)
+ for row in table.rows:row._tr.get_or_add_trPr().append(OxmlElement('w:cantSplit'))
  if dia.get('relation'):p(dia['relation'])
  p('Numbers identify components or stages. Follow the stated relationship. Independent controls do not form a strict sequence.','CaptionCompact')
 h('Service boundaries',1)
@@ -191,16 +198,24 @@ p('The HTML edition retains the complete source teaching archive. The print edit
 # Store all inherited questions with labels and answer key warnings.
 h('Repository practice booklet',1,target=practice,word=False)
 p('These 250 questions come from the supplied repository. They are not AWS exam questions. Answer keys and rationales are inherited source claims.',target=practice,word=False)
-p('Read the corrections in the core book. Absolutes in an inherited answer can be inaccurate. Current official service documentation takes precedence.',target=practice,word=False)
+p('All 250 extracted items receive a semantic review. Read the correction beside each disputed claim. Eight unsettled keys remain discussion cases. Current official documentation takes precedence.',target=practice,word=False)
 D.add_heading('Repository practice booklet',level=1)
-D.add_paragraph('These questions and answer keys are inherited source material. Current official documentation takes precedence.')
+D.add_paragraph('All 250 extracted items receive a semantic review. Read each correction. Eight unsettled keys remain discussion cases. Current official documentation takes precedence.')
 for n,q in enumerate(C['quizzes'],1):
+ if n==1:h('Professional practice scenarios',2,target=practice)
+ if n==201:h('Prerequisite practice',2,target=practice)
  stats['quizIds'].append(q['id']);h(f'Q{n}. '+q['title'],3,target=practice)
  for i,opt in enumerate(q['options']):p(chr(65+i)+'. '+opt['text'],target=practice)
- p('Source key. '+', '.join(chr(65+i) for i,o in enumerate(q['options']) if o['correct']),target=practice)
- p(q['answer'],target=practice)
- for i,o in enumerate(q['options']):
-  if o.get('reason'):p(chr(65+i)+'. '+o['reason'],target=practice)
+ p(('Unsettled source key. ' if q.get('keyUnsettled') and not q.get('reviewCorrection',{}).get('correctOptionIndices') else 'Practice key. ')+', '.join(chr(65+i) for i,o in enumerate(q['options']) if o['correct']),target=practice)
+ if q.get('reviewCorrection'):
+  r=q['reviewCorrection'];p('Reviewed correction. '+r.get('correctedAnswer',r.get('correction','')),target=practice)
+  p(r.get('reason',''),target=practice);sources(r.get('sources',[]),target=practice)
+  p('The original rationale remains in the HTML reference archive. This reviewed explanation supersedes its disputed claim.',target=practice)
+ else:
+  if q.get('reviewStatus')!='supported' and q.get('reviewNote'):p('Review note. '+q['reviewNote'],target=practice)
+  p(q['answer'],target=practice)
+  for i,o in enumerate(q['options']):
+   if o.get('reason'):p(chr(65+i)+'. '+o['reason'],target=practice)
  if q.get('corrections'):p('Review correction categories: '+', '.join(q['corrections']),target=practice)
 
 def footer_pdf(canvas,doc):
@@ -224,5 +239,7 @@ make_pdf(BUILD/'core-logical.pdf',flows);make_pdf(BUILD/'practice-logical.pdf',p
 stats['corePrint']=impose(BUILD/'core-logical.pdf',BUILD/'AIP-C01-Core-Two-Up.original.pdf')
 stats['practicePrint']=impose(BUILD/'practice-logical.pdf',BUILD/'AIP-C01-Practice-Two-Up.original.pdf')
 D.save(BUILD/'AIP-C01-Study-Book.original.docx')
+from embed_docx_fonts import embed
+embed(BUILD/'AIP-C01-Study-Book.original.docx')
 (ROOT/'audits/print-export.json').write_text(json.dumps(stats,indent=2))
 print(json.dumps({k:v for k,v in stats.items() if k.endswith('Print')},indent=2))

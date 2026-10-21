@@ -78,9 +78,18 @@ for p in sorted((ROOT/'source-repo').glob('*.html')):
    if nt:nt.decompose()
    txt=cp.get_text(' ',strip=True);txt=re.sub(r'^[A-Z]\)\s*','',txt)
    options.append(dict(text=txt,correct='correct' in op.get('class',[]),reason=note))
+  # Some ML source answer containers also include separate inline exercises.
+  # Keep those exercises in the complete reference archive. Isolate this answer.
+  primary_answer=None
+  if volume=='prereq-ml-specialty' and answer:
+   pieces=[]
+   for node in answer.find_all(recursive=False):
+    if node.name=='p' and (node.select_one('.correct,.wrong') or node.get_text(' ',strip=True).startswith('Correct:')):pieces.append(node.get_text(' ',strip=True))
+    else:break
+   if pieces:primary_answer=' '.join(pieces)
   qid=volume+'--'+q.get('id',str(len(quizzes)))
   md=re.search(r'q-d(\d)',q.get('id',''));qd=int(md[1]) if md else domain
-  quizzes.append(dict(id=qid,sourceId=q.get('id',''),title=stem.get_text(' ',strip=True),options=options,answer=answer.get_text(' ',strip=True) if answer else 'Not in source.',domain=qd,source='../source-repo/'+filename+'#'+q.get('id',''),corrections=correction_ids(stem.get_text(' ',strip=True)+' '+(answer.get_text(' ',strip=True) if answer else ''))))
+  quizzes.append(dict(id=qid,sourceId=q.get('id',''),title=stem.get_text(' ',strip=True),options=options,answer=primary_answer if primary_answer else answer.get_text(' ',strip=True) if answer else 'Not in source.',domain=qd,source='../source-repo/'+filename+'#'+q.get('id',''),corrections=correction_ids(stem.get_text(' ',strip=True)+' '+(answer.get_text(' ',strip=True) if answer else ''))))
  if filename=='volume-question-bank.html':
   tb=main.find(id='mock-table02')
   if tb:
@@ -168,6 +177,52 @@ for path in ['course/skill-dossiers-d1-d2.json','course/skill-dossiers-d3-d5.jso
 dossiers.sort(key=lambda d:[int(x) for x in d['skill'].split('.')])
 report['skillDossiers']=len(dossiers)
 report['treatiseChapters']=len(deep);report['officialAtlasFigures']=len(figs);report['uiFigures']=len(ui_figs);report['practicalLabs']=len(labs);report['prerequisitePrimerSections']=len(primer);report['nativeDiagramDefinitions']=len(diagrams);report['mcpReadSources']=sum(s.get('channel')=='official AWS Documentation MCP' for s in sources.values())
+# Keep source questions intact in the reference archive. Attach reviewed corrections
+# to derived practice items so inherited absolutes do not become teaching rules.
+question_errata=[]
+for path in sorted((ROOT/'course').glob('question-errata-*.json')):
+ data=json.loads(path.read_text())
+ question_errata.extend(data if isinstance(data,list) else data.get('errata',data.get('items',[])))
+errata_by={e.get('id',e.get('quizId',e.get('quiz_id'))):e for e in question_errata}
+for q in quizzes:
+ e=errata_by.get(q['id']) or errata_by.get(q['sourceId'])
+ if not e:continue
+ q['reviewCorrection']=e
+ if e.get('correctOptionIndices')==[]:
+  q['keyUnsettled']=True
+  q['noValidOptionSet']=True
+ if e.get('correctOptionIndices'):
+  q['originalSourceKey']=[i for i,o in enumerate(q['options']) if o['correct']]
+  for i,o in enumerate(q['options']):o['correct']=i in e['correctOptionIndices']
+question_reviews=[]
+for path in sorted((ROOT/'audits').glob('question-review-*.json')):
+ data=json.loads(path.read_text())
+ question_reviews.extend(data if isinstance(data,list) else data.get('questions',data.get('reviews',data.get('items',[]))))
+review_by={e.get('id',e.get('quizId',e.get('quiz_id'))):e for e in question_reviews}
+for q in quizzes:
+ r=review_by.get(q['id']) or review_by.get(q['sourceId'])
+ if r:
+  q['reviewStatus']=r.get('status','uncertain')
+  q['keyUnsettled']=q.get('keyUnsettled',False) or r.get('keyStatus') in ['unsettled','incorrect','uncertain'] or r.get('keyUnsettled',False)
+  q['reviewNote']=r.get('reason','')
+  q['reviewSources']=r.get('sources',r.get('sourceIDs',r.get('sourceIds',[])))
+# Use settled practice keys in the timed set. Keep unresolved items in the library.
+used=set();reviewed_mock=[]
+for mid in mock:
+ q=next(x for x in quizzes if x['id']==mid)
+ if q.get('keyUnsettled') and not q.get('reviewCorrection',{}).get('correctOptionIndices'):
+  q=next((x for x in quizzes if x['domain']==q['domain'] and x['id'].startswith('volume-question-bank') and not x.get('keyUnsettled') and x['id'] not in used and x['id'] not in mock),q)
+ if q['id'] not in used:reviewed_mock.append(q['id']);used.add(q['id'])
+mock=reviewed_mock
+report['questionSpecificCorrections']=len(question_errata)
+report['questionReviewItems']=len(question_reviews)
+for e in question_errata:
+ for sid in e.get('sources',[]):
+  if sid in sources:continue
+  if sid.startswith('../source-repo/'):
+   sources[sid]={'url':'https://github.com/jrajath94/aws-aip-c01-study-guide/blob/823006efa64f98b560dd4fe40445e6a8042ef79b/'+sid.removeprefix('../source-repo/'),'path':sid.removeprefix('../'),'channel':'inherited repository'}
+  elif sid.startswith('https://'):sources[sid]={'url':sid,'channel':'linked source'}
+
 course=dict(dossiers=dossiers,deep=deep,figures=figs,uiFigures=ui_figs,labs=labs,primer=primer,core=allcore,references=references,quizzes=quizzes,recalls=recalls,mock=mock,skills=skills,sources=sources,diagrams=diagrams,services=services,corrections=corrections,report=report)
 (ROOT/'course/treatise-data.js').write_text('window.COURSE='+json.dumps(course,ensure_ascii=False,separators=(',',':'))+';\n')
 (ROOT/'course/treatise-data.json').write_text(json.dumps(course,ensure_ascii=False,separators=(',',':')))

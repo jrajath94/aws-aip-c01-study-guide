@@ -51,5 +51,5 @@ html=html.replace('</body>',bridge+'</body>')
 for audit in (ROOT/'audits').glob('*.json'):
  html=html.replace('../audits/'+audit.name, dataurl(audit))
 
-p=ROOT/'.build/AIP-C01-Visual-Treatise.v2.original.html';p.write_text(html)
+p=ROOT/'.build/AIP-C01-Visual-Treatise.v4.original.html';p.write_text(html)
 print('Packed',p,len(html),'characters')
