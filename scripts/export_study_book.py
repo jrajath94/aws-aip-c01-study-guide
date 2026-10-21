@@ -185,9 +185,8 @@ for group in C['services']:
  for row in group['rows']:p(row['name']+'. '+row['role'])
 h('Corrections to inherited material',1)
 for x in C['corrections']:
- h(x.get('title',x.get('id','Correction')),3)
- for k,v in x.items():
-  if k not in ('id','title','sources') and isinstance(v,str):p(v)
+ h(x.get('topic',x.get('title','Correction')),3)
+ p(x.get('text',''))
  sources(x.get('sources',[]))
 h('Readiness evidence',1)
 p('Confidence must come from unseen decisions and observable evidence. Familiarity with these pages alone does not show readiness.')
