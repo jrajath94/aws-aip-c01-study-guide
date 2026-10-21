@@ -64,6 +64,41 @@ def clean_html(raw,filename):
   elif h and not re.match(r'https?://|\.\./source-repo/',h):a['href']='../source-repo/'+h
   a['target']='_blank';a['rel']='noopener'
  return str(s)
+
+def clean_question_meta(raw_title, q_index, domain_val):
+ m = re.match(r'^(D\d)\s*·\s*(EASY|MEDIUM|HARD)\s*·\s*([^,]+),\s*(?:q-d\d-[0-9a-zA-Z_-]+)\s*·\s*(.*?)\s+Q(\d+)\.\s*(.*)$', raw_title, re.DOTALL)
+ if m:
+  d_code, difficulty, resp_type, topic, q_num, question_text = m.groups()
+  clean_topic = re.sub(r'^[0-9.]+\s*', '', topic).strip()
+  resp_clean = 'Single Choice' if 'ONE' in resp_type else ('Multiple Response (Select 2)' if '2' in resp_type else 'Multiple Response (Select 3)')
+  diff_clean = difficulty.capitalize()
+  return {
+   'displayTitle': f"Question {q_num}: {clean_topic}",
+   'questionNumber': int(q_num),
+   'topic': clean_topic,
+   'difficulty': diff_clean,
+   'responseType': resp_clean,
+   'cleanStem': question_text.strip(),
+   'title': question_text.strip()
+  }
+ q_num = q_index + 1
+ topic = "Cloud & ML Foundations"
+ if domain_val == 1: topic = "Foundation Models Architecture"
+ elif domain_val == 2: topic = "Implementation & Integration"
+ elif domain_val == 3: topic = "Security, Privacy & Governance"
+ elif domain_val == 4: topic = "Optimization & Tuning"
+ elif domain_val == 5: topic = "Evaluation & Testing"
+ resp_clean = 'Multiple Response (Select 2)' if ('TWO' in raw_title or 'Select 2' in raw_title or 'two' in raw_title) else 'Single Choice'
+ return {
+  'displayTitle': f"Foundations Question {q_num}: {topic}",
+  'questionNumber': q_num,
+  'topic': topic,
+  'difficulty': 'Foundations',
+  'responseType': resp_clean,
+  'cleanStem': raw_title.strip(),
+  'title': raw_title.strip()
+ }
+
 references=[];quizzes=[];recalls=[];inventory=[];mock=[];headingmap=[]
 for p in sorted((ROOT/'source-repo').glob('*.html')):
  soup=BeautifulSoup(p.read_text(),'html.parser');main=soup.select_one('main');inner=main
@@ -89,7 +124,25 @@ for p in sorted((ROOT/'source-repo').glob('*.html')):
    if pieces:primary_answer=' '.join(pieces)
   qid=volume+'--'+q.get('id',str(len(quizzes)))
   md=re.search(r'q-d(\d)',q.get('id',''));qd=int(md[1]) if md else domain
-  quizzes.append(dict(id=qid,sourceId=q.get('id',''),title=stem.get_text(' ',strip=True),options=options,answer=primary_answer if primary_answer else answer.get_text(' ',strip=True) if answer else 'Not in source.',domain=qd,source='../source-repo/'+filename+'#'+q.get('id',''),corrections=correction_ids(stem.get_text(' ',strip=True)+' '+(answer.get_text(' ',strip=True) if answer else ''))))
+  raw_title_str=stem.get_text(' ',strip=True)
+  meta=clean_question_meta(raw_title_str, len(quizzes), qd)
+  quizzes.append(dict(
+   id=qid,
+   sourceId=q.get('id',''),
+   rawTitle=raw_title_str,
+   title=meta['title'],
+   displayTitle=meta['displayTitle'],
+   cleanStem=meta['cleanStem'],
+   topic=meta['topic'],
+   difficulty=meta['difficulty'],
+   responseType=meta['responseType'],
+   questionNumber=meta['questionNumber'],
+   options=options,
+   answer=primary_answer if primary_answer else answer.get_text(' ',strip=True) if answer else 'Not in source.',
+   domain=qd,
+   source='../source-repo/'+filename+'#'+q.get('id',''),
+   corrections=correction_ids(raw_title_str+' '+(answer.get_text(' ',strip=True) if answer else ''))
+  ))
  if filename=='volume-question-bank.html':
   tb=main.find(id='mock-table02')
   if tb:
@@ -162,6 +215,7 @@ quizzes.sort(key=lambda q:(not q['id'].startswith('volume-question-bank--'),0))
 report=dict(coreSlides=len(allcore),authoredLessons=len(core),architecturePlates=len(plates),officialFigures=len(figures),serviceSlides=len(services),serviceEntries=len(service_rows),mappedSkills=len(skills),referenceSections=len(references),interactiveQuestions=len(quizzes),recallCards=len(recalls),mockQuestions=len(mock),inventory=inventory,limits=['Skill mapping verifies an explicit teaching reference. It does not prove complete mastery or exhaustive exam coverage.','Repository material remains inherited source content. Known corrections accompany it. Not every inherited claim or answer receives independent verification.','The mock reuses repository bank items. Its raw score cannot predict a scaled AWS score.','Official Skill Builder sign-in content and undisclosed exam items were not accessed.','Source snapshots show retrieved content. Current model limits and availability can change.'])
 deep=read('course/deep-layers.json') if (ROOT/'course/deep-layers.json').exists() else []
 figs=read('course/official-figures.json') if (ROOT/'course/official-figures.json').exists() else []
+if (ROOT/'course/additional-figures.json').exists():figs.extend(read('course/additional-figures.json'))
 # Documentation UI screenshots support practical chapter work. Exclude the
 # Agents Classic model picker because its provider logos and access flow are stale.
 ui_figs=read('course/ui-figures.json') if (ROOT/'course/ui-figures.json').exists() else []
@@ -225,6 +279,7 @@ for e in question_errata:
 
 course=dict(dossiers=dossiers,deep=deep,figures=figs,uiFigures=ui_figs,labs=labs,primer=primer,core=allcore,references=references,quizzes=quizzes,recalls=recalls,mock=mock,skills=skills,sources=sources,diagrams=diagrams,services=services,corrections=corrections,report=report)
 (ROOT/'course/treatise-data.js').write_text('window.COURSE='+json.dumps(course,ensure_ascii=False,separators=(',',':'))+';\n')
+(ROOT/'course/course-data.js').write_text('window.COURSE='+json.dumps(course,ensure_ascii=False,separators=(',',':'))+';\n')
 (ROOT/'course/treatise-data.json').write_text(json.dumps(course,ensure_ascii=False,separators=(',',':')))
 (ROOT/'audits/coverage.json').write_text(json.dumps(report,indent=2))
 (ROOT/'audits/skill-map.json').write_text(json.dumps(skills,indent=2))

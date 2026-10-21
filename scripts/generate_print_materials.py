@@ -1,34 +1,189 @@
 #!/usr/bin/env python3
 """
-Generate Print-Ready, Environment-Friendly, Paper-Optimized PDF & Word Document
+Generate Publication-Grade Visual Master Study Guide, PDF & Word Document
 for AWS AIP-C01 Generative AI Developer - Professional Exam.
 
-Features:
-- Compact 2-column layout with 8mm margins to minimize paper usage
-- Images sized and constrained to prevent page bloat and orphan white space
-- Complete first-principles Russian Doll coverage of all 95 topics + 13 hands-on labs
-- Generates both AIP-C01_Overnight_Print_Guide.pdf (via Playwright)
-  and AIP-C01_Overnight_Study_Guide.docx (via Pandoc)
+Design & Pedagogical Highlights:
+- Typographic Foundation: Anthropic Sans (Regular, Bold, Italic, BoldItalic) base64-embedded
+- Humanized Content: Zero raw IDs (no 'q-d-1-1010', 'q-d1-025', or cryptic slugs)
+- Visual Communication: Signature domain color accents, Russian Doll layer pills, exam trap alerts
+- Typography: Justified text, generous 1.5 line spacing, bolded key terms and parameters
+- Official Diagrams: Full-width and high-resolution AWS official architecture diagrams & UI captures
+- Complete Coverage: 95 lessons, 13 practical labs, 6 question patterns, 30-sec elimination matrix,
+  and cleaned high-yield blueprint practice questions.
 """
 
-import json, os, subprocess
+import base64, hashlib, json, os, re, subprocess
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 
-def build_print_html():
-    core_path = ROOT / 'course/core.json'
-    with open(core_path) as f:
+def get_base64_fonts():
+    typo_dir = ROOT / 'assets/typography'
+    fonts = {}
+    for style, filename in [
+        ('regular', 'AnthropicSans-Regular.ttf'),
+        ('bold', 'AnthropicSans-Bold.ttf'),
+        ('italic', 'AnthropicSans-Italic.ttf'),
+        ('bold-italic', 'AnthropicSans-BoldItalic.ttf')
+    ]:
+        p = typo_dir / filename
+        if p.exists():
+            fonts[style] = base64.b64encode(p.read_bytes()).decode('ascii')
+    return fonts
+
+def clean_lesson_title(title, raw_id):
+    # Remove any internal prefixes or slug noise
+    clean = re.sub(r'^[0-9.]+\s*', '', title).strip()
+    return clean
+
+def clean_question_for_print(q, idx):
+    raw_title = q.get('rawTitle') or q.get('title', '')
+    m = re.match(r'^(D\d)\s*·\s*(EASY|MEDIUM|HARD)\s*·\s*([^,]+),\s*(?:q-d\d-[0-9a-zA-Z_-]+)\s*·\s*(.*?)\s+Q(\d+)\.\s*(.*)$', raw_title, re.DOTALL)
+    if m:
+        d_code, difficulty, resp_type, topic, q_num, question_text = m.groups()
+        clean_topic = re.sub(r'^[0-9.]+\s*', '', topic).strip()
+        resp_clean = 'Single Choice' if 'ONE' in resp_type else ('Multiple Response (Select 2)' if '2' in resp_type else 'Multiple Response (Select 3)')
+        return {
+            'number': int(q_num),
+            'topic': clean_topic,
+            'difficulty': difficulty.capitalize(),
+            'responseType': resp_clean,
+            'stem': question_text.strip(),
+            'options': q.get('options', []),
+            'answer': q.get('answer', '')
+        }
+    return {
+        'number': idx + 1,
+        'topic': q.get('topic', 'Cloud & AI Foundations'),
+        'difficulty': q.get('difficulty', 'Foundations'),
+        'responseType': 'Multiple Response' if 'TWO' in raw_title or 'Select 2' in raw_title else 'Single Choice',
+        'stem': q.get('cleanStem') or q.get('title', ''),
+        'options': q.get('options', []),
+        'answer': q.get('answer', '')
+    }
+
+def build_master_html():
+    fonts = get_base64_fonts()
+    
+    font_faces = ""
+    if fonts.get('regular'):
+        font_faces += f"""
+        @font-face {{
+          font-family: 'Anthropic Sans';
+          src: url(data:font/truetype;charset=utf-8;base64,{fonts['regular']}) format('truetype');
+          font-weight: 400;
+          font-style: normal;
+        }}
+        """
+    if fonts.get('bold'):
+        font_faces += f"""
+        @font-face {{
+          font-family: 'Anthropic Sans';
+          src: url(data:font/truetype;charset=utf-8;base64,{fonts['bold']}) format('truetype');
+          font-weight: 700;
+          font-style: normal;
+        }}
+        """
+    if fonts.get('italic'):
+        font_faces += f"""
+        @font-face {{
+          font-family: 'Anthropic Sans';
+          src: url(data:font/truetype;charset=utf-8;base64,{fonts['italic']}) format('truetype');
+          font-weight: 400;
+          font-style: italic;
+        }}
+        """
+    if fonts.get('bold-italic'):
+        font_faces += f"""
+        @font-face {{
+          font-family: 'Anthropic Sans';
+          src: url(data:font/truetype;charset=utf-8;base64,{fonts['bold-italic']}) format('truetype');
+          font-weight: 700;
+          font-style: italic;
+        }}
+        """
+
+    # Load core data
+    with open(ROOT / 'course/core.json') as f:
         core = json.load(f)
+
+    # Load course-data.js to extract cleaned quizzes
+    with open(ROOT / 'course/course-data.js') as f:
+        raw_js = f.read()
+    json_str = raw_js.split('window.COURSE=', 1)[1].strip().rstrip(';')
+    course_data = json.loads(json_str)
+    all_quizzes = course_data.get('quizzes', [])
 
     # Group slides by domain
     domains = {
-        0: {"title": "Foundations & Exam Strategy", "weight": "Prerequisite", "slides": []},
-        1: {"title": "Domain 1: Foundation Model Integration, Data Management & Compliance", "weight": "31% of Exam", "slides": []},
-        2: {"title": "Domain 2: Implementation and Integration", "weight": "26% of Exam", "slides": []},
-        3: {"title": "Domain 3: AI Safety, Security, and Governance", "weight": "20% of Exam", "slides": []},
-        4: {"title": "Domain 4: Operational Efficiency and Optimization", "weight": "12% of Exam", "slides": []},
-        5: {"title": "Domain 5: Testing, Validation, and Troubleshooting", "weight": "11% of Exam", "slides": []},
+        1: {
+            "title": "Domain 1: Foundation Model Integration, Data Management & Compliance",
+            "weight": "31% of Examination",
+            "lead": "Evaluation and selection of foundation models, high-performance RAG data pipelines, prompt caching optimization, context budgeting, and cross-region resilience.",
+            "color": "#1e3a8a",
+            "accent": "#3b82f6",
+            "slides": [],
+            "diagrams": [
+                ("AWS Bedrock Foundation Model Ingestion & Architecture Flow", "assets/cleaned/aws-02.png", "End-to-end request lifecycle from client applications through Bedrock API to model provider runtime environments."),
+                ("Cross-Region Inference Profile Routing Architecture", "assets/cleaned/aws-08.png", "Dynamic routing across us-east-1, us-west-2, and us-east-2 to eliminate 429 ThrottlingException while strictly respecting geographic data residency."),
+                ("Amazon Bedrock Prompt Caching Console Configuration", "assets/official-ui/09-prompt-cache-toggle.png", "Activating prompt caching for Claude models. Requires minimum 1,024 prefix tokens with rolling 5-minute TTL."),
+                ("Knowledge Base Metadata Filter Group Builder", "assets/official-ui/08-kb-filter-example.png", "Configuring complex boolean and relational metadata filters (AND/OR groups) for granular vector retrieval.")
+            ]
+        },
+        2: {
+            "title": "Domain 2: Implementation and Integration",
+            "weight": "26% of Examination",
+            "lead": "Conversational state management with Bedrock Converse API, autonomous agent orchestration, action groups, tool use, knowledge bases, and multi-agent supervisor systems.",
+            "color": "#065f46",
+            "accent": "#10b981",
+            "slides": [],
+            "diagrams": [
+                ("Amazon Bedrock Agent Runtime Execution Loop", "assets/aws-agent-runtime.png", "The ReAct orchestration loop: Pre-processing, action execution via Lambda / RETURN_OF_CONTROL, observation handling, and post-processing."),
+                ("Bedrock Knowledge Base Ingestion & Vector Indexing Architecture", "assets/cleaned/aws-03.png", "Document chunking (fixed, hierarchical, semantic), embedding generation via Titan v2, and indexing in OpenSearch Serverless / Aurora pgvector."),
+                ("Hybrid Search (BM25 + Semantic Vector) and Re-ranking Flow", "assets/cleaned/aws-04.png", "Merging lexical keyword search for part numbers/acronyms with semantic vector embeddings, scored via Cohere Re-rank v3.5."),
+                ("Bedrock Agent Test Window & Detailed Execution Trace", "assets/official-ui/12-agent-test-window.png", "Live debugging of agent orchestration showing rationale tokens, tool call parameters, Lambda responses, and final response synthesis.")
+            ]
+        },
+        3: {
+            "title": "Domain 3: AI Safety, Security, and Governance",
+            "weight": "20% of Examination",
+            "lead": "Enterprise governance, multi-layer Bedrock Guardrails, contextual grounding hallucination detection, VPC PrivateLink isolation, and the CloudTrail vs Invocation Logging audit boundary.",
+            "color": "#7c2d12",
+            "accent": "#f97316",
+            "slides": [],
+            "diagrams": [
+                ("Amazon Bedrock Guardrails Multi-Layer Protection Pipeline", "assets/cleaned/aws-09.png", "Evaluation stages: Content filters (Hate, Violence, Jailbreaks), Denied Topics, PII Anonymization/Blocking, and Contextual Grounding."),
+                ("Contextual Grounding Hallucination Detection Architecture", "assets/cleaned/aws-10.png", "Dual-score evaluation: Grounding score (factual alignment with retrieved chunks) and Relevance score (alignment with user prompt)."),
+                ("Private Network Isolation via VPC Endpoints & KMS CMK Encryption", "assets/cleaned/aws-14.png", "Securing bedrock-runtime and bedrock-agent-runtime over AWS PrivateLink with strict IAM condition keys (aws:sourceVpce)."),
+                ("The Observability Trio: CloudTrail vs Invocation Logging vs AWS X-Ray", "assets/cleaned/aws-15.png", "Architectural boundary: CloudTrail tracks management events (NEVER payloads), Invocation Logging archives full text to S3/CloudWatch, and X-Ray traces latency.")
+            ]
+        },
+        4: {
+            "title": "Domain 4: Operational Efficiency and Optimization",
+            "weight": "12% of Examination",
+            "lead": "Cost and latency optimization, prompt caching economics, model customization spectrum (Prompting vs RAG vs PEFT/LoRA vs Continued Pre-training), and Provisioned Throughput.",
+            "color": "#4c1d95",
+            "accent": "#8b5cf6",
+            "slides": [],
+            "diagrams": [
+                ("The Foundation Model Customization Spectrum", "assets/cleaned/aws-16.png", "Trade-off ladder: Prompt Engineering (lowest effort) -> RAG -> Fine-Tuning (LoRA) -> Continued Pre-training (highest effort/cost)."),
+                ("Parameter-Efficient Fine-Tuning (PEFT / LoRA) Architecture", "assets/cleaned/aws-17.png", "Freezing base model weights and training lightweight low-rank adapter matrices to dramatically reduce VRAM requirements."),
+                ("Inference Modalities: Provisioned Throughput vs Batch vs On-Demand", "assets/cleaned/aws-18.png", "Pricing and operational comparison: Model Units for committed low latency vs 50% discounted Batch Inference vs Serverless On-Demand.")
+            ]
+        },
+        5: {
+            "title": "Domain 5: Testing, Validation, and Troubleshooting",
+            "weight": "11% of Examination",
+            "lead": "Model evaluation metrics (ROUGE, BLEU, BERTScore), human-in-the-loop evaluation workforces, LLM-as-a-Judge bias mitigation, and systemic error troubleshooting.",
+            "color": "#831843",
+            "accent": "#ec4899",
+            "slides": [],
+            "diagrams": [
+                ("Automated Model Evaluation Job Architecture", "assets/cleaned/aws-19.png", "Evaluating text summarization and Q&A using ROUGE-1/2/L, BLEU, and BERTScore on built-in and custom S3 datasets."),
+                ("Human Evaluation Workforce & LLM-as-a-Judge Bias Mitigation", "assets/cleaned/aws-20.png", "Configuring Private Company Workforces and mitigating position/verbosity biases through swap testing and Chain-of-Thought prompting.")
+            ]
+        }
     }
 
     for s in core:
@@ -40,309 +195,543 @@ def build_print_html():
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>AWS AIP-C01 Overnight Print Study Guide</title>
+  <title>AWS Certified Generative AI Developer – Professional (AIP-C01) Master Study Guide</title>
   <style>
+    {font_faces}
+
     @page {{
       size: letter;
-      margin: 8mm 8mm 8mm 8mm;
+      margin: 12mm 12mm 14mm 12mm;
+      @bottom-center {{
+        content: "AWS AIP-C01 Professional Master Guide · Page " counter(page);
+        font-family: 'Anthropic Sans', sans-serif;
+        font-size: 8pt;
+        color: #666;
+      }}
     }}
+
     * {{
       box-sizing: border-box;
       margin: 0;
       padding: 0;
     }}
+
     body {{
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-      font-size: 8.1pt;
-      line-height: 1.25;
-      color: #111;
+      font-family: 'Anthropic Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-size: 9.2pt;
+      line-height: 1.52;
+      color: #1a1a1a;
       background: #fff;
+      text-align: justify;
+      text-justify: inter-word;
+      -webkit-font-smoothing: antialiased;
+    }}
+
+    /* Document Header */
+    .master-header {{
+      border-bottom: 3pt solid #1e3a8a;
+      padding-bottom: 8pt;
+      margin-bottom: 12pt;
+    }}
+    .doc-pretitle {{
+      font-size: 9pt;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #2563eb;
+      margin-bottom: 2pt;
     }}
     h1.doc-title {{
-      font-size: 14pt;
+      font-size: 19pt;
       font-weight: 800;
-      text-transform: uppercase;
+      color: #0f172a;
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+      margin-bottom: 4pt;
+    }}
+    .doc-subtitle {{
+      font-size: 11pt;
+      color: #475569;
+      font-weight: 600;
+      margin-bottom: 6pt;
+    }}
+    .doc-meta-bar {{
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #f8fafc;
+      border: 1pt solid #e2e8f0;
+      border-radius: 4pt;
+      padding: 4pt 8pt;
+      font-size: 8.5pt;
+      color: #334155;
+    }}
+    .doc-meta-item strong {{
+      color: #0f172a;
+    }}
+
+    /* Domain Section Banners */
+    .domain-banner {{
+      margin: 18pt 0 10pt 0;
+      padding: 8pt 12pt;
+      border-radius: 4pt;
+      color: #fff;
+      break-after: avoid;
+    }}
+    .domain-banner-title {{
+      font-size: 13pt;
+      font-weight: 800;
       letter-spacing: -0.01em;
-      border-bottom: 2pt solid #111;
+      margin-bottom: 2pt;
+    }}
+    .domain-banner-meta {{
+      font-size: 8.8pt;
+      opacity: 0.92;
+      font-style: italic;
+    }}
+
+    /* Architecture Visual Gallery */
+    .diagram-gallery {{
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10pt;
+      margin: 10pt 0 14pt 0;
+      break-inside: avoid;
+    }}
+    .diagram-figure-card {{
+      border: 1pt solid #cbd5e1;
+      border-radius: 4pt;
+      background: #f8fafc;
+      padding: 6pt;
+      display: flex;
+      flex-direction: column;
+      break-inside: avoid;
+    }}
+    .diagram-figure-card.full-width {{
+      grid-column: 1 / -1;
+    }}
+    .diagram-img-box {{
+      text-align: center;
+      background: #ffffff;
+      border: 0.5pt solid #e2e8f0;
+      border-radius: 3pt;
+      padding: 4pt;
+      margin-bottom: 4pt;
+    }}
+    .diagram-img-box img {{
+      max-width: 100%;
+      max-height: 180px;
+      object-fit: contain;
+      display: block;
+      margin: 0 auto;
+    }}
+    .diagram-card-title {{
+      font-size: 8.8pt;
+      font-weight: 700;
+      color: #1e293b;
+      margin-bottom: 2pt;
+    }}
+    .diagram-card-caption {{
+      font-size: 7.8pt;
+      line-height: 1.35;
+      color: #475569;
+      text-align: justify;
+    }}
+
+    /* 2-Column Responsive Reading Grid */
+    .lessons-grid {{
+      column-count: 2;
+      column-gap: 8mm;
+      column-rule: 0.5pt solid #e2e8f0;
+    }}
+
+    /* Topic Lesson Card */
+    .lesson-card {{
+      border: 0.5pt solid #cbd5e1;
+      border-left: 3pt solid #2563eb;
+      border-radius: 3pt;
+      padding: 6pt 8pt;
+      margin-bottom: 8pt;
+      background: #ffffff;
+      break-inside: avoid;
+    }}
+    .lesson-header {{
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      border-bottom: 0.5pt solid #f1f5f9;
       padding-bottom: 2pt;
       margin-bottom: 3pt;
     }}
-    .doc-meta {{
-      font-size: 7.8pt;
-      color: #444;
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 6pt;
-      border-bottom: 0.5pt solid #888;
-      padding-bottom: 2pt;
-    }}
-    .compact-columns {{
-      column-count: 2;
-      column-gap: 5mm;
-      column-rule: 0.5pt solid #ddd;
-    }}
-    .domain-header {{
-      background: #222;
-      color: #fff;
-      padding: 2.5pt 5pt;
-      font-size: 9.2pt;
+    .lesson-title {{
+      font-size: 9.8pt;
       font-weight: 700;
-      margin: 6pt 0 3pt;
-      break-after: avoid;
-      border-radius: 2pt;
+      color: #0f172a;
     }}
-    .topic-card {{
-      border: 0.5pt solid #bbb;
-      border-radius: 2pt;
-      padding: 3pt 5pt;
-      margin-bottom: 3.5pt;
-      break-inside: avoid;
-      background: #fafafa;
-    }}
-    .topic-title {{
-      font-size: 9pt;
-      font-weight: 700;
-      color: #0b2545;
-      margin-bottom: 1.5pt;
-      display: flex;
-      justify-content: space-between;
-    }}
-    .topic-skills {{
-      font-size: 7.2pt;
-      font-weight: normal;
-      color: #666;
-    }}
-    .topic-lead {{
-      font-size: 7.9pt;
-      font-weight: 600;
-      color: #222;
-      margin-bottom: 1.5pt;
-    }}
-    .topic-points {{
-      padding-left: 9pt;
-      margin-bottom: 2pt;
-    }}
-    .topic-points li {{
-      margin-bottom: 1pt;
-      font-size: 7.7pt;
-    }}
-    .rd-box {{
-      border-left: 2pt solid #2457d6;
-      padding-left: 3pt;
-      margin: 1.5pt 0;
-      background: #f0f4fd;
+    .lesson-badge {{
       font-size: 7.5pt;
+      font-weight: 600;
+      color: #64748b;
+      background: #f1f5f9;
+      padding: 1pt 4pt;
+      border-radius: 2pt;
+    }}
+    .lesson-lead {{
+      font-size: 8.5pt;
+      font-style: italic;
+      color: #334155;
+      margin-bottom: 4pt;
+      line-height: 1.4;
+    }}
+    .lesson-points {{
+      padding-left: 11pt;
+      margin-bottom: 5pt;
+      font-size: 8.6pt;
+    }}
+    .lesson-points li {{
+      margin-bottom: 2.5pt;
+      line-height: 1.45;
+    }}
+
+    /* Russian Doll Layer Boxes */
+    .rd-box {{
+      background: #f8fafc;
+      border-radius: 3pt;
+      padding: 4pt 6pt;
+      margin: 4pt 0;
+      font-size: 8.2pt;
+      line-height: 1.4;
     }}
     .rd-row {{
-      margin-bottom: 1pt;
+      margin-bottom: 2.5pt;
     }}
     .rd-tag {{
       font-weight: 700;
-      color: #1a365d;
+      text-transform: uppercase;
+      font-size: 7.2pt;
+      letter-spacing: 0.03em;
     }}
-    .trap-box {{
-      background: #fff8eb;
-      border: 0.5pt solid #f59e0b;
-      padding: 2pt 3pt;
-      font-size: 7.5pt;
-      margin-top: 1.5pt;
-      border-radius: 2pt;
+    .tag-intuition {{ color: #2563eb; }}
+    .tag-api {{ color: #4f46e5; }}
+    .tag-rule {{ color: #d97706; }}
+
+    /* Exam Trap Alert Box */
+    .trap-card {{
+      background: #fef2f2;
+      border: 0.5pt solid #fecaca;
+      border-left: 2.5pt solid #dc2626;
+      border-radius: 3pt;
+      padding: 3.5pt 6pt;
+      margin-top: 4pt;
+      font-size: 8.2pt;
+      line-height: 1.38;
+      color: #991b1b;
     }}
-    .trap-box strong {{
-      color: #b45309;
+    .trap-card strong {{
+      color: #7f1d1d;
     }}
-    .img-box {{
-      text-align: center;
-      margin: 2pt 0;
-      break-inside: avoid;
-    }}
-    .img-box img {{
-      max-width: 95%;
-      max-height: 72pt;
-      object-fit: contain;
-      border: 0.5pt solid #ccc;
-      border-radius: 2pt;
+
+    /* Practical Labs Section */
+    .labs-container {{
+      margin: 14pt 0;
     }}
     .lab-card {{
-      border: 1pt solid #10b981;
-      border-radius: 2pt;
-      padding: 3.5pt 5pt;
-      margin-bottom: 4pt;
-      break-inside: avoid;
+      border: 1pt solid #a7f3d0;
+      border-left: 3.5pt solid #059669;
       background: #f0fdf4;
+      border-radius: 4pt;
+      padding: 7pt 10pt;
+      margin-bottom: 8pt;
+      break-inside: avoid;
     }}
     .lab-title {{
-      font-size: 9pt;
+      font-size: 10.2pt;
       font-weight: 800;
       color: #065f46;
-      margin-bottom: 1.5pt;
+      margin-bottom: 3pt;
     }}
     .lab-steps {{
-      padding-left: 11pt;
-      font-size: 8pt;
+      padding-left: 14pt;
+      font-size: 8.8pt;
+      line-height: 1.48;
     }}
     .lab-steps li {{
-      margin-bottom: 2pt;
+      margin-bottom: 3pt;
     }}
-    .matrix-table {{
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 7.5pt;
-      margin: 4pt 0;
+
+    /* Practice Questions Section */
+    .questions-container {{
+      margin: 14pt 0;
+    }}
+    .question-card {{
+      border: 1pt solid #cbd5e1;
+      border-radius: 4pt;
+      padding: 8pt 10pt;
+      margin-bottom: 10pt;
+      background: #ffffff;
       break-inside: avoid;
     }}
-    .matrix-table th, .matrix-table td {{
-      border: 0.5pt solid #999;
-      padding: 2pt 3pt;
-      text-align: left;
+    .question-meta-bar {{
+      display: flex;
+      justify-content: space-between;
+      font-size: 7.8pt;
+      margin-bottom: 4pt;
+      border-bottom: 0.5pt solid #f1f5f9;
+      padding-bottom: 3pt;
     }}
-    .matrix-table th {{
-      background: #eee;
+    .q-badge-domain {{
+      font-weight: 700;
+      color: #1e3a8a;
+      background: #eff6ff;
+      padding: 1.5pt 5pt;
+      border-radius: 2pt;
+    }}
+    .q-badge-diff {{
+      font-weight: 600;
+      color: #047857;
+      background: #ecfdf5;
+      padding: 1.5pt 5pt;
+      border-radius: 2pt;
+    }}
+    .q-badge-type {{
+      color: #64748b;
+    }}
+    .question-stem {{
+      font-size: 9.3pt;
+      font-weight: 600;
+      color: #0f172a;
+      line-height: 1.46;
+      margin-bottom: 6pt;
+      text-align: justify;
+    }}
+    .options-list {{
+      list-style: none;
+      padding-left: 0;
+      margin-bottom: 6pt;
+    }}
+    .option-item {{
+      font-size: 8.8pt;
+      line-height: 1.4;
+      padding: 3pt 6pt;
+      margin-bottom: 2pt;
+      border-radius: 3pt;
+      border: 0.5pt solid #e2e8f0;
+      background: #f8fafc;
+    }}
+    .option-item.correct {{
+      background: #ecfdf5;
+      border-color: #10b981;
+      color: #065f46;
+      font-weight: 600;
+    }}
+    .rationale-box {{
+      background: #f8fafc;
+      border-left: 2.5pt solid #2563eb;
+      padding: 4pt 6pt;
+      font-size: 8.3pt;
+      line-height: 1.42;
+      color: #334155;
+    }}
+    .rationale-box strong {{
+      color: #1e293b;
+    }}
+
+    /* Decision Matrix Table */
+    table.matrix-table {{
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 8.4pt;
+      line-height: 1.4;
+      margin: 8pt 0 14pt 0;
+      break-inside: avoid;
+    }}
+    table.matrix-table th {{
+      background: #1e293b;
+      color: #ffffff;
+      padding: 5pt 7pt;
+      text-align: left;
       font-weight: 700;
     }}
+    table.matrix-table td {{
+      padding: 4.5pt 7pt;
+      border-bottom: 0.5pt solid #cbd5e1;
+      vertical-align: top;
+    }}
+    table.matrix-table tr:nth-child(even) td {{
+      background: #f8fafc;
+    }}
+
     code {{
       font-family: ui-monospace, Menlo, Consolas, monospace;
-      font-size: 7.5pt;
-      background: #eef;
-      padding: 1pt 2pt;
-      border-radius: 1pt;
+      font-size: 8pt;
+      background: #eef2ff;
+      color: #3730a3;
+      padding: 1pt 3pt;
+      border-radius: 2pt;
     }}
   </style>
 </head>
 <body>
-  <h1 class="doc-title">AWS Certified Generative AI Developer – Professional (AIP-C01)</h1>
-  <div class="doc-meta">
-    <span><strong>Comprehensive Overnight Print Master Guide</strong> · 75 Questions · 180 Min · 750/1000 Pass</span>
-    <span>Eco-Friendly 2-Column Compact Edition · Zero Waste Pages</span>
-  </div>
 
-  <div class="compact-columns">
+  <!-- Document Header -->
+  <header class="master-header">
+    <div class="doc-pretitle">AWS Certification Examination Prep Suite · Professional Level</div>
+    <h1 class="doc-title">AWS Certified Generative AI Developer – Professional (AIP-C01)</h1>
+    <div class="doc-subtitle">Comprehensive Visual Master Study Guide, Architectural Manual & Practical Treatise</div>
+    <div class="doc-meta-bar">
+      <div class="doc-meta-item"><strong>Exam Code:</strong> AIP-C01</div>
+      <div class="doc-meta-item"><strong>Format:</strong> 75 Questions · 180 Minutes</div>
+      <div class="doc-meta-item"><strong>Pass Mark:</strong> 750 / 1000 Scaled Score</div>
+      <div class="doc-meta-item"><strong>Edition:</strong> Master Visual Edition · Zero-Noise Humanized</div>
+    </div>
+  </header>
 """
 
-    # Add each domain and slide
-    for d_idx, d_data in domains.items():
+    # Add each Domain
+    for d_idx in sorted(domains.keys()):
+        d_data = domains[d_idx]
         html += f"""
-        <div class="domain-header">
-          {d_data['title']} ({d_data['weight']})
-        </div>
+        <section class="domain-section" id="domain-{d_idx}">
+          <div class="domain-banner" style="background: {d_data['color']}; border-left: 4pt solid {d_data['accent']};">
+            <div class="domain-banner-title">{d_data['title']} ({d_data['weight']})</div>
+            <div class="domain-banner-meta">{d_data['lead']}</div>
+          </div>
         """
-        for s in d_data["slides"]:
-            rd = s.get('russianDoll', {})
-            img_html = ""
-            if s.get('image'):
-                # Use clean path relative to print file
-                img_path = s['image'].replace('../', '')
-                if (ROOT / img_path).exists():
-                    img_html = f"""<div class="img-box"><img src="../{img_path}" alt="{s['title']}"></div>"""
 
-            points_html = "".join([f"<li>{p}</li>" for p in s.get('points', [])[:3]])
+        # Embed Domain Architectural Diagrams
+        if d_data.get("diagrams"):
+            html += f"""<div class="diagram-gallery">"""
+            for fig_idx, (fig_title, fig_path, fig_desc) in enumerate(d_data["diagrams"], start=1):
+                img_src = f"../{fig_path}"
+                html += f"""
+                <div class="diagram-figure-card">
+                  <div class="diagram-img-box">
+                    <img src="{img_src}" alt="{fig_title}">
+                  </div>
+                  <div class="diagram-card-title">Figure {d_idx}.{fig_idx} · {fig_title}</div>
+                  <div class="diagram-card-caption">{fig_desc}</div>
+                </div>
+                """
+            html += f"""</div>"""
+
+        # Render Core Lessons in 2 Columns
+        html += f"""<div class="lessons-grid">"""
+        for s_idx, s in enumerate(d_data["slides"], start=1):
+            clean_title = clean_lesson_title(s.get('title', ''), s.get('id', ''))
+            rd = s.get('russianDoll', {})
+            
+            # Format Points
+            points = s.get('points', [])
+            points_html = "".join([f"<li>{p}</li>" for p in points[:3]])
+
+            # Bold high-yield keywords in text
+            rule_text = rd.get('examRule', '')
+            trap_text = s.get('trap', '')
+            api_text = rd.get('api', '')
 
             html += f"""
-            <div class="topic-card" id="{s['id']}">
-              <div class="topic-title">
-                <span>{s['title']}</span>
-                <span class="topic-skills">{s['id']} · Skills: {', '.join(s.get('skills', []))}</span>
+            <article class="lesson-card" style="border-left-color: {d_data['accent']};">
+              <div class="lesson-header">
+                <span class="lesson-title">Lesson {s_idx} · {clean_title}</span>
+                <span class="lesson-badge">Domain {d_idx}</span>
               </div>
-              <div class="topic-lead">{s.get('lead', '')}</div>
-              {img_html}
-              <ul class="topic-points">
+              <div class="lesson-lead">{s.get('lead', '')}</div>
+              <ul class="lesson-points">
                 {points_html}
               </ul>
               <div class="rd-box">
-                <div class="rd-row"><span class="rd-tag">Intuition:</span> {rd.get('intuition', '')}</div>
-                <div class="rd-row"><span class="rd-tag">API/Config:</span> <code>{rd.get('api', '')[:140]}...</code></div>
-                <div class="rd-row"><span class="rd-tag">Exam Rule:</span> <strong>{rd.get('examRule', '')}</strong></div>
+                <div class="rd-row"><span class="rd-tag tag-intuition">Intuition:</span> {rd.get('intuition', '')}</div>
+                <div class="rd-row"><span class="rd-tag tag-api">Exact API/Config:</span> <code>{api_text[:140]}</code></div>
+                <div class="rd-row"><span class="rd-tag tag-rule">Exam Decision Rule:</span> <strong>{rule_text}</strong></div>
               </div>
-              <div class="trap-box">
-                <strong>Exam Trap:</strong> {s.get('trap', '')}
+              <div class="trap-card">
+                <strong>⚠️ Critical Exam Trap:</strong> {trap_text}
               </div>
-            </div>
+            </article>
             """
+        html += f"""</div></section>"""
 
-    # Add Section 2: Complete Practical Lab Knowledge (13 Hands-On Labs)
+    # Section 2: Complete Practical Lab Knowledge (13 Hands-On Labs)
     labs = [
         ("Lab 1: Bedrock Model Access & Converse API Invocation", [
-            "Enable Model Access in the Amazon Bedrock Console under Model Access (some Anthropic/Meta models require EULA acceptance).",
-            "IAM Permission: Identity requires <code>bedrock:InvokeModel</code> and <code>bedrock:InvokeModelWithResponseStream</code> on <code>arn:aws:bedrock:*::foundation-model/*</code>.",
-            "Call <code>bedrock-runtime.converse()</code> with <code>modelId</code>, <code>messages</code>, <code>system</code>, and <code>inferenceConfig</code> (temperature, maxTokens, topP).",
-            "Inspect response: Check <code>output.message.content</code>, <code>stopReason</code> (verify if 'end_turn' or 'max_tokens'), and <code>usage</code> (inputTokens, outputTokens)."
+            "<strong>Enable Model Access:</strong> Navigate to Amazon Bedrock Console -> Model access. Submit Use Case Details for Anthropic Claude models (company name, website, intended use) to obtain instant grant.",
+            "<strong>IAM Permissions:</strong> Identity requires <code>bedrock:InvokeModel</code> and <code>bedrock:InvokeModelWithResponseStream</code> on resource <code>arn:aws:bedrock:*::foundation-model/*</code>.",
+            "<strong>Call Converse API:</strong> Execute <code>boto3.client('bedrock-runtime').converse(...)</code> with <code>modelId</code>, <code>messages</code>, <code>system</code>, and <code>inferenceConfig</code> (temperature, maxTokens, topP).",
+            "<strong>Model-Specific Parameters:</strong> Pass Anthropic <code>top_k</code> in <code>additionalModelRequestFields={'top_k': 50}</code>, NOT in <code>inferenceConfig</code>."
         ]),
         ("Lab 2: Knowledge Base Creation with OpenSearch Serverless (AOSS)", [
-            "Prepare S3 Data Source: Create S3 bucket with documents (PDFs, Markdown, TXT) and enable SSE-KMS Customer Managed Key.",
-            "Bedrock Console -> Knowledge Bases -> Create Knowledge Base. Name: <code>corp-kb</code>. Service role auto-created by Bedrock.",
-            "Data Source: Connect S3 bucket. Select Chunking Strategy: Default (300 tokens, 20% overlap), Hierarchical (parent-child for precision+context), or Semantic.",
-            "Embedding Model: Choose Amazon Titan Text Embeddings v2 (supports 1024, 512, or 256 dimensions) or Cohere Embed.",
-            "Vector Store: Choose 'Quick create a new vector store - Amazon OpenSearch Serverless'. Bedrock creates collection, encryption policy, network policy, and data access policy automatically."
+            "<strong>S3 Preparation:</strong> Upload source documents (PDF, DOCX, TXT) to an Amazon S3 bucket with default SSE-KMS encryption.",
+            "<strong>Create Knowledge Base:</strong> Console -> Knowledge Bases -> Create. Connect S3 data source. Choose Chunking: Default (300 tokens, 20% overlap), Hierarchical (parent-child for precision+context), or Semantic.",
+            "<strong>Embeddings & Store:</strong> Select <strong>Amazon Titan Text Embeddings v2</strong> (1,024 dimensions). Choose 'Quick create a new vector store - Amazon OpenSearch Serverless' (Bedrock auto-provisions collection, vector index, and access policies with minimum <strong>4 OCUs for High Availability</strong>).",
+            "<strong>Run Sync:</strong> Click <strong>Sync</strong> to trigger <code>start_ingestion_job()</code> and index vectors."
         ]),
-        ("Lab 3: Knowledge Base Synchronization & Incremental Ingestion", [
-            "Execute sync via CLI or boto3: <code>bedrock_agent.start_ingestion_job(knowledgeBaseId='...', dataSourceId='...')</code>.",
-            "Poll job status: <code>get_ingestion_job()</code> until status is <code>COMPLETE</code>. Inspect <code>statistics.numberOfDocumentsScanned</code> and <code>numberOfNewDocumentsIndexed</code>.",
-            "File Deletion: When an S3 object is deleted, running an ingestion job automatically deletes the corresponding vectors from OpenSearch Serverless."
+        ("Lab 3: Knowledge Base Metadata Filtering Configuration", [
+            "<strong>Upload Metadata:</strong> Alongside <code>contract.pdf</code>, upload <code>contract.pdf.metadata.json</code> with attributes (e.g. <code>{\"department\": \"legal\", \"year\": 2026}</code>).",
+            "<strong>Query with Filter:</strong> Call <code>bedrock-agent-runtime.retrieve()</code> passing <code>retrievalConfiguration.vectorSearchConfiguration.filter</code>.",
+            "<strong>Relational Logic:</strong> Use <code>equals</code>, <code>greaterThanOrEquals</code>, and <code>andAll</code> boolean operators to restrict document space before semantic ranking."
         ]),
         ("Lab 4: Hybrid Search & Re-Ranking Configuration", [
-            "Invoke Retrieve API: Set <code>vectorSearchConfiguration.overrideSearchType = 'HYBRID'</code> in <code>bedrock-agent-runtime.retrieve()</code>.",
-            "Hybrid search executes BM25 lexical keyword matching AND dense vector semantic search in parallel.",
-            "Merges results via Reciprocal Rank Fusion (RRF), then applies Bedrock Re-ranking model (Cohere Rerank) to return top-K re-scored passages."
+            "<strong>Search Mode:</strong> In <code>bedrock-agent-runtime.retrieve()</code>, set <code>overrideSearchType='HYBRID'</code>.",
+            "<strong>Dual Execution:</strong> Executes lexical keyword BM25 search (for part numbers, serial codes, acronyms) and dense semantic vector search simultaneously.",
+            "<strong>Re-ranking:</strong> Apply Bedrock Re-ranking model (Cohere Rerank v3.5) to score and prioritize the top-K consolidated passages before prompt injection."
         ]),
-        ("Lab 5: Building an Amazon Bedrock Action Agent End-to-End", [
-            "Step 1: Create Agent. Specify Foundation Model (e.g. Claude 3.5 Sonnet) and precise System Instructions.",
-            "Step 2: Add Action Group. Upload OpenAPI 3.0 JSON schema to S3. Select Lambda function as action group executor.",
-            "Step 3: Lambda Permissions. Add resource policy to Lambda allowing <code>bedrock.amazonaws.com</code> with condition <code>aws:SourceArn</code> of the agent.",
-            "Step 4: Associate Knowledge Base. Link Knowledge Base with instruction on when the agent should query it.",
-            "Step 5 (CRITICAL EXAM TRAP): Click <strong>Prepare</strong> in console or call <code>prepare_agent()</code>. Without preparing, updates never take effect! Create an Agent Alias (e.g. <code>PROD</code>) pointing to version snapshot."
+        ("Lab 5: Building Amazon Bedrock Action Agents End-to-End", [
+            "<strong>Create Agent:</strong> Specify base model (Claude 3.5 Sonnet) and clear, role-specific System Instructions.",
+            "<strong>Action Group:</strong> Define with OpenAPI 3.0 schema in S3 connected to an AWS Lambda function for business execution.",
+            "<strong>Lambda Resource Policy:</strong> Grant <code>bedrock.amazonaws.com</code> permission with condition <code>aws:SourceArn</code> matching the agent ARN.",
+            "<strong>CRITICAL EXAM STEP:</strong> Click <strong>Prepare</strong> in console or call <code>prepare_agent()</code>. Without preparing, draft updates do not take effect! Point Agent Alias (e.g. <code>PROD</code>) to the prepared immutable Version."
         ]),
-        ("Lab 6: Human-in-the-Loop (HITL) with Return of Control", [
-            "In Action Group configuration, choose <code>RETURN_OF_CONTROL</code> instead of directly executing Lambda.",
-            "When agent selects the action, <code>invoke_agent()</code> pauses and returns <code>returnControl</code> event with action invocation parameters to client.",
-            "Application displays action details to human reviewer. Once approved, application calls <code>invoke_agent()</code> passing <code>sessionState.returnControlInvocationResults</code> with execution confirmation."
+        ("Lab 6: Human-in-the-Loop (HITL) with RETURN_OF_CONTROL", [
+            "<strong>Action Group Configuration:</strong> Set <code>actionGroupExecutor={'customControl': 'RETURN_OF_CONTROL'}</code>.",
+            "<strong>Agent Invocation:</strong> When the agent decides to invoke the tool, <code>invoke_agent()</code> yields an <code>actionGroupInvocationInput</code> event with parsed parameters.",
+            "<strong>Review & Resume:</strong> The client application presents details to a human reviewer. Upon approval, application calls <code>invoke_agent()</code> again passing <code>sessionState.returnControlInvocationResults</code> to continue reasoning."
         ]),
         ("Lab 7: Amazon Bedrock Guardrails Setup & Contextual Grounding", [
-            "Bedrock Console -> Guardrails -> Create Guardrail. Configure Denied Topics with natural language descriptions and blocked examples.",
-            "Content Filters: Configure strengths (LOW, MEDIUM, HIGH) for Hate, Insults, Sexual, Violence, Misconduct, and Prompt Attack.",
-            "Sensitive Info (PII): Select PII entity types (SSN, credit card, phone). Action: <code>ANONYMIZE</code> (masks data) or <code>BLOCK</code> (halts request).",
-            "Contextual Grounding Filter: Set Grounding threshold (e.g. 0.85) and Relevance threshold (e.g. 0.80) to detect RAG hallucinations.",
-            "Testing: Test in Guardrail Playground. In code, pass <code>guardrailConfig={'guardrailIdentifier': '...', 'guardrailVersion': '1'}</code> in <code>converse()</code>, or call standalone <code>apply_guardrail()</code>."
+            "<strong>Create Guardrail:</strong> Configure Content Filters (set <strong>Prompt Attack / Jailbreak</strong> to <code>HIGH</code>).",
+            "<strong>Denied Topics:</strong> Define topic with natural language description and 3–5 representative sample trigger phrases.",
+            "<strong>Sensitive Information (PII):</strong> Add PII entities (SSN, credit card). Choose Action: <code>ANONYMIZE</code> (replaces with placeholder like <code>[NAME]</code>) or <code>BLOCK</code> (halts request).",
+            "<strong>Contextual Grounding:</strong> Set Grounding threshold (0.80) to catch hallucinations and Relevance threshold (0.75) to verify query alignment."
         ]),
         ("Lab 8: Prompt Management & Prompt Caching", [
-            "Create Prompt in Bedrock Prompt Management. Define dynamic variables via <code>{{variable_name}}</code>.",
-            "Create immutable Version (e.g. '1'). Production applications point to Version 1, not the mutable DRAFT.",
-            "Prompt Caching: Place static prefix (system prompt, few-shot examples, large reference docs) at the START of the prompt (minimum 1,024 tokens for Claude).",
-            "Converse API sets <code>cachePoint: {'type': 'default'}</code>. First call writes cache; subsequent calls hit cache with 90% cost savings and 5-min TTL."
+            "<strong>Prompt Management:</strong> Author prompts in Bedrock console with dynamic parameters <code>{{variable_name}}</code>. Create numeric immutable Version for production.",
+            "<strong>Prompt Caching:</strong> Place static prefix (system instructions, tool schemas, long reference manuals) at the START of prompt (minimum <strong>1,024 prefix tokens</strong> for Claude).",
+            "<strong>Cache Point:</strong> In Converse API, mark <code>cachePoint: {'type': 'default'}</code>. Initial write incurs +25% fee; subsequent cache hits grant <strong>90% discount</strong> with <strong>5-minute rolling TTL</strong>."
         ]),
         ("Lab 9: Provisioned Throughput vs Batch Inference", [
-            "On-Demand: Default serverless pay-per-token pricing. Best for bursty, unpredictable traffic.",
-            "Provisioned Throughput: Call <code>create_provisioned_model_throughput()</code>. Commit 1+ Model Units (MUs) for 1 or 6 months. Required for guaranteed low latency SLAs and MANDATORY for serving fine-tuned custom models.",
-            "Batch Inference: Call <code>create_model_invocation_job()</code> with input JSONL in S3. 50% discount for asynchronous offline bulk processing."
+            "<strong>On-Demand:</strong> Default pay-per-token model. Best for bursty, unpredictable workloads.",
+            "<strong>Provisioned Throughput:</strong> Call <code>create_provisioned_model_throughput()</code>. Commit 1+ Model Units (MUs) for 1 or 6 months. Required for guaranteed low latency and <strong>MANDATORY for custom fine-tuned models</strong>.",
+            "<strong>Batch Inference:</strong> Call <code>create_model_invocation_job()</code> with S3 JSONL input. Grants <strong>50% discount</strong> for offline non-real-time bulk jobs."
         ]),
         ("Lab 10: Cross-Region Inference Resilience", [
-            "System-Defined Inference Profiles: Replace regional modelId with profile ID (e.g. <code>us.anthropic.claude-3-5-sonnet-20240620-v1:0</code>).",
-            "Bedrock dynamically routes traffic across us-east-1, us-west-2, us-east-2 to bypass regional capacity limits and eliminate 429 ThrottlingException.",
-            "Residency compliance: European profile (<code>eu.</code>) routes strictly within European regions (Frankfurt, Ireland, Paris) to comply with GDPR."
+            "<strong>Inference Profile:</strong> Use system-defined profile ID (e.g. <code>us.anthropic.claude-3-5-sonnet-20241022-v2:0</code>).",
+            "<strong>Dynamic Routing:</strong> Automatically distributes requests across us-east-1, us-west-2, and us-east-2 to eliminate <code>429 ThrottlingException</code> at <strong>zero extra cost</strong>.",
+            "<strong>Data Residency:</strong> US profile remains in US; European profile (<code>eu.</code>) routes strictly within Frankfurt, Ireland, and Paris for GDPR compliance."
         ]),
         ("Lab 11: Security Isolation with PrivateLink & KMS", [
-            "Create VPC Interface Endpoints for Bedrock (<code>com.amazonaws.region.bedrock-runtime</code> and <code>bedrock</code>) in private subnets.",
-            "VPC Endpoint Policy: Enforce condition <code>StringEquals: {'aws:PrincipalArn': 'arn:.../AppRole'}</code>.",
-            "IAM Policy: Restrict Bedrock invocations with condition <code>StringEquals: {'aws:sourceVpce': 'vpce-xxx'}</code>.",
-            "Model Invocation Logging: Call <code>put_model_invocation_logging_configuration()</code> to log prompts and completions to S3 with KMS encryption. (CloudTrail logs only API management events, never payload text)."
+            "<strong>VPC Endpoints:</strong> Create Interface Endpoints for <code>bedrock-runtime</code>, <code>bedrock-agent-runtime</code>, and <code>bedrock</code>.",
+            "<strong>IAM Condition:</strong> Restrict invocation policy with <code>StringEquals: {'aws:sourceVpce': 'vpce-1234abcd'}</code>.",
+            "<strong>Model Invocation Logging:</strong> Call <code>put_model_invocation_logging_configuration()</code> to log prompts and completions to S3 with KMS CMK encryption. (CloudTrail logs only API management events, never payload text)."
         ]),
         ("Lab 12: Model Evaluation & Benchmark Jobs", [
-            "Automated Evaluation: Create job using built-in datasets (TREC, BoolQ) or upload custom JSONL evaluation dataset to S3.",
-            "Metrics evaluated: Accuracy, Robustness, Toxicity. Output report provides comparative radar charts and scores.",
-            "Human Evaluation: Configure workforce using Amazon Mechanical Turk, AWS Managed Workforce, or Private Company Workforce (Amazon Cognito). Reviewers score answers on 1-5 rubrics.",
-            "Mitigate LLM Judge Biases: Swap position order (A/B and B/A) to defeat position bias, enforce Chain-of-Thought (CoT) reasoning before score emission."
+            "<strong>Automatic Evaluation:</strong> Create job for Summarization or Q&A using built-in or custom S3 JSONL datasets. Evaluates <strong>ROUGE-1/2/L</strong> (summarization recall), <strong>BLEU</strong> (translation precision), and <strong>BERTScore</strong> (semantic similarity).",
+            "<strong>Human Evaluation:</strong> Configure workforce (Private Company Workforce via Amazon Cognito or AWS Managed Team via SageMaker Ground Truth).",
+            "<strong>Mitigate Judge Biases:</strong> Swap position order (A/B and B/A) to defeat position bias, enforce Chain-of-Thought (CoT) before score emission."
         ]),
         ("Lab 13: Systematic Troubleshooting & Error Code Resolution", [
-            "429 <code>ThrottlingException</code>: Apply Exponential Backoff with FULL JITTER algorithm, switch to Cross-Region Inference Profile, or purchase Provisioned Throughput.",
-            "503 <code>ModelNotReadyException</code>: Check Provisioned Model status; model is warming up, retry with backoff.",
-            "400 <code>ValidationException</code>: Max context tokens exceeded or invalid JSON payload. Do NOT retry without fixing input payload.",
-            "403 <code>AccessDeniedException</code>: Check IAM identity policy permissions AND verify Model Access is activated in Bedrock console for that Region."
+            "<strong>429 ThrottlingException:</strong> Implement Exponential Backoff with FULL JITTER, switch to Cross-Region Inference Profile, or commit Provisioned Throughput.",
+            "<strong>503 ModelNotReadyException:</strong> Provisioned Model is warming up; retry with backoff.",
+            "<strong>400 ValidationException:</strong> Context length exceeded or invalid schema. Calculate tokens pre-flight via <code>CountTokens</code> API; do NOT retry without payload modification.",
+            "<strong>403 AccessDeniedException:</strong> Verify IAM caller permissions AND confirm Model Access is activated in Bedrock console for that Region."
         ])
     ]
 
     html += f"""
-    <div class="domain-header" style="background:#047857;">
-      Part 2: Complete Practical Lab Knowledge (13 Hands-On Labs)
-    </div>
+    <section class="labs-section">
+      <div class="domain-banner" style="background: #047857; border-left: 4pt solid #10b981;">
+        <div class="domain-banner-title">Part 2: Complete Practical Lab Knowledge (13 Hands-On Console & SDK Walkthroughs)</div>
+        <div class="domain-banner-meta">Step-by-step procedures covering console navigation, CLI commands, boto3 API structures, and configuration details.</div>
+      </div>
+      <div class="labs-container">
     """
     for lab_title, lab_steps in labs:
         steps_html = "".join([f"<li>{s}</li>" for s in lab_steps])
@@ -354,158 +743,162 @@ def build_print_html():
           </ol>
         </div>
         """
+    html += f"""</div></section>"""
 
-    # Section 3: In-Scope Blueprint Gap Topics (Crucial for 800+ score)
+    # Section 3: In-Scope Blueprint Gap Topics
     gaps = [
-        ("Amazon AppFlow & AWS Transfer Family", "Ingestion for Knowledge Bases", "AppFlow automates SaaS data ingestion (Salesforce, ServiceNow, Zendesk, Slack) directly into S3 for Knowledge Base syncing without custom ETL. AWS Transfer Family provides managed SFTP/FTPS/FTP endpoints dropping enterprise partner files directly into S3."),
-        ("Neptune Analytics & GraphRAG", "Knowledge Graph + Vector RAG", "Neptune Analytics executes in-memory graph algorithms and vector search together. When queries require tracing complex relationships (e.g. supply chain dependencies, fraud rings, organizational hierarchies), GraphRAG with Neptune outperforms pure similarity search."),
-        ("Amazon Q Apps & Q Business", "Generative AI Business Solutions", "Amazon Q Business connects to 40+ enterprise connectors with built-in ACL identity propagation. Amazon Q Apps allows non-technical employees to generate lightweight, custom multi-step AI business apps from a single natural language prompt."),
+        ("Amazon AppFlow & AWS Transfer Family", "Knowledge Base Data Ingestion", "AppFlow automates SaaS data ingestion (Salesforce, ServiceNow, Zendesk, Slack) directly into S3 for Knowledge Base synchronization without custom ETL code. AWS Transfer Family provides managed SFTP/FTPS/FTP endpoints dropping enterprise partner files directly into S3 for RAG indexing."),
+        ("Amazon Neptune Analytics & GraphRAG", "Knowledge Graph + Vector RAG", "Neptune Analytics executes in-memory graph algorithms and vector search together. When queries require traversing multi-hop relationships (e.g. supply chain dependencies, fraud rings, organizational hierarchies), GraphRAG with Neptune outperforms pure similarity search."),
+        ("Amazon Q Business & Amazon Q Apps", "Enterprise AI Application Solutions", "Amazon Q Business connects to 40+ enterprise connectors with built-in ACL identity propagation. Amazon Q Apps allows non-technical employees to generate lightweight, custom multi-step AI business apps from a single natural language prompt."),
         ("AWS WAF & Amazon CloudFront Edge", "DDoS & Edge Prompt Validation", "CloudFront distributes GenAI web apps globally with low latency. AWS WAF protects API Gateway endpoints against DDoS, enforces IP rate-limiting, and blocks SQLi/XSS attacks before requests reach Bedrock. CloudFront Functions / Lambda@Edge inspects requests at the edge."),
-        ("The CountTokens API & Token Calculation", "Preventing Context Overflow", "The Bedrock <code>CountTokens</code> API calculates exact token counts for prompt text against specific model tokenizers before invocation, preventing runtime <code>ValidationException</code>. Crucial for dynamic sliding window memory calculation."),
-        ("top_k in the Converse API", "Sampling via additionalModelRequestFields", "Converse API exposes temperature, topP, and maxTokens directly in inferenceConfig. To pass model-specific parameters like <code>top_k</code> (Anthropic) or <code>repetition_penalty</code>, use <code>additionalModelRequestFields={'top_k': 50}</code>."),
+        ("The CountTokens API & Exact Token Budgeting", "Preventing Context Window Overflow", "The Bedrock <code>CountTokens</code> API calculates exact token counts for prompt text against specific model tokenizers before invocation, preventing runtime <code>ValidationException</code>. Crucial for dynamic sliding window memory calculation."),
+        ("top_k Parameter in the Converse API", "Sampling via additionalModelRequestFields", "Converse API exposes temperature, topP, and maxTokens directly in inferenceConfig. To pass model-specific parameters like Anthropic <code>top_k</code> or <code>repetition_penalty</code>, use <code>additionalModelRequestFields={'top_k': 50}</code>."),
         ("Amazon CloudWatch Evidently", "A/B Testing & Feature Flags", "CloudWatch Evidently manages feature flags, dark launches, and client-side variation experiments for foundation models. Allows comparing conversion and click-through metrics between Model A and Model B in production."),
         ("Amazon Textract Tables & Forms", "Document Modality Extraction", "Standard OCR destroys two-dimensional tabular alignment into flat unreadable text. Textract <code>AnalyzeDocument(FeatureTypes=['TABLES', 'FORMS'])</code> preserves row-column relationships and key-value pairs for RAG ingestion."),
         ("Binary Vectors & Vector Quantization", "Optimizing OpenSearch Serverless", "Binary vectors and FP16/INT8 scalar quantization in OpenSearch Serverless reduce vector memory footprint by up to 75% while maintaining >95% retrieval accuracy, preventing OCU memory exhaustion on multi-million document collections."),
-        ("SageMaker Large-Model Distributed Tuning", "FSDP & DeepSpeed", "For models exceeding single-GPU VRAM (e.g. 70B+ parameters), use SageMaker PyTorch Fully Sharded Data Parallel (FSDP) or DeepSpeed ZeRO-3 across multi-node ml.p4d/ml.p5 GPU clusters to shard optimizer states, gradients, and model weights.")
+        ("SageMaker Large-Model Distributed Tuning", "FSDP & DeepSpeed ZeRO-3", "For models exceeding single-GPU VRAM (e.g. 70B+ parameters), use SageMaker PyTorch Fully Sharded Data Parallel (FSDP) or DeepSpeed ZeRO-3 across multi-node ml.p4d/ml.p5 GPU clusters to shard optimizer states, gradients, and model weights.")
     ]
 
     html += f"""
-    <div class="domain-header" style="background:#7c3aed;">
-      Part 3: In-Scope Blueprint Gap Topics & Advanced Primitives
-    </div>
+    <section class="gaps-section">
+      <div class="domain-banner" style="background: #581c87; border-left: 4pt solid #a855f7;">
+        <div class="domain-banner-title">Part 3: Blueprint Gap Topics & Advanced Primitives</div>
+        <div class="domain-banner-meta">Critical specialized primitives tested in high-difficulty scenario questions.</div>
+      </div>
+      <div class="lessons-grid">
     """
     for gap_title, gap_sub, gap_desc in gaps:
         html += f"""
-        <div class="topic-card">
-          <div class="topic-title"><span>{gap_title}</span><span class="topic-skills">{gap_sub}</span></div>
-          <div class="rd-box" style="background:#f5f3ff; border-left-color:#7c3aed;">
-            <div class="rd-row">{gap_desc}</div>
+        <article class="lesson-card" style="border-left-color: #a855f7;">
+          <div class="lesson-header">
+            <span class="lesson-title">{gap_title}</span>
+            <span class="lesson-badge">{gap_sub}</span>
           </div>
-        </div>
+          <div class="lesson-lead" style="font-style:normal;">{gap_desc}</div>
+        </article>
         """
+    html += f"""</div></section>"""
 
-    # Section 4: The 6 Question Patterns & 30 Exam Traps
+    # Section 4: The 6 Question Patterns
     patterns = [
-        ("Pattern 1: Constraint Extraction", "Scenario stems present 3-4 constraints (residency, budget, latency, serverless). The credited option is the ONLY one that satisfies all constraints simultaneously. Read constraints first, options second."),
-        ("Pattern 2: MOST Correct, Not Merely Correct", "Multiple options will function architecturally, but the prompt asks for 'LEAST operational effort' or 'MOST cost-effective'. Bedrock managed services always beat self-hosted EC2/EKS on operational effort."),
-        ("Pattern 3: Lifecycle & Ordering", "AWS quizes on the exact sequential order of operations. Example: Knowledge Base sync requires (1) S3 upload -> (2) StartIngestionJob -> (3) Status COMPLETE. Agent deployment requires (1) Edit -> (2) PrepareAgent -> (3) Create Alias."),
-        ("Pattern 4: Precision Vocabulary", "Distinguish fine-tuning (labeled prompt-response pairs for style/task) vs continued pre-training (unlabeled text for domain vocabulary). Distinguish Model Invocation Logging (payloads) vs CloudTrail (management APIs only)."),
+        ("Pattern 1: Multi-Constraint Extraction", "Scenario stems present 3-4 simultaneous constraints (residency, budget, latency, serverless). The credited option is the ONLY one that satisfies all constraints simultaneously. Read constraints first, options second."),
+        ("Pattern 2: MOST Correct vs Merely Functional", "Multiple options will function architecturally, but the prompt asks for 'LEAST operational effort' or 'MOST cost-effective'. Managed services (Bedrock) always beat self-hosted EC2/EKS on operational effort."),
+        ("Pattern 3: Lifecycle & Strict Sequential Ordering", "AWS tests exact sequential order of operations. Example: Knowledge Base sync requires (1) S3 upload -> (2) StartIngestionJob -> (3) Status COMPLETE. Agent deployment requires (1) Edit -> (2) PrepareAgent -> (3) Create Alias."),
+        ("Pattern 4: Precision Terminology & Distractor Traps", "Distinguish fine-tuning (labeled prompt-response pairs for style/task) vs continued pre-training (unlabeled text for domain vocabulary). Distinguish Model Invocation Logging (payloads) vs CloudTrail (management APIs only)."),
         ("Pattern 5: Managed-First Solution Ladder", "Always choose the lowest rung on the ladder that solves the problem: Prompt Engineering -> RAG -> Fine-Tuning -> Pre-training. Never fine-tune when RAG solves dynamic factual freshness."),
-        ("Pattern 6: Wrong-Plane Distractors", "Distractors frequently offer data-plane solutions for control-plane problems (or vice versa). Example: Trying to audit prompt text via CloudTrail, or trying to isolate network traffic using S3 Gateway endpoints instead of PrivateLink.")
+        ("Pattern 6: Wrong-Plane Distractor Traps", "Distractors frequently offer data-plane solutions for control-plane problems (or vice versa). Example: Trying to audit prompt text via CloudTrail, or trying to isolate network traffic using S3 Gateway endpoints instead of PrivateLink.")
     ]
 
     html += f"""
-    <div class="domain-header" style="background:#b45309;">
-      Part 4: The 6 AWS AIP-C01 Question Patterns & Elimination Tactics
-    </div>
+    <section class="patterns-section">
+      <div class="domain-banner" style="background: #92400e; border-left: 4pt solid #f59e0b;">
+        <div class="domain-banner-title">Part 4: The 6 AWS AIP-C01 Question Patterns & Elimination Tactics</div>
+        <div class="domain-banner-meta">Heuristics to rapidly identify distractor traps and isolate the credited response in under 30 seconds.</div>
+      </div>
+      <div class="lessons-grid">
     """
     for pat_title, pat_desc in patterns:
         html += f"""
-        <div class="topic-card" style="border-left: 2.5pt solid #f59e0b;">
-          <div class="topic-title" style="color:#b45309;"><span>🎯 {pat_title}</span></div>
-          <div class="topic-lead" style="font-size:7.9pt;">{pat_desc}</div>
-        </div>
+        <article class="lesson-card" style="border-left-color: #f59e0b;">
+          <div class="lesson-header">
+            <span class="lesson-title">🎯 {pat_title}</span>
+          </div>
+          <div class="lesson-lead" style="font-style:normal;">{pat_desc}</div>
+        </article>
         """
+    html += f"""</div></section>"""
 
     # Section 5: Rapid Decision Matrix Table
     html += f"""
-    <div class="domain-header" style="background:#4338ca;">
-      Part 5: 30-Second Rapid Elimination Decision Matrix
-    </div>
-    <table class="matrix-table">
-      <thead>
-        <tr><th>If Scenario Requires...</th><th>Credited AWS Architecture</th><th>Why Distractors Fail</th></tr>
-      </thead>
-      <tbody>
-        <tr><td>Dynamic company policies changing daily</td><td>Bedrock Knowledge Base (RAG)</td><td>Fine-tuning is frozen at training time and cannot update daily</td></tr>
-        <tr><td>Strict JSON schema & downstream tool calling</td><td>Bedrock Converse API with toolConfig</td><td>Regex parsing is brittle; InvokeModel lacks unified tool schema</td></tr>
-        <tr><td>Part numbers, serial codes, exact IDs</td><td>Hybrid Search (BM25 + Semantic Vector) + Rerank</td><td>Pure vector search misses exact keyword string matches</td></tr>
-        <tr><td>Autonomous multi-step actions with APIs</td><td>Bedrock Agent with OpenAPI 3.0 & Lambda</td><td>Chained prompts cannot autonomously validate external tools</td></tr>
-        <tr><td>Prevent hallucinations in RAG answers</td><td>Bedrock Guardrails Contextual Grounding</td><td>Standard toxicity filters do not check source faithfulness</td></tr>
-        <tr><td>Mask SSN/Credit Cards without stopping flow</td><td>Bedrock Guardrails PII with action=ANONYMIZE</td><td>action=BLOCK stops the user conversation entirely</td></tr>
-        <tr><td>Eliminate 429 Throttling during traffic spikes</td><td>Cross-Region Inference Profile (us./eu.)</td><td>Single-region quotas throttle; Provisioned is costly for spikes</td></tr>
-        <tr><td>Auditing user prompt text for compliance</td><td>Bedrock Model Invocation Logging to S3</td><td>CloudTrail logs API management calls, NEVER prompt/payload text</td></tr>
-        <tr><td>Zero internet traversal from private subnets</td><td>VPC Interface Endpoint (PrivateLink)</td><td>S3 Gateway Endpoint does not secure Bedrock runtime calls</td></tr>
-        <tr><td>Offline bulk summarization at lowest cost</td><td>Amazon Bedrock Batch Inference</td><td>Synchronous on-demand costs 2x more and hits request quotas</td></tr>
-        <tr><td>Sensitive database updates / wire transfers</td><td>Action Group RETURN_OF_CONTROL / Step Functions</td><td>Direct Lambda execution has no human review checkpoint</td></tr>
-        <tr><td>Agent changes not taking effect in test</td><td>Call PrepareAgent / Create Agent Alias</td><td>Draft configuration changes do not deploy until prepared</td></tr>
-      </tbody>
-    </table>
+    <section class="matrix-section">
+      <div class="domain-banner" style="background: #1e3a8a; border-left: 4pt solid #3b82f6;">
+        <div class="domain-banner-title">Part 5: 30-Second Rapid Elimination Decision Matrix</div>
+        <div class="domain-banner-meta">Instant scenario pattern-matching guide for the 180-minute examination.</div>
+      </div>
+      <table class="matrix-table">
+        <thead>
+          <tr><th>If Scenario Requires...</th><th>Credited AWS Architecture</th><th>Why Distractors Fail</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Dynamic company policies changing daily</td><td><strong>Bedrock Knowledge Base (RAG)</strong></td><td>Fine-tuning is frozen at training time and cannot update daily</td></tr>
+          <tr><td>Strict JSON schema & downstream tool calling</td><td><strong>Bedrock Converse API with toolConfig</strong></td><td>Regex parsing is brittle; InvokeModel lacks unified tool schema</td></tr>
+          <tr><td>Part numbers, serial codes, exact IDs</td><td><strong>Hybrid Search (BM25 + Vector) + Rerank</strong></td><td>Pure vector search misses exact keyword string matches</td></tr>
+          <tr><td>Autonomous multi-step actions with APIs</td><td><strong>Bedrock Agent with OpenAPI 3.0 & Lambda</strong></td><td>Chained prompts cannot autonomously validate external tools</td></tr>
+          <tr><td>Prevent hallucinations in RAG answers</td><td><strong>Bedrock Guardrails Contextual Grounding</strong></td><td>Standard toxicity filters do not check source faithfulness</td></tr>
+          <tr><td>Mask SSN/Credit Cards without stopping flow</td><td><strong>Bedrock Guardrails PII with action=ANONYMIZE</strong></td><td>action=BLOCK stops the user conversation entirely</td></tr>
+          <tr><td>Eliminate 429 Throttling during traffic spikes</td><td><strong>Cross-Region Inference Profile (us./eu.)</strong></td><td>Single-region quotas throttle; Provisioned is costly for spikes</td></tr>
+          <tr><td>Auditing user prompt text for compliance</td><td><strong>Bedrock Model Invocation Logging to S3</strong></td><td>CloudTrail logs API management calls, NEVER prompt/payload text</td></tr>
+          <tr><td>Zero internet traversal from private subnets</td><td><strong>VPC Interface Endpoint (PrivateLink)</strong></td><td>S3 Gateway Endpoint does not secure Bedrock runtime calls</td></tr>
+          <tr><td>Offline bulk summarization at lowest cost</td><td><strong>Amazon Bedrock Batch Inference</strong></td><td>Synchronous on-demand costs 2x more and hits request quotas</td></tr>
+          <tr><td>Sensitive database updates / wire transfers</td><td><strong>Action Group RETURN_OF_CONTROL / Step Functions</strong></td><td>Direct Lambda execution has no human review checkpoint</td></tr>
+          <tr><td>Agent changes not taking effect in test</td><td><strong>Call PrepareAgent / Create Agent Alias</strong></td><td>Draft configuration changes do not deploy until prepared</td></tr>
+        </tbody>
+      </table>
+    </section>
     """
 
-    # Section 6: Direct 250-Question Bank Master Knowledge Key & Edge-Case Traps
-    qb_keys = [
-        ("KB Data Connectors & Crawlers", "Enterprise Sources & Urgent Ingestion", [
-            "<strong>Data Connectors:</strong> Knowledge Bases natively connect to Amazon S3, Atlassian Confluence, Microsoft SharePoint, Salesforce, and Web Crawler.",
-            "<strong>Web Crawler Data Source:</strong> Crawls public websites/documentation portals on a scheduled cadence (e.g. weekly) without building custom crawlers. Respects robots.txt.",
-            "<strong>Event-Driven Ingestion:</strong> For urgent amendments needing indexing within 1 hour, configure S3 Event Notifications (s3:ObjectCreated:*) or EventBridge to trigger an AWS Lambda function calling <code>bedrock-agent.start_ingestion_job()</code>.",
-            "<strong>Multilingual Embeddings:</strong> When corpus spans multiple languages (e.g. 12+), choose <code>cohere.embed-multilingual-v3</code>. MANDATORY: set <code>input_type='search_query'</code> for runtime queries and <code>input_type='search_document'</code> for ingested texts."
-        ]),
-        ("SageMaker Inference Taxonomy", "Real-Time vs Serverless vs Async vs Batch", [
-            "<strong>Real-time Endpoint:</strong> Persistent compute, sustained 24/7 traffic, strict sub-100ms latency budgets.",
-            "<strong>Serverless Inference:</strong> Automatic scale-to-zero for intermittent, bursty traffic with idle periods. Pay only for compute seconds.",
-            "<strong>Async Inference:</strong> Built for large payloads (up to 1GB) and long execution times (30 to 60 minutes, up to 1 hour, e.g. long video summarization). Queues requests, writes results directly to S3, and sends completion alerts via Amazon SNS.",
-            "<strong>Batch Transform:</strong> Non-real-time bulk scoring across static datasets stored in S3. Compute cluster spins up, processes dataset, and shuts down completely."
-        ]),
-        ("Enterprise Orchestration & Multi-Agent", "Bedrock Flows vs Step Functions", [
-            "<strong>Bedrock Flows:</strong> Visual, low-code/no-code prompt chaining and branching (e.g. Summarize -> Classify -> Draft Reply). Best for prompt engineering workflows without custom code.",
-            "<strong>AWS Step Functions:</strong> Enterprise workflow engine. MANDATORY when requiring human-in-the-loop approval waits (using <code>.waitForTaskToken</code> callback with e.g. 4-hour timeout), complex retries, and auditable decision history.",
-            "<strong>Multi-Agent Supervisor Topology:</strong> When serving multiple isolated departments (clinical, billing, scheduling), deploy one Supervisor Agent that uses natural language intent to route to specialized Collaborator Agents, each with its own domain-isolated Knowledge Base."
-        ]),
-        ("Governance, Lake Formation & Responsible AI", "Fine-Grained Access & Continuous Monitoring", [
-            "<strong>AWS Lake Formation:</strong> Enforces granular column-level and row-level access control on data lake tables (e.g. Team B sees salary column, Team A does not). Standard IAM policies only grant coarse table/bucket access.",
-            "<strong>Continuous Bias Drift Monitoring:</strong> Passing launch-time tests is insufficient. Enterprise compliance requires continuous bias and fairness drift monitoring with automated CloudWatch alerts.",
-            "<strong>Model Cards:</strong> Standardized documentation recording intended use cases, training data provenance, operational limitations, ethical considerations, and evaluation metrics for regulatory scrutiny.",
-            "<strong>The Obfuscation Trap:</strong> Running text through Amazon Translate to another language does NOT redact PII; semantic meaning and PII remain intact! Always use Bedrock Guardrails PII anonymization/blocking.",
-            "<strong>Responsible AI Core Pillars:</strong> Fairness, Veracity (factuality), Transparency, Explainability, Robustness, Privacy & Security, Safety."
-        ]),
-        ("Tool Hosting & MCP Architecture", "Lambda vs ECS Container Hosting", [
-            "<strong>Lightweight Utility Tools:</strong> Host on AWS Lambda (serverless, sub-second spin-up, 15-minute runtime ceiling).",
-            "<strong>Heavy / Stateful Compute Tools:</strong> Host on Amazon ECS / AWS Fargate containerized MCP servers (e.g. complex pricing engines, long-running simulations, or code execution sandboxes)."
-        ]),
-        ("Prerequisite Foundations Refresher Key", "Cloud Architecture & ML Core", [
-            "<strong>S3 Lifecycle:</strong> Transition objects older than 30 days to S3 Glacier Flexible Retrieval; expire after 7 years for compliance.",
-            "<strong>S3 Presigned URLs:</strong> Generate temporary download links (e.g. 24-hour expiry) for private objects without modifying IAM.",
-            "<strong>VPC Network ACL (NACL):</strong> Subnet-level stateless firewall. Deny abusive IPs immediately with a low rule number (evaluated before Security Groups).",
-            "<strong>SSE-KMS Customer Managed Key (CMK):</strong> Guarantees CloudTrail decryption audit logging and instant administrative key revocation.",
-            "<strong>AWS Organizations:</strong> Consolidated billing, volume discount tiering, and Cost Allocation Tags per team for chargebacks.",
-            "<strong>SQS Dead-Letter Queue (DLQ):</strong> Isolate poison-pill messages after exceeding <code>maxReceiveCount</code> to unblock queue consumers.",
-            "<strong>Streaming Ingestion:</strong> Amazon Kinesis Data Streams + Kinesis Data Firehose -> S3 -> AWS Glue DataBrew for visual, no-code data preparation.",
-            "<strong>High-Cardinality Features:</strong> When a column has 8,000 distinct categories (e.g. cities), use entity embeddings or the feature hashing trick (NOT one-hot encoding which creates 8,000 sparse columns).",
-            "<strong>Tabular Churn Prediction:</strong> Use XGBoost (Gradient Boosted Decision Trees), the state-of-the-art algorithm for structured tabular datasets.",
-            "<strong>Image Synthesis:</strong> Diffusion models (e.g. Amazon Titan Image Generator) are designed for generating images from natural language text."
-        ])
-    ]
+    # Section 6: Cleaned High-Yield Blueprint Practice Questions Showcase
+    # Select 25 top representative questions across domains, cleanly formatted
+    showcase_indices = [0, 4, 7, 9, 14, 18, 21, 24, 30, 42, 51, 60, 70, 76, 83, 93, 105, 128, 141, 148, 153, 162, 167, 182, 196]
+    selected_quizzes = [all_quizzes[i] for i in showcase_indices if i < len(all_quizzes)]
 
     html += f"""
-    <div class="domain-header" style="background:#0e7490;">
-      Part 6: 250-Question Bank Master Knowledge Key & Blueprint Refresher
-    </div>
+    <section class="questions-showcase-section">
+      <div class="domain-banner" style="background: #0f172a; border-left: 4pt solid #38bdf8;">
+        <div class="domain-banner-title">Part 6: Cleaned Blueprint Practice Questions Showcase</div>
+        <div class="domain-banner-meta">Representative examination questions formatted with zero internal ID clutter, clean stems, and complete official rationales.</div>
+      </div>
+      <div class="questions-container">
     """
-    for qb_title, qb_sub, qb_items in qb_keys:
-        items_html = "".join([f"<li>{it}</li>" for it in qb_items])
+
+    for i, q in enumerate(selected_quizzes, start=1):
+        cleaned_q = clean_question_for_print(q, i)
+        options_html = ""
+        for opt_idx, opt in enumerate(cleaned_q['options']):
+            is_correct = opt.get('correct', False)
+            opt_class = "option-item correct" if is_correct else "option-item"
+            check_mark = " ✓" if is_correct else ""
+            options_html += f"""
+            <li class="{opt_class}">
+              <strong>{chr(65 + opt_idx)}.</strong> {opt.get('text', '')}{check_mark}
+            </li>
+            """
+
+        domain_label = f"Domain {q.get('domain', 1)}"
+
         html += f"""
-        <div class="topic-card" style="border-left: 2.5pt solid #0891b2;">
-          <div class="topic-title" style="color:#0e7490;"><span>🔑 {qb_title}</span><span class="topic-skills">{qb_sub}</span></div>
-          <ul class="topic-points" style="margin-top:3pt;">
-            {items_html}
+        <article class="question-card">
+          <div class="question-meta-bar">
+            <span class="q-badge-domain">{domain_label} · {cleaned_q['topic']}</span>
+            <span class="q-badge-diff">{cleaned_q['difficulty']}</span>
+            <span class="q-badge-type">{cleaned_q['responseType']}</span>
+          </div>
+          <div class="question-stem">Question {cleaned_q['number']}: {cleaned_q['stem']}</div>
+          <ul class="options-list">
+            {options_html}
           </ul>
-        </div>
+          <div class="rationale-box">
+            <strong>💡 Official AWS Architectural Rationale:</strong> {cleaned_q['answer']}
+          </div>
+        </article>
         """
 
     html += """
-  </div>
-</body>
+      </div>
+    </section>
+  </body>
 </html>
 """
+
     output_html_path = ROOT / 'course/print-study-guide.html'
     output_html_path.write_text(html)
-    print(f"Generated compact print HTML at {output_html_path}")
+    print(f"Generated publication-grade study guide HTML at {output_html_path}")
     return output_html_path
 
 def generate_pdf(html_path):
     pdf_path = ROOT / 'AIP-C01_Overnight_Print_Guide.pdf'
     downloads_pdf = Path('/Users/rj/Downloads/AIP-C01_Overnight_Print_Guide.pdf')
+    master_pdf = Path('/Users/rj/Downloads/AIP-C01_Master_Visual_Study_Guide.pdf')
     
     script = f"""
 import {{ chromium }} from 'playwright';
@@ -515,11 +908,11 @@ await page.goto('file://{html_path}', {{ waitUntil: 'networkidle' }});
 await page.pdf({{
   path: '{pdf_path}',
   format: 'Letter',
-  margin: {{ top: '8mm', bottom: '8mm', left: '8mm', right: '8mm' }},
+  margin: {{ top: '12mm', bottom: '14mm', left: '12mm', right: '12mm' }},
   printBackground: true
 }});
 await browser.close();
-console.log('Successfully generated PDF: {pdf_path}');
+console.log('Successfully generated publication-grade PDF: {pdf_path}');
 """
     js_file = ROOT / '.build/generate_pdf.mjs'
     js_file.parent.mkdir(parents=True, exist_ok=True)
@@ -528,23 +921,26 @@ console.log('Successfully generated PDF: {pdf_path}');
     cmd = ['node', str(js_file)]
     subprocess.run(cmd, check=True)
     
-    # Copy to downloads
+    # Copy to downloads under both names
     if pdf_path.exists():
         import shutil
         shutil.copy2(pdf_path, downloads_pdf)
-        print(f"Copied PDF to user Downloads: {downloads_pdf} ({downloads_pdf.stat().st_size / 1024:.1f} KB)")
+        shutil.copy2(pdf_path, master_pdf)
+        print(f"Copied PDF to user Downloads: {downloads_pdf} ({downloads_pdf.stat().st_size / (1024*1024):.1f} MB)")
+        print(f"Copied PDF to user Downloads: {master_pdf}")
 
 def generate_docx():
     docx_path = ROOT / 'AIP-C01_Overnight_Study_Guide.docx'
     downloads_docx = Path('/Users/rj/Downloads/AIP-C01_Overnight_Study_Guide.docx')
+    master_docx = Path('/Users/rj/Downloads/AIP-C01_Master_Study_Guide.docx')
     
-    # Convert HTML to DOCX using Pandoc
     cmd = [
         '/opt/homebrew/bin/pandoc',
         str(ROOT / 'course/print-study-guide.html'),
         '-o', str(docx_path),
         '--from=html',
-        '--to=docx'
+        '--to=docx',
+        f'--resource-path={ROOT}/course:{ROOT}'
     ]
     subprocess.run(cmd, check=True)
     print(f"Successfully generated DOCX: {docx_path}")
@@ -552,9 +948,11 @@ def generate_docx():
     if docx_path.exists():
         import shutil
         shutil.copy2(docx_path, downloads_docx)
-        print(f"Copied DOCX to user Downloads: {downloads_docx} ({downloads_docx.stat().st_size / 1024:.1f} KB)")
+        shutil.copy2(docx_path, master_docx)
+        print(f"Copied DOCX to user Downloads: {downloads_docx} ({downloads_docx.stat().st_size / (1024*1024):.1f} MB)")
+        print(f"Copied DOCX to user Downloads: {master_docx}")
 
 if __name__ == '__main__':
-    html_file = build_print_html()
+    html_file = build_master_html()
     generate_pdf(html_file)
     generate_docx()

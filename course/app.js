@@ -113,7 +113,7 @@
       icon.textContent = state.learned[item.id] ? '✓' : state.weak[item.id] ? '★' : '•';
       
       const text = document.createElement('span');
-      text.textContent = item.title;
+      text.textContent = item.displayTitle || item.title;
       
       btn.appendChild(icon);
       btn.appendChild(text);
@@ -404,11 +404,14 @@
       <div class="quiz-stage-container">
         <div class="quiz-card">
           <div class="quiz-meta-line">
-            <span class="quiz-domain-tag">${domainNames[q.domain] || `Domain ${q.domain}`}</span>
+            <span class="quiz-domain-tag">${esc(domainNames[q.domain] || `Domain ${q.domain}`)}</span>
+            ${q.topic ? `<span class="quiz-topic-tag" style="background:rgba(59,130,246,0.12);color:var(--accent-active);padding:2px 8px;border-radius:4px;font-size:0.8rem;font-weight:600;">📌 ${esc(q.topic)}</span>` : ''}
+            ${q.difficulty ? `<span class="quiz-diff-tag" style="background:rgba(16,185,129,0.12);color:#10b981;padding:2px 8px;border-radius:4px;font-size:0.8rem;font-weight:600;">${esc(q.difficulty)}</span>` : ''}
             <span class="quiz-instruction-text">${correctCount > 1 ? `Select ${correctCount} responses.` : 'Select one response.'}</span>
           </div>
 
-          <h2 class="quiz-stem-text">${esc(q.title)}</h2>
+          ${q.questionNumber ? `<h3 class="quiz-number-title" style="font-size:1.15rem;font-weight:800;color:var(--text-primary);margin:10px 0 6px 0;">Question ${q.questionNumber}${q.topic ? ` · ${esc(q.topic)}` : ''}</h3>` : ''}
+          <div class="quiz-stem-text" style="text-align:justify;line-height:1.55;margin-bottom:16px;">${esc(q.cleanStem || q.title)}</div>
 
           <fieldset class="options-fieldset">
             ${q.options.map((o, i) => {
@@ -608,7 +611,7 @@
     const q = quizMap.get(qid);
     if (!q) return;
     const drawer = $('quiz-drawer');
-    $('quiz-drawer-title').textContent = q.title;
+    $('quiz-drawer-title').textContent = q.displayTitle || q.title;
     $('quiz-drawer-body').innerHTML = renderQuizStage(q);
     attachQuizEvents(q);
     drawer.hidden = false;
