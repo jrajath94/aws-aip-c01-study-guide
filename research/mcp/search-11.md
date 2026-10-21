@@ -1,0 +1,102 @@
+{
+  "search_results": [
+    {
+      "rank_order": 1,
+      "url": "https://docs.aws.amazon.com/bedrock/latest/userguide/kb-chunking.html",
+      "title": "tables and figures in parsed content",
+      "context": "A feature of Amazon Bedrock Knowledge Bases that attaches broader page or table context to chunks retrieved from markdown-processed documents containing tables or figures.",
+      "recommended_sections": [
+        "Hierarchical chunking",
+        "How content chunking works for knowledge bases",
+        "Multimodal content chunking",
+        "Tables and figures in parsed content"
+      ],
+      "sections": null,
+      "metadata": null
+    },
+    {
+      "rank_order": 2,
+      "url": "https://docs.aws.amazon.com/bedrock/latest/userguide/kb-data-source-customize-ingestion.html",
+      "title": "hierarchical chunking",
+      "context": "A chunking strategy that organizes information into nested parent and child chunk structures, replacing retrieved child chunks with broader parent chunks during retrieval for more comprehensive context",
+      "recommended_sections": [
+        "Hierarchical chunking"
+      ],
+      "sections": null,
+      "metadata": null
+    },
+    {
+      "rank_order": 3,
+      "url": "https://docs.aws.amazon.com/bedrock/latest/userguide/kb-how-customization.html",
+      "title": "Customizing your knowledge base",
+      "context": "A set of configuration options for controlling how data sources are processed, parsed, chunked, and returned in Amazon Bedrock Knowledge Bases",
+      "recommended_sections": [
+        "Customizing your knowledge base"
+      ],
+      "sections": null,
+      "metadata": null
+    },
+    {
+      "rank_order": 4,
+      "url": "https://docs.aws.amazon.com/bedrock/latest/APIReference/API_agent_ChunkingConfiguration.html",
+      "title": "ChunkingConfiguration",
+      "context": "An immutable configuration setting for a knowledge base data source that defines how documents are split into chunks during ingestion",
+      "recommended_sections": null,
+      "sections": [
+        "ChunkingConfiguration",
+        "Contents",
+        "See Also"
+      ],
+      "metadata": null
+    },
+    {
+      "rank_order": 5,
+      "url": "https://docs.aws.amazon.com/bedrock/latest/userguide/kb-how-data.html",
+      "title": "Turning data into a knowledge base",
+      "context": "Connect a supported data source to Amazon Bedrock Knowledge Bases so it can respond to user queries based on retrieved data",
+      "recommended_sections": [
+        "Turning data into a knowledge base"
+      ],
+      "sections": null,
+      "metadata": null
+    }
+  ],
+  "facets": null,
+  "query_id": "4e3bea38-8824-455f-ad01-aa0e51e99018",
+  "metadata": {
+    "discovered_services": null,
+    "related_tasks": null,
+    "relationships": [
+      {
+        "relation": "references",
+        "to": "no chunking",
+        "to_description": "A chunking option that treats each document as a single text chunk without splitting, preventing page number citation and metadata filtering.",
+        "from": "How content chunking works for knowledge bases"
+      },
+      {
+        "relation": "references",
+        "to": "default chunking",
+        "to_description": "A chunking strategy that splits content into text chunks of approximately 300 tokens while honoring sentence boundaries.",
+        "from": "How content chunking works for knowledge bases"
+      },
+      {
+        "relation": "references",
+        "to": "multimodal content chunking",
+        "to_description": "A chunking approach for audio, video, and image content that operates at the embedding model level rather than through text-based chunking strategies.",
+        "from": "How content chunking works for knowledge bases"
+      },
+      {
+        "relation": "references",
+        "to": "semantic chunking",
+        "to_description": "Chunking strategy that organizes content into semantically similar sentence groups using a foundation model with configurable buffer size and breakpoint threshold",
+        "from": "How content chunking works for knowledge bases"
+      },
+      {
+        "relation": "references",
+        "to": "fixed-size chunking",
+        "to_description": "A chunking strategy that splits documents into chunks of a configurable token size with a configurable overlap percentage between consecutive chunks.",
+        "from": "How content chunking works for knowledge bases"
+      }
+    ]
+  }
+}

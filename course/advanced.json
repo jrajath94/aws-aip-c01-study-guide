@@ -1,0 +1,477 @@
+[
+  {
+    "id": "advanced-001",
+    "title": "Prompt technique comparison",
+    "skills": [
+      "1.6.1",
+      "1.6.5"
+    ],
+    "domain": 1,
+    "lead": "Select the technique from the defect you need to correct.",
+    "points": [
+      "Zero-shot supplies a task without task examples.",
+      "Few-shot supplies representative examples of input and desired output.",
+      "Chain-of-thought patterns request intermediate reasoning or decomposition.",
+      "ReAct alternates reasoning, tool action, and observations."
+    ],
+    "trap": "A reasoning explanation is not evidence of truth. Use verified sources, tool results, and answer checks.",
+    "question": "The model understands a task but repeatedly uses the wrong field names. Which low-effort change should you test?",
+    "answer": "Use a precise output schema where supported, plus consistent examples and validation. Fine-tuning is not the first required step.",
+    "sources": [
+      "prompt-management",
+      "converse-api"
+    ],
+    "diagram": ""
+  },
+  {
+    "id": "advanced-002",
+    "title": "Prompt injection and tool output",
+    "skills": [
+      "3.1.5",
+      "2.1.6"
+    ],
+    "domain": 3,
+    "lead": "Indirect injection reaches an agent through a document or a tool result.",
+    "points": [
+      "Treat retrieved instructions as data, even when the source appears trusted.",
+      "Restrict tool destinations, data scope, and permitted side effects.",
+      "Avoid unnecessary secrets in model context.",
+      "Test attacks that ask the model to alter filters or expose prior messages."
+    ],
+    "trap": "A tool result can be accurate data and still contain an injected instruction.",
+    "question": "A search result asks the agent to remove a tenant filter for better accuracy. What must happen?",
+    "answer": "Reject the filter change at the server boundary. The model cannot expand its own authorization.",
+    "sources": [
+      "guardrails",
+      "genai-lens"
+    ],
+    "diagram": "tool"
+  },
+  {
+    "id": "advanced-003",
+    "title": "Inference permission matrix",
+    "skills": [
+      "2.4.1",
+      "3.2.1"
+    ],
+    "domain": 2,
+    "lead": "API method names and IAM action names are not always identical.",
+    "points": [
+      "Converse requires the relevant bedrock:InvokeModel permission.",
+      "ConverseStream requires the relevant bedrock:InvokeModelWithResponseStream permission.",
+      "InvokeModel uses bedrock:InvokeModel for supported resources.",
+      "Retrieval and agent APIs use their own relevant actions and resource scope."
+    ],
+    "trap": "Do not invent bedrock:Converse as a substitute IAM action for the Converse runtime API.",
+    "question": "A role can use Converse but cannot stream. Which action should you inspect?",
+    "answer": "Inspect bedrock:InvokeModelWithResponseStream, resource scope, and any applicable deny.",
+    "sources": [
+      "converse-api",
+      "converse-stream-api",
+      "iam"
+    ],
+    "diagram": ""
+  },
+  {
+    "id": "advanced-004",
+    "title": "Converse with a prompt version",
+    "skills": [
+      "1.6.3",
+      "2.4.1"
+    ],
+    "domain": 1,
+    "lead": "A Prompt Management resource can define parts of the model request.",
+    "points": [
+      "A modelId can reference a supported prompt version ARN.",
+      "Use promptVariables for values that the prompt template requires.",
+      "Respect request field restrictions when a prompt resource defines configuration.",
+      "Keep prompt version and variable contract in the release record."
+    ],
+    "trap": "Do not assume that system, toolConfig, inferenceConfig, and additionalModelRequestFields can override a prompt resource request.",
+    "question": "A call works with a model ID but fails with a prompt ARN. What should you inspect?",
+    "answer": "Inspect prompt variables and the API restrictions on fields defined by Prompt Management.",
+    "sources": [
+      "converse-api",
+      "prompt-management"
+    ],
+    "diagram": ""
+  },
+  {
+    "id": "advanced-005",
+    "title": "Structured output and business validity",
+    "skills": [
+      "1.3.3",
+      "3.1.3"
+    ],
+    "domain": 1,
+    "lead": "A supported structured output feature constrains shape. The application still checks meaning.",
+    "points": [
+      "Confirm the chosen model and API support the required JSON Schema feature.",
+      "Use supported outputConfig or tool schema settings as appropriate.",
+      "Validate required fields, types, bounds, and allowed values.",
+      "Check factual support, permissions, and business rules separately."
+    ],
+    "trap": "Do not claim that every Converse model supports strict structured output. A valid object can still contain fabricated values.",
+    "question": "A valid JSON order contains a nonexistent item. Which validation catches it?",
+    "answer": "A business lookup against the authorized system of record, after schema validation.",
+    "sources": [
+      "structured-output",
+      "converse-api"
+    ],
+    "diagram": ""
+  },
+  {
+    "id": "advanced-006",
+    "title": "Bedrock agent lifecycle",
+    "skills": [
+      "2.1.1",
+      "2.1.6"
+    ],
+    "domain": 2,
+    "lead": "Separate the editable agent configuration from the version that production invokes.",
+    "points": [
+      "Define instructions, action groups, knowledge sources, and execution permissions.",
+      "Prepare and test the draft agent through the supported lifecycle.",
+      "Use versions and aliases for controlled production routing.",
+      "Review tool and source changes with task and safety tests."
+    ],
+    "trap": "A changed draft does not imply that every existing production alias now uses that configuration.",
+    "question": "A new action group does not appear in production behavior. What should you inspect?",
+    "answer": "Inspect the agent preparation state, version, alias target, action group configuration, and invocation identifiers.",
+    "sources": [
+      "agents-current",
+      "agents"
+    ],
+    "diagram": ""
+  },
+  {
+    "id": "advanced-007",
+    "title": "Bedrock action groups and return control",
+    "skills": [
+      "2.1.5",
+      "2.1.6"
+    ],
+    "domain": 2,
+    "lead": "An action group connects a model decision to a defined external capability.",
+    "points": [
+      "Describe operations through a supported API schema or function definition.",
+      "Use Lambda execution where the integration requires it.",
+      "Use return control when the application must handle the proposed action.",
+      "Keep approvals and idempotency at the actual side-effect boundary."
+    ],
+    "trap": "Return control gives application control over execution. It is not automatic human approval.",
+    "question": "A transaction needs custom approval before execution. Which pattern should you assess?",
+    "answer": "Use an application-controlled execution path, with approval bound to the exact validated operation.",
+    "sources": [
+      "agents-current",
+      "agents"
+    ],
+    "diagram": "approval"
+  },
+  {
+    "id": "advanced-008",
+    "title": "Knowledge Bases metadata and sync",
+    "skills": [
+      "1.4.2",
+      "1.4.5"
+    ],
+    "domain": 1,
+    "lead": "A managed ingestion path still needs correct metadata and observable update behavior.",
+    "points": [
+      "Supply supported metadata in the data source format.",
+      "Preserve document identifiers, versions, effective dates, and access scope.",
+      "Run or trigger ingestion after source changes under the supported connector behavior.",
+      "Inspect ingestion statistics and deletion handling before answers use the update."
+    ],
+    "trap": "A scheduled sync cannot promise instant freshness. Define the acceptable source-to-index delay.",
+    "question": "A policy needs immediate withdrawal. Which derived data requires review?",
+    "answer": "Review vectors, source caches, answer caches, conversation references, and retained logs under the applicable policy.",
+    "sources": [
+      "kb-sync",
+      "retrieval"
+    ],
+    "diagram": ""
+  },
+  {
+    "id": "advanced-009",
+    "title": "Search and assistant service boundaries",
+    "skills": [
+      "1.4.1",
+      "2.5.3"
+    ],
+    "domain": 1,
+    "lead": "A search service, an assistant, and a custom RAG application have different control surfaces.",
+    "points": [
+      "Kendra supplies enterprise search with supported connectors and access features.",
+      "Q Business supplies a managed enterprise assistant over supported business data.",
+      "Bedrock Knowledge Bases supplies retrieval and generation integration for custom applications.",
+      "A custom vector path gives control over indexing, retrieval, and application assembly."
+    ],
+    "trap": "Choose from required customization, connectors, permissions, and operational effort. Do not select from product names alone.",
+    "question": "The team needs a custom model workflow with its own tool actions. Is a managed enterprise assistant always sufficient?",
+    "answer": "No. Compare its supported integration surface with the required custom workflow and control boundaries.",
+    "sources": [
+      "knowledge-bases",
+      "genai-lens"
+    ],
+    "diagram": ""
+  },
+  {
+    "id": "advanced-010",
+    "title": "Graph retrieval and relational retrieval",
+    "skills": [
+      "1.4.1",
+      "1.5.4"
+    ],
+    "domain": 1,
+    "lead": "Some questions depend on relationships or exact structured values instead of semantic proximity alone.",
+    "points": [
+      "Graph retrieval can follow entity relationships and multi-hop context.",
+      "Relational queries can supply exact values from a system of record.",
+      "Vector retrieval can supply semantic document context.",
+      "Combine results only after access checks and explicit source handling."
+    ],
+    "trap": "Do not generate and execute unrestricted SQL or graph queries under a broad service role.",
+    "question": "A question asks for current account balance. Should a static vector document provide the final value?",
+    "answer": "Use an authorized system-of-record query for the current value. Use document retrieval for explanatory policy if needed.",
+    "sources": [
+      "knowledge-bases",
+      "genai-lens"
+    ],
+    "diagram": "tool"
+  },
+  {
+    "id": "advanced-011",
+    "title": "API Gateway response streaming",
+    "skills": [
+      "2.4.2",
+      "2.5.1"
+    ],
+    "domain": 2,
+    "lead": "Current AWS documentation supports response streaming for compatible REST API proxy integrations.",
+    "points": [
+      "Set the supported response transfer mode to STREAM where the design requires it.",
+      "Check HTTP_PROXY or AWS_PROXY integration requirements.",
+      "Validate endpoint type, backend behavior, timeout, and client protocol.",
+      "Measure time to first byte through the complete route."
+    ],
+    "trap": "Do not reuse an old rule that all API Gateway responses buffer. Do not assume every HTTP or WebSocket integration supports the same behavior.",
+    "question": "A REST API proxy still buffers an entire model response. What should you verify?",
+    "answer": "Verify the response transfer mode and backend stream support. Then test proxies and client parsing.",
+    "sources": [
+      "response-stream",
+      "converse-stream-api"
+    ],
+    "diagram": "stream"
+  },
+  {
+    "id": "advanced-012",
+    "title": "SageMaker inference pattern comparison",
+    "skills": [
+      "2.2.1",
+      "2.2.2"
+    ],
+    "domain": 2,
+    "lead": "Choose an endpoint or batch pattern from latency, payload, runtime, and hardware requirements.",
+    "points": [
+      "Real-time endpoints fit interactive requests with suitable provisioned resources.",
+      "Asynchronous inference fits supported queued requests and delayed results.",
+      "Batch Transform fits offline bulk processing.",
+      "Serverless inference fits supported intermittent workloads and has distinct resource limits."
+    ],
+    "trap": "Serverless inference does not imply GPU support for every large model. Verify runtime and model compatibility.",
+    "question": "A large custom model needs GPU control and predictable interactive capacity. What should the team assess?",
+    "answer": "Assess suitable real-time hosting resources and serving containers, then benchmark concurrency, memory, and latency.",
+    "sources": [
+      "sagemaker-deploy"
+    ],
+    "diagram": ""
+  },
+  {
+    "id": "advanced-013",
+    "title": "Provisioned capacity and overflow",
+    "skills": [
+      "2.2.1",
+      "4.1.3"
+    ],
+    "domain": 2,
+    "lead": "A mixed capacity design requires explicit routing and capacity assumptions.",
+    "points": [
+      "Confirm that the chosen model supports the required provisioned offering.",
+      "Invoke the correct provisioned resource identifier.",
+      "Measure baseline token work and the relevant commitment terms.",
+      "Implement and test any separate on-demand overflow path."
+    ],
+    "trap": "Do not assume automatic spillover from provisioned capacity to a base on-demand model.",
+    "question": "Provisioned capacity saturates during a spike. What does a safe overflow design need?",
+    "answer": "A tested route to compatible permitted capacity, bounded retries, preserved quality, and no violation of residency rules.",
+    "sources": [
+      "bedrock-provisioned"
+    ],
+    "diagram": "resilience"
+  },
+  {
+    "id": "advanced-014",
+    "title": "Batch input, output, and failure handling",
+    "skills": [
+      "2.4.1",
+      "4.2.3"
+    ],
+    "domain": 2,
+    "lead": "Batch inference is a job workflow with model-specific support and data contracts.",
+    "points": [
+      "Prepare the required supported records and unique identifiers.",
+      "Place inputs and outputs in approved S3 locations.",
+      "Grant the service role the required data and KMS access.",
+      "Track job state and inspect failed records before a selective retry."
+    ],
+    "trap": "Batch inference is not a universal replacement for interactive or service-native async inference.",
+    "question": "A batch job partially fails. Should the entire business operation run again without inspection?",
+    "answer": "No. Inspect record-level results and retry safely with stable identifiers.",
+    "sources": [
+      "batch"
+    ],
+    "diagram": ""
+  },
+  {
+    "id": "advanced-015",
+    "title": "Cost and quota are separate",
+    "skills": [
+      "4.1.3",
+      "4.2.3"
+    ],
+    "domain": 4,
+    "lead": "A lower bill does not prove that a request avoids every quota.",
+    "points": [
+      "Inspect the documented quota dimensions for the selected model and mode.",
+      "Measure request rate, input token rate, output token work, and concurrency as applicable.",
+      "Account for retries and parallel model calls.",
+      "Use queue limits and admission control before overload spreads."
+    ],
+    "trap": "A cache hit can affect quota accounting differently by model. Use current model-specific documentation.",
+    "question": "Prompt compression lowers cost but throttling remains. What should you inspect?",
+    "answer": "Inspect the actual quota dimension, concurrency, request rate, output demand, and retry amplification.",
+    "sources": [
+      "prompt-cache",
+      "bedrock-errors"
+    ],
+    "diagram": ""
+  },
+  {
+    "id": "advanced-016",
+    "title": "Retrieval metrics with a small example",
+    "skills": [
+      "5.1.6"
+    ],
+    "domain": 5,
+    "lead": "Metric definitions separate evidence coverage from evidence noise.",
+    "points": [
+      "Recall@k is relevant returned passages divided by all relevant passages.",
+      "Precision@k is relevant returned passages divided by returned passages.",
+      "Reciprocal rank is one divided by the rank of the first relevant result.",
+      "A worked numerical example is not in source."
+    ],
+    "trap": "A metric depends on the relevance labels and evaluation unit. Record those definitions.",
+    "question": "If a reranker moves the first relevant passage earlier, what improves?",
+    "answer": "Reciprocal rank improves. Recall may remain unchanged if the same relevant passages remain in the returned set.",
+    "sources": [
+      "evaluation",
+      "retrieval"
+    ],
+    "diagram": ""
+  },
+  {
+    "id": "advanced-017",
+    "title": "Bedrock RAG metric names",
+    "skills": [
+      "5.1.5",
+      "5.1.6"
+    ],
+    "domain": 5,
+    "lead": "Know what each built-in measure checks before you select it.",
+    "points": [
+      "Correctness assesses answer accuracy. Completeness assesses coverage of the question.",
+      "Faithfulness assesses support relative to retrieved text.",
+      "Citation precision assesses whether cited passages support their use.",
+      "Citation coverage assesses whether citations cover the response evidence needs."
+    ],
+    "trap": "Some metrics require ground-truth data. Check the dataset contract and supported job type.",
+    "question": "An answer contains accurate facts but omits support for half its claims. Which evidence measure matters?",
+    "answer": "Assess citation coverage and citation precision, plus correctness and faithfulness under the defined rubric.",
+    "sources": [
+      "evaluation-metrics"
+    ],
+    "diagram": ""
+  },
+  {
+    "id": "advanced-018",
+    "title": "Automated Reasoning runtime findings",
+    "skills": [
+      "3.1.3",
+      "3.4.3"
+    ],
+    "domain": 3,
+    "lead": "Automated Reasoning checks return findings. The application decides the next action.",
+    "points": [
+      "VALID concerns only the policy scope captured by its variables.",
+      "INVALID indicates a detected conflict with the modeled policy.",
+      "Ambiguous or complex cases can require clarification or review.",
+      "Configure the supported content qualifiers and verify actual policy evaluation."
+    ],
+    "trap": "Detect mode does not automatically block the response. Missing qualifiers can cause no evaluation in some invocation paths.",
+    "question": "A policy check returns an invalid finding. What should the application do?",
+    "answer": "Apply its defined response policy, such as rewrite, clarification, refusal, or human review. Log the decision under data controls.",
+    "sources": [
+      "reasoning-integration",
+      "guardrails-reasoning"
+    ],
+    "diagram": ""
+  },
+  {
+    "id": "advanced-019",
+    "title": "Data poisoning and evidence integrity",
+    "skills": [
+      "3.1.5",
+      "1.3.1"
+    ],
+    "domain": 3,
+    "lead": "A retrieved passage can be incorrect because the source or ingestion path was compromised.",
+    "points": [
+      "Control who can write and approve trusted source content.",
+      "Track version, origin, and access metadata through ingestion.",
+      "Detect unexpected source changes and quality regressions.",
+      "Quarantine suspect content and invalidate affected derived data."
+    ],
+    "trap": "A grounded response can faithfully repeat poisoned evidence. A grounding score alone cannot establish source truth.",
+    "question": "After a source update, many answers repeat the same false rule. Which layer needs investigation?",
+    "answer": "Inspect source integrity, write permissions, approval history, ingestion changes, and cached results before prompt tuning.",
+    "sources": [
+      "genai-lens",
+      "knowledge-bases"
+    ],
+    "diagram": ""
+  },
+  {
+    "id": "advanced-020",
+    "title": "Exam-day time allocation",
+    "skills": [
+      "5.1.4"
+    ],
+    "domain": 5,
+    "lead": "Use a time plan that leaves room for questions with uncertain constraints.",
+    "points": [
+      "AWS lists 75 questions in 180 minutes.",
+      "The simple average is 2.4 minutes per question.",
+      "Answer all questions because unanswered items count as incorrect.",
+      "For multiple response, select every required correct option."
+    ],
+    "trap": "A time average is a planning aid. It is not a required pace for each question or a scoring formula.",
+    "question": "Why should you avoid a long stall on one uncertain question?",
+    "answer": "It can consume time needed for several answerable questions. Use the exam interface review tools under its current rules.",
+    "sources": [
+      "exam",
+      "certification"
+    ],
+    "diagram": ""
+  }
+]

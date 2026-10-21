@@ -1,0 +1,92 @@
+AWS Documentation from https://docs.aws.amazon.com/bedrock/latest/userguide/claude-messages-mid-conversation-system.html:
+
+# Mid-conversation system messages
+
+You can append `{"role": "system", ...}` messages to the `messages` array. This adds or updates system instructions partway through a conversation without invalidating the cached prefix.
+
+Previously, system instructions could only be supplied through the top-level `system` parameter. This makes it possible to update instructions without resetting prior context.
+
+This is useful in agentic workflows where the model needs to adapt as a task progresses. Examples include introducing a new constraint mid-task, refreshing authoritative context, or changing tool guidance for later turns.
+
+## Supported models
+
+Mid-conversation system messages are supported on Claude Opus 4.8 and the Claude 5 family (for example, Claude Opus 5, Claude Opus 5.5, Claude Sonnet 5, Claude Fable 5, and Claude Fable 5.1). Sending text system messages does not require a beta header. Including `tool_addition` or `tool_removal` blocks in system-role content requires the mid-conversation tool-changes beta (see [Mid-conversation tool changes (Beta)](./model-parameters-anthropic-claude-messages-tool-use.html#model-parameters-anthropic-claude-mid-conversation-tool-changes)). Requests that include `role: "system"` in `messages[]` on unsupported models return a `400 invalid_request_error`.
+
+## Message fields
+
+| **Field** | **Type** | **Description** |
+| --- | --- | --- |
+| `role` | String | Required. Must be `system` |
+| `content` | String or list of content blocks | Required. Use a plain string or content blocks, the same as a user or assistant message. |
+| `cache_control` | Object | Optional. Same semantics as the top-level system parameter. |
+
+## Placement rules
+
+A `{"role": "system"}` message in `messages` has the following placement constraints:
+
+* Cannot be the first entry in `messages`. Use the top-level `system` field for instructions that apply from the very start.
+* Must immediately follow a user message or an assistant message that ends in a server tool result.
+* Must either be the last entry in `messages` or be followed by an assistant turn.
+
+Requests that violate these placement rules return a `400 invalid_request_error`.
+
+## Content rules
+
+System-role message content supports text blocks. You can also include `tool_addition` and `tool_removal` blocks when using the mid-conversation tool-changes beta (see [Mid-conversation tool changes (Beta)](./model-parameters-anthropic-claude-messages-tool-use.html#model-parameters-anthropic-claude-mid-conversation-tool-changes)). Images, documents, and citations are not supported. A system message can also be directive-only, with an empty `content` list and an `output_config` field (see [Directive-only system messages](#claude-messages-mid-conversation-system-directive-only)).
+
+Set `content` to either a plain string or content blocks. The instruction applies from that point in the conversation onward. Use the top-level `system` field for instructions that should apply to the entire conversation, and use mid-conversation system messages for instructions that become relevant later.
+
+## Directive-only system messages
+
+A system-role message can carry a directive instead of instructional text. In this form, `content` is an empty list (`[]`) and the message carries an `output_config` field — for example, to change the thinking effort level for the turns that follow. This requires one of the per-turn control beta values; see [Setting effort per turn (beta)](./claude-messages-adaptive-thinking.html#claude-messages-adaptive-thinking-per-turn-effort).
+
+```
+{
+    "role": "system",
+    "content": [],
+    "output_config": {"effort": "low"}
+}
+```
+
+Without a supporting beta value, or on a model that does not support per-turn directives, a system message that includes `output_config` returns `400 messages.N.output_config: Extra inputs are not permitted`.
+
+## Prompt caching
+
+Mid-conversation system messages are designed to work with prompt caching. Cache the stable prefix as usual by placing `cache_control` on the last block that remains unchanged across requests. Then append the system message after that breakpoint. Because the new instruction appears after the cached prefix, it does not change the prefix hash, and the cache can still hit.
+
+Once a mid-conversation system message becomes part of the stable history, it can itself be read from cache on subsequent turns. Avoid editing or removing a previously sent mid-conversation system message, because changing earlier messages invalidates the cache from that point forward.
+
+For more information about prompt caching, see [Prompt caching for faster model inference](https://docs.aws.amazon.com/bedrock/latest/userguide/prompt-caching.html).
+
+## Response behavior
+
+The response shape is unchanged. System-role messages do not appear in the response content array. The model processes the system instructions but does not echo them back in its response.
+
+## Code example
+
+The following Python example demonstrates how to use mid-conversation system prompts with Amazon Bedrock:
+
+```
+import boto3
+import json
+
+client = boto3.client("bedrock-runtime", region_name="us-east-1")
+
+response = client.invoke_model(
+    modelId="us.anthropic.claude-opus-4-8",
+    body=json.dumps({
+        "anthropic_version": "bedrock-2023-05-31",
+        "max_tokens": 1024,
+        "system": "You are a helpful travel planning assistant.",
+        "messages": [
+            {"role": "user", "content": "Help me plan a week in Paris."},
+            {"role": "assistant", "content": "I'd love to help! What kind of experience are you looking for?"},
+            {"role": "user", "content": "I want to see the major sights. What should I do on day one?"},
+            {"role": "system", "content": "The user has a budget of $150/day. Only suggest options that fit within this budget. Prioritize free attractions and affordable dining."}
+        ]
+    })
+)
+
+result = json.loads(response["body"].read())
+print(result["content"][0]["text"])
+```

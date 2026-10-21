@@ -1,0 +1,871 @@
+{
+ "schemaVersion": 1,
+ "itemId": "prereq-aws-cloud-foundations",
+ "itemKind": "lesson",
+ "revision": "f77798680429750ddea18776dfa85abecdcb9e49f3d504918b5f1193cea52f09",
+ "sections": [
+  {
+   "anchor": "prereq-aws-cloud-foundations-intro-p01",
+   "title": "AWS Cloud Foundations",
+   "minutes": 1,
+   "endAnchor": "prereq-aws-cloud-foundations-intro-end",
+   "blocks": [
+    {
+     "anchor": "prereq-aws-cloud-foundations-intro-p01",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "Regions",
+     "definition": "Geographic areas holding AZs; picked for latency, law, and service availability.",
+     "anchor": "prereq-aws-cloud-foundations-intro-p01"
+    },
+    {
+     "term": "IAM",
+     "definition": "Identity and Access Management: the system deciding who can do what in AWS.",
+     "anchor": "prereq-aws-cloud-foundations-intro-p01"
+    }
+   ],
+   "recall": [
+    {
+     "id": "prereq-aws-cloud-foundations-intro-r1",
+     "question": "What does this volume cover?",
+     "answer": "The AWS that AIP-C01 assumes you know: Regions, IAM, S3, EC2, VPC, databases, Lambda, and the services connecting them.",
+     "anchor": "prereq-aws-cloud-foundations-intro-p01"
+    }
+   ]
+  },
+  {
+   "anchor": "how-to-use-this-volume",
+   "title": "How to use this volume",
+   "minutes": 1,
+   "endAnchor": "how-to-use-this-volume-end",
+   "blocks": [
+    {
+     "anchor": "how-to-use-this-volume-p01",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "storage classes",
+     "definition": "S3 tiers priced by how often you touch the data.",
+     "anchor": "how-to-use-this-volume-p03"
+    },
+    {
+     "term": "lifecycle rules",
+     "definition": "S3 rules that move or delete objects on a schedule.",
+     "anchor": "how-to-use-this-volume-p03"
+    }
+   ],
+   "recall": [
+    {
+     "id": "how-to-use-this-volume-r1",
+     "question": "How does AIP-C01 test foundations material?",
+     "answer": "Never as trivia, always inside a scenario: the cheapest compliant design needs storage classes, lifecycle rules, and KMS together.",
+     "anchor": "how-to-use-this-volume-p02"
+    }
+   ]
+  },
+  {
+   "anchor": "watch-first",
+   "title": "Watch first: the full foundations course",
+   "minutes": 5,
+   "endAnchor": "watch-first-end",
+   "blocks": [
+    {
+     "anchor": "watch-first-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    },
+    {
+     "anchor": "watch-first-takeaway01",
+     "kind": "summary",
+     "reveal": "fade"
+    },
+    {
+     "anchor": "watch-first-p11",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "Region",
+     "definition": "A geographic area holding two or more AZs; picked for latency, law, and services.",
+     "anchor": "watch-first-fig01"
+    },
+    {
+     "term": "Availability Zone",
+     "definition": "One or more discrete data centers inside a Region, with independent power and network.",
+     "anchor": "watch-first-p04"
+    },
+    {
+     "term": "edge locations",
+     "definition": "Points of presence in hundreds of cities that cache content and answer DNS near users.",
+     "anchor": "watch-first-fig01"
+    },
+    {
+     "term": "high availability",
+     "definition": "On the exam, almost always means running in two or more AZs.",
+     "anchor": "watch-first-walk01"
+    },
+    {
+     "term": "shared responsibility",
+     "definition": "AWS secures the cloud itself; you secure what you put in it.",
+     "anchor": "watch-first-p02"
+    }
+   ],
+   "recall": [
+    {
+     "id": "watch-first-r1",
+     "question": "Berlin users, data must stay in the EU, app runs on one EC2 instance in us-east-1a. Smallest fix?",
+     "answer": "Move the workload to eu-central-1 and run in at least two AZs: the Region must change for data residency, and two AZs give availability.",
+     "anchor": "watch-first-pqans01"
+    },
+    {
+     "id": "watch-first-r2",
+     "question": "Who patches the OS on EC2, on RDS, on Lambda?",
+     "answer": "You patch EC2; AWS patches RDS and Lambda. If the service is managed or serverless, AWS owns the OS.",
+     "anchor": "watch-first-ask01"
+    }
+   ]
+  },
+  {
+   "anchor": "iam",
+   "title": "3. IAM: identity and access management",
+   "minutes": 7,
+   "endAnchor": "iam-end",
+   "blocks": [
+    {
+     "anchor": "iam-p04",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    },
+    {
+     "anchor": "iam-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    },
+    {
+     "anchor": "iam-takeaway01",
+     "kind": "summary",
+     "reveal": "fade"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "role",
+     "definition": "A temporary badge anyone trusted can assume; it hands out keys that die on their own.",
+     "anchor": "iam-p03"
+    },
+    {
+     "term": "policy",
+     "definition": "A JSON document saying allow or deny on API calls and resources.",
+     "anchor": "iam-code01"
+    },
+    {
+     "term": "explicit deny",
+     "definition": "A deny in any policy that overrides every allow and ends the request.",
+     "anchor": "iam-fig01"
+    },
+    {
+     "term": "permissions boundary",
+     "definition": "A managed policy capping what an identity can ever do, no matter its other policies.",
+     "anchor": "iam-fig03"
+    },
+    {
+     "term": "MFA",
+     "definition": "Multi-factor authentication: a second proof of identity, like a code from your phone.",
+     "anchor": "iam-p05"
+    }
+   ],
+   "recall": [
+    {
+     "id": "iam-r1",
+     "question": "A Lambda function uses an access key in an environment variable and the security team flags it. Correct fix?",
+     "answer": "Attach an IAM role to the function with s3:GetObject on the source bucket and s3:PutObject on the destination; no keys needed.",
+     "anchor": "iam-pqans01"
+    },
+    {
+     "id": "iam-r2",
+     "question": "Guarantee that no product-team user can ever delete production databases. Which control?",
+     "answer": "A permissions boundary on every product-team user and role: team-written policies can never exceed it.",
+     "anchor": "iam-pqans02"
+    }
+   ]
+  },
+  {
+   "anchor": "s3",
+   "title": "4. S3: object storage",
+   "minutes": 6,
+   "endAnchor": "s3-end",
+   "blocks": [
+    {
+     "anchor": "s3-p05",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    },
+    {
+     "anchor": "s3-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    },
+    {
+     "anchor": "s3-takeaway01",
+     "kind": "summary",
+     "reveal": "fade"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "buckets",
+     "definition": "Containers for objects; names are globally unique but each bucket lives in one Region.",
+     "anchor": "s3-p02"
+    },
+    {
+     "term": "eleven nines",
+     "definition": "99.999999999% durability: S3 copies data across at least three AZs.",
+     "anchor": "s3-p03"
+    },
+    {
+     "term": "lifecycle rules",
+     "definition": "Rules that move or delete objects on a schedule without you touching them.",
+     "anchor": "s3-p07"
+    },
+    {
+     "term": "versioning",
+     "definition": "Keeps every version of an object; reverses accidental overwrites and deletes.",
+     "anchor": "s3-walk01"
+    },
+    {
+     "term": "presigned URL",
+     "definition": "A signed link sharing one private object until it expires; the bucket stays private.",
+     "anchor": "s3-p10"
+    },
+    {
+     "term": "SSE-KMS",
+     "definition": "Server-side encryption with your KMS keys; every encrypt and decrypt lands in CloudTrail.",
+     "anchor": "s3-p09"
+    }
+   ],
+   "recall": [
+    {
+     "id": "s3-r1",
+     "question": "Fine-tuning datasets: last month read daily, older data audited yearly, keep 7 years. Cheapest design?",
+     "answer": "A lifecycle rule: keep recent data hot for 30 days, move older data to Glacier Flexible Retrieval, expire after 7 years.",
+     "anchor": "s3-pqans01"
+    },
+    {
+     "id": "s3-r2",
+     "question": "Share one private invoice PDF for 24 hours, never publicly listable. How?",
+     "answer": "Generate a presigned URL with a 24-hour expiry; the bucket stays private the whole time.",
+     "anchor": "s3-pqans02"
+    }
+   ]
+  },
+  {
+   "anchor": "ec2",
+   "title": "5. EC2: rented computers",
+   "minutes": 5,
+   "endAnchor": "ec2-end",
+   "blocks": [
+    {
+     "anchor": "ec2-p04",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    },
+    {
+     "anchor": "ec2-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    },
+    {
+     "anchor": "ec2-takeaway01",
+     "kind": "summary",
+     "reveal": "fade"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "AMI",
+     "definition": "Amazon Machine Image: the operating system image an instance launches from.",
+     "anchor": "ec2-p02"
+    },
+    {
+     "term": "Spot",
+     "definition": "Spare EC2 capacity at up to 90% off, reclaimable by AWS with a 2-minute warning.",
+     "anchor": "ec2-rung02"
+    },
+    {
+     "term": "EBS",
+     "definition": "Network-attached disk that persists independently of the instance; snapshot it to S3.",
+     "anchor": "ec2-code01"
+    },
+    {
+     "term": "EFS",
+     "definition": "A shared NFS file system for many writers across AZs.",
+     "anchor": "ec2-code01"
+    },
+    {
+     "term": "Savings Plans",
+     "definition": "A 1- or 3-year dollar-per-hour commit saving up to 72%, with flexibility to change types.",
+     "anchor": "ec2-rung04"
+    }
+   ],
+   "recall": [
+    {
+     "id": "ec2-r1",
+     "question": "50 EC2 instances need one shared input folder across two AZs. Which storage fits?",
+     "answer": "EFS: a shared NFS file system built for many writers across AZs.",
+     "anchor": "ec2-pqans01"
+    },
+    {
+     "id": "ec2-r2",
+     "question": "A nightly 3-hour reporting job is retryable and the CFO wants the lowest price. Which pricing?",
+     "answer": "Spot instances: the job tolerates interruption, which is exactly what the 2-minute reclaim warning is built for.",
+     "anchor": "ec2-pqans02"
+    }
+   ]
+  },
+  {
+   "anchor": "vpc",
+   "title": "6. VPC: your private network",
+   "minutes": 9,
+   "endAnchor": "vpc-end",
+   "blocks": [
+    {
+     "anchor": "vpc-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    },
+    {
+     "anchor": "vpc-p07",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    },
+    {
+     "anchor": "vpc-takeaway01",
+     "kind": "summary",
+     "reveal": "fade"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "VPC",
+     "definition": "Your own isolated network inside AWS; nothing gets in or out unless you build the road.",
+     "anchor": "vpc-p01"
+    },
+    {
+     "term": "NAT gateway",
+     "definition": "A one-way door in a public subnet: private subnets reach out, nobody outside reaches in.",
+     "anchor": "vpc-p06"
+    },
+    {
+     "term": "security group",
+     "definition": "A stateful firewall around an instance; allow rules only, and they add up.",
+     "anchor": "vpc-walk01"
+    },
+    {
+     "term": "NACL",
+     "definition": "A stateless firewall around a subnet; allow and deny rules evaluated in number order.",
+     "anchor": "vpc-walk01"
+    },
+    {
+     "term": "VPC endpoint",
+     "definition": "Private access to AWS services without touching the internet at all.",
+     "anchor": "vpc-walk01"
+    },
+    {
+     "term": "DynamoDB",
+     "definition": "A serverless key-value store with single-digit millisecond latency at any scale.",
+     "anchor": "vpc-p08"
+    }
+   ],
+   "recall": [
+    {
+     "id": "vpc-r1",
+     "question": "A Lambda function in private subnets must call an external payment API. Least-exposure fix?",
+     "answer": "Put a NAT gateway in a public subnet and route 0.0.0.0/0 from the private subnets to it: outbound-only internet.",
+     "anchor": "vpc-pqans01"
+    },
+    {
+     "id": "vpc-r2",
+     "question": "Block one attacking IP at the subnet edge fast, without touching any instance. Which control?",
+     "answer": "A NACL deny rule with a low rule number: security groups have no deny rules.",
+     "anchor": "vpc-pqans02"
+    },
+    {
+     "id": "vpc-r3",
+     "question": "A mobile leaderboard needs 5 ms reads and writes at 100,000 rps across three Regions, with no DBAs. Which service?",
+     "answer": "DynamoDB with Global Tables on on-demand capacity: serverless key-value, active-active across Regions.",
+     "anchor": "vpc-pqans03"
+    }
+   ]
+  },
+  {
+   "anchor": "observability",
+   "title": "9. Observability: CloudWatch, CloudTrail, Config",
+   "minutes": 2,
+   "endAnchor": "observability-end",
+   "blocks": [
+    {
+     "anchor": "observability-p02",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    },
+    {
+     "anchor": "observability-takeaway01",
+     "kind": "summary",
+     "reveal": "fade"
+    },
+    {
+     "anchor": "observability-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "CloudWatch",
+     "definition": "Asks how healthy it is right now: metrics, alarms, logs, dashboards.",
+     "anchor": "observability-p02"
+    },
+    {
+     "term": "CloudTrail",
+     "definition": "Asks who did what, when: every API call in the account, logged to S3.",
+     "anchor": "observability-p02"
+    },
+    {
+     "term": "Config",
+     "definition": "Asks whether resources are still configured correctly: compliance rules and history.",
+     "anchor": "observability-p02"
+    }
+   ],
+   "recall": [
+    {
+     "id": "observability-r1",
+     "question": "Which IAM principal modified the production security group yesterday at 3 PM?",
+     "answer": "CloudTrail: it records every API call with the caller identity and timestamp.",
+     "anchor": "observability-pqans01"
+    }
+   ]
+  },
+  {
+   "anchor": "messaging",
+   "title": "10. Messaging: SQS, SNS, EventBridge",
+   "minutes": 3,
+   "endAnchor": "messaging-end",
+   "blocks": [
+    {
+     "anchor": "messaging-p01",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    },
+    {
+     "anchor": "messaging-takeaway01",
+     "kind": "summary",
+     "reveal": "fade"
+    },
+    {
+     "anchor": "messaging-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "SQS",
+     "definition": "A queue: senders drop messages in, receivers pull them out; it decouples and buffers.",
+     "anchor": "messaging-p03"
+    },
+    {
+     "term": "SNS",
+     "definition": "Pub/sub fan-out: publish once to a topic and every subscriber gets a push.",
+     "anchor": "messaging-p04"
+    },
+    {
+     "term": "EventBridge",
+     "definition": "The event bus: rules match events and route them to targets, plus cron schedules.",
+     "anchor": "messaging-p05"
+    },
+    {
+     "term": "dead-letter queue",
+     "definition": "Catches poison messages that fail repeatedly so they stop blocking workers.",
+     "anchor": "messaging-p03"
+    }
+   ],
+   "recall": [
+    {
+     "id": "messaging-r1",
+     "question": "An order service must notify warehouse, email, and analytics without coupling them. Which design?",
+     "answer": "Publish to one SNS topic with each consumer subscribed via SQS or Lambda: fan-out decouples every consumer.",
+     "anchor": "messaging-pqans01"
+    }
+   ]
+  },
+  {
+   "anchor": "api-gateway",
+   "title": "11. API Gateway: the managed front door",
+   "minutes": 2,
+   "endAnchor": "api-gateway-end",
+   "blocks": [
+    {
+     "anchor": "api-gateway-p02",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    },
+    {
+     "anchor": "api-gateway-takeaway01",
+     "kind": "summary",
+     "reveal": "fade"
+    },
+    {
+     "anchor": "api-gateway-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "HTTP API",
+     "definition": "Cheap and fast; the fit for Lambda and HTTP backends.",
+     "anchor": "api-gateway-p03"
+    },
+    {
+     "term": "REST API",
+     "definition": "Full features: usage plans, API keys, request mapping, WAF, and caching.",
+     "anchor": "api-gateway-p03"
+    },
+    {
+     "term": "WebSocket API",
+     "definition": "Two-way APIs that stay open, for chat and live feeds.",
+     "anchor": "api-gateway-p03"
+    }
+   ],
+   "recall": [
+    {
+     "id": "api-gateway-r1",
+     "question": "A public API needs per-customer rate limits, API keys for billing tiers, and GET caching. Which option?",
+     "answer": "A REST API with usage plans, API keys, and caching: HTTP APIs lack usage plans and API keys.",
+     "anchor": "api-gateway-pqans01"
+    }
+   ]
+  },
+  {
+   "anchor": "kms",
+   "title": "12. KMS: encryption key management",
+   "minutes": 2,
+   "endAnchor": "kms-end",
+   "blocks": [
+    {
+     "anchor": "kms-p03",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    },
+    {
+     "anchor": "kms-takeaway01",
+     "kind": "summary",
+     "reveal": "fade"
+    },
+    {
+     "anchor": "kms-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "envelope encryption",
+     "definition": "A data key encrypts the file locally and fast; KMS encrypts the data key with the master key.",
+     "anchor": "kms-p03"
+    },
+    {
+     "term": "customer-managed key",
+     "definition": "Your KMS key with your policies, your rotation, and your disable switch.",
+     "anchor": "kms-ul01"
+    },
+    {
+     "term": "SSE-KMS",
+     "definition": "S3 server-side encryption with your KMS keys; every decrypt lands in CloudTrail.",
+     "anchor": "kms-p05"
+    }
+   ],
+   "recall": [
+    {
+     "id": "kms-r1",
+     "question": "Patient scans in S3 need a log entry for every decryption and instant revoke. Which choice?",
+     "answer": "SSE-KMS with a customer-managed key: KMS logs every decrypt, and disabling the key revokes everything under it.",
+     "anchor": "kms-pqans01"
+    }
+   ]
+  },
+  {
+   "anchor": "cloudformation",
+   "title": "13. CloudFormation: infrastructure as code",
+   "minutes": 2,
+   "endAnchor": "cloudformation-end",
+   "blocks": [
+    {
+     "anchor": "cloudformation-p02",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    },
+    {
+     "anchor": "cloudformation-takeaway01",
+     "kind": "summary",
+     "reveal": "fade"
+    },
+    {
+     "anchor": "cloudformation-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "stack",
+     "definition": "The set of resources CloudFormation creates together from one template.",
+     "anchor": "cloudformation-p02"
+    },
+    {
+     "term": "change sets",
+     "definition": "A preview of what an update will change before it runs.",
+     "anchor": "cloudformation-p03"
+    },
+    {
+     "term": "drift detection",
+     "definition": "Catches resources that someone hand-edited outside the template.",
+     "anchor": "cloudformation-p03"
+    },
+    {
+     "term": "StackSets",
+     "definition": "Deploys one template across many accounts and Regions.",
+     "anchor": "cloudformation-p03"
+    }
+   ],
+   "recall": [
+    {
+     "id": "cloudformation-r1",
+     "question": "Prod and staging drifted apart from console clicks and nobody knows the differences. Permanent fix?",
+     "answer": "Define the stack in CloudFormation templates, deploy per environment, and run drift detection.",
+     "anchor": "cloudformation-pqans01"
+    }
+   ]
+  },
+  {
+   "anchor": "billing",
+   "title": "14. Billing: how AWS charges you",
+   "minutes": 3,
+   "endAnchor": "billing-end",
+   "blocks": [
+    {
+     "anchor": "billing-p02",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    },
+    {
+     "anchor": "billing-takeaway01",
+     "kind": "summary",
+     "reveal": "fade"
+    },
+    {
+     "anchor": "billing-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "GB-months",
+     "definition": "The S3 billing unit: gigabytes stored times the fraction of the month.",
+     "anchor": "billing-p04"
+    },
+    {
+     "term": "Cost Explorer",
+     "definition": "Shows where the money went.",
+     "anchor": "billing-p06"
+    },
+    {
+     "term": "AWS Budgets",
+     "definition": "Alerts, and can act, when spend crosses a line you set.",
+     "anchor": "billing-p08"
+    },
+    {
+     "term": "consolidated billing",
+     "definition": "Merges accounts through Organizations for one bill and stacked volume discounts.",
+     "anchor": "billing-p06"
+    }
+   ],
+   "recall": [
+    {
+     "id": "billing-r1",
+     "question": "12 accounts, one bill, volume discounts, per-team breakdowns. Which combination?",
+     "answer": "AWS Organizations with consolidated billing plus cost allocation tags per team.",
+     "anchor": "billing-pqans01"
+    }
+   ]
+  },
+  {
+   "anchor": "genai-architecture",
+   "title": "15. Putting it together: a GenAI app on AWS",
+   "minutes": 2,
+   "endAnchor": "genai-architecture-end",
+   "blocks": [
+    {
+     "anchor": "genai-architecture-p03",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    },
+    {
+     "anchor": "genai-architecture-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "CloudFront",
+     "definition": "The edge cache serving HTTPS at the front of the architecture.",
+     "anchor": "genai-architecture-code01"
+    },
+    {
+     "term": "least-privilege",
+     "definition": "Roles with exactly the permissions needed and no keys: the function may invoke the model and read one bucket.",
+     "anchor": "genai-architecture-p06"
+    }
+   ],
+   "recall": [
+    {
+     "id": "genai-architecture-r1",
+     "question": "A scenario says secure GenAI application. What four things do you check, in order?",
+     "answer": "Network: private subnets plus endpoints. Identity: least-privilege roles, no keys. Data: KMS encryption and versioning. Audit: CloudTrail and CloudWatch.",
+     "anchor": "genai-architecture-ask01"
+    }
+   ]
+  },
+  {
+   "anchor": "exam-decision-trees",
+   "title": "16. Exam decision trees",
+   "minutes": 2,
+   "endAnchor": "exam-decision-trees-end",
+   "blocks": [
+    {
+     "anchor": "exam-decision-trees-p01",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "presigned URL",
+     "definition": "Share one private file briefly; never open a public bucket.",
+     "anchor": "exam-decision-trees-rung02"
+    },
+    {
+     "term": "permissions boundary",
+     "definition": "Caps what a team can ever do, no matter its other policies.",
+     "anchor": "exam-decision-trees-rung05"
+    },
+    {
+     "term": "NACL deny rule",
+     "definition": "Blocks one IP fast at the subnet edge; security groups cannot deny.",
+     "anchor": "exam-decision-trees-rung07"
+    }
+   ],
+   "recall": [
+    {
+     "id": "exam-decision-trees-r1",
+     "question": "A private subnet needs OS patches but must stay unreachable. Which answer?",
+     "answer": "A NAT gateway in a public subnet, with the private route table pointing at it.",
+     "anchor": "exam-decision-trees-rung06"
+    }
+   ]
+  },
+  {
+   "anchor": "final-rapid-fire",
+   "title": "Final rapid-fire",
+   "minutes": 3,
+   "endAnchor": "final-rapid-fire-end",
+   "blocks": [
+    {
+     "anchor": "final-rapid-fire-p02",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "gateway VPC endpoint",
+     "definition": "Free private access to S3 or DynamoDB from private subnets.",
+     "anchor": "final-rapid-fire-ul01"
+    },
+    {
+     "term": "Object Lock",
+     "definition": "Makes early deletion impossible, even for root, in compliance mode.",
+     "anchor": "final-rapid-fire-ul03"
+    },
+    {
+     "term": "IAM Identity Center",
+     "definition": "SSO for workforce access across accounts with no long-term keys.",
+     "anchor": "final-rapid-fire-ul04"
+    }
+   ],
+   "recall": [
+    {
+     "id": "final-rapid-fire-r1",
+     "question": "A Lambda function in a private subnet times out calling DynamoDB. Cheapest fix?",
+     "answer": "Add a gateway VPC endpoint for DynamoDB: private subnets get free, private access.",
+     "anchor": "final-rapid-fire-pqans01"
+    },
+    {
+     "id": "final-rapid-fire-r2",
+     "question": "Training data must be kept 7 years, read heavily for 30 days, and undeletable before 90 days. Which design?",
+     "answer": "S3 Standard with a lifecycle rule to Glacier Flexible Retrieval after 30 days, plus Object Lock in compliance mode.",
+     "anchor": "final-rapid-fire-pqans03"
+    }
+   ]
+  },
+  {
+   "anchor": "go-deeper",
+   "title": "Go deeper",
+   "minutes": 1,
+   "endAnchor": "go-deeper-end",
+   "blocks": [
+    {
+     "anchor": "go-deeper-p02",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    },
+    {
+     "anchor": "go-deeper-takeaway01",
+     "kind": "summary",
+     "reveal": "fade"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "Cloud Practitioner page",
+     "definition": "The AWS certification wiki's maintained minimum-viable study path.",
+     "anchor": "go-deeper-p01"
+    },
+    {
+     "term": "r/AWSCertifications",
+     "definition": "The Reddit community holding years of I-passed notes.",
+     "anchor": "go-deeper-p01"
+    }
+   ],
+   "recall": [
+    {
+     "id": "go-deeper-r1",
+     "question": "Where do you go after foundations?",
+     "answer": "If AI and ML vocabulary feels thin, take the AIF-C01 prereq next; otherwise start the exam proper with D1.",
+     "anchor": "go-deeper-takeaway01"
+    }
+   ]
+  }
+ ]
+}

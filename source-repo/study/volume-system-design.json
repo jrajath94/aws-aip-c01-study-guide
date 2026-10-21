@@ -1,0 +1,2606 @@
+{
+ "schemaVersion": 1,
+ "itemId": "volume-system-design",
+ "itemKind": "lesson",
+ "revision": "653f17a2d10950bbfa1a64bf644c52751bcbd2655324f702f1188258443e21bf",
+ "sections": [
+  {
+   "anchor": "volume-system-design-intro",
+   "title": "How to use this book",
+   "minutes": 1,
+   "endAnchor": "volume-system-design-intro-end",
+   "blocks": [
+    {
+     "anchor": "volume-system-design-intro-p01",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "system design",
+     "definition": "One of the eight complete end-to-end architectures this volume teaches from zero.",
+     "anchor": "volume-system-design-intro-p01"
+    },
+    {
+     "term": "exam trap",
+     "definition": "A wrong answer the exam reuses, which each design in this volume teaches you to spot.",
+     "anchor": "volume-system-design-intro-p02"
+    }
+   ],
+   "recall": [
+    {
+     "id": "volume-system-design-intro-r1",
+     "question": "What does each of the eight designs include?",
+     "answer": "Diagrams, numbers, and exam traps, each taught from zero.",
+     "anchor": "volume-system-design-intro-p01"
+    }
+   ]
+  },
+  {
+   "anchor": "what-you-get",
+   "title": "What you get",
+   "minutes": 2,
+   "endAnchor": "what-you-get-end",
+   "blocks": [
+    {
+     "anchor": "what-you-get-p01",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "method chapter",
+     "definition": "Chapter 1, which teaches the clarify-estimate-choose-verify design procedure.",
+     "anchor": "what-you-get-ul01"
+    },
+    {
+     "term": "illustrative",
+     "definition": "Marked numbers that teach the math and are not official prices.",
+     "anchor": "what-you-get-p01"
+    }
+   ],
+   "recall": [
+    {
+     "id": "what-you-get-r1",
+     "question": "Does the exam test memorized numbers?",
+     "answer": "No. It tests your judgment about numbers, not numbers you memorize.",
+     "anchor": "what-you-get-p01"
+    }
+   ]
+  },
+  {
+   "anchor": "1-requirements-first-how-to-design-any-genai-app",
+   "title": "1. First, understand the requirements. Then, design any GenAI application.",
+   "minutes": 4,
+   "endAnchor": "1-requirements-first-how-to-design-any-genai-app-end",
+   "blocks": [
+    {
+     "anchor": "1-requirements-first-how-to-design-any-genai-app-p16",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    },
+    {
+     "anchor": "1-requirements-first-how-to-design-any-genai-app-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "functional requirements",
+     "definition": "Requirements that show what the system does, such as answering questions from documents.",
+     "anchor": "1-requirements-first-how-to-design-any-genai-app-p04"
+    },
+    {
+     "term": "non-functional requirements",
+     "definition": "Requirements that show how well the system does it, such as latency, scale, and cost.",
+     "anchor": "1-requirements-first-how-to-design-any-genai-app-p05"
+    },
+    {
+     "term": "estimation equation",
+     "definition": "Tokens per day equals requests per day times tokens per request, converting traffic into cost.",
+     "anchor": "1-requirements-first-how-to-design-any-genai-app-callout01"
+    },
+    {
+     "term": "cheapest architecture",
+     "definition": "The correct answer to every system design question: it meets all limits and nothing costs less.",
+     "anchor": "1-requirements-first-how-to-design-any-genai-app-p01"
+    }
+   ],
+   "recall": [
+    {
+     "id": "1-requirements-first-how-to-design-any-genai-app-r1",
+     "question": "What is the correct answer to every system design question?",
+     "answer": "The cheapest architecture that meets all limits.",
+     "anchor": "1-requirements-first-how-to-design-any-genai-app-p01"
+    },
+    {
+     "id": "1-requirements-first-how-to-design-any-genai-app-r2",
+     "question": "What does the token estimation equation compute?",
+     "answer": "Tokens per day equals requests per day times tokens per request, and the monthly bill multiplies by 30 days and price per token.",
+     "anchor": "1-requirements-first-how-to-design-any-genai-app-p09"
+    }
+   ]
+  },
+  {
+   "anchor": "3-sync-vs-async-invocation-patterns",
+   "title": "2. Sync versus async invocation patterns",
+   "minutes": 1,
+   "endAnchor": "3-sync-vs-async-invocation-patterns-end",
+   "blocks": [
+    {
+     "anchor": "3-sync-vs-async-invocation-patterns-p02",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "invocation pattern",
+     "definition": "One of the four ways to call a model, each with different latency, payload, and cost.",
+     "anchor": "3-sync-vs-async-invocation-patterns-p01"
+    },
+    {
+     "term": "payload",
+     "definition": "The request and response size each invocation pattern can carry.",
+     "anchor": "3-sync-vs-async-invocation-patterns-p02"
+    }
+   ],
+   "recall": [
+    {
+     "id": "3-sync-vs-async-invocation-patterns-r1",
+     "question": "What does the exam test about invocation patterns?",
+     "answer": "The decision between patterns, not the API syntax.",
+     "anchor": "3-sync-vs-async-invocation-patterns-p02"
+    }
+   ]
+  },
+  {
+   "anchor": "ch3-1",
+   "title": "2.1 The API matrix",
+   "minutes": 4,
+   "endAnchor": "ch3-1-end",
+   "blocks": [
+    {
+     "anchor": "ch3-1-p05",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    },
+    {
+     "anchor": "ch3-1-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "Converse API",
+     "definition": "The unified Bedrock API with one request shape for all providers and built-in tool use.",
+     "anchor": "ch3-1-fig02"
+    },
+    {
+     "term": "InvokeModel",
+     "definition": "The raw provider API needed for embeddings and provider-specific features.",
+     "anchor": "ch3-1-fig01"
+    },
+    {
+     "term": "hard requirement",
+     "definition": "A constraint like streaming that outranks a preference like cost when they conflict.",
+     "anchor": "ch3-1-p05"
+    }
+   ],
+   "recall": [
+    {
+     "id": "ch3-1-r1",
+     "question": "When do you use InvokeModel instead of Converse?",
+     "answer": "For embeddings and provider-specific features; Converse is for unified multi-provider code.",
+     "anchor": "ch3-1-p07"
+    },
+    {
+     "id": "ch3-1-r2",
+     "question": "What wins when a hard requirement conflicts with a preference?",
+     "answer": "The hard requirement; streaming to the browser beats wanting the cheapest option.",
+     "anchor": "ch3-1-p05"
+    }
+   ]
+  },
+  {
+   "anchor": "ch3-2",
+   "title": "2.2 The decision ladder: latency, payload, use case",
+   "minutes": 2,
+   "endAnchor": "ch3-2-end",
+   "blocks": [
+    {
+     "anchor": "ch3-2-p02",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    },
+    {
+     "anchor": "ch3-2-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "integration timeout",
+     "definition": "The 29-second limit on API Gateway integrations that decides sync versus async.",
+     "anchor": "ch3-2-p02"
+    },
+    {
+     "term": "queue",
+     "definition": "Where long tasks like agent loops go instead of behind API Gateway.",
+     "anchor": "ch3-2-table02"
+    }
+   ],
+   "recall": [
+    {
+     "id": "ch3-2-r1",
+     "question": "Why can a 3-minute agent loop not run behind API Gateway?",
+     "answer": "It exceeds the 29-second integration timeout, so put it in a queue.",
+     "anchor": "ch3-2-p03"
+    }
+   ]
+  },
+  {
+   "anchor": "ch3-3",
+   "title": "2.3 Timeouts and retries",
+   "minutes": 2,
+   "endAnchor": "ch3-3-end",
+   "blocks": [
+    {
+     "anchor": "ch3-3-p01",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    },
+    {
+     "anchor": "ch3-3-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    },
+    {
+     "anchor": "ch3-3-ol01",
+     "kind": "steps",
+     "reveal": "stepwise"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "timeout chain",
+     "definition": "The sequence of hop limits where the smallest limit wins.",
+     "anchor": "ch3-3-p01"
+    },
+    {
+     "term": "exponential backoff",
+     "definition": "Retrying with growing waits plus jitter for throttling and temporary 5xx errors.",
+     "anchor": "ch3-3-ol01"
+    },
+    {
+     "term": "circuit breaker",
+     "definition": "Stopping calls after repeated failures for a cool-down, saving tokens on doomed retries.",
+     "anchor": "ch3-3-p05"
+    }
+   ],
+   "recall": [
+    {
+     "id": "ch3-3-r1",
+     "question": "What is the timeout chain rule?",
+     "answer": "Each hop has a limit and the smallest limit wins.",
+     "anchor": "ch3-3-p01"
+    },
+    {
+     "id": "ch3-3-r2",
+     "question": "When do you not retry?",
+     "answer": "On a bad request like a validation error; retry only throttling and temporary 5xx errors.",
+     "anchor": "ch3-3-ol01"
+    }
+   ]
+  },
+  {
+   "anchor": "1-rag-on-bedrock-knowledge-bases-end-to-end",
+   "title": "3. RAG on Bedrock: Knowledge Bases end to end",
+   "minutes": 1,
+   "endAnchor": "1-rag-on-bedrock-knowledge-bases-end-to-end-end",
+   "blocks": [
+    {
+     "anchor": "1-rag-on-bedrock-knowledge-bases-end-to-end-p03",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "RAG",
+     "definition": "Retrieval-augmented generation, grounding a model in your data instead of retraining it.",
+     "anchor": "1-rag-on-bedrock-knowledge-bases-end-to-end-p01"
+    },
+    {
+     "term": "cite sources",
+     "definition": "Showing the exact source section each answer came from, required when answers must be traceable.",
+     "anchor": "1-rag-on-bedrock-knowledge-bases-end-to-end-p04"
+    }
+   ],
+   "recall": [
+    {
+     "id": "1-rag-on-bedrock-knowledge-bases-end-to-end-r1",
+     "question": "Which scenario words point to RAG?",
+     "answer": "Private documents, must cite sources, or answers grounded in company data.",
+     "anchor": "1-rag-on-bedrock-knowledge-bases-end-to-end-p03"
+    }
+   ]
+  },
+  {
+   "anchor": "ch1-1",
+   "title": "3.1 What a Knowledge Base is",
+   "minutes": 5,
+   "endAnchor": "ch1-1-end",
+   "blocks": [
+    {
+     "anchor": "ch1-1-p03",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    },
+    {
+     "anchor": "ch1-1-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    },
+    {
+     "anchor": "ch1-1-takeaway01",
+     "kind": "summary",
+     "reveal": "fade"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "Knowledge Base",
+     "definition": "The managed RAG service that does ingestion, chunking, embedding, indexing, and retrieval.",
+     "anchor": "ch1-1-p01"
+    },
+    {
+     "term": "RetrieveAndGenerate",
+     "definition": "The one-call API where Bedrock generates the answer with citations.",
+     "anchor": "ch1-1-ol01"
+    },
+    {
+     "term": "Retrieve",
+     "definition": "The API that returns chunks only, leaving the prompt and model call to you.",
+     "anchor": "ch1-1-p11"
+    },
+    {
+     "term": "ingestion",
+     "definition": "The offline pipeline that parses documents into a data source on a sync schedule.",
+     "anchor": "ch1-1-p03"
+    }
+   ],
+   "recall": [
+    {
+     "id": "ch1-1-r1",
+     "question": "When do you use Retrieve instead of RetrieveAndGenerate?",
+     "answer": "When you need custom prompt control, inline guardrails, or streaming.",
+     "anchor": "ch1-1-p11"
+    },
+    {
+     "id": "ch1-1-r2",
+     "question": "What are the two KB pipelines the exam tests?",
+     "answer": "Ingestion, which is offline on a sync schedule, and retrieval at query time.",
+     "anchor": "ch1-1-p07"
+    }
+   ]
+  },
+  {
+   "anchor": "ch1-2",
+   "title": "3.2 Data sources and sync",
+   "minutes": 2,
+   "endAnchor": "ch1-2-end",
+   "blocks": [
+    {
+     "anchor": "ch1-2-p06",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    },
+    {
+     "anchor": "ch1-2-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "data source",
+     "definition": "Where the KB gets documents, such as S3, a web crawler, Confluence, SharePoint, or Salesforce.",
+     "anchor": "ch1-2-p02"
+    },
+    {
+     "term": "sync schedule",
+     "definition": "The hourly, daily, weekly, or on-demand cadence on which the KB re-ingests documents.",
+     "anchor": "ch1-2-p04"
+    },
+    {
+     "term": "vector index",
+     "definition": "What retrieval actually searches; it only knows what the last sync ingested.",
+     "anchor": "ch1-2-p08"
+    }
+   ],
+   "recall": [
+    {
+     "id": "ch1-2-r1",
+     "question": "Why are answers old after a document update?",
+     "answer": "Retrieval searches the vector index, which only knows the last sync; the KB does not read S3 live.",
+     "anchor": "ch1-2-p06"
+    },
+    {
+     "id": "ch1-2-r2",
+     "question": "Can you change chunking on an existing data source?",
+     "answer": "No. You must create the data source again.",
+     "anchor": "ch1-2-p03"
+    }
+   ]
+  },
+  {
+   "anchor": "ch1-3",
+   "title": "3.3 Chunking strategy comparison",
+   "minutes": 3,
+   "endAnchor": "ch1-3-end",
+   "blocks": [
+    {
+     "anchor": "ch1-3-p02",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    },
+    {
+     "anchor": "ch1-3-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "chunking",
+     "definition": "Dividing documents into retrievable units; the most important retrieval control.",
+     "anchor": "ch1-3-fig01"
+    },
+    {
+     "term": "fixed-size",
+     "definition": "Splitting on token count with overlap; simple but can split ideas across chunks.",
+     "anchor": "ch1-3-p03"
+    },
+    {
+     "term": "semantic",
+     "definition": "Splitting at meaning boundaries; costs more compute at ingestion.",
+     "anchor": "ch1-3-p04"
+    },
+    {
+     "term": "hierarchical chunking",
+     "definition": "Linking child chunks to larger parent chunks that are injected as context.",
+     "anchor": "ch1-3-p05"
+    }
+   ],
+   "recall": [
+    {
+     "id": "ch1-3-r1",
+     "question": "What fixes tables broken across chunks with answers missing row context?",
+     "answer": "Hierarchical chunking with advanced parsing.",
+     "anchor": "ch1-3-p05"
+    },
+    {
+     "id": "ch1-3-r2",
+     "question": "What is the debug order for bad RAG answers?",
+     "answer": "Chunking first, then embeddings, then the generation model last.",
+     "anchor": "ch1-3-p06"
+    }
+   ]
+  },
+  {
+   "anchor": "ch1-4",
+   "title": "3.4 Select an Embeddings Model",
+   "minutes": 2,
+   "endAnchor": "ch1-4-end",
+   "blocks": [
+    {
+     "anchor": "ch1-4-p08",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    },
+    {
+     "anchor": "ch1-4-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "embeddings model",
+     "definition": "The model that turns chunks and questions into vectors; Titan Text Embeddings v2 is the default.",
+     "anchor": "ch1-4-p07"
+    },
+    {
+     "term": "dimensions",
+     "definition": "The vector size setting, such as 1024, 512, or 256, trading storage and latency for quality.",
+     "anchor": "ch1-4-ul01"
+    },
+    {
+     "term": "different spaces",
+     "definition": "Where vectors from different embeddings models live; they cannot be compared across models.",
+     "anchor": "ch1-4-p08"
+    }
+   ],
+   "recall": [
+    {
+     "id": "ch1-4-r1",
+     "question": "Why can you not swap the embeddings model later?",
+     "answer": "Vectors from different models live in different spaces, so you must re-embed every chunk.",
+     "anchor": "ch1-4-p08"
+    },
+    {
+     "id": "ch1-4-r2",
+     "question": "Why is RAG cheap to operate per question?",
+     "answer": "The query side embeds only the question; the expensive embedding happens once at ingestion.",
+     "anchor": "ch1-4-p04"
+    }
+   ]
+  },
+  {
+   "anchor": "ch1-5",
+   "title": "3.5 Vector store decision table",
+   "minutes": 3,
+   "endAnchor": "ch1-5-end",
+   "blocks": [
+    {
+     "anchor": "ch1-5-p04",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    },
+    {
+     "anchor": "ch1-5-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    },
+    {
+     "anchor": "ch1-5-fig02",
+     "kind": "figure",
+     "reveal": "fade"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "vector store",
+     "definition": "The database that holds vectors and runs nearest-neighbor search, chosen once at KB creation.",
+     "anchor": "ch1-5-fig01"
+    },
+    {
+     "term": "OpenSearch Serverless",
+     "definition": "The managed vector store option with built-in hybrid search.",
+     "anchor": "ch1-5-table02"
+    },
+    {
+     "term": "tenant isolation",
+     "definition": "Separate KBs with IAM-enforced isolation per tenant; Guardrails cannot do this.",
+     "anchor": "ch1-5-fig02"
+    }
+   ],
+   "recall": [
+    {
+     "id": "ch1-5-r1",
+     "question": "Why are DynamoDB and ElastiCache wrong as vector stores?",
+     "answer": "DynamoDB holds metadata and session state, not vectors; ElastiCache is ephemeral and for caching.",
+     "anchor": "ch1-5-p04"
+    },
+    {
+     "id": "ch1-5-r2",
+     "question": "How do you isolate tenants?",
+     "answer": "With separate KBs and IAM-enforced isolation per tenant.",
+     "anchor": "ch1-5-p05"
+    }
+   ]
+  },
+  {
+   "anchor": "ch1-6",
+   "title": "3.6 Retrieval configuration",
+   "minutes": 2,
+   "endAnchor": "ch1-6-end",
+   "blocks": [
+    {
+     "anchor": "ch1-6-p03",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    },
+    {
+     "anchor": "ch1-6-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    },
+    {
+     "anchor": "ch1-6-ol01",
+     "kind": "steps",
+     "reveal": "stepwise"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "top-k",
+     "definition": "The number of chunks returned per query; a small k is cheap and specific.",
+     "anchor": "ch1-6-p02"
+    },
+    {
+     "term": "hybrid search",
+     "definition": "Keyword plus vector search combined for better retrieval.",
+     "anchor": "ch1-6-ul01"
+    },
+    {
+     "term": "reranking",
+     "definition": "Re-scoring top chunks with a stronger model for relevance.",
+     "anchor": "ch1-6-ol01"
+    }
+   ],
+   "recall": [
+    {
+     "id": "ch1-6-r1",
+     "question": "What is the debug order for bad RAG answers?",
+     "answer": "Check retrieval, then relevance, and never start by changing the generation model.",
+     "anchor": "ch1-6-ol01"
+    }
+   ]
+  },
+  {
+   "anchor": "ch1-7",
+   "title": "3.7 Converse integration and Guardrails placement",
+   "minutes": 4,
+   "endAnchor": "ch1-7-end",
+   "blocks": [
+    {
+     "anchor": "ch1-7-p01",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    },
+    {
+     "anchor": "ch1-7-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    },
+    {
+     "anchor": "ch1-7-takeaway01",
+     "kind": "summary",
+     "reveal": "fade"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "manual RAG loop",
+     "definition": "Retrieve for chunks, build the prompt yourself, then call the model through Converse.",
+     "anchor": "ch1-7-p02"
+    },
+    {
+     "term": "guardrailConfig",
+     "definition": "The inline guardrail configuration on a Converse call for input and output screening.",
+     "anchor": "ch1-7-code01"
+    },
+    {
+     "term": "input screening",
+     "definition": "Guardrails on inputs that stop injection and PII.",
+     "anchor": "ch1-7-p06"
+    }
+   ],
+   "recall": [
+    {
+     "id": "ch1-7-r1",
+     "question": "Where do Guardrails fit in the manual RAG loop?",
+     "answer": "On inputs, outputs, or both per call; in RAG almost always both.",
+     "anchor": "ch1-7-takeaway01"
+    },
+    {
+     "id": "ch1-7-r2",
+     "question": "When do you use Retrieve plus Converse instead of RetrieveAndGenerate?",
+     "answer": "When you need custom prompt control, inline guardrails, or streaming.",
+     "anchor": "ch1-7-p07"
+    }
+   ]
+  },
+  {
+   "anchor": "2-bedrock-agents-with-action-groups",
+   "title": "4. Bedrock Agents with action groups",
+   "minutes": 1,
+   "endAnchor": "2-bedrock-agents-with-action-groups-end",
+   "blocks": [
+    {
+     "anchor": "2-bedrock-agents-with-action-groups-p03",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "reasoning loop",
+     "definition": "The think-act-observe cycle the agent runs until it can answer.",
+     "anchor": "2-bedrock-agents-with-action-groups-p02"
+    },
+    {
+     "term": "Agents",
+     "definition": "Systems that do things: call APIs, query databases, run multi-step tasks, remember the session.",
+     "anchor": "2-bedrock-agents-with-action-groups-p03"
+    }
+   ],
+   "recall": [
+    {
+     "id": "2-bedrock-agents-with-action-groups-r1",
+     "question": "What is the difference between RAG and agents?",
+     "answer": "RAG answers questions from documents; agents do things like calling APIs and running multi-step tasks.",
+     "anchor": "2-bedrock-agents-with-action-groups-p03"
+    }
+   ]
+  },
+  {
+   "anchor": "ch2-1",
+   "title": "4. Bedrock Agents with action groups",
+   "minutes": 5,
+   "endAnchor": "ch2-1-end",
+   "blocks": [
+    {
+     "anchor": "ch2-1-p02",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    },
+    {
+     "anchor": "ch2-1-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    },
+    {
+     "anchor": "ch2-1-ol02",
+     "kind": "steps",
+     "reveal": "stepwise"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "ReAct loop",
+     "definition": "The reason-decide-call-read cycle the agent repeats until it can answer.",
+     "anchor": "ch2-1-p03"
+    },
+    {
+     "term": "action group",
+     "definition": "A named set of tools the agent can call, executed by a Lambda function.",
+     "anchor": "ch2-1-p01"
+    },
+    {
+     "term": "prepare-agent",
+     "definition": "The step that compiles instruction, schemas, and KB attachments after any configuration change.",
+     "anchor": "ch2-1-p08"
+    },
+    {
+     "term": "alias",
+     "definition": "A pointer at a prepared version that production traffic uses, never DRAFT.",
+     "anchor": "ch2-1-p09"
+    }
+   ],
+   "recall": [
+    {
+     "id": "ch2-1-r1",
+     "question": "Why does the agent ignore a new action group?",
+     "answer": "prepare-agent was not run again; the agent runs the old version until then.",
+     "anchor": "ch2-1-p08"
+    },
+    {
+     "id": "ch2-1-r2",
+     "question": "How long does agent session memory last?",
+     "answer": "Minutes; the idle session TTL is about 600 seconds, so use a long-term memory service for weeks.",
+     "anchor": "ch2-1-p10"
+    }
+   ]
+  },
+  {
+   "anchor": "ch2-2",
+   "title": "4.2 Action group and Lambda function contract design",
+   "minutes": 4,
+   "endAnchor": "ch2-2-end",
+   "blocks": [
+    {
+     "anchor": "ch2-2-p04",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    },
+    {
+     "anchor": "ch2-2-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "OpenAPI schema",
+     "definition": "The tool definition for an existing HTTP service, describing paths, methods, and shapes.",
+     "anchor": "ch2-2-ul01"
+    },
+    {
+     "term": "executor",
+     "definition": "Usually a Lambda function that Bedrock calls with a structured event.",
+     "anchor": "ch2-2-p02"
+    },
+    {
+     "term": "resource-based policy",
+     "definition": "The Lambda policy that must let the Bedrock agent invoke the action-group function.",
+     "anchor": "ch2-2-p09"
+    }
+   ],
+   "recall": [
+    {
+     "id": "ch2-2-r1",
+     "question": "What breaks when the agent stops calling a tool after a redeploy?",
+     "answer": "The Lambda resource-based policy or IAM role changed; the policy must let the Bedrock agent invoke it.",
+     "anchor": "ch2-2-p08"
+    },
+    {
+     "id": "ch2-2-r2",
+     "question": "Why keep tool functions small and single-purpose?",
+     "answer": "The model only sees the schema, and long tool output wastes money and context window.",
+     "anchor": "ch2-2-p06"
+    }
+   ]
+  },
+  {
+   "anchor": "ch2-3",
+   "title": "4.3 Multi-step task decomposition: a traced example",
+   "minutes": 3,
+   "endAnchor": "ch2-3-end",
+   "blocks": [
+    {
+     "anchor": "ch2-3-p05",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    },
+    {
+     "anchor": "ch2-3-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "three sub-tasks",
+     "definition": "What the agent splits one message into, ordered by dependency.",
+     "anchor": "ch2-3-ol02"
+    },
+    {
+     "term": "trace",
+     "definition": "The X-Ray record of each step and its time, like a stack trace for an agent.",
+     "anchor": "ch2-3-ol01"
+    }
+   ],
+   "recall": [
+    {
+     "id": "ch2-3-r1",
+     "question": "In what order does the agent run sub-tasks?",
+     "answer": "By dependency; facts come before actions.",
+     "anchor": "ch2-3-p05"
+    },
+    {
+     "id": "ch2-3-r2",
+     "question": "How do you see what an agent did?",
+     "answer": "With the trace: X-Ray shows each step and its time.",
+     "anchor": "ch2-3-p02"
+    }
+   ]
+  },
+  {
+   "anchor": "ch2-4",
+   "title": "4.4 Agent plus Knowledge Base plus Guardrails: the combined architecture",
+   "minutes": 3,
+   "endAnchor": "ch2-4-end",
+   "blocks": [
+    {
+     "anchor": "ch2-4-p02",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "holy trinity",
+     "definition": "Agent plus Knowledge Base plus Guardrails attached to the same agent.",
+     "anchor": "ch2-4-p02"
+    },
+    {
+     "term": "security boundary",
+     "definition": "The IAM role on the agent, deciding which KBs and action-group Lambdas it can use.",
+     "anchor": "ch2-4-ol01"
+    }
+   ],
+   "recall": [
+    {
+     "id": "ch2-4-r1",
+     "question": "What are the three parts of the exam's holy trinity?",
+     "answer": "The agent reasons and acts, the KB grounds it, and Guardrails keep it safe.",
+     "anchor": "ch2-4-p02"
+    }
+   ]
+  },
+  {
+   "anchor": "ch2-5",
+   "title": "4.5 Approval flows for sensitive actions",
+   "minutes": 3,
+   "endAnchor": "ch2-5-end",
+   "blocks": [
+    {
+     "anchor": "ch2-5-p03",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    },
+    {
+     "anchor": "ch2-5-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "task token",
+     "definition": "The Step Functions mechanism that pauses a workflow until a human approves, even for days.",
+     "anchor": "ch2-5-p02"
+    },
+    {
+     "term": "human approval",
+     "definition": "Required before the agent does sensitive actions like refunds over a limit.",
+     "anchor": "ch2-5-p04"
+    }
+   ],
+   "recall": [
+    {
+     "id": "ch2-5-r1",
+     "question": "Why Step Functions instead of Lambda for approvals?",
+     "answer": "Lambda stops after 15 minutes; Step Functions can wait days for a task token.",
+     "anchor": "ch2-5-p03"
+    },
+    {
+     "id": "ch2-5-r2",
+     "question": "What is needed for weeks-long agent memory?",
+     "answer": "DynamoDB; agent sessions last only minutes.",
+     "anchor": "ch2-5-p06"
+    }
+   ]
+  },
+  {
+   "anchor": "ch2-6",
+   "title": "4.6 Tracing and debugging",
+   "minutes": 2,
+   "endAnchor": "ch2-6-end",
+   "blocks": [
+    {
+     "anchor": "ch2-6-p04",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    },
+    {
+     "anchor": "ch2-6-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    },
+    {
+     "anchor": "ch2-6-ol01",
+     "kind": "steps",
+     "reveal": "stepwise"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "enableTrace",
+     "definition": "The invoke_agent option that returns the reasoning trace for debugging.",
+     "anchor": "ch2-6-p02"
+    },
+    {
+     "term": "debug order",
+     "definition": "The memorized checklist: prepare-agent, alias version, then deeper causes.",
+     "anchor": "ch2-6-p04"
+    }
+   ],
+   "recall": [
+    {
+     "id": "ch2-6-r1",
+     "question": "What is the most common agent error on the exam?",
+     "answer": "The agent ignoring a new action group because prepare-agent was not run again.",
+     "anchor": "ch2-6-ol01"
+    },
+    {
+     "id": "ch2-6-r2",
+     "question": "How do you debug a running agent?",
+     "answer": "Use enableTrace on invoke_agent; the trace shows thoughts, KB queries, and tool calls.",
+     "anchor": "ch2-6-p02"
+    }
+   ]
+  },
+  {
+   "anchor": "ch2-7",
+   "title": "4.7 Multi-agent and framework options",
+   "minutes": 3,
+   "endAnchor": "ch2-7-end",
+   "blocks": [
+    {
+     "anchor": "ch2-7-p01",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    },
+    {
+     "anchor": "ch2-7-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "supervisor",
+     "definition": "The agent that breaks down a task and delegates parts when a single decider is needed.",
+     "anchor": "ch2-7-fig01"
+    },
+    {
+     "term": "collaborator",
+     "definition": "The specialist agent pattern for shared context and handoffs.",
+     "anchor": "ch2-7-p01"
+    },
+    {
+     "term": "MCP",
+     "definition": "Model Context Protocol, the standard for giving agents access to tools.",
+     "anchor": "ch2-7-p03"
+    },
+    {
+     "term": "AgentCore",
+     "definition": "The service for hosting agents from any framework with runtime, gateway, and memory.",
+     "anchor": "ch2-7-p04"
+    }
+   ],
+   "recall": [
+    {
+     "id": "ch2-7-r1",
+     "question": "When do you use supervisor versus collaborator?",
+     "answer": "Supervisor when a single decider is needed; collaborator for shared context and handoffs.",
+     "anchor": "ch2-7-fig01"
+    },
+    {
+     "id": "ch2-7-r2",
+     "question": "Why is describing inter-agent talk as action groups wrong?",
+     "answer": "Action groups connect agents to tools, not to agents; the exam explicitly rejects this.",
+     "anchor": "ch2-7-p06"
+    }
+   ]
+  },
+  {
+   "anchor": "4-chatbot-and-copilot-reference-architecture",
+   "title": "5. Chatbot and copilot reference architecture",
+   "minutes": 2,
+   "endAnchor": "4-chatbot-and-copilot-reference-architecture-end",
+   "blocks": [
+    {
+     "anchor": "4-chatbot-and-copilot-reference-architecture-p02",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    },
+    {
+     "anchor": "4-chatbot-and-copilot-reference-architecture-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "serverless chatbot",
+     "definition": "The standard design: API Gateway, Lambda, and Bedrock with memory, streaming, caching, and auth.",
+     "anchor": "4-chatbot-and-copilot-reference-architecture-p01"
+    },
+    {
+     "term": "API Gateway",
+     "definition": "The stable front door that ends HTTPS, throttles, and validates requests.",
+     "anchor": "4-chatbot-and-copilot-reference-architecture-p02"
+    }
+   ],
+   "recall": [
+    {
+     "id": "4-chatbot-and-copilot-reference-architecture-r1",
+     "question": "What three services form the standard serverless chatbot?",
+     "answer": "API Gateway, Lambda, and Bedrock.",
+     "anchor": "4-chatbot-and-copilot-reference-architecture-p02"
+    }
+   ]
+  },
+  {
+   "anchor": "ch4-1",
+   "title": "5.1 The reference architecture",
+   "minutes": 3,
+   "endAnchor": "ch4-1-end",
+   "blocks": [
+    {
+     "anchor": "ch4-1-p02",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "authorizer",
+     "definition": "The API Gateway check that runs before any Lambda code, using Cognito or IAM.",
+     "anchor": "ch4-1-code01"
+    },
+    {
+     "term": "router Lambda",
+     "definition": "The Lambda that routes requests; keep it small to control duration and cost.",
+     "anchor": "ch4-1-ol01"
+    }
+   ],
+   "recall": [
+    {
+     "id": "ch4-1-r1",
+     "question": "What runs before any Lambda code at the front door?",
+     "answer": "The authorizer on API Gateway, using Cognito for users or IAM for services.",
+     "anchor": "ch4-1-p02"
+    },
+    {
+     "id": "ch4-1-r2",
+     "question": "What goes wrong with a too-big router Lambda?",
+     "answer": "Duration and cost increase.",
+     "anchor": "ch4-1-p03"
+    }
+   ]
+  },
+  {
+   "anchor": "ch4-2",
+   "title": "5.2 Session memory options",
+   "minutes": 3,
+   "endAnchor": "ch4-2-end",
+   "blocks": [
+    {
+     "anchor": "ch4-2-p03",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    },
+    {
+     "anchor": "ch4-2-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "session memory",
+     "definition": "The conversation history the model needs to stay coherent, stored per turn.",
+     "anchor": "ch4-2-p03"
+    },
+    {
+     "term": "DynamoDB",
+     "definition": "The exam's standard session store: single-digit millisecond reads with TTL expiry.",
+     "anchor": "ch4-2-table02"
+    },
+    {
+     "term": "trimming strategy",
+     "definition": "Keeping the last N turns and summarizing older ones to limit token cost per turn.",
+     "anchor": "ch4-2-p05"
+    }
+   ],
+   "recall": [
+    {
+     "id": "ch4-2-r1",
+     "question": "Why is DynamoDB the standard session store?",
+     "answer": "Single-digit millisecond reads, TTL expiry for old sessions, and fine-grained per-user access.",
+     "anchor": "ch4-2-table01"
+    },
+    {
+     "id": "ch4-2-r2",
+     "question": "How do you trim session memory?",
+     "answer": "Keep the last N turns, summarize older turns, and store the summary.",
+     "anchor": "ch4-2-p05"
+    }
+   ]
+  },
+  {
+   "anchor": "ch4-3",
+   "title": "5.3 Send data to the client",
+   "minutes": 2,
+   "endAnchor": "ch4-3-end",
+   "blocks": [
+    {
+     "anchor": "ch4-3-p02",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    },
+    {
+     "anchor": "ch4-3-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "perceived latency",
+     "definition": "What the user feels: time to first token, not time to last token.",
+     "anchor": "ch4-3-fig01"
+    },
+    {
+     "term": "ConverseStream",
+     "definition": "The streaming API where Bedrock sends tokens as server-sent events.",
+     "anchor": "ch4-3-p03"
+    }
+   ],
+   "recall": [
+    {
+     "id": "ch4-3-r1",
+     "question": "Does streaming make generation faster?",
+     "answer": "No. It changes when the user sees the first word, not total generation time.",
+     "anchor": "ch4-3-p05"
+    },
+    {
+     "id": "ch4-3-r2",
+     "question": "How do you stream past the 29-second API Gateway limit?",
+     "answer": "Use WebSockets or direct SSE for long streams.",
+     "anchor": "ch4-3-p04"
+    }
+   ]
+  },
+  {
+   "anchor": "ch4-4",
+   "title": "5.4 Caching layers",
+   "minutes": 2,
+   "endAnchor": "ch4-4-end",
+   "blocks": [
+    {
+     "anchor": "ch4-4-p01",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    },
+    {
+     "anchor": "ch4-4-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "prompt caching",
+     "definition": "Discounting repeated large static prefixes via a cachePoint in the Converse call.",
+     "anchor": "ch4-4-ul01"
+    },
+    {
+     "term": "Caching",
+     "definition": "What reduces the bill when inputs repeat; the layer before auth and model switching.",
+     "anchor": "ch4-4-p01"
+    }
+   ],
+   "recall": [
+    {
+     "id": "ch4-4-r1",
+     "question": "What do you never cache?",
+     "answer": "Personalized or PII answers.",
+     "anchor": "ch4-4-fig01"
+    }
+   ]
+  },
+  {
+   "anchor": "ch4-5",
+   "title": "5.5 Auth and model switching",
+   "minutes": 3,
+   "endAnchor": "ch4-5-end",
+   "blocks": [
+    {
+     "anchor": "ch4-5-p03",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    },
+    {
+     "anchor": "ch4-5-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "AppConfig",
+     "definition": "The runtime configuration store for model identifiers, read by Lambda on each invocation.",
+     "anchor": "ch4-5-p03"
+    },
+    {
+     "term": "Cognito user pools",
+     "definition": "The auth service for end-user sign-up, sign-in, and tiered access groups.",
+     "anchor": "ch4-5-p01"
+    }
+   ],
+   "recall": [
+    {
+     "id": "ch4-5-r1",
+     "question": "What three services switch models without redeploys?",
+     "answer": "AppConfig holds the identifiers, Lambda routes, and API Gateway is the stable endpoint.",
+     "anchor": "ch4-5-p03"
+    },
+    {
+     "id": "ch4-5-r2",
+     "question": "Why is CloudFormation wrong for model switching?",
+     "answer": "Its changes are deployments, which breaks the no-code-changes requirement.",
+     "anchor": "ch4-5-p04"
+    }
+   ]
+  },
+  {
+   "anchor": "5-cost-latency-and-quality-tradeoffs",
+   "title": "6. Cost, latency, and quality tradeoffs",
+   "minutes": 2,
+   "endAnchor": "5-cost-latency-and-quality-tradeoffs-end",
+   "blocks": [
+    {
+     "anchor": "5-cost-latency-and-quality-tradeoffs-p02",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "three limits",
+     "definition": "Cost, latency, and quality: the hidden structure of every scenario question.",
+     "anchor": "5-cost-latency-and-quality-tradeoffs-p02"
+    },
+    {
+     "term": "token math",
+     "definition": "Converting the design into tokens to price it.",
+     "anchor": "5-cost-latency-and-quality-tradeoffs-p01"
+    }
+   ],
+   "recall": [
+    {
+     "id": "5-cost-latency-and-quality-tradeoffs-r1",
+     "question": "What is every scenario question secretly about?",
+     "answer": "Three limits, cost, latency, and quality, plus one budget.",
+     "anchor": "5-cost-latency-and-quality-tradeoffs-p02"
+    }
+   ]
+  },
+  {
+   "anchor": "ch5-1",
+   "title": "6. Cost, latency, and quality tradeoffs",
+   "minutes": 3,
+   "endAnchor": "ch5-1-end",
+   "blocks": [
+    {
+     "anchor": "ch5-1-p02",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    },
+    {
+     "anchor": "ch5-1-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "cost equation",
+     "definition": "The bill's parts: tokens in, tokens out, requests, and capacity.",
+     "anchor": "ch5-1-p02"
+    },
+    {
+     "term": "prompt caching",
+     "definition": "The lever for repeated-input cost; provisioned throughput is for latency guarantees.",
+     "anchor": "ch5-1-table02"
+    },
+    {
+     "term": "confusion pairs",
+     "definition": "Service pairs the exam offers as distractors, such as caching versus provisioned throughput.",
+     "anchor": "ch5-1-p03"
+    }
+   ],
+   "recall": [
+    {
+     "id": "ch5-1-r1",
+     "question": "Same long system prompt on every call: caching or provisioned throughput?",
+     "answer": "Prompt caching; provisioned throughput attacks latency and throttling guarantees, not repeated-input cost.",
+     "anchor": "ch5-1-p04"
+    },
+    {
+     "id": "ch5-1-r2",
+     "question": "What does each scenario verb select?",
+     "answer": "Unavailable in region means profiles; route by complexity means routers; guaranteed throughput means provisioned throughput.",
+     "anchor": "ch5-1-p05"
+    }
+   ]
+  },
+  {
+   "anchor": "ch5-2",
+   "title": "6.2 Monthly cost math (example)",
+   "minutes": 5,
+   "endAnchor": "ch5-2-end",
+   "blocks": [
+    {
+     "anchor": "ch5-2-p06",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    },
+    {
+     "anchor": "ch5-2-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    },
+    {
+     "anchor": "ch5-2-takeaway01",
+     "kind": "summary",
+     "reveal": "fade"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "monthly cost",
+     "definition": "Input tokens times input price plus output tokens times output price.",
+     "anchor": "ch5-2-p02"
+    },
+    {
+     "term": "multi-lever rule",
+     "definition": "Cost reduction is never a single answer; combine smaller model, caching, routing, compression, and eval gates.",
+     "anchor": "ch5-2-p07"
+    },
+    {
+     "term": "round token prices",
+     "definition": "Example prices used to show the math, not live quotes.",
+     "anchor": "ch5-2-p05"
+    }
+   ],
+   "recall": [
+    {
+     "id": "ch5-2-r1",
+     "question": "What is the multi-lever rule?",
+     "answer": "Token costs rising 30 percent a month are never fixed by one answer; combine five levers.",
+     "anchor": "ch5-2-takeaway01"
+    },
+    {
+     "id": "ch5-2-r2",
+     "question": "What do you start a cost estimate with?",
+     "answer": "Tokens, not requests; requests are only a multiplier.",
+     "anchor": "ch5-2-p06"
+    }
+   ]
+  },
+  {
+   "anchor": "ch5-3",
+   "title": "6.3 Latency controls and quality controls",
+   "minutes": 4,
+   "endAnchor": "ch5-3-end",
+   "blocks": [
+    {
+     "anchor": "ch5-3-p01",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    },
+    {
+     "anchor": "ch5-3-fig02",
+     "kind": "figure",
+     "reveal": "fade"
+    },
+    {
+     "anchor": "ch5-3-ol01",
+     "kind": "steps",
+     "reveal": "stepwise"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "latency controls",
+     "definition": "Streaming, smaller models, and provisioned throughput: what changes response time.",
+     "anchor": "ch5-3-p01"
+    },
+    {
+     "term": "quality controls",
+     "definition": "Retrieval quality and model size: what changes answer quality.",
+     "anchor": "ch5-3-p02"
+    },
+    {
+     "term": "hybrid search",
+     "definition": "Keyword plus vector search combined, then merged.",
+     "anchor": "ch5-3-fig02"
+    },
+    {
+     "term": "reranker",
+     "definition": "A stronger model that re-scores the top chunks.",
+     "anchor": "ch5-3-ol01"
+    }
+   ],
+   "recall": [
+    {
+     "id": "ch5-3-r1",
+     "question": "Do temperature, top-p, and top-k control cost?",
+     "answer": "No. They change randomness and quality, never the invoice.",
+     "anchor": "ch5-3-p05"
+    },
+    {
+     "id": "ch5-3-r2",
+     "question": "What are the three retrieval upgrade steps?",
+     "answer": "Hybrid search, merge the results, then rerank with a stronger model.",
+     "anchor": "ch5-3-ol01"
+    }
+   ]
+  },
+  {
+   "anchor": "6-eval-loop-design",
+   "title": "7. Eval loop design",
+   "minutes": 2,
+   "endAnchor": "6-eval-loop-design-end",
+   "blocks": [
+    {
+     "anchor": "6-eval-loop-design-p02",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "loop",
+     "definition": "What measures quality before and after every change.",
+     "anchor": "6-eval-loop-design-p01"
+    },
+    {
+     "term": "debug GenAI",
+     "definition": "What evaluation questions punish; GenAI needs measurement, not normal-software debugging.",
+     "anchor": "6-eval-loop-design-p03"
+    }
+   ],
+   "recall": [
+    {
+     "id": "6-eval-loop-design-r1",
+     "question": "Why measure quality before and after every change?",
+     "answer": "You cannot improve what you do not measure.",
+     "anchor": "6-eval-loop-design-p02"
+    }
+   ]
+  },
+  {
+   "anchor": "ch6-1",
+   "title": "7. Eval loop design",
+   "minutes": 3,
+   "endAnchor": "ch6-1-end",
+   "blocks": [
+    {
+     "anchor": "ch6-1-p02",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    },
+    {
+     "anchor": "ch6-1-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "programmatic evaluation",
+     "definition": "Automatic scoring with accuracy and toxicity metrics; fast and cheap, wrong for subjective style.",
+     "anchor": "ch6-1-p04"
+    },
+    {
+     "term": "toxicity scores",
+     "definition": "An objective metric for programmatic evaluation.",
+     "anchor": "ch6-1-table02"
+    },
+    {
+     "term": "fairness",
+     "definition": "What needs metrics, A/B testing, and LLM-as-a-judge; not a bigger model.",
+     "anchor": "ch6-1-p05"
+    }
+   ],
+   "recall": [
+    {
+     "id": "ch6-1-r1",
+     "question": "Which evaluation fits brand voice?",
+     "answer": "Human evaluation or LLM-as-a-judge; programmatic scoring is wrong for subjective style.",
+     "anchor": "ch6-1-p03"
+    },
+    {
+     "id": "ch6-1-r2",
+     "question": "What is not a fairness fix?",
+     "answer": "A bigger model; fairness needs metrics, A/B testing, and LLM-as-a-judge.",
+     "anchor": "ch6-1-p05"
+    }
+   ]
+  },
+  {
+   "anchor": "ch6-2",
+   "title": "7.2 Metrics for each task type",
+   "minutes": 3,
+   "endAnchor": "ch6-2-end",
+   "blocks": [
+    {
+     "anchor": "ch6-2-p01",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    },
+    {
+     "anchor": "ch6-2-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "primary metrics",
+     "definition": "The metrics matched to each task type, such as faithfulness for summarization.",
+     "anchor": "ch6-2-table02"
+    },
+    {
+     "term": "metrics",
+     "definition": "What you match to each task type, such as faithfulness for summarization.",
+     "anchor": "ch6-2-p01"
+    }
+   ],
+   "recall": [
+    {
+     "id": "ch6-2-r1",
+     "question": "What are the summarization metrics?",
+     "answer": "Be faithful and do not invent facts, be complete and do not drop important information, be concise.",
+     "anchor": "ch6-2-table01"
+    }
+   ]
+  },
+  {
+   "anchor": "ch6-3",
+   "title": "7.2 Metrics for each task type",
+   "minutes": 3,
+   "endAnchor": "ch6-3-end",
+   "blocks": [
+    {
+     "anchor": "ch6-3-p02",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    },
+    {
+     "anchor": "ch6-3-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    },
+    {
+     "anchor": "ch6-3-ol02",
+     "kind": "steps",
+     "reveal": "stepwise"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "golden dataset",
+     "definition": "Prompts with known good answers stored in S3, the base for every eval gate.",
+     "anchor": "ch6-3-p02"
+    },
+    {
+     "term": "judge model",
+     "definition": "The separate model that scores outputs against a rubric prompt.",
+     "anchor": "ch6-3-fig01"
+    },
+    {
+     "term": "rubric prompt",
+     "definition": "The instructions telling the judge how to score.",
+     "anchor": "ch6-3-ol01"
+    },
+    {
+     "term": "biases",
+     "definition": "The judge's preference for longer answers, its own model family, and confident tone.",
+     "anchor": "ch6-3-p08"
+    }
+   ],
+   "recall": [
+    {
+     "id": "ch6-3-r1",
+     "question": "What three things does a judge need?",
+     "answer": "Sampled outputs, a rubric prompt, and a separate judge model.",
+     "anchor": "ch6-3-fig01"
+    },
+    {
+     "id": "ch6-3-r2",
+     "question": "Why calibrate LLM judges?",
+     "answer": "They have biases: longer answers, their own model family, confident tone.",
+     "anchor": "ch6-3-p07"
+    },
+    {
+     "id": "ch6-3-r3",
+     "question": "How much does a 500-prompt golden set cost per gate run?",
+     "answer": "About 10 dollars at 2 cents per judgment, cheap enough for every prompt change.",
+     "anchor": "ch6-3-p06"
+    }
+   ]
+  },
+  {
+   "anchor": "ch6-4",
+   "title": "7.4 Eval gates in CI/CD",
+   "minutes": 5,
+   "endAnchor": "ch6-4-end",
+   "blocks": [
+    {
+     "anchor": "ch6-4-p01",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    },
+    {
+     "anchor": "ch6-4-fig02",
+     "kind": "figure",
+     "reveal": "fade"
+    },
+    {
+     "anchor": "ch6-4-takeaway01",
+     "kind": "summary",
+     "reveal": "fade"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "eval gate",
+     "definition": "A quality checkpoint that stops deployment when scores decrease.",
+     "anchor": "ch6-4-fig01"
+    },
+    {
+     "term": "shadow traffic",
+     "definition": "Copies of real requests sent to the new version invisibly.",
+     "anchor": "ch6-4-fig02"
+    },
+    {
+     "term": "aliases",
+     "definition": "What A/B testing splits real users across; the winner gets promoted.",
+     "anchor": "ch6-4-ol02"
+    }
+   ],
+   "recall": [
+    {
+     "id": "ch6-4-r1",
+     "question": "What is the wrong monitoring tool for GenAI text quality?",
+     "answer": "SageMaker Model Monitor, which is for tabular ML drift, and CloudTrail, which is for audit.",
+     "anchor": "ch6-4-p05"
+    },
+    {
+     "id": "ch6-4-r2",
+     "question": "How do shadow and A/B rollouts differ?",
+     "answer": "Shadow sends invisible copies to the new version; A/B splits real users across two aliases.",
+     "anchor": "ch6-4-p08"
+    }
+   ]
+  },
+  {
+   "anchor": "7-security-hardening-for-a-production-genai-app",
+   "title": "8. Security hardening for a production GenAI app",
+   "minutes": 3,
+   "endAnchor": "7-security-hardening-for-a-production-genai-app-end",
+   "blocks": [
+    {
+     "anchor": "7-security-hardening-for-a-production-genai-app-p02",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    },
+    {
+     "anchor": "7-security-hardening-for-a-production-genai-app-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    },
+    {
+     "anchor": "7-security-hardening-for-a-production-genai-app-fig02",
+     "kind": "figure",
+     "reveal": "fade"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "defense in depth",
+     "definition": "Layered controls where no single layer is the full answer.",
+     "anchor": "7-security-hardening-for-a-production-genai-app-p02"
+    },
+    {
+     "term": "PII redaction",
+     "definition": "Finding and masking personal data before the model sees it.",
+     "anchor": "7-security-hardening-for-a-production-genai-app-p01"
+    }
+   ],
+   "recall": [
+    {
+     "id": "7-security-hardening-for-a-production-genai-app-r1",
+     "question": "What is the PII pipeline order?",
+     "answer": "Comprehend finds PII entities, the pipeline redacts or masks them, and Guardrails filter at the model boundary.",
+     "anchor": "7-security-hardening-for-a-production-genai-app-p03"
+    }
+   ]
+  },
+  {
+   "anchor": "ch7-1",
+   "title": "8.1 IAM least privilege",
+   "minutes": 3,
+   "endAnchor": "ch7-1-end",
+   "blocks": [
+    {
+     "anchor": "ch7-1-p02",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    },
+    {
+     "anchor": "ch7-1-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "permissions",
+     "definition": "What each component gets only as much of as it needs, on specific resources.",
+     "anchor": "ch7-1-p01"
+    },
+    {
+     "term": "GenAI gateway",
+     "definition": "A central audited path giving each team model access without direct Bedrock calls.",
+     "anchor": "ch7-1-p05"
+    }
+   ],
+   "recall": [
+    {
+     "id": "ch7-1-r1",
+     "question": "What is the exam smell in IAM?",
+     "answer": "One admin-style role shared by Lambda, agent, and humans; split it.",
+     "anchor": "ch7-1-fig01"
+    },
+    {
+     "id": "ch7-1-r2",
+     "question": "Why is the model's built-in safety never the most correct answer?",
+     "answer": "Sensitive audiences need layered controls: guardrails, IAM, network, evaluation, and humans.",
+     "anchor": "ch7-1-p06"
+    }
+   ]
+  },
+  {
+   "anchor": "ch7-2",
+   "title": "8.1 IAM least privilege",
+   "minutes": 2,
+   "endAnchor": "ch7-2-end",
+   "blocks": [
+    {
+     "anchor": "ch7-2-p04",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    },
+    {
+     "anchor": "ch7-2-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "KMS",
+     "definition": "Encryption for all data at rest, with customer-managed keys for compliance.",
+     "anchor": "ch7-2-p02"
+    },
+    {
+     "term": "VPC endpoint",
+     "definition": "A PrivateLink interface keeping Bedrock traffic off the public internet.",
+     "anchor": "ch7-2-p03"
+    }
+   ],
+   "recall": [
+    {
+     "id": "ch7-2-r1",
+     "question": "How do you keep Bedrock traffic private?",
+     "answer": "VPC interface endpoints for the Bedrock control plane and runtime planes.",
+     "anchor": "ch7-2-p03"
+    }
+   ]
+  },
+  {
+   "anchor": "ch7-3",
+   "title": "8.2 KMS and VPC endpoints",
+   "minutes": 3,
+   "endAnchor": "ch7-3-end",
+   "blocks": [
+    {
+     "anchor": "ch7-3-p02",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    },
+    {
+     "anchor": "ch7-3-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "CloudTrail",
+     "definition": "The audit trail: who called which API, when, and from where.",
+     "anchor": "ch7-3-p02"
+    },
+    {
+     "term": "forensics",
+     "definition": "What model invocation logging to S3 or CloudWatch enables.",
+     "anchor": "ch7-3-p04"
+    },
+    {
+     "term": "lineage",
+     "definition": "Which data produced an answer, via Glue Data Catalog, metadata tags, and citations.",
+     "anchor": "ch7-3-p06"
+    },
+    {
+     "term": "KMS",
+     "definition": "The encryption expected on invocation log destinations holding PII.",
+     "anchor": "ch7-3-p05"
+    }
+   ],
+   "recall": [
+    {
+     "id": "ch7-3-r1",
+     "question": "Trail versus Logs: which answers a bad answer?",
+     "answer": "Logs; Trail is for compliance like who accessed the KB, Logs is for debugging like why the agent chose that tool.",
+     "anchor": "ch7-3-p03"
+    },
+    {
+     "id": "ch7-3-r2",
+     "question": "What must a healthcare team do about invocation logs?",
+     "answer": "Encrypt them with KMS or disable logging, since they can contain PII.",
+     "anchor": "ch7-3-p04"
+    }
+   ]
+  },
+  {
+   "anchor": "ch7-4",
+   "title": "8.3 CloudTrail and audit",
+   "minutes": 3,
+   "endAnchor": "ch7-4-end",
+   "blocks": [
+    {
+     "anchor": "ch7-4-p03",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    },
+    {
+     "anchor": "ch7-4-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "content filters",
+     "definition": "Guardrails categories like hate and violence, each with a severity threshold.",
+     "anchor": "ch7-4-table02"
+    },
+    {
+     "term": "denied topics",
+     "definition": "The control that blocks subject matter, such as medical diagnoses.",
+     "anchor": "ch7-4-p07"
+    },
+    {
+     "term": "contextual grounding",
+     "definition": "The check that an answer is supported by the retrieved document.",
+     "anchor": "ch7-4-p08"
+    },
+    {
+     "term": "Comprehend pre-filter",
+     "definition": "The input pre-filter in the layering pattern, before Guardrails on the model call.",
+     "anchor": "ch7-4-p03"
+    }
+   ],
+   "recall": [
+    {
+     "id": "ch7-4-r1",
+     "question": "Prevent the model from discussing medical diagnoses: which control?",
+     "answer": "Denied topics; content filters cover toxicity, not topics.",
+     "anchor": "ch7-4-p05"
+    },
+    {
+     "id": "ch7-4-r2",
+     "question": "Redact SSNs: which control?",
+     "answer": "Sensitive information filters, not word filters.",
+     "anchor": "ch7-4-p06"
+    }
+   ]
+  },
+  {
+   "anchor": "ch7-5",
+   "title": "8.5 PII redaction flow.",
+   "minutes": 3,
+   "endAnchor": "ch7-5-end",
+   "blocks": [
+    {
+     "anchor": "ch7-5-p01",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    },
+    {
+     "anchor": "ch7-5-ol01",
+     "kind": "steps",
+     "reveal": "stepwise"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "Macie",
+     "definition": "The service that scans S3 buckets for PII at rest and at scale.",
+     "anchor": "ch7-5-code01"
+    },
+    {
+     "term": "Comprehend",
+     "definition": "The text service for real-time PII detection and redaction in flight.",
+     "anchor": "ch7-5-ol01"
+    },
+    {
+     "term": "planes",
+     "definition": "The three PII surfaces: at rest, in flight, and at inference, one service per plane.",
+     "anchor": "ch7-5-p04"
+    }
+   ],
+   "recall": [
+    {
+     "id": "ch7-5-r1",
+     "question": "Which three services protect PII in customer-service GenAI conversations?",
+     "answer": "Macie at rest, Comprehend in flight, and Guardrails at inference.",
+     "anchor": "ch7-5-p03"
+    },
+    {
+     "id": "ch7-5-r2",
+     "question": "Why is Rekognition wrong for chat text PII?",
+     "answer": "It is a vision service; Comprehend is the text answer.",
+     "anchor": "ch7-5-p04"
+    }
+   ]
+  },
+  {
+   "anchor": "8-decision-ladders",
+   "title": "8.5 PII redaction flow.",
+   "minutes": 3,
+   "endAnchor": "8-decision-ladders-end",
+   "blocks": [
+    {
+     "anchor": "8-decision-ladders-p02",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "grounding ladder",
+     "definition": "The ladder for how the answer stays factual: prompt, RAG, agents, fine-tuning.",
+     "anchor": "8-decision-ladders-p03"
+    },
+    {
+     "term": "cheapest option",
+     "definition": "Where every ladder starts; you must explain why you stop at that option.",
+     "anchor": "8-decision-ladders-p02"
+    },
+    {
+     "term": "requirements",
+     "definition": "What exam scenarios give you; the ladders turn them into choices.",
+     "anchor": "8-decision-ladders-p04"
+    }
+   ],
+   "recall": [
+    {
+     "id": "8-decision-ladders-r1",
+     "question": "How do you use a ladder on a scenario?",
+     "answer": "Start at the top, go down until all requirements are met, then stop.",
+     "anchor": "8-decision-ladders-p04"
+    }
+   ]
+  },
+  {
+   "anchor": "ch8-1",
+   "title": "9. Decision ladders",
+   "minutes": 4,
+   "endAnchor": "ch8-1-end",
+   "blocks": [
+    {
+     "anchor": "ch8-1-p02",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    },
+    {
+     "anchor": "ch8-1-ol01",
+     "kind": "steps",
+     "reveal": "stepwise"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "Grounding",
+     "definition": "The ladder for how the answer stays factual: prompt engineering, RAG, agents, fine-tuning.",
+     "anchor": "ch8-1-p01"
+    },
+    {
+     "term": "ten times",
+     "definition": "How much more each grounding rung costs in time and money than the one before.",
+     "anchor": "ch8-1-ol01"
+    }
+   ],
+   "recall": [
+    {
+     "id": "ch8-1-r1",
+     "question": "What is the main exam skill on the grounding ladder?",
+     "answer": "Stopping early at the first option that works.",
+     "anchor": "ch8-1-p02"
+    }
+   ]
+  },
+  {
+   "anchor": "ch8-2",
+   "title": "9.1 Grounding ladder: prompt engineering to RAG to agents to fine-tuning",
+   "minutes": 4,
+   "endAnchor": "ch8-2-end",
+   "blocks": [
+    {
+     "anchor": "ch8-2-p02",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    },
+    {
+     "anchor": "ch8-2-ol01",
+     "kind": "steps",
+     "reveal": "stepwise"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "Pricing",
+     "definition": "The ladder for inference cost: on-demand, caching, batch, provisioned throughput, smaller models.",
+     "anchor": "ch8-2-p01"
+    },
+    {
+     "term": "cost type",
+     "definition": "What each ladder option handles: changes, repetition, delays, predictability, mixed difficulty.",
+     "anchor": "ch8-2-ol01"
+    }
+   ],
+   "recall": [
+    {
+     "id": "ch8-2-r1",
+     "question": "Which option handles repetition?",
+     "answer": "Caching; on-demand handles changes, batch handles delays, provisioned throughput handles predictability.",
+     "anchor": "ch8-2-p02"
+    }
+   ]
+  },
+  {
+   "anchor": "ch8-3",
+   "title": "9.2 Inference pricing ladder",
+   "minutes": 4,
+   "endAnchor": "ch8-3-end",
+   "blocks": [
+    {
+     "anchor": "ch8-3-p02",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    },
+    {
+     "anchor": "ch8-3-ol01",
+     "kind": "steps",
+     "reveal": "stepwise"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "Prompt design",
+     "definition": "System prompts, grounding instructions, and output format constraints; cheapest, always on.",
+     "anchor": "ch8-3-code01"
+    },
+    {
+     "term": "Human review",
+     "definition": "Step Functions approvals and manual sign-off, reserved for high-risk actions.",
+     "anchor": "ch8-3-ol01"
+    }
+   ],
+   "recall": [
+    {
+     "id": "ch8-3-r1",
+     "question": "Do higher safety options replace lower ones?",
+     "answer": "No. Human review does not make missing guardrails acceptable.",
+     "anchor": "ch8-3-p02"
+    }
+   ]
+  },
+  {
+   "anchor": "ch8-4",
+   "title": "9.3 Safety control ladder",
+   "minutes": 5,
+   "endAnchor": "ch8-4-end",
+   "blocks": [
+    {
+     "anchor": "ch8-4-p04",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    },
+    {
+     "anchor": "ch8-4-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    },
+    {
+     "anchor": "ch8-4-takeaway01",
+     "kind": "summary",
+     "reveal": "fade"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "five constraints",
+     "definition": "What the exam's hardest questions give: one scenario with five constraints, each mapping to one rung.",
+     "anchor": "ch8-4-p07"
+    },
+    {
+     "term": "stale knowledge",
+     "definition": "Why fine-tuning is wrong for changing documents; RAG keeps knowledge fresh.",
+     "anchor": "ch8-4-p10"
+    }
+   ],
+   "recall": [
+    {
+     "id": "ch8-4-r1",
+     "question": "What is the procedure for the exam's hardest questions?",
+     "answer": "Extract each constraint, climb each ladder to the cheapest fitting rung, and if two options remain choose the more managed and serverless one.",
+     "anchor": "ch8-4-p12"
+    },
+    {
+     "id": "ch8-4-r2",
+     "question": "Why is fine-tuning wrong for stale knowledge?",
+     "answer": "It bakes knowledge into weights that go stale at the next document update.",
+     "anchor": "ch8-4-p09"
+    }
+   ]
+  },
+  {
+   "anchor": "9-question-bank",
+   "title": "10. Question bank",
+   "minutes": 3,
+   "endAnchor": "9-question-bank-end",
+   "blocks": [
+    {
+     "anchor": "9-question-bank-p02",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "most correct answer",
+     "definition": "The exam's question style: one best option among plausible ones.",
+     "anchor": "9-question-bank-p01"
+    },
+    {
+     "term": "scenario question",
+     "definition": "A question giving limits and asking for the cheapest fitting design.",
+     "anchor": "9-question-bank-p02"
+    }
+   ],
+   "recall": [
+    {
+     "id": "9-question-bank-r1",
+     "question": "How many questions and of what difficulty?",
+     "answer": "24 scenario questions: 8 easy, 8 medium, 8 hard multiple-response.",
+     "anchor": "9-question-bank-p02"
+    }
+   ]
+  },
+  {
+   "anchor": "chapter-1-rag-on-bedrock-knowledge-bases",
+   "title": "10. Question bank",
+   "minutes": 4,
+   "endAnchor": "chapter-1-rag-on-bedrock-knowledge-bases-end",
+   "blocks": [
+    {
+     "anchor": "chapter-1-rag-on-bedrock-knowledge-bases-p19",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    },
+    {
+     "anchor": "chapter-1-rag-on-bedrock-knowledge-bases-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "quarterly sync",
+     "definition": "The sync schedule that keeps a Knowledge Base current when documents change quarterly.",
+     "anchor": "chapter-1-rag-on-bedrock-knowledge-bases-p02"
+    },
+    {
+     "term": "hierarchical chunking",
+     "definition": "The fix when fixed-size chunking splits clauses across boundaries.",
+     "anchor": "chapter-1-rag-on-bedrock-knowledge-bases-p12"
+    },
+    {
+     "term": "full isolation",
+     "definition": "Separate KBs with IAM scoping: the standard multi-tenant answer for the exam.",
+     "anchor": "chapter-1-rag-on-bedrock-knowledge-bases-p19"
+    }
+   ],
+   "recall": [
+    {
+     "id": "chapter-1-rag-on-bedrock-knowledge-bases-r1",
+     "question": "Quarterly policy PDFs with citations: which approach?",
+     "answer": "A Bedrock Knowledge Base with an S3 data source, quarterly sync, and RetrieveAndGenerate.",
+     "anchor": "chapter-1-rag-on-bedrock-knowledge-bases-p05"
+    },
+    {
+     "id": "chapter-1-rag-on-bedrock-knowledge-bases-r2",
+     "question": "Why not fine-tune for changing documents?",
+     "answer": "It cannot cite sources and re-training each quarter is slow and expensive.",
+     "anchor": "chapter-1-rag-on-bedrock-knowledge-bases-p06"
+    }
+   ]
+  },
+  {
+   "anchor": "chapter-2-bedrock-agents",
+   "title": "Chapter 4: Bedrock Agents",
+   "minutes": 4,
+   "endAnchor": "chapter-2-bedrock-agents-end",
+   "blocks": [
+    {
+     "anchor": "chapter-2-bedrock-agents-p12",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "prepare-agent",
+     "definition": "The required recompile after any agent configuration change.",
+     "anchor": "chapter-2-bedrock-agents-p02"
+    },
+    {
+     "term": "task token",
+     "definition": "The Step Functions wait mechanism for human approvals lasting days.",
+     "anchor": "chapter-2-bedrock-agents-p09"
+    }
+   ],
+   "recall": [
+    {
+     "id": "chapter-2-bedrock-agents-r1",
+     "question": "Agent ignores a new action group: what did you forget?",
+     "answer": "Running prepare-agent again; the agent runs the old version until then.",
+     "anchor": "chapter-2-bedrock-agents-p04"
+    },
+    {
+     "id": "chapter-2-bedrock-agents-r2",
+     "question": "How do you gate an agent action on a two-day human approval?",
+     "answer": "Step Functions with a task token; Lambda stops after 15 minutes.",
+     "anchor": "chapter-2-bedrock-agents-p12"
+    }
+   ]
+  },
+  {
+   "anchor": "chapter-3-sync-vs-async-invocation",
+   "title": "Chapter 2: Sync versus async invocation",
+   "minutes": 4,
+   "endAnchor": "chapter-3-sync-vs-async-invocation-end",
+   "blocks": [
+    {
+     "anchor": "chapter-3-sync-vs-async-invocation-p11",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "provisioned model identifier",
+     "definition": "The ARN you must invoke to use reserved capacity; the base model ID routes to on-demand.",
+     "anchor": "chapter-3-sync-vs-async-invocation-p11"
+    },
+    {
+     "term": "batch inference",
+     "definition": "About 50 percent cheaper bulk inference for non-interactive work.",
+     "anchor": "chapter-3-sync-vs-async-invocation-p02"
+    }
+   ],
+   "recall": [
+    {
+     "id": "chapter-3-sync-vs-async-invocation-r1",
+     "question": "Bought provisioned throughput but still throttling: why?",
+     "answer": "The code still calls the base model ID instead of the provisioned model identifier.",
+     "anchor": "chapter-3-sync-vs-async-invocation-p10"
+    },
+    {
+     "id": "chapter-3-sync-vs-async-invocation-r2",
+     "question": "Embeddings in bulk: which API and pricing?",
+     "answer": "InvokeModel for embeddings, batched through batch inference.",
+     "anchor": "chapter-3-sync-vs-async-invocation-p04"
+    }
+   ]
+  },
+  {
+   "anchor": "chapter-4-chatbot-reference-architecture",
+   "title": "Chapter 2: Sync versus async invocation",
+   "minutes": 3,
+   "endAnchor": "chapter-4-chatbot-reference-architecture-end",
+   "blocks": [
+    {
+     "anchor": "chapter-4-chatbot-reference-architecture-p10",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "session store",
+     "definition": "DynamoDB with TTL, for single-digit millisecond per-turn session reads.",
+     "anchor": "chapter-4-chatbot-reference-architecture-p03"
+    },
+    {
+     "term": "runtime configuration",
+     "definition": "Model identifiers in AppConfig, so switching needs no deployment.",
+     "anchor": "chapter-4-chatbot-reference-architecture-p11"
+    }
+   ],
+   "recall": [
+    {
+     "id": "chapter-4-chatbot-reference-architecture-r1",
+     "question": "Where do you store chat session state?",
+     "answer": "DynamoDB with TTL; S3 is wrong for per-turn reads and Lambda storage is ephemeral.",
+     "anchor": "chapter-4-chatbot-reference-architecture-p05"
+    },
+    {
+     "id": "chapter-4-chatbot-reference-architecture-r2",
+     "question": "Repeated 4,000-token prefix plus 40 percent repeated questions: which two?",
+     "answer": "Prompt caching for the prefix and a semantic cache for the repeated questions.",
+     "anchor": "chapter-4-chatbot-reference-architecture-p16"
+    }
+   ]
+  },
+  {
+   "anchor": "chapter-5-cost-latency-quality",
+   "title": "Chapter 5: Chatbot reference architecture",
+   "minutes": 3,
+   "endAnchor": "chapter-5-cost-latency-quality-end",
+   "blocks": [
+    {
+     "anchor": "chapter-5-cost-latency-quality-p11",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "multi-lever",
+     "definition": "The exam rule for cost scenarios: combine caching, cascade, compression, and eval gates.",
+     "anchor": "chapter-5-cost-latency-quality-p11"
+    },
+    {
+     "term": "hybrid pattern",
+     "definition": "Provisioned throughput for the steady baseline plus on-demand overflow for spikes.",
+     "anchor": "chapter-5-cost-latency-quality-p17"
+    }
+   ],
+   "recall": [
+    {
+     "id": "chapter-5-cost-latency-quality-r1",
+     "question": "Nightly bulk classification: cheapest correct option?",
+     "answer": "Batch inference with S3 input and output, about 50 percent less than on-demand.",
+     "anchor": "chapter-5-cost-latency-quality-p04"
+    },
+    {
+     "id": "chapter-5-cost-latency-quality-r2",
+     "question": "Sub-3-second SLA with 10x Friday spikes: which two?",
+     "answer": "Provisioned throughput sized for the baseline plus on-demand overflow, with ConverseStream for perceived latency.",
+     "anchor": "chapter-5-cost-latency-quality-p16"
+    }
+   ]
+  },
+  {
+   "anchor": "chapter-6-eval-loops",
+   "title": "Chapter 6: Cost, latency, quality",
+   "minutes": 4,
+   "endAnchor": "chapter-6-eval-loops-end",
+   "blocks": [
+    {
+     "anchor": "chapter-6-eval-loops-p05",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "faithfulness",
+     "definition": "Whether the answer sticks to the retrieved context; a judgment, not an exact match.",
+     "anchor": "chapter-6-eval-loops-p02"
+    },
+    {
+     "term": "golden dataset",
+     "definition": "The versioned prompt set with known answers used for regression gates.",
+     "anchor": "chapter-6-eval-loops-p14"
+    }
+   ],
+   "recall": [
+    {
+     "id": "chapter-6-eval-loops-r1",
+     "question": "How do you evaluate RAG faithfulness at scale?",
+     "answer": "LLM-as-a-judge with the retrieved context; exact match is too rigid.",
+     "anchor": "chapter-6-eval-loops-p05"
+    },
+    {
+     "id": "chapter-6-eval-loops-r2",
+     "question": "What blocks prompt regressions before rollout?",
+     "answer": "An automated regression against the versioned golden dataset, plus human checks for brand voice.",
+     "anchor": "chapter-6-eval-loops-p18"
+    }
+   ]
+  },
+  {
+   "anchor": "chapter-7-security-hardening",
+   "title": "Chapter 7: Evaluation loops",
+   "minutes": 4,
+   "endAnchor": "chapter-7-security-hardening-end",
+   "blocks": [
+    {
+     "anchor": "chapter-7-security-hardening-p17",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "PII triple",
+     "definition": "Macie at rest, Comprehend in flight, Guardrails at inference.",
+     "anchor": "chapter-7-security-hardening-p18"
+    },
+    {
+     "term": "PrivateLink",
+     "definition": "VPC interface endpoints keeping Bedrock traffic off the public internet.",
+     "anchor": "chapter-7-security-hardening-p02"
+    }
+   ],
+   "recall": [
+    {
+     "id": "chapter-7-security-hardening-r1",
+     "question": "Keep Bedrock traffic off the public internet: how?",
+     "answer": "VPC interface endpoints for the Bedrock, runtime, and agent endpoints.",
+     "anchor": "chapter-7-security-hardening-p03"
+    },
+    {
+     "id": "chapter-7-security-hardening-r2",
+     "question": "Why is built-in model safety not enough?",
+     "answer": "Sensitive audiences need layered controls; it is never the most correct answer.",
+     "anchor": "chapter-7-security-hardening-p12"
+    }
+   ]
+  },
+  {
+   "anchor": "chapter-8-decision-ladders",
+   "title": "Chapter 8: Security hardening",
+   "minutes": 4,
+   "endAnchor": "chapter-8-decision-ladders-end",
+   "blocks": [
+    {
+     "anchor": "chapter-8-decision-ladders-p05",
+     "kind": "keyIdea",
+     "reveal": "rise"
+    },
+    {
+     "anchor": "chapter-8-decision-ladders-fig01",
+     "kind": "figure",
+     "reveal": "fade"
+    },
+    {
+     "anchor": "chapter-8-decision-ladders-takeaway01",
+     "kind": "summary",
+     "reveal": "fade"
+    }
+   ],
+   "keyTerms": [
+    {
+     "term": "textbook RAG rung",
+     "definition": "Changing documents plus citation needs: the canonical RAG scenario.",
+     "anchor": "chapter-8-decision-ladders-p05"
+    },
+    {
+     "term": "denied topics",
+     "definition": "The control for banning subject matter like investment advice.",
+     "anchor": "chapter-8-decision-ladders-p14"
+    },
+    {
+     "term": "sensitive-information filters",
+     "definition": "The control that masks account numbers in both directions.",
+     "anchor": "chapter-8-decision-ladders-p19"
+    }
+   ],
+   "recall": [
+    {
+     "id": "chapter-8-decision-ladders-r1",
+     "question": "How do you review missed questions with this bank?",
+     "answer": "Write the ladder it tested and the rung where you should have stopped; most misses climb one rung too far.",
+     "anchor": "chapter-8-decision-ladders-p23"
+    },
+    {
+     "id": "chapter-8-decision-ladders-r2",
+     "question": "Spiky experimental traffic: which pricing?",
+     "answer": "On-demand until patterns stabilize; no commitment.",
+     "anchor": "chapter-8-decision-ladders-p09"
+    }
+   ]
+  }
+ ]
+}

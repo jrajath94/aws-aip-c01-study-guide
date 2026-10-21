@@ -1,0 +1,41 @@
+AWS Documentation from https://docs.aws.amazon.com/prescriptive-guidance/latest/govern-architect-agentic-ai/core-services-knowledge-bases.html:
+
+# Core services: knowledge bases
+
+The knowledge bases component provides agents with access to enterprise data and domain-specific information through Retrieval Augmented Generation (RAG). RAG enables agents to ground their responses in factual, up-to-date information from organizational data sources, reducing hallucinations and enabling domain-specific intelligence without requiring model retraining.
+
+![Architecture diagram core services knowledge bases](/images/prescriptive-guidance/latest/govern-architect-agentic-ai/images/guide-img/5961cc11-38d0-411b-a5ab-a75afdc073b4/images/6490c48e-dafe-414a-ad29-7e9d288f72a5.png)
+
+RAG combines two processes - agents retrieve relevant information from a knowledge base through semantic search, then provide that retrieved context to the LLM to generate grounded responses.
+
+## Implementation on AWS
+
+### Amazon Bedrock Knowledge Bases
+
+Amazon Bedrock Knowledge Bases provides fully managed RAG capabilities, handling document ingestion, chunking, embedding generation, vector storage, and retrieval without requiring custom pipeline development. The service automates the entire workflow from data sources through to context-enhanced LLM prompts.
+
+### Vector database options
+
+Organizations select vector databases based on specific requirements:
+
+* [Amazon OpenSearch Service](https://aws.amazon.com/opensearch-service/) - best for applications requiring full-text search combined with vector similarity, supporting billions of vectors with millisecond query performance. Ideal when search must integrate with analytics and observability use cases.
+* [Amazon Aurora](https://aws.amazon.com/rds/aurora/) PostgreSQL with pgvector - optimal when vector search must coexist with transactional data, leveraging existing PostgreSQL expertise and infrastructure.
+* [Amazon S3 Vectors](https://aws.amazon.com/s3/features/vectors/) - cost-effective for massive-scale vector storage requirements. Reduces storage and search costs by up to 90% compared to traditional vector databases, with sub-second query performance.
+
+Supporting infrastructure includes Amazon S3 for document storage, AWS Lambda for custom retrieval logic and preprocessing, and Amazon Kendra for intelligent enterprise search with natural language understanding.
+
+### Graph database
+
+For use cases where connections between data entities are central to queries and analysis:
+
+* [Amazon Bedrock Knowledge Bases](https://aws.amazon.com/bedrock/knowledge-bases/) with GraphRAG – fully managed GraphRAG capability, automatically creates embeddings for semantic search and generates graphs of entities and relationships from unstructured data, and combines vector search with graph traversal. Ideal for applications requiring both semantic similarity and relationship-based retrieval
+* [Amazon Neptune](https://aws.amazon.com/neptune/) Analytics – in-memory graph analytics engine for fast analysis of large graph datasets, supports openCypher, and analyzes tens of billions of relationships in seconds
+* [Amazon Neptune](https://aws.amazon.com/neptune/) – Persistent graph database supporting property graphs (Gremlin, openCypher) and RDF graphs (SPARQL). Optimized for operational workloads requiring low-latency transactional access
+
+## Integration with agents
+
+Agents interact with knowledge bases through a retrieval and generation workflow. The agent analyzes the user request and formulates retrieval queries. The knowledge base performs a similarity search, returning relevant documents or passages with relevance scores. Retrieved information is ranked and assembled into context for the LLM prompt. The LLM generates responses grounded in the retrieved knowledge, with citations to source documents.
+
+## Governance considerations
+
+The knowledge bases layer requires governance controls for data lineage tracking from source documents through retrieval to agent responses, enabling transparency and compliance. Access control must ensure knowledge base permissions align with source data access policies, with agents respecting organizational data boundaries. Data retention and lifecycle management requires synchronization between source data updates and vector index refreshes, with policies for data deletion and archival. Organizations monitor retrieval quality metrics including relevance scores and retrieval accuracy to ensure knowledge base effectiveness. Source attribution mechanisms enable citing source documents in agent responses, supporting verification and compliance requirements. For shared knowledge bases, multi-tenancy isolation ensures proper data segregation and access control across organizational boundaries.

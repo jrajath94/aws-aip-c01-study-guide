@@ -1,39 +1,53 @@
-# AIP-C01 Study Guide: AWS Certified Generative AI Developer, Professional
+# AWS Certified Generative AI Developer – Professional (AIP-C01) Master Study Suite
 
-Complete study materials for the AWS Certified Generative AI Developer - Professional exam (exam code AIP-C01). This is a professional-level exam: questions are long scenario stems with multi-step reasoning and traps. The materials are built to that bar.
+Complete first-principles study materials, interactive applications, architectural treatises, and publication-grade print materials for the AWS Certified Generative AI Developer - Professional exam (**AIP-C01**).
 
-## Exam at a glance
+---
 
-- 75 questions: 65 scored + 10 unscored. Multiple-choice and multiple-response (each item states how many to select)
-- 180 minutes, proctored via Pearson VUE (online or test center)
-- Pass: 750 on a 100-1,000 scaled scale. Fee: $300
+## 🎯 Examination at a Glance
+- **Exam Code:** AIP-C01
+- **Questions:** 75 questions (65 scored + 10 unscored pretest)
+- **Time Allowed:** 180 minutes (3 hours)
+- **Passing Score:** 750 / 1000 scaled score
+- **Question Types:** Multiple choice (single answer) and Multiple response (select 2 or 3)
 
-## Contents
+---
 
-| File | What it is |
-|---|---|
-| `index.html` | Start here. Guide home page with study order and a 14-day plan |
-| `prereq-aif-c01.html` | Prerequisite: AWS Certified AI Practitioner (AIF-C01) crash course |
-| `prereq-aws-cloud-foundations.html` | Prerequisite: AWS cloud foundations (IAM, S3, EC2, VPC, Lambda, and more) |
-| `prereq-ml-specialty.html` | Prerequisite: ML Specialty essentials (SageMaker, training/tuning, MLOps) |
-| `volume-d1-foundation-models.html` | D1: Foundation Model Integration, Data Management, and Compliance (31%) |
-| `volume-d2-implementation-integration.html` | D2: Implementation and Integration (26%) |
-| `volume-d3-safety-security-governance.html` | D3: AI Safety, Security, and Governance (20%) |
-| `volume-d4-optimization.html` | D4: Operational Efficiency and Optimization for GenAI Applications (12%) |
-| `volume-d5-testing-validation.html` | D5: Testing, Validation, and Troubleshooting (11%) |
-| `volume-maarek-labs.html` | Hands-on labs in the Stephane Maarek style: build it, then answer |
-| `volume-question-bank.html` | Practice questions across easy, medium, and hard |
-| `volume-question-patterns.html` | How AWS phrases questions, and the traps they set |
-| `volume-crash-course.html` | Crash course: the whole exam in one volume, decision rules and numbers |
-| `volume-system-design.html` | End-to-end reference designs with trade-off math |
-| `volume-appendix-gaps.html` | Gap coverage: topics the blueprint implies but never names |
+## 🚀 Core Applications & Interactive Tools
 
-Every volume is a single self-contained HTML file (works offline, no external dependencies). Each concept is taught from zero: what it is, why it exists, and how it works under the hood. You get concrete numbers, common misunderstandings, diagrams with walkthroughs, and an exam-relevance line.
+| Application | Path / Link | Description |
+| :--- | :--- | :--- |
+| **Interactive Masterclass Web App** | [`course/index.html`](course/index.html) | 16:9 Slide Deck with 5-layer Russian Doll models, 75-question timed mock (180-min timer), 250 interactive questions, 541 flashcards, Lightbox zoom. |
+| **Continuous Visual Treatise** | [`course/treatise.html`](course/treatise.html) | Scrollable long-form master textbook with 24 deep chapters, 26 architecture diagrams, and 98 mapped skill dossiers. |
+| **98-Skill Reader** | [`course/reader.html`](course/reader.html) | Skill-by-skill syllabus mapped directly to the official AWS AIP-C01 blueprint. |
+| **Master Visual Study Guide (HTML)** | [`course/print-study-guide.html`](course/print-study-guide.html) | Clean, beautifully styled HTML study manual featuring Anthropic Sans typography, justified text, and official diagrams. |
 
-## How the exam asks
+---
 
-Long scenario stems, not definition recall. You get a company, a constraint, and a broken design. Several options look right; the credited answer is the one that best satisfies every stated constraint at once (cost ceiling, latency budget, compliance rule, existing AWS footprint). Multiple-response items tell you exactly how many answers to pick. Read the constraint first, pick second.
+## 📚 Master Study Documents & Print Editions
 
-## Note
+| Document | Format | Description |
+| :--- | :--- | :--- |
+| **Master Visual Study Guide (PDF)** | `AIP-C01_Overnight_Print_Guide.pdf` | Formatted with Anthropic Sans, justified text, 1.5 line spacing, large official AWS diagrams, 13 practical labs, and cleaned blueprint questions. |
+| **Master Study Guide (Word .docx)** | `AIP-C01_Overnight_Study_Guide.docx` | Fully styled Microsoft Word edition with embedded high-resolution diagrams, tables, and callouts. |
+| **Core Two-Up Print Edition** | `output/AIP-C01-Core-Two-Up.pdf` | Complete authored curriculum with two logical pages per side for double-sided printing. |
+| **Practice Booklet** | `output/AIP-C01-Practice-Two-Up.pdf` | 250 extracted questions with full official rationales and corrections. |
 
-Service names, limits, and pricing change. Verify against https://docs.aws.amazon.com before exam day; illustrative figures are marked in the volumes.
+---
+
+## 🏗️ 5-Layer Russian Doll Learning Engine
+Every concept across the 95 lessons is taught from physical first principles:
+1. **Layer 1: First-Principle Intuition** — Ground mental model without jargon.
+2. **Layer 2: AWS Architecture Flow** — IAM, KMS, VPC, API, and EventBridge boundaries.
+3. **Layer 3: Exact APIs & Code** — `boto3` parameters, `inferenceConfig`, `additionalModelRequestFields={'top_k': 50}`.
+4. **Layer 4: Amazon Traps & Gotchas** — Quotas, silent truncations, and subtle exam distractors.
+5. **Layer 5: 15-Second Exam Decision Rule** — Rapid heuristic for answering scenario questions under timed conditions.
+
+---
+
+## 🛠️ Build and Regeneration Scripts
+- **Rebuild Course Data**: `python3 scripts/build_course.py`
+- **Generate Print Materials (PDF & DOCX)**: `python3 scripts/generate_print_materials.py`
+- **Run Playwright Verification Suite**: `node scripts/test_course.mjs`
+
+The revised editions use justified Anthropic Sans text, more line space, clean question numbers, and semantic color cues.

@@ -1,0 +1,135 @@
+{
+  "search_results": [
+    {
+      "rank_order": 1,
+      "url": "https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/release-notes.html",
+      "title": "Observability UI enhancements for trace and trajectory",
+      "context": "AgentCore Observability UI improvements including bundled repeated spans, visual span icons, default agent span filters, and improved trajectory diagrams.",
+      "recommended_sections": [
+        "Observability: UI Enhancements for Trace and Trajectory",
+        "Observability: Trace Latency Improvements"
+      ],
+      "sections": null,
+      "metadata": null
+    },
+    {
+      "rank_order": 2,
+      "url": "https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/observability-telemetry.html",
+      "title": "three-tiered observability hierarchy",
+      "context": "The Amazon Bedrock AgentCore Observability structure of sessions for complete workflows, traces for individual agent invocations, and spans for operation-level granularity.",
+      "recommended_sections": [
+        "Relationship Between Sessions, Traces, and Spans",
+        "Understand observability for agentic resources in AgentCore",
+        "Spans",
+        "Traces"
+      ],
+      "sections": null,
+      "metadata": null
+    },
+    {
+      "rank_order": 3,
+      "url": "https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/observability-view.html",
+      "title": "view traces for AgentCore agents in CloudWatch",
+      "context": "Procedure for navigating to CloudWatch Transaction Search to view and filter distributed trace data for AgentCore agents",
+      "recommended_sections": [
+        "Traces and Spans"
+      ],
+      "sections": null,
+      "metadata": null
+    },
+    {
+      "rank_order": 4,
+      "url": "https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/observability-configure.html",
+      "title": "AgentCore tracing",
+      "context": "Trace delivery configuration for AgentCore resources that enables visualization of request flows, performance bottlenecks, and error troubleshooting in CloudWatch",
+      "recommended_sections": [
+        "Configure tracing delivery to CloudWatch using the console"
+      ],
+      "sections": null,
+      "metadata": null
+    },
+    {
+      "rank_order": 5,
+      "url": "https://docs.aws.amazon.com/wellarchitected/latest/agentic-ai-lens/agentrel07-bp03.html",
+      "title": "Enable AgentCore Observability with OpenTelemetry tracing",
+      "context": "Turn on Amazon Bedrock AgentCore Observability across every agent component to capture full execution traces",
+      "recommended_sections": [
+        "Implementation steps",
+        "Implementation guidance"
+      ],
+      "sections": null,
+      "metadata": null
+    },
+    {
+      "rank_order": 6,
+      "url": "https://docs.aws.amazon.com/wellarchitected/latest/agentic-ai-lens/agentsec05-bp02.html",
+      "title": "AgentCore span",
+      "context": "A specific operation within a trace in Amazon Bedrock AgentCore Observability, representing a discrete unit of work such as a model invocation or tool call.",
+      "recommended_sections": [
+        "Implementation guidance"
+      ],
+      "sections": null,
+      "metadata": null
+    },
+    {
+      "rank_order": 7,
+      "url": "https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/observability.html",
+      "title": "AgentCore Observability dashboard",
+      "context": "CloudWatch console dashboard for agent runtime data containing trace visualizations, graphs for custom span metrics, and error breakdowns",
+      "recommended_sections": [
+        "Observe your agent applications on Amazon Bedrock AgentCore Observability"
+      ],
+      "sections": null,
+      "metadata": null
+    },
+    {
+      "rank_order": 8,
+      "url": "https://docs.aws.amazon.com/wellarchitected/latest/agentic-ai-lens/agentops05-bp01.html",
+      "title": "Strands Agents",
+      "context": "Agent framework that manages LLM invocations, tool execution, and user conversations, supporting multiple LLMs including Amazon Bedrock, Anthropic, Google Gemini, and OpenAI",
+      "recommended_sections": [
+        "Implementation guidance"
+      ],
+      "sections": null,
+      "metadata": null
+    }
+  ],
+  "facets": null,
+  "query_id": "7d296ad3-8eac-4bc8-88b0-33d722eb6e86",
+  "metadata": {
+    "discovered_services": null,
+    "related_tasks": null,
+    "relationships": [
+      {
+        "relation": "relatesTo",
+        "to": "span hierarchical structure",
+        "to_description": "The parent-child nesting of spans within a trace that creates a detailed execution tree revealing the complete flow of operations within an agent.",
+        "from": "three-tiered observability hierarchy"
+      },
+      {
+        "relation": "relatesTo",
+        "to": "session isolation",
+        "to_description": "A security architecture in AgentCore Tools that runs each user session in a dedicated microVM with isolated CPU, memory, and filesystem to prevent cross-session data leakage",
+        "from": "three-tiered observability hierarchy"
+      },
+      {
+        "relation": "relatesTo",
+        "to": "span hierarchical structure",
+        "to_description": "The parent-child nesting of spans within a trace that creates a detailed execution tree revealing the complete flow of operations within an agent.",
+        "from": "AgentCore span"
+      },
+      {
+        "relation": "relatesTo",
+        "to": "AgentCore trace",
+        "to_description": "A detailed record of a single request-response cycle beginning from an agent invocation, capturing the complete execution path including processing steps, tool invocations, and resource utilization",
+        "from": "AgentCore span"
+      },
+      {
+        "relation": "references",
+        "to": "OpenTelemetry-compatible telemetry",
+        "to_description": "Standardized observability instrumentation provided by Amazon Bedrock AgentCore Observability to trace retrieval patterns and token consumption.",
+        "from": "Enable AgentCore Observability with OpenTelemetry tracing"
+      }
+    ]
+  }
+}

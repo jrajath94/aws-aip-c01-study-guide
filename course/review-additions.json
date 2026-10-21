@@ -1,0 +1,424 @@
+[
+  {
+    "id": "add-001",
+    "title": "Choose an architecture from workload limits",
+    "skills": [
+      "1.1.1",
+      "1.1.2",
+      "1.2.1"
+    ],
+    "domain": 1,
+    "lead": "Choose the smallest architecture that meets the stated user outcome and hard limits.",
+    "points": "Record users, task, data class, source of truth, traffic shape, latency target, quality floor, and failure action. Separate required limits from preferences. Compare prompt-only, RAG, tool use, customization, and a managed workflow against the same representative test set. A proof of concept must test the riskiest assumption, not only show a successful demo. Record cost per successful task and define a stop rule before scale-up.",
+    "trap": "A larger model or more complex architecture does not prove better fitness.",
+    "question": "A prototype has fluent answers but misses the required latency at peak load. What must the team change first?",
+    "answer": "Measure the bottleneck and test a suitable deployment or workflow change against the latency limit. Do not select a model by reputation.",
+    "sources": [
+      "exam-domain-1",
+      "scope-ai-professional-01"
+    ],
+    "diagram": ""
+  },
+  {
+    "id": "add-002",
+    "title": "Choose retrieval, tools, or customization",
+    "skills": [
+      "1.1.1",
+      "1.2.4",
+      "1.5.5"
+    ],
+    "domain": 1,
+    "lead": "Choose a method by the source and behavior that must change.",
+    "points": "Use retrieval when the answer needs current or private source facts. Use a tool when the application must read or change a live system. Use fine-tuning when representative examples must teach a stable task behavior or style. Use prompt instructions for clear task rules and output shape. A method can combine with another method. Define how the team will measure each method before implementation.",
+    "trap": "Fine-tuning does not make changing facts current. Retrieval does not authorize a transaction.",
+    "question": "A support assistant must answer from current order status and policy, then issue a refund after approval. Which methods fit?",
+    "answer": "Use retrieval for policy, an authorized order lookup tool for status, and a guarded refund tool after approval.",
+    "sources": [
+      "exam-domain-1",
+      "knowledge-bases"
+    ],
+    "diagram": ""
+  },
+  {
+    "id": "add-003",
+    "title": "Validate multimodal inputs at each boundary",
+    "skills": [
+      "1.3.1",
+      "1.3.2",
+      "1.3.3",
+      "1.3.4"
+    ],
+    "domain": 1,
+    "lead": "Validate the file, extracted content, and model request as separate stages.",
+    "points": "Check file type, size, ownership, malware controls, and permitted data class before processing. Select extraction by content: Textract for supported document text or forms, Transcribe for audio, and a supported multimodal model for image understanding. Check extraction output for missing pages, encoding faults, and confidence limits. Normalize the result, preserve source identifiers, then validate the model-specific request schema.",
+    "trap": "Successful extraction does not prove that extracted text is complete or correct.",
+    "question": "A scanned invoice returns an empty field without an API error. Where should diagnosis start?",
+    "answer": "Inspect the source image and extraction result before changing the prompt.",
+    "sources": [
+      "exam-domain-1",
+      "scope-aip-01-in-scope-services"
+    ],
+    "diagram": ""
+  },
+  {
+    "id": "add-004",
+    "title": "Plan vector index changes safely",
+    "skills": [
+      "1.4.1",
+      "1.4.3",
+      "1.5.2",
+      "1.5.3"
+    ],
+    "domain": 1,
+    "lead": "Treat embedding model and vector dimensions as part of the index contract.",
+    "points": "Store the embedding model, dimension, normalization rule, and source version with the index configuration. Keep document and query vectors compatible. Measure recall and latency before choosing index parameters or shard layout. For a model change, build a separate index, embed a representative corpus, compare retrieval quality, and switch traffic only after validation. Retain a rollback path until old references and caches expire.",
+    "trap": "Changing embedding dimensions in place can make vectors incompatible.",
+    "question": "A new embedding model improves query quality but changes vector dimensions. What is the safe migration?",
+    "answer": "Build and evaluate a compatible new index, then switch traffic after validation.",
+    "sources": [
+      "exam-domain-1",
+      "retrieval",
+      "knowledge-bases"
+    ],
+    "diagram": ""
+  },
+  {
+    "id": "add-005",
+    "title": "Enforce document deletion across derived data",
+    "skills": [
+      "1.4.5",
+      "3.2.3",
+      "4.3.5"
+    ],
+    "domain": 1,
+    "lead": "A source deletion must reach every stored copy and derived result.",
+    "points": "Define a deletion event with a stable source identifier and version. Remove the document from the source, ingestion queue, vector store, lexical index, cached answers, and any retained summaries that contain its content. Track completion by system and retry failed steps. Apply the approved retention policy to logs and backups.",
+    "trap": "Removing an S3 object alone may leave indexed text and cached answers.",
+    "question": "A user deletes a policy file, but RAG still returns its text. Which controls should the team inspect?",
+    "answer": "Inspect synchronization status and every index and cache that can retain derived content.",
+    "sources": [
+      "exam-domain-1",
+      "kb-sync",
+      "data-retention"
+    ],
+    "diagram": ""
+  },
+  {
+    "id": "add-006",
+    "title": "Build authorization into retrieval",
+    "skills": [
+      "1.4.2",
+      "1.4.4",
+      "1.5.6",
+      "3.2.1"
+    ],
+    "domain": 1,
+    "lead": "Derive retrieval scope from trusted identity on the server.",
+    "points": "Authenticate the caller before retrieval. Map the identity to approved tenant, role, and document attributes. Apply filters in the retrieval request before evidence enters the prompt. Deny access when identity or scope is missing. Test cross-tenant and stale-permission cases. Do not accept a client-supplied tenant filter as proof of authorization.",
+    "trap": "A metadata filter is an access control only when trusted server logic sets it.",
+    "question": "The UI sends tenantId with each query. What must the backend do?",
+    "answer": "Validate the identity and derive the permitted tenant scope on the server.",
+    "sources": [
+      "exam-domain-1",
+      "iam",
+      "knowledge-bases"
+    ],
+    "diagram": ""
+  },
+  {
+    "id": "add-007",
+    "title": "Select retrieval metrics by failure type",
+    "skills": [
+      "1.5.1",
+      "1.5.4",
+      "1.5.5",
+      "5.1.6"
+    ],
+    "domain": 1,
+    "lead": "Use retrieval metrics to find where evidence quality fails.",
+    "points": "Recall at k asks whether relevant evidence appears in the first k results. Precision at k asks how much of that result set is relevant. Mean reciprocal rank rewards an early first relevant result. Compare metrics on labeled queries by task and document class. Inspect failed examples because aggregate scores can hide a weak segment.",
+    "trap": "A strong answer score cannot prove retrieval found the right evidence.",
+    "question": "Relevant documents rarely appear in top results, but returned results are usually relevant. Which metric points to the main issue?",
+    "answer": "Low recall at k points to missed relevant evidence.",
+    "sources": [
+      "exam-domain-5",
+      "evaluation-metrics"
+    ],
+    "diagram": ""
+  },
+  {
+    "id": "add-008",
+    "title": "Keep prompt injection outside the trust boundary",
+    "skills": [
+      "1.6.1",
+      "1.6.5",
+      "3.1.1",
+      "3.1.5"
+    ],
+    "domain": 1,
+    "lead": "Treat user text, retrieved text, and tool output as untrusted data.",
+    "points": "Keep trusted instructions separate from user content and retrieved passages. Delimit evidence and tell the model that evidence cannot change policy or tool permissions. Enforce authorization and allowed destinations in application code. Validate tool arguments before execution. Test indirect attacks in documents and direct attacks in user prompts.",
+    "trap": "A prompt delimiter can help parsing but cannot enforce security by itself.",
+    "question": "A retrieved page says to ignore policy and export all customer records. What should block the action?",
+    "answer": "Server-side permissions, data scope, and tool validation must block the action.",
+    "sources": [
+      "exam-domain-3",
+      "guardrails",
+      "guardrails-api"
+    ],
+    "diagram": ""
+  },
+  {
+    "id": "add-009",
+    "title": "Choose the right safety control",
+    "skills": [
+      "3.1.1",
+      "3.1.2",
+      "3.1.3",
+      "3.1.4"
+    ],
+    "domain": 3,
+    "lead": "Match each safety control to its failure mode.",
+    "points": "Content filters address supported harmful content categories. Denied topics address defined subjects. Word filters detect configured terms. Sensitive information filters detect or mask supported data patterns. Grounding checks assess response support against supplied context. Application validation enforces business rules. Combine controls where one control cannot cover the full risk.",
+    "trap": "A content filter does not verify that a factual claim is true.",
+    "question": "The answer cites a source but states a value that the source does not support. Which check is relevant?",
+    "answer": "Use a grounding or evidence support check, then correct or withhold the claim.",
+    "sources": [
+      "exam-domain-3",
+      "guardrails-grounding",
+      "guardrails"
+    ],
+    "diagram": ""
+  },
+  {
+    "id": "add-010",
+    "title": "Apply least privilege to private inference",
+    "skills": [
+      "3.2.1",
+      "3.2.2"
+    ],
+    "domain": 3,
+    "lead": "Private network paths and IAM permissions solve different access risks.",
+    "points": "Use interface endpoints for supported private service access. Restrict endpoint security groups and endpoint policies. Grant the execution role only required model and resource actions. Check model resource and inference profile permissions where applicable. Use KMS key policies and IAM policies together for encrypted data. Test access from the actual workload role and network.",
+    "trap": "A VPC endpoint does not grant permission to invoke a model.",
+    "question": "A request reaches the Bedrock endpoint but returns AccessDenied. What should the operator inspect?",
+    "answer": "Inspect the caller role, model resource permissions, profile permissions, and relevant key policy.",
+    "sources": [
+      "exam-domain-3",
+      "iam",
+      "vpc"
+    ],
+    "diagram": ""
+  },
+  {
+    "id": "add-011",
+    "title": "Separate audit events from prompt logs",
+    "skills": [
+      "3.3.2",
+      "4.3.2"
+    ],
+    "domain": 3,
+    "lead": "Use audit records and invocation logs for different questions.",
+    "points": "CloudTrail records supported API activity and identity context. Model invocation logging can capture request and response detail when configured and supported. Set data event coverage where required. Restrict log access, redact sensitive values, and set retention. Verify that the selected model and API support the needed logging path before relying on it.",
+    "trap": "CloudTrail alone does not provide full prompt and response content for every invocation.",
+    "question": "An auditor needs the actor and API call, while an engineer needs the prompt and output. Which evidence sources fit?",
+    "answer": "Use CloudTrail for supported API and identity evidence, and configured invocation logs for supported payload detail.",
+    "sources": [
+      "exam-domain-4",
+      "logging",
+      "bedrock-cloudtrail"
+    ],
+    "diagram": ""
+  },
+  {
+    "id": "add-012",
+    "title": "Separate token cost from request quotas",
+    "skills": [
+      "4.1.1",
+      "4.1.3",
+      "4.2.3"
+    ],
+    "domain": 4,
+    "lead": "Cost, request rate, token rate, and concurrency are separate capacity limits.",
+    "points": "Estimate input and output token work by task class. Apply the current model price and mode to estimate cost. Check the selected model quota dimensions, such as request rate or token throughput, in the required Region. Measure burst traffic and retries. Size queue depth and concurrency to avoid turning throttling into unbounded work.",
+    "trap": "A budget estimate does not prove that a workload fits service quotas.",
+    "question": "A workload has low monthly cost but exceeds a token-per-minute quota at peak. What is the issue?",
+    "answer": "The workload exceeds a capacity quota even if its total cost is low.",
+    "sources": [
+      "exam-domain-4",
+      "bedrock-provisioned",
+      "batch"
+    ],
+    "diagram": ""
+  },
+  {
+    "id": "add-013",
+    "title": "Use prompt cache only for repeatable prefixes",
+    "skills": [
+      "4.1.4"
+    ],
+    "domain": 4,
+    "lead": "Prompt caching helps only when supported content repeats under service rules.",
+    "points": "Identify stable prefix content that repeats across requests. Check supported model, API, cache checkpoints, minimum token requirements, and cache lifetime. Keep changing user data after the shared prefix when the API requires a matching prefix. Measure cache read and write tokens and total latency. Do not use a cached answer when freshness or authorization can change.",
+    "trap": "Prompt caching and semantic answer caching have different safety and freshness risks.",
+    "question": "A long prompt changes near its start on every call. Why may prompt cache savings stay low?",
+    "answer": "The shared prefix may not meet the cache match requirements.",
+    "sources": [
+      "exam-domain-4",
+      "prompt-cache"
+    ],
+    "diagram": ""
+  },
+  {
+    "id": "add-014",
+    "title": "Design timeout budgets across the request path",
+    "skills": [
+      "2.4.3",
+      "2.5.1",
+      "4.2.1",
+      "5.2.2"
+    ],
+    "domain": 2,
+    "lead": "Set each timeout inside one end-to-end request budget.",
+    "points": "Allocate time for authentication, retrieval, reranking, model response, and tools. Set each component timeout below the caller deadline. Bound retries by both attempt count and total time. Use backoff with jitter for retryable transient errors. Return a clear partial or timeout state when the deadline expires.",
+    "trap": "Retries can worsen latency and throttling when they exceed the caller budget.",
+    "question": "A caller times out while the model continues work and retries repeat the request. What design change helps?",
+    "answer": "Propagate a deadline and stop downstream work when the budget expires.",
+    "sources": [
+      "exam-domain-2",
+      "bedrock-errors",
+      "response-stream"
+    ],
+    "diagram": ""
+  },
+  {
+    "id": "add-015",
+    "title": "Preserve streaming through every layer",
+    "skills": [
+      "2.4.2",
+      "2.5.1"
+    ],
+    "domain": 2,
+    "lead": "A streaming model API helps only when every layer forwards the stream.",
+    "points": "Select a supported streaming operation for the chosen model. Configure the gateway and integration for streaming. Forward chunks without buffering in the backend and client. Distinguish partial text from a completed response. Handle disconnects, stop reasons, and errors after the first chunk. Test time to first token and total response time.",
+    "trap": "Streaming does not guarantee lower total generation time.",
+    "question": "The model emits chunks, but the browser shows one final block. Where is the likely defect?",
+    "answer": "Inspect intermediaries for response buffering or unsupported transfer mode.",
+    "sources": [
+      "exam-domain-2",
+      "api-streaming",
+      "response-stream"
+    ],
+    "diagram": ""
+  },
+  {
+    "id": "add-016",
+    "title": "Evaluate judge reliability before scaling",
+    "skills": [
+      "5.1.2",
+      "5.1.5",
+      "5.1.8"
+    ],
+    "domain": 5,
+    "lead": "A model judge needs a tested rubric and human calibration.",
+    "points": "Write criteria with score anchors and examples. Compare judge scores with expert labels on representative cases. Test position bias by reversing pair order. Hide model identity where it can bias judgment. Track disagreement and judge version. Use deterministic checks for schemas and exact business rules.",
+    "trap": "A fluent judge explanation does not prove valid scoring.",
+    "question": "A judge favors the first answer in pairwise tests. What change tests this bias?",
+    "answer": "Reverse the answer order and compare the decisions.",
+    "sources": [
+      "exam-domain-5",
+      "evaluation",
+      "evaluation-metrics"
+    ],
+    "diagram": ""
+  },
+  {
+    "id": "add-017",
+    "title": "Choose a deployment mode by traffic shape",
+    "skills": [
+      "2.2.1",
+      "2.2.2",
+      "4.1.3",
+      "4.2.3"
+    ],
+    "domain": 2,
+    "lead": "Match deployment mode to request timing, volume, and capacity needs.",
+    "points": "Use on-demand inference for supported variable traffic when shared capacity fits. Assess Provisioned Throughput for supported models when predictable capacity and sustained demand justify it. Use batch inference for suitable offline workloads. Use SageMaker endpoints when the model or hosting control requires that path. Compare cold starts, capacity, quotas, and cost with measured traffic.",
+    "trap": "A deployment mode cannot compensate for an unsupported model or Region.",
+    "question": "A nightly document job has no interactive deadline. Which mode should the team assess?",
+    "answer": "Assess a supported batch inference path before interactive capacity.",
+    "sources": [
+      "exam-domain-2",
+      "bedrock-provisioned",
+      "batch",
+      "sagemaker-deploy"
+    ],
+    "diagram": ""
+  },
+  {
+    "id": "add-018",
+    "title": "Separate agent identity from user approval",
+    "skills": [
+      "2.1.3",
+      "2.1.5",
+      "2.1.6",
+      "3.2.1"
+    ],
+    "domain": 2,
+    "lead": "An approval step must authorize one exact action.",
+    "points": "Show the user the action, target, parameters, evidence, and expiry before approval. Bind approval to the authenticated actor and action payload. Revalidate authorization and business rules at execution time. Use idempotency for retries and record the outcome. Stop if the approved parameters change.",
+    "trap": "A broad approval for an agent does not approve every future side effect.",
+    "question": "A refund amount changes after the user approves. Can the agent execute it?",
+    "answer": "No. Request approval for the changed action.",
+    "sources": [
+      "exam-domain-2",
+      "agents",
+      "iam"
+    ],
+    "diagram": ""
+  },
+  {
+    "id": "add-019",
+    "title": "Distinguish retrieval systems by source need",
+    "skills": [
+      "1.4.1",
+      "1.4.4",
+      "2.5.3"
+    ],
+    "domain": 1,
+    "lead": "Choose a search or assistant service by its data and control needs.",
+    "points": "Use a Knowledge Base when the application needs managed RAG over connected sources and supported retrieval controls. Use OpenSearch when the application needs direct control of search indexes and query behavior. Use Kendra or Q Business when their supported enterprise search or assistant functions fit the requirement. Use a system of record for exact transactional values. Verify current source connectors and access behavior.",
+    "trap": "A managed assistant or search index is not automatically the system of record.",
+    "question": "A chatbot must report a current account balance. Which source should supply the value?",
+    "answer": "Use the authorized account system of record.",
+    "sources": [
+      "exam-domain-1",
+      "knowledge-bases",
+      "scope-aip-01-in-scope-services"
+    ],
+    "diagram": ""
+  },
+  {
+    "id": "add-020",
+    "title": "Trace an answer to its evidence path",
+    "skills": [
+      "4.3.1",
+      "4.3.4",
+      "4.3.5",
+      "5.2.4"
+    ],
+    "domain": 4,
+    "lead": "Trace retrieval and generation as separate stages of one request.",
+    "points": "Propagate a request identifier through gateway, retrieval, reranking, model, and tool calls. Record prompt and model versions, filters, document identifiers, latency, token use, stop reason, and result status. Redact sensitive content. Replay the same versioned test input. Decide whether failure came from missing source data, filtering, ranking, prompt construction, or unsupported generation.",
+    "trap": "A correct final answer alone does not identify which stage failed.",
+    "question": "The model cites an obsolete policy despite current source content. Which stages should the trace expose?",
+    "answer": "Expose ingestion version, retrieval filters, ranked evidence, prompt inputs, and model version.",
+    "sources": [
+      "exam-domain-4",
+      "logging",
+      "knowledge-bases",
+      "evaluation"
+    ],
+    "diagram": ""
+  }
+]

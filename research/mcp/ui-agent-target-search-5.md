@@ -1,0 +1,138 @@
+{
+  "search_results": [
+    {
+      "rank_order": 1,
+      "url": "https://docs.aws.amazon.com/bedrock/latest/userguide/kb-test-retrieve-generate.html",
+      "title": "Knowledge base guardrail",
+      "context": "Safety controls applied to the input and generated LLM response in a knowledge base query, but not to retrieved references",
+      "recommended_sections": [
+        "Query a knowledge base and generate responses based off the retrieved data"
+      ],
+      "sections": [
+        "Query a knowledge base and generate responses based off the retrieved data"
+      ],
+      "metadata": null
+    },
+    {
+      "rank_order": 2,
+      "url": "https://docs.aws.amazon.com/bedrock/latest/userguide/kb-test-retrieve.html",
+      "title": "Retrieve",
+      "context": "Retrieves relevant passages or text excerpts given an input query. This API is similar to the Query API. However, by default, the Query API only returns excerpt passages of up to 100 token words. With the Retrieve API, you can retrieve longer passages of up to 200 token words and up to 100 semantically relevant passages. This doesn't include question-answer or FAQ type responses from your index. The passages are text excerpts that can be semantically extracted from multiple documents and…",
+      "recommended_sections": [
+        "Query a knowledge base and retrieve data"
+      ],
+      "sections": [
+        "Query a knowledge base and retrieve data"
+      ],
+      "metadata": null
+    },
+    {
+      "rank_order": 3,
+      "url": "https://docs.aws.amazon.com/fsx/latest/ONTAPGuide/tutorial-build-rag-with-bedrock.html",
+      "title": "Amazon S3 access point",
+      "context": "Named network endpoint attached to a data source such as a bucket or FSx volume that enforces distinct permissions and network controls for S3 object operations",
+      "recommended_sections": [
+        "To query using the console"
+      ],
+      "sections": null,
+      "metadata": null
+    },
+    {
+      "rank_order": 4,
+      "url": "https://docs.aws.amazon.com/bedrock/latest/userguide/knowledge-base-test.html",
+      "title": "Retrieve",
+      "context": "Retrieves relevant passages or text excerpts given an input query. This API is similar to the Query API. However, by default, the Query API only returns excerpt passages of up to 100 token words. With the Retrieve API, you can retrieve longer passages of up to 200 token words and up to 100 semantically relevant passages. This doesn't include question-answer or FAQ type responses from your index. The passages are text excerpts that can be semantically extracted from multiple documents and…",
+      "recommended_sections": [
+        "Test your knowledge base with queries and responses"
+      ],
+      "sections": [
+        "Test your knowledge base with queries and responses"
+      ],
+      "metadata": null
+    },
+    {
+      "rank_order": 5,
+      "url": "https://docs.aws.amazon.com/bedrock/latest/userguide/kb-test-self-managed.html",
+      "title": "Query a knowledge base and generate responses based off the retrieved data",
+      "context": "Procedure for querying an Amazon Bedrock knowledge base and generating model responses with citations using the RetrieveAndGenerate API or console",
+      "recommended_sections": [
+        "Test your customer-managed knowledge base"
+      ],
+      "sections": null,
+      "metadata": null
+    },
+    {
+      "rank_order": 6,
+      "url": "https://docs.aws.amazon.com/bedrock/latest/userguide/kb-multimodal-test-and-query.html",
+      "title": "test your knowledge base from the console",
+      "context": "Procedure to query a multimodal knowledge base using the Amazon Bedrock console test interface",
+      "recommended_sections": [
+        "Testing and querying multimodal knowledge bases"
+      ],
+      "sections": null,
+      "metadata": null
+    },
+    {
+      "rank_order": 7,
+      "url": "https://docs.aws.amazon.com/bedrock/latest/userguide/kb-managed-test-config.html",
+      "title": "Configure and customize queries for managed knowledge bases",
+      "context": "A procedure for adjusting retrieval settings such as result count, metadata filters, guardrails, and reranking for Amazon Bedrock managed knowledge base queries",
+      "recommended_sections": [
+        "Configure and customize queries for managed knowledge bases"
+      ],
+      "sections": null,
+      "metadata": null
+    },
+    {
+      "rank_order": 8,
+      "url": "https://docs.aws.amazon.com/bedrock/latest/userguide/kb-managed-test.html",
+      "title": "managed knowledge base",
+      "context": "A knowledge base type where Amazon Bedrock manages the underlying data ingestion, indexing, storage, and retrieval infrastructure with advanced capabilities including multi-modal data ingestion and agentic retrieval.",
+      "recommended_sections": [
+        "Test your managed knowledge base with queries and responses"
+      ],
+      "sections": [
+        "Test your managed knowledge base with queries and responses"
+      ],
+      "metadata": null
+    }
+  ],
+  "facets": null,
+  "query_id": "bdeee707-41b1-43c7-95f3-a1ca6c742008",
+  "metadata": {
+    "discovered_services": null,
+    "related_tasks": null,
+    "relationships": [
+      {
+        "relation": "dependsOn",
+        "to": "Deploy your knowledge base for your AI application",
+        "to_description": "Procedure to make an Amazon Bedrock knowledge base available for application use via Retrieve or RetrieveAndGenerate API calls or agent association",
+        "from": "Test your knowledge base with queries and responses"
+      },
+      {
+        "relation": "references",
+        "to": "AgenticRetrieveStream",
+        "to_description": "API operation that uses a foundation model to decompose complex queries into sub-queries, iteratively retrieves relevant information, and returns deduplicated source chunks with trace events.",
+        "from": "Test your knowledge base with queries and responses"
+      },
+      {
+        "relation": "references",
+        "to": "RetrieveAndGenerate",
+        "to_description": "Amazon Bedrock agent runtime API operation that retrieves and generates responses from a knowledge base, subject to cross-region inference when used with a structured data store",
+        "from": "Test your knowledge base with queries and responses"
+      },
+      {
+        "relation": "references",
+        "to": "inference profile ARN",
+        "to_description": "An ARN format for a Bedrock cross-region inference profile that includes the AWS account ID and a geographic prefix on the model ID",
+        "from": "Test your knowledge base with queries and responses"
+      },
+      {
+        "relation": "references",
+        "to": "Retrieve",
+        "to_description": "Retrieves relevant passages or text excerpts given an input query. This API is similar to the Query API. However, by default, the Query API only returns excerpt passages of up to 100 token words. With the Retrieve API, you can retrieve longer passages of up to 200 token words and up to 100 semantically relevant passages. This doesn't include question-answer or FAQ type responses from your index. The passages are text excerpts that can be semantically extracted from multiple documents and…",
+        "from": "Test your knowledge base with queries and responses"
+      }
+    ]
+  }
+}

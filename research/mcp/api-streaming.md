@@ -1,0 +1,1 @@
+Error executing tool read_documentation: Requested https://docs.aws.amazon.com/apigateway/latest/developerguide/response-streaming.html; served https://docs.aws.amazon.com/apigateway/latest/developerguide/. https://docs.aws.amazon.com/apigateway/latest/developerguide/ could not be read: Page failed to be simplified from HTML. Use search_documentation.

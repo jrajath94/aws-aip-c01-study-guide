@@ -1,0 +1,331 @@
+{
+  "search_results": [
+    {
+      "rank_order": 1,
+      "url": "https://docs.aws.amazon.com/bedrock/latest/userguide/rag-eval-service-roles.html",
+      "title": "knowledge base evaluation results S3 bucket",
+      "context": "S3 bucket where Amazon Bedrock writes the output results of a knowledge base evaluation job.",
+      "recommended_sections": [
+        "Service role requirements for knowledge base evaluation jobs"
+      ],
+      "sections": null,
+      "metadata": null
+    },
+    {
+      "rank_order": 2,
+      "url": "https://docs.aws.amazon.com/bedrock/latest/APIReference/API_EvaluationRagConfigSummary.html",
+      "title": "bedrockKnowledgeBaseIdentifiers",
+      "context": "The ARNs of Knowledge Base resources used in an evaluation job where Amazon Bedrock invokes the Knowledge Base on behalf of the user",
+      "recommended_sections": [
+        "Contents"
+      ],
+      "sections": null,
+      "metadata": null
+    },
+    {
+      "rank_order": 3,
+      "url": "https://docs.aws.amazon.com/bedrock/latest/APIReference/API_EvaluationInferenceConfigSummary.html",
+      "title": "Amazon Bedrock Knowledge Base evaluation job",
+      "context": "An evaluation job in Amazon Bedrock that assesses the performance of Knowledge Base or RAG-based retrieval configurations",
+      "recommended_sections": [
+        "Contents"
+      ],
+      "sections": null,
+      "metadata": {
+        "additional_urls": [
+          {
+            "url": "https://docs.aws.amazon.com/bedrock/latest/APIReference/API_EvaluationRagConfigSummary.html",
+            "section_title": "EvaluationRagConfigSummary",
+            "section_anchor": "API_EvaluationRagConfigSummary"
+          }
+        ]
+      }
+    },
+    {
+      "rank_order": 4,
+      "url": "https://docs.aws.amazon.com/bedrock/latest/userguide/additional-capabilities.html",
+      "title": "Amazon Bedrock model and knowledge base evaluation",
+      "context": "Amazon Bedrock capability for evaluating the performance and effectiveness of models and knowledge bases",
+      "recommended_sections": [
+        "Additional capabilities"
+      ],
+      "sections": null,
+      "metadata": null
+    },
+    {
+      "rank_order": 5,
+      "url": "https://docs.aws.amazon.com/bedrock/latest/userguide/foundation-models-reference.html",
+      "title": "Amazon Bedrock Console",
+      "context": "The web-based interface for experimenting with and testing Amazon Bedrock foundation models, including scaled-up prompt evaluation.",
+      "recommended_sections": [
+        "Using models with Bedrock"
+      ],
+      "sections": null,
+      "metadata": {
+        "additional_urls": [
+          {
+            "url": "https://docs.aws.amazon.com/bedrock/latest/userguide/detailed-getting-started.html",
+            "section_title": "Detailed getting started using console and API",
+            "section_anchor": "detailed-getting-started"
+          },
+          {
+            "url": "https://docs.aws.amazon.com/bedrock/latest/userguide/flows-ex.html",
+            "section_title": "Try example flows",
+            "section_anchor": "flows-ex"
+          }
+        ]
+      }
+    },
+    {
+      "rank_order": 6,
+      "url": "https://docs.aws.amazon.com/bedrock/latest/userguide/evaluation.html",
+      "title": "Amazon Bedrock knowledge base evaluation",
+      "context": "An evaluation that measures the correctness of a knowledge base in retrieving information and generating responses",
+      "recommended_sections": [
+        "Evaluate the performance of Amazon Bedrock resources"
+      ],
+      "sections": null,
+      "metadata": null
+    },
+    {
+      "rank_order": 7,
+      "url": "https://docs.aws.amazon.com/bedrock/index.html",
+      "title": "Amazon Bedrock evaluation",
+      "context": "Amazon Bedrock capability for evaluating the performance and effectiveness of models and knowledge bases",
+      "recommended_sections": null,
+      "sections": null,
+      "metadata": null
+    },
+    {
+      "rank_order": 8,
+      "url": "https://docs.aws.amazon.com/bedrock/latest/userguide/rag-evaluation-security-data.html",
+      "title": "knowledge base evaluation job",
+      "context": "A model evaluation job type in Amazon Bedrock that evaluates retrieval-augmented generation (RAG) pipelines using a knowledge base",
+      "recommended_sections": [
+        "Data encryption for knowledge base evaluation jobs"
+      ],
+      "sections": null,
+      "metadata": {
+        "additional_urls": [
+          {
+            "url": "https://docs.aws.amazon.com/bedrock/latest/userguide/rag-eval-service-roles.html",
+            "section_title": "Service role requirements for knowledge base evaluation jobs",
+            "section_anchor": "rag-eval-service-roles"
+          },
+          {
+            "url": "https://docs.aws.amazon.com/bedrock/latest/userguide/knowledge-base-evaluation-stop.html",
+            "section_title": "Stop a RAG evaluation job in Amazon Bedrock",
+            "section_anchor": "knowledge-base-evaluation-stop"
+          }
+        ]
+      }
+    },
+    {
+      "rank_order": 9,
+      "url": "https://docs.aws.amazon.com/connect/latest/adminguide/amazon-connect-release-notes.html",
+      "title": "Amazon Bedrock Knowledge Base connectors",
+      "context": "Pre-built integrations in Amazon Bedrock Knowledge Bases that connect to external content repositories such as Adobe Experience Manager, Confluence, SharePoint, and OneDrive.",
+      "recommended_sections": [
+        "Support for multiple knowledge bases and integrates with your Amazon Bedrock Knowledge Bases"
+      ],
+      "sections": null,
+      "metadata": null
+    },
+    {
+      "rank_order": 10,
+      "url": "https://docs.aws.amazon.com/bedrock/latest/userguide/kb-test-retrieve.html",
+      "title": "KnowledgeBaseRetrievalResult",
+      "context": "Amazon Bedrock API object representing a single retrieved source chunk including content, metadata, location, and relevancy score",
+      "recommended_sections": [
+        "Query a knowledge base and retrieve data"
+      ],
+      "sections": null,
+      "metadata": {
+        "additional_urls": [
+          {
+            "url": "https://docs.aws.amazon.com/bedrock/latest/APIReference/API_agent-runtime_KnowledgeBaseRetrievalResult.html",
+            "section_title": null,
+            "section_anchor": null
+          },
+          {
+            "url": "https://docs.aws.amazon.com/bedrock/latest/userguide/kb-test-kendra.html",
+            "section_title": "Query a knowledge base connected to an Amazon Kendra GenAI index",
+            "section_anchor": "kb-test-kendra"
+          }
+        ]
+      }
+    }
+  ],
+  "facets": null,
+  "query_id": "035ad886-42cc-4fcc-9054-b7ea84518450",
+  "metadata": {
+    "discovered_services": [
+      {
+        "name": "Amazon Bedrock Knowledge Bases (RAG)",
+        "description": "AWS service that enables agents to retrieve relevant information using semantic search and Retrieval Augmented Generation from structured and unstructured data sources."
+      },
+      {
+        "name": "AWS CloudFormation",
+        "description": "CloudFormation"
+      },
+      {
+        "name": "Amazon S3",
+        "description": "Simple Storage Service (S3)"
+      },
+      {
+        "name": "AWS IAM",
+        "description": "Identity & Access Management (IAM)"
+      }
+    ],
+    "related_tasks": [
+      {
+        "name": "View runtime metrics",
+        "description": "Access managed knowledge base runtime metrics in the CloudWatch console, AWS CLI, or CloudWatch API under the AWS/Bedrock/KnowledgeBases namespace",
+        "urls": [
+          {
+            "url_name": "/bedrock/latest/userguide/kb-managed-observability.html#kb-managed-observability-runtime-metrics-view",
+            "url_description": "How to view Amazon Bedrock managed knowledge base runtime metrics in the CloudWatch console, AWS CLI, or CloudWatch API under the AWS/Bedrock/KnowledgeBases namespace."
+          }
+        ]
+      },
+      {
+        "name": "Observability for managed knowledge bases",
+        "description": "Monitor the health and usage of a managed knowledge base using runtime metrics, ingestion logs, and distributed traces",
+        "urls": [
+          {
+            "url_name": "/bedrock/latest/userguide/kb-managed-observability.html#kb-managed-observability",
+            "url_description": "Overview of observability features for Amazon Bedrock managed knowledge bases including CloudWatch runtime metrics, ingestion logs, and distributed traces for monitoring health and usage"
+          },
+          {
+            "url_name": "/bedrock/latest/userguide/kb-managed-observability.html#kb-managed-observability-agentcore",
+            "url_description": "How Amazon Bedrock automatically integrates managed knowledge base runtime metrics and traces into the Amazon Bedrock AgentCore observability experience with no additional configuration."
+          }
+        ]
+      },
+      {
+        "name": "evaluate Amazon Bedrock model and knowledge base performance",
+        "description": "Use Amazon Bedrock Evaluations to assess the performance and effectiveness of models and knowledge bases",
+        "urls": [
+          {
+            "url_name": "/bedrock/latest/userguide/evaluation.html#evaluation",
+            "url_description": "How to use Amazon Bedrock evaluations to measure the performance and effectiveness of Amazon Bedrock models, knowledge bases, and RAG sources using automatic, human, and LLM-judge evaluation methods"
+          }
+        ]
+      },
+      {
+        "name": "create a knowledge base evaluation job",
+        "description": "A procedure to set up and launch an evaluation job for an Amazon Bedrock knowledge base by configuring a service role and required permissions",
+        "urls": [
+          {
+            "url_name": "/bedrock/latest/userguide/rag-eval-service-roles.html#rag-eval-service-roles",
+            "url_description": "IAM service role requirements for Amazon Bedrock knowledge base evaluation jobs, including required S3 access policies, Bedrock API permissions for Retrieve and RetrieveAndGenerate actions, and trust policy configuration for the Amazon Bedrock service principal"
+          }
+        ]
+      },
+      {
+        "name": "create a custom service role",
+        "description": "Create an IAM role with a custom trust policy for use with Amazon Bedrock or SageMaker AI model evaluation jobs",
+        "urls": [
+          {
+            "url_name": "/bedrock/latest/userguide/rag-eval-service-roles.html#rag-eval-service-roles",
+            "url_description": "IAM service role requirements for Amazon Bedrock knowledge base evaluation jobs, including required S3 access policies, Bedrock API permissions for Retrieve and RetrieveAndGenerate actions, and trust policy configuration for the Amazon Bedrock service principal"
+          },
+          {
+            "url_name": "/bedrock/latest/userguide/automatic-service-roles.html#automatic-service-roles",
+            "url_description": "IAM service role requirements for Amazon Bedrock automatic model evaluation jobs, including required S3 permissions, Bedrock model invocation actions, and trust policy configuration for the bedrock.amazonaws.com service principal"
+          }
+        ]
+      },
+      {
+        "name": "Stop a RAG evaluation job",
+        "description": "Halt a currently processing RAG evaluation job in Amazon Bedrock to allow reconfiguration of evaluation settings and metrics",
+        "urls": [
+          {
+            "url_name": "/bedrock/latest/userguide/knowledge-base-evaluation-stop.html#knowledge-base-evaluation-stop",
+            "url_description": "How to stop a Retrieval Augmented Generation (RAG) knowledge base evaluation job in Amazon Bedrock using the AWS CLI stop-evaluation-job command"
+          }
+        ]
+      },
+      {
+        "name": "Query a knowledge base connected to an Amazon Kendra GenAI index",
+        "description": "Send a Retrieve request to an Amazon Bedrock knowledge base backed by an Amazon Kendra GenAI index to return relevant text from data sources",
+        "urls": [
+          {
+            "url_name": "/bedrock/latest/userguide/kb-test-kendra.html#kb-test-kendra",
+            "url_description": "Query a knowledge base connected to an Amazon Kendra GenAI index using the Amazon Bedrock Retrieve API and understand the additional Kendra metadata fields such as x-amz-kendra-score-confidence and DocumentAttributes returned in the response"
+          },
+          {
+            "url_name": "/bedrock/latest/userguide/kb-test-self-managed.html#kb-test-self-managed",
+            "url_description": "How to test an Amazon Bedrock customer-managed knowledge base using query, retrieval, and response generation methods including RetrieveAndGenerate, structured data queries, Amazon Kendra GenAI index integration, Amazon Neptune Analytics graph integration, and reasoning model configuration"
+          }
+        ]
+      },
+      {
+        "name": "Query a knowledge base connected to an Amazon Neptune Analytics graph",
+        "description": "Send a Retrieve request to an Agents for Amazon Bedrock runtime endpoint to retrieve relevant text from a knowledge base backed by an Amazon Neptune Analytics graph",
+        "urls": [
+          {
+            "url_name": "/bedrock/latest/userguide/kb-test-self-managed.html#kb-test-self-managed",
+            "url_description": "How to test an Amazon Bedrock customer-managed knowledge base using query, retrieval, and response generation methods including RetrieveAndGenerate, structured data queries, Amazon Kendra GenAI index integration, Amazon Neptune Analytics graph integration, and reasoning model configuration"
+          },
+          {
+            "url_name": "/bedrock/latest/userguide/kb-test-neptune.html#kb-test-neptune",
+            "url_description": "How to send a Retrieve request to an Amazon Bedrock knowledge base backed by an Amazon Neptune Analytics graph and interpret the Neptune-specific response fields including score, source URI, and DocumentAttributes"
+          }
+        ]
+      },
+      {
+        "name": "connect multiple knowledge bases to Amazon Connect AI agents",
+        "description": "Configure Amazon Connect AI agents to use multiple Amazon Bedrock Knowledge Bases for parallel querying and comprehensive responses.",
+        "urls": [
+          {
+            "url_name": "/connect/latest/adminguide/amazon-connect-release-notes.html#support-for-multiple-knowledge-bases-and-integrates-with-your-amazon-bedrock-knowledge-bases-nov25",
+            "url_description": "How Amazon Connect Customer supports connecting multiple Amazon Bedrock Knowledge Bases directly to Amazon Connect AI agents for parallel querying across data sources including Confluence, SharePoint, and OneDrive connectors."
+          }
+        ]
+      },
+      {
+        "name": "Evaluate the performance of Amazon Bedrock resources",
+        "description": "A procedure for assessing the performance and effectiveness of Amazon Bedrock models and knowledge bases using automatic, human, or LLM-judge evaluation methods",
+        "urls": [
+          {
+            "url_name": "/bedrock/latest/userguide/additional-capabilities.html#additional-capabilities",
+            "url_description": "How to discover and use Amazon Bedrock additional capabilities such as prompt optimization, Data Automation for unstructured data, Knowledge Bases for RAG, model evaluation, Prompt Management, AI agents, Marketplace foundation models, Flows for generative AI workflows, and session management APIs"
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "relation": "relatesTo",
+        "to": "precomputedRagSourceIdentifiers",
+        "to_description": "Labels identifying RAG sources used in a Knowledge Base evaluation job where the user provides their own inference response data",
+        "from": "bedrockKnowledgeBaseIdentifiers"
+      },
+      {
+        "relation": "relatesTo",
+        "to": "knowledge base evaluation job",
+        "to_description": "A model evaluation job type in Amazon Bedrock that evaluates retrieval-augmented generation (RAG) pipelines using a knowledge base",
+        "from": "knowledge base evaluation job service role"
+      },
+      {
+        "relation": "relatesTo",
+        "to": "automated role creation in the console",
+        "to_description": "Amazon Bedrock console feature that automatically creates a service role tied to a single knowledge base instance with permissions for both Retrieve and RetrieveAndGenerate API actions.",
+        "from": "knowledge base evaluation job service role"
+      },
+      {
+        "relation": "relatesTo",
+        "to": "retrieval augmented generation (RAG)",
+        "to_description": "A technique that enables agents to ground LLM responses in factual, up-to-date information retrieved from organizational data sources, reducing hallucinations without requiring model retraining.",
+        "from": "Amazon Bedrock model and knowledge base evaluation"
+      },
+      {
+        "relation": "relatesTo",
+        "to": "metricNames",
+        "to_description": "An array of built-in or custom metric name strings used to configure an evaluation job",
+        "from": "knowledge base evaluation job"
+      }
+    ]
+  }
+}

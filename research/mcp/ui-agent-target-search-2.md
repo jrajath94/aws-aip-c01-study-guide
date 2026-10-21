@@ -1,0 +1,136 @@
+{
+  "search_results": [
+    {
+      "rank_order": 1,
+      "url": "https://docs.aws.amazon.com/bedrock/latest/userguide/getting-started-console.html",
+      "title": "Amazon Bedrock console playgrounds",
+      "context": "Interactive console environments in Amazon Bedrock for submitting prompts and generating text or image responses without writing code",
+      "recommended_sections": [
+        "Explore the text playground",
+        "Explore the image playground"
+      ],
+      "sections": [
+        "Get started in the Amazon Bedrock console",
+        "Explore the text playground",
+        "Explore the image playground"
+      ],
+      "metadata": null
+    },
+    {
+      "rank_order": 2,
+      "url": "https://docs.aws.amazon.com/nova/latest/userguide/getting-started-console.html",
+      "title": "Amazon Bedrock image playground",
+      "context": "A console playground in Amazon Bedrock for submitting text prompts and receiving generated image responses from a foundation model",
+      "recommended_sections": [
+        "Getting started with Amazon Nova in the Amazon Bedrock console",
+        "Explore the image playground"
+      ],
+      "sections": null,
+      "metadata": null
+    },
+    {
+      "rank_order": 3,
+      "url": "https://docs.aws.amazon.com/bedrock/latest/userguide/prompt-management-test.html",
+      "title": "Converse",
+      "context": "Sends messages to the specified Amazon Bedrock model. Converse provides a consistent interface that works with all models that support messages. This allows you to write code once and use it with different models. If a model has unique inference parameters, you can also pass those unique parameters to the model. Amazon Bedrock doesn't store any text, images, or documents that you provide as content. The data is only used to generate the response. You can submit a prompt by including it in the…",
+      "recommended_sections": null,
+      "sections": [
+        "Test a prompt using Prompt management"
+      ],
+      "metadata": null
+    },
+    {
+      "rank_order": 4,
+      "url": "https://docs.aws.amazon.com/bedrock/latest/userguide/managed-entitlements-using-models.html",
+      "title": "InvokeModel",
+      "context": "Invokes the specified Amazon Bedrock model to run inference using the prompt and inference parameters provided in the request body. You use model inference to generate text, images, and embeddings. For example code, see Invoke model code examples in the Amazon Bedrock User Guide . This operation requires permission for the bedrock:InvokeModel action. To deny all inference access to resources that you specify in the modelId field, you need to deny access to the bedrock:InvokeModel and…",
+      "recommended_sections": [
+        "To invoke a third-party Bedrock model with a granted license"
+      ],
+      "sections": null,
+      "metadata": null
+    },
+    {
+      "rank_order": 5,
+      "url": "https://docs.aws.amazon.com/sagemaker-unified-studio/latest/userguide/getting-started-use-amazon-bedrock-ide.html",
+      "title": "Amazon Bedrock chat playground",
+      "context": "Interactive environment in Amazon Bedrock in SageMaker Unified Studio where users can send text and image prompts to a model and receive responses",
+      "recommended_sections": [
+        "Chat with a model in the chat playground"
+      ],
+      "sections": null,
+      "metadata": null
+    },
+    {
+      "rank_order": 6,
+      "url": "https://docs.aws.amazon.com/bedrock/latest/userguide/playgrounds.html",
+      "title": "Amazon Bedrock console playgrounds",
+      "context": "Interactive console environments in Amazon Bedrock for submitting prompts and generating text or image responses without writing code",
+      "recommended_sections": [
+        "Generate responses in the console using playgrounds"
+      ],
+      "sections": null,
+      "metadata": null
+    },
+    {
+      "rank_order": 7,
+      "url": "https://docs.aws.amazon.com/bedrock/latest/userguide/getting-started-api-ex-cli.html",
+      "title": "Submit a text prompt to a model and generate a text response with InvokeModel",
+      "context": "Run a Python script using the InvokeModel operation to send a text prompt to an Amazon Bedrock model and receive a generated text response",
+      "recommended_sections": [
+        "Submit a text prompt to a model and generate a text response with InvokeModel"
+      ],
+      "sections": null,
+      "metadata": null
+    },
+    {
+      "rank_order": 8,
+      "url": "https://docs.aws.amazon.com/nova/latest/userguide/getting-started.html",
+      "title": "Converse",
+      "context": "Sends messages to the specified Amazon Bedrock model. Converse provides a consistent interface that works with all models that support messages. This allows you to write code once and use it with different models. If a model has unique inference parameters, you can also pass those unique parameters to the model. Amazon Bedrock doesn't store any text, images, or documents that you provide as content. The data is only used to generate the response. You can submit a prompt by including it in the…",
+      "recommended_sections": null,
+      "sections": [
+        "Getting started with Amazon Nova"
+      ],
+      "metadata": null
+    }
+  ],
+  "facets": null,
+  "query_id": "203907ee-b246-449f-8721-8d71a075ca73",
+  "metadata": {
+    "discovered_services": null,
+    "related_tasks": null,
+    "relationships": [
+      {
+        "relation": "references",
+        "to": "Claude Fable 5.1 model ID",
+        "to_description": "Programmatic identifier used to invoke Claude Fable 5.1 via Amazon Bedrock APIs",
+        "from": "Converse"
+      },
+      {
+        "relation": "references",
+        "to": "Command R",
+        "to_description": "Cohere's scalable large language model optimized for retrieval-augmented generation and tool use in enterprise applications with a 128K context window",
+        "from": "Converse"
+      },
+      {
+        "relation": "hasChild",
+        "to": "suspend fun converse(): String",
+        "to_description": "Send a text message to Amazon Nova using the Bedrock Converse API and return the model's text response",
+        "from": "Converse"
+      },
+      {
+        "relation": "hasChild",
+        "to": "send text message to Anthropic Claude using Converse API async",
+        "to_description": "Send a text message to Anthropic Claude using the Amazon Bedrock Converse API with the asynchronous Java SDK client and retrieve the response via CompletableFuture",
+        "from": "Converse"
+      },
+      {
+        "relation": "references",
+        "to": "AI21 Labs foundation model",
+        "to_description": "Third-party foundation models from AI21 Labs available for inference in Amazon Bedrock",
+        "from": "Converse"
+      }
+    ]
+  }
+}
