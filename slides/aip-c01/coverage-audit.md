@@ -1,6 +1,6 @@
 # AIP-C01 deck coverage topic index
 
-This file is a topic index only. The question IDs come from the repo question bank, which the user excluded as a knowledge source. No slide fact comes from the repo. Each row names the slide that covers a question topic. Slide facts must match official AWS documentation. Slide IDs match `project/slides/<id>.html`.
+This file is a topic index only. The item numbers come from the question bank, which the user excluded as a knowledge source. The bank IDs are in `quiz-id-map.tsv`. No slide fact comes from the repo. Each row names the slide that covers a question topic. Slide facts must match official AWS documentation. Slide IDs match `project/slides/<id>.html`.
 
 ## Result
 
@@ -11,133 +11,133 @@ This file is a topic index only. The question IDs come from the repo question ba
 
 ## Domain 1 (61 questions)
 
-| Question | Slide | Question | Slide |
+| Item | Slide | Item | Slide |
 |---|---|---|---|
-| q-d1-001 | d1-kb | q-d1-033 | d1-hybrid-rerank |
-| q-d1-002 | d1-solution-design | q-d1-034 | d1-embedding-dimensions |
-| q-d1-003 | d1-solution-design | q-d1-035 | d1-query-rewrite |
-| q-d1-004 | d1-behavior-knowledge | q-d1-036 | d1-chunking-change |
-| q-d1-005 | d1-constraints | q-d1-037 | d1-chunking-change |
-| q-d1-006 | d1-constraints | q-d1-038 | d1-embedding-dimensions |
-| q-d1-007 | d1-t12-resilience | q-d1-039 | d1-mcp-tools |
-| q-d1-008 | d1-cross-region | q-d1-040 | d1-t16-prompts |
-| q-d1-009 | d1-routing-mechanisms | q-d1-041 | d2-prompt-mgmt |
-| q-d1-010 | d4-capacity | q-d1-042 | d1-flows-vs-sfn |
-| q-d1-011 | d1-cross-region | q-d1-043 | d1-structured-output |
-| q-d1-012 | d1-customize-ladder | q-d1-044 | d1-model-lifecycle |
-| q-d1-013 | d1-model-lifecycle | q-d1-201 | d1-chunking-tables |
-| q-d1-014 | d1-t12-resilience | q-d1-202 | d1-embedding-dimensions |
-| q-d1-015 | d1-data-tools | q-d1-203 | d1-hybrid-rerank |
-| q-d1-016 | d1-data-tools | q-d1-204 | d1-query-rewrite |
-| q-d1-017 | d1-service-distractors | q-d1-205 | d1-behavior-knowledge |
-| q-d1-018 | d1-service-distractors | q-d1-206 | d1-vector-scale |
-| q-d1-019 | d1-data-tools | q-d1-207 | d1-chunking-tables |
-| q-d1-020 | d1-invoke-converse | q-d1-208 | d1-customize-ladder |
-| q-d1-021 | d1-kb | q-d1-209 | d1-data-tools |
-| q-d1-022 | d1-tenant-isolation | q-d1-210 | d1-tenant-isolation |
-| q-d1-023 | d1-service-distractors | q-d1-211 | d1-routing-mechanisms |
-| q-d1-024 | d1-t14-vector | q-d1-212 | d1-t12-resilience |
-| q-d1-025 | d1-kb-sources | q-d1-213 | d1-solution-design |
-| q-d1-026 | d1-citations | q-d1-214 | d1-kb-sources |
-| q-d1-027 | d1-t14-vector | q-d1-215 | d1-cross-region |
-| q-d1-028 | d1-tenant-isolation | q-d1-216 | d1-citations |
-| q-d1-029 | d1-tenant-isolation | q-d1-217 | d1-kb |
-| q-d1-030 | d1-chunking-change | | |
-| q-d1-031 | d1-chunking-tables | | |
-| q-d1-032 | d1-chunking-tables | | |
+| item 1 | d1-kb | item 27 | d1-hybrid-rerank |
+| item 2 | d1-solution-design | item 28 | d1-embedding-dimensions |
+| item 7 | d1-solution-design | item 29 | d1-query-rewrite |
+| item 35 | d1-behavior-knowledge | item 42 | d1-chunking-change |
+| item 36 | d1-constraints | item 43 | d1-chunking-change |
+| item 8 | d1-constraints | item 30 | d1-embedding-dimensions |
+| item 9 | d1-t12-resilience | item 31 | d1-mcp-tools |
+| item 10 | d1-cross-region | item 32 | d1-t16-prompts |
+| item 37 | d1-routing-mechanisms | item 33 | d2-prompt-mgmt |
+| item 11 | d4-capacity | item 34 | d1-flows-vs-sfn |
+| item 38 | d1-cross-region | item 6 | d1-structured-output |
+| item 12 | d1-customize-ladder | item 44 | d1-model-lifecycle |
+| item 13 | d1-model-lifecycle | item 151 | d1-chunking-tables |
+| item 39 | d1-t12-resilience | item 141 | d1-embedding-dimensions |
+| item 14 | d1-data-tools | item 152 | d1-hybrid-rerank |
+| item 15 | d1-data-tools | item 142 | d1-query-rewrite |
+| item 16 | d1-service-distractors | item 143 | d1-behavior-knowledge |
+| item 17 | d1-service-distractors | item 153 | d1-vector-scale |
+| item 18 | d1-data-tools | item 144 | d1-chunking-tables |
+| item 3 | d1-invoke-converse | item 154 | d1-customize-ladder |
+| item 19 | d1-kb | item 145 | d1-data-tools |
+| item 20 | d1-tenant-isolation | item 146 | d1-tenant-isolation |
+| item 4 | d1-service-distractors | item 155 | d1-routing-mechanisms |
+| item 21 | d1-t14-vector | item 147 | d1-t12-resilience |
+| item 22 | d1-kb-sources | item 148 | d1-solution-design |
+| item 23 | d1-citations | item 149 | d1-kb-sources |
+| item 24 | d1-t14-vector | item 156 | d1-cross-region |
+| item 5 | d1-tenant-isolation | item 150 | d1-citations |
+| item 40 | d1-tenant-isolation | item 194 | d1-kb |
+| item 41 | d1-chunking-change | | |
+| item 25 | d1-chunking-tables | | |
+| item 26 | d1-chunking-tables | | |
 
 ## Domain 2 (51 questions)
 
-| Question | Slide | Question | Slide |
+| Item | Slide | Item | Slide |
 |---|---|---|---|
-| q-d2-001 | d2-agent-aliases | q-d2-019 | d2-endpoints |
-| q-d2-002 | d2-action-group-auth | q-d2-020 | d2-sfn-events |
-| q-d2-003 | d2-multi-agent | q-d2-021 | d2-onprem |
-| q-d2-004 | d2-agent-memory | q-d2-022 | d2-gateway-access |
-| q-d2-005 | d2-human-approval | q-d2-023 | d5-cicd |
-| q-d2-006 | d2-lambda-limits | q-d2-024 | d2-gateway-access |
-| q-d2-007 | d2-agent-frameworks | q-d2-025 | d3-audit-lineage |
-| q-d2-008 | d2-mcp-hosting | q-d2-026 | d2-converse-embeddings |
-| q-d2-009 | d2-agentcore | q-d2-027 | d2-converse-embeddings |
-| q-d2-010 | d2-agent-frameworks | q-d2-028 | d2-converse-embeddings |
-| q-d2-011 | d2-agent-safeguards | q-d2-029 | d2-streaming-paths |
-| q-d2-012 | d2-agent-tracing | q-d2-030 | d4-capacity |
-| q-d2-013 | d2-spiky-batch | q-d2-031 | d2-applyguardrail |
-| q-d2-014 | d2-spiky-batch | q-d2-032 | d2-converse-embeddings |
-| q-d2-015 | d2-batch | q-d2-033 | d2-apps-q |
-| q-d2-016 | d2-endpoints | q-d2-034 | d1-data-tools |
-| q-d2-017 | d1-routing-mechanisms | q-d2-035 | d2-apps-q |
-| q-d2-018 | d2-endpoints | q-d2-036 | d2-apps-q |
-| q-d2-201 | d2-multi-agent | q-d2-209 | d2-apps-q |
-| q-d2-202 | d2-agentcore | q-d2-210 | d1-flows-vs-sfn |
-| q-d2-203 | d2-mcp-hosting | q-d2-211 | d2-gateway-access |
-| q-d2-204 | d2-converse-embeddings | q-d2-212 | d2-batch |
-| q-d2-205 | d2-agent-tracing | q-d2-213 | d2-action-group-auth |
-| q-d2-206 | d2-human-approval | q-d2-214 | d1-flows-vs-sfn |
-| q-d2-207 | d2-agent-memory | q-d2-215 | d2-human-approval |
-| q-d2-208 | d2-streaming-paths | | |
+| item 45 | d2-agent-aliases | item 77 | d2-endpoints |
+| item 46 | d2-action-group-auth | item 60 | d2-sfn-events |
+| item 47 | d2-multi-agent | item 61 | d2-onprem |
+| item 48 | d2-agent-memory | item 62 | d2-gateway-access |
+| item 49 | d2-human-approval | item 63 | d5-cicd |
+| item 50 | d2-lambda-limits | item 64 | d2-gateway-access |
+| item 51 | d2-agent-frameworks | item 78 | d3-audit-lineage |
+| item 52 | d2-mcp-hosting | item 65 | d2-converse-embeddings |
+| item 53 | d2-agentcore | item 66 | d2-converse-embeddings |
+| item 74 | d2-agent-frameworks | item 67 | d2-converse-embeddings |
+| item 54 | d2-agent-safeguards | item 68 | d2-streaming-paths |
+| item 75 | d2-agent-tracing | item 79 | d4-capacity |
+| item 55 | d2-spiky-batch | item 69 | d2-applyguardrail |
+| item 76 | d2-spiky-batch | item 70 | d2-converse-embeddings |
+| item 56 | d2-batch | item 71 | d2-apps-q |
+| item 57 | d2-endpoints | item 72 | d1-data-tools |
+| item 58 | d1-routing-mechanisms | item 73 | d2-apps-q |
+| item 59 | d2-endpoints | item 80 | d2-apps-q |
+| item 166 | d2-multi-agent | item 162 | d2-apps-q |
+| item 157 | d2-agentcore | item 163 | d1-flows-vs-sfn |
+| item 167 | d2-mcp-hosting | item 164 | d2-gateway-access |
+| item 158 | d2-converse-embeddings | item 165 | d2-batch |
+| item 159 | d2-agent-tracing | item 169 | d2-action-group-auth |
+| item 168 | d2-human-approval | item 198 | d1-flows-vs-sfn |
+| item 160 | d2-agent-memory | item 195 | d2-human-approval |
+| item 161 | d2-streaming-paths | | |
 
 ## Domain 3 (41 questions)
 
-| Question | Slide | Question | Slide |
+| Item | Slide | Item | Slide |
 |---|---|---|---|
-| q-d3-001 | d3-denied-topics | q-d3-021 | d3-audit-lineage |
-| q-d3-002 | d3-sensitive | q-d3-022 | d3-continuous-fairness |
-| q-d3-003 | d3-word-filters | q-d3-023 | d3-continuous-fairness |
-| q-d3-004 | d3-prompt-attacks | q-d3-024 | d3-transparency-fairness |
-| q-d3-005 | d3-grounding | q-d3-025 | d5-judge |
-| q-d3-006 | d3-grounding | q-d3-026 | d3-transparency-fairness |
-| q-d3-007 | d3-defense | q-d3-027 | d3-transparency-fairness |
-| q-d3-008 | d3-guardrails | q-d3-028 | d3-rai |
-| q-d3-009 | d3-governance | q-d3-201 | d3-guardrails |
-| q-d3-010 | d3-limits | q-d3-202 | d3-guardrails |
-| q-d3-011 | d3-privatelink | q-d3-203 | d3-grounding |
-| q-d3-012 | d3-pii-pipeline | q-d3-204 | d3-org-governance |
-| q-d3-013 | d3-pii-pipeline | q-d3-205 | d3-privatelink |
-| q-d3-014 | d3-pii-pipeline | q-d3-206 | d3-pii-pipeline |
-| q-d3-015 | d3-logging-privacy | q-d3-207 | d3-logging-privacy |
-| q-d3-016 | d3-sensitive | q-d3-208 | d3-scope-cross-region |
-| q-d3-017 | d3-governance | q-d3-209 | d3-defense |
-| q-d3-018 | d3-data | q-d3-210 | d3-continuous-fairness |
-| q-d3-019 | d3-lake-model-cards | q-d3-211 | d3-prompt-attacks |
-| q-d3-020 | d3-audit-lineage | q-d3-212 | d3-detect-mode |
-| | | q-d3-213 | d3-logging-privacy |
+| item 81 | d3-denied-topics | item 98 | d3-audit-lineage |
+| item 82 | d3-sensitive | item 106 | d3-continuous-fairness |
+| item 83 | d3-word-filters | item 107 | d3-continuous-fairness |
+| item 84 | d3-prompt-attacks | item 99 | d3-transparency-fairness |
+| item 85 | d3-grounding | item 100 | d5-judge |
+| item 86 | d3-grounding | item 101 | d3-transparency-fairness |
+| item 87 | d3-defense | item 102 | d3-transparency-fairness |
+| item 88 | d3-guardrails | item 108 | d3-rai |
+| item 103 | d3-governance | item 177 | d3-guardrails |
+| item 104 | d3-limits | item 178 | d3-guardrails |
+| item 89 | d3-privatelink | item 170 | d3-grounding |
+| item 90 | d3-pii-pipeline | item 179 | d3-org-governance |
+| item 91 | d3-pii-pipeline | item 171 | d3-privatelink |
+| item 92 | d3-pii-pipeline | item 172 | d3-pii-pipeline |
+| item 93 | d3-logging-privacy | item 173 | d3-logging-privacy |
+| item 94 | d3-sensitive | item 180 | d3-scope-cross-region |
+| item 105 | d3-governance | item 174 | d3-defense |
+| item 95 | d3-data | item 175 | d3-continuous-fairness |
+| item 96 | d3-lake-model-cards | item 176 | d3-prompt-attacks |
+| item 97 | d3-audit-lineage | item 197 | d3-detect-mode |
+| | | item 199 | d3-logging-privacy |
 
 ## Domain 4 (25 questions)
 
-| Question | Slide | Question | Slide |
+| Item | Slide | Item | Slide |
 |---|---|---|---|
-| q-d4-001 | d4-prompt-cache | q-d4-010 | d4-sampling |
-| q-d4-002 | d4-capacity | q-d4-011 | d4-sampling |
-| q-d4-003 | d4-model-right | q-d4-012 | d4-retrieval-latency |
-| q-d4-004 | d4-batch-tiers | q-d4-013 | d4-attribution-anomaly |
-| q-d4-005 | d4-cost-levers | q-d4-014 | d4-attribution-anomaly |
-| q-d4-006 | d4-semantic-cache | q-d4-015 | d4-tracing-monitor |
-| q-d4-007 | d4-cost-levers | q-d4-016 | d4-tracing-monitor |
-| q-d4-008 | d4-sampling | q-d4-017 | d4-tracing-monitor |
-| q-d4-009 | d4-latency | q-d4-201 | d4-capacity |
-| q-d4-202 | d4-prompt-cache | q-d4-205 | d4-attribution-anomaly |
-| q-d4-203 | d4-model-right | q-d4-206 | d4-semantic-cache |
-| q-d4-204 | d1-vector-scale | q-d4-207 | d4-throttle |
-| | | q-d4-208 | d4-capacity |
+| item 110 | d4-prompt-cache | item 118 | d4-sampling |
+| item 111 | d4-capacity | item 109 | d4-sampling |
+| item 112 | d4-model-right | item 124 | d4-retrieval-latency |
+| item 113 | d4-batch-tiers | item 119 | d4-attribution-anomaly |
+| item 114 | d4-cost-levers | item 120 | d4-attribution-anomaly |
+| item 115 | d4-semantic-cache | item 121 | d4-tracing-monitor |
+| item 123 | d4-cost-levers | item 122 | d4-tracing-monitor |
+| item 116 | d4-sampling | item 125 | d4-tracing-monitor |
+| item 117 | d4-latency | item 185 | d4-capacity |
+| item 181 | d4-prompt-cache | item 184 | d4-attribution-anomaly |
+| item 182 | d4-model-right | item 186 | d4-semantic-cache |
+| item 183 | d1-vector-scale | item 193 | d4-throttle |
+| | | item 200 | d4-capacity |
 
 ## Domain 5 (22 questions)
 
-| Question | Slide | Question | Slide |
+| Item | Slide | Item | Slide |
 |---|---|---|---|
-| q-d5-001 | d5-methods-budget | q-d5-010 | d5-debug-table |
-| q-d5-002 | d5-judge | q-d5-011 | d5-debug-table |
-| q-d5-003 | d5-subjective | q-d5-012 | d5-debug-table |
-| q-d5-004 | d5-rag-metrics | q-d5-013 | d5-debug-table |
-| q-d5-005 | d5-regression-cicd | q-d5-014 | d5-debug-table |
-| q-d5-006 | d5-subjective | q-d5-015 | d5-debug-table |
-| q-d5-007 | d5-methods-budget | q-d5-201 | d5-rag-metrics |
-| q-d5-008 | d5-subjective | q-d5-202 | d5-rag-metrics |
-| q-d5-009 | d5-debug-table | q-d5-203 | d5-judge-calibration |
-| | | q-d5-204 | d5-methods-budget |
-| | | q-d5-205 | d5-methods-budget |
-| | | q-d5-206 | d5-debug-table |
-| | | q-d5-207 | d5-methods-budget |
+| item 127 | d5-methods-budget | item 126 | d5-debug-table |
+| item 128 | d5-judge | item 135 | d5-debug-table |
+| item 129 | d5-subjective | item 136 | d5-debug-table |
+| item 130 | d5-rag-metrics | item 139 | d5-debug-table |
+| item 131 | d5-regression-cicd | item 137 | d5-debug-table |
+| item 132 | d5-subjective | item 140 | d5-debug-table |
+| item 138 | d5-methods-budget | item 191 | d5-rag-metrics |
+| item 133 | d5-subjective | item 187 | d5-rag-metrics |
+| item 134 | d5-debug-table | item 188 | d5-judge-calibration |
+| | | item 192 | d5-methods-budget |
+| | | item 189 | d5-methods-budget |
+| | | item 190 | d5-debug-table |
+| | | item 196 | d5-methods-budget |
 
 ## Not covered by a question in the bank
 
