@@ -16,7 +16,7 @@ with ZipFile(ROOT/'.build/AIP-C01-Study-Book.original.docx') as a,ZipFile(ROOT/'
  def text(z):
   root=etree.fromstring(z.read('word/document.xml'));return root.xpath('//w:t/text()',namespaces={'w':'http://schemas.openxmlformats.org/wordprocessingml/2006/main'})
  assert text(a)==text(b),'DOCX text changed'
- assert len([n for n in b.namelist() if n.startswith('word/fonts/')])==2
- report['DOCX']={'paragraphTextPreserved':True,'embeddedFonts':2,'editable':True}
+ assert len([n for n in b.namelist() if n.startswith('word/fonts/')])==4
+ report['DOCX']={'paragraphTextPreserved':True,'embeddedFonts':4,'editable':True}
 report['scope']='Text, page geometry, and package integrity checks. Visual review is recorded separately.'
 (ROOT/'audits/export-integrity.json').write_text(json.dumps(report,indent=2));print(json.dumps(report,indent=2))

@@ -9,45 +9,74 @@ from reportlab.lib import colors
 from pypdf import PdfReader,PdfWriter,Transformation
 from docx import Document
 from docx.shared import Inches,Pt,RGBColor
+from docx.enum.text import WD_ALIGN_PARAGRAPH
+from reportlab.lib.enums import TA_JUSTIFY,TA_LEFT
+from learning_format import clean_text,question_stem,question_topic,text_runs,rationale_blocks
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 ROOT=Path(__file__).resolve().parent.parent
 OUT=ROOT/'output';OUT.mkdir(exist_ok=True)
 BUILD=ROOT/'.build';BUILD.mkdir(exist_ok=True)
 C=json.loads((ROOT/'course/treatise-data.json').read_text())
-for n in ('Regular','Bold'):pdfmetrics.registerFont(TTFont('Anthropic'+n,str(ROOT/f'assets/typography/AnthropicSans-{n}.ttf')))
-pdfmetrics.registerFontFamily('AnthropicRegular',normal='AnthropicRegular',bold='AnthropicBold',italic='AnthropicRegular',boldItalic='AnthropicBold')
+for n in ('Regular','Bold','Italic','BoldItalic'):
+ pdfmetrics.registerFont(TTFont('Anthropic'+n,str(ROOT/f'assets/typography/AnthropicSans-{n}.ttf')))
+pdfmetrics.registerFontFamily('AnthropicRegular',normal='AnthropicRegular',bold='AnthropicBold',italic='AnthropicItalic',boldItalic='AnthropicBoldItalic')
 styles=getSampleStyleSheet()
-styles.add(ParagraphStyle(name='BodyCompact',fontName='AnthropicRegular',fontSize=9.5,leading=11.8,spaceAfter=3,textColor=colors.HexColor('#161b22'),splitLongWords=True))
-styles.add(ParagraphStyle(name='H1Compact',fontName='AnthropicBold',fontSize=16,leading=18,spaceBefore=10,spaceAfter=7,keepWithNext=True))
-styles.add(ParagraphStyle(name='H2Compact',fontName='AnthropicBold',fontSize=12,leading=14,spaceBefore=8,spaceAfter=5,keepWithNext=True))
-styles.add(ParagraphStyle(name='H3Compact',fontName='AnthropicBold',fontSize=10,leading=12,spaceBefore=5,spaceAfter=3,keepWithNext=True))
-styles.add(ParagraphStyle(name='CaptionCompact',fontName='AnthropicRegular',fontSize=7.5,leading=9,spaceAfter=5,textColor=colors.HexColor('#444444')))
+NAVY='#123B58';TEAL='#0F645A';RUST='#913D24';TEXT='#20252B'
+styles.add(ParagraphStyle(name='BodyCompact',fontName='AnthropicRegular',fontSize=10.5,leading=14,spaceAfter=6,alignment=TA_JUSTIFY,textColor=colors.HexColor(TEXT),splitLongWords=True,hyphenationLang='en_US',allowWidows=0,allowOrphans=0))
+for name,size,lead,before,after in [('H1Compact',20,24,17,10),('H2Compact',14,18,12,7),('H3Compact',11.5,15,8,5)]:
+ styles.add(ParagraphStyle(name=name,fontName='AnthropicBold',fontSize=size,leading=lead,spaceBefore=before,spaceAfter=after,textColor=colors.HexColor(NAVY),keepWithNext=True))
+styles.add(ParagraphStyle(name='TitleStudy',parent=styles['H1Compact'],fontSize=24,leading=28,textColor=colors.black,spaceBefore=0,spaceAfter=12))
+styles.add(ParagraphStyle(name='CaptionCompact',fontName='AnthropicRegular',fontSize=8.3,leading=11,spaceAfter=6,textColor=colors.HexColor('#505A64'),splitLongWords=True))
+for name,col,bold,italic in [('Remember',TEAL,True,False),('Caution',RUST,False,True),('Limit',RUST,False,True),('Scenario',NAVY,False,False),('Answer',TEAL,True,False),('Option',TEXT,False,False),('QuestionMeta','#505A64',False,True)]:
+ styles.add(ParagraphStyle(name=name,parent=styles['BodyCompact'],keepWithNext=name in ['Scenario','QuestionMeta','Answer'],textColor=colors.HexColor(col),fontName='Anthropic'+('BoldItalic' if bold and italic else 'Bold' if bold else 'Italic' if italic else 'Regular'),spaceBefore=4 if name in ['Remember','Answer','Scenario'] else 0))
+styles['Option'].leftIndent=16;styles['Option'].firstLineIndent=-16
+styles.add(ParagraphStyle(name='Procedure',parent=styles['BodyCompact'],leftIndent=14,firstLineIndent=-14))
 D=Document();sec=D.sections[0];sec.page_width=Inches(5.5);sec.page_height=Inches(8.5)
-sec.top_margin=sec.bottom_margin=sec.left_margin=sec.right_margin=Inches(20/72)
+sec.top_margin=sec.left_margin=sec.right_margin=Inches(24/72);sec.bottom_margin=Inches(26/72)
 sec.header_distance=sec.footer_distance=Inches(.12)
-for name in ('Normal','Body Text','Caption','Heading 1','Heading 2','Heading 3','List Number'):
- s=D.styles[name];s.font.name='Anthropic Sans';s.font.size=Pt(9.5)
- s.paragraph_format.space_after=Pt(4);s.paragraph_format.line_spacing=1.12
-for name,size in [('Heading 1',16),('Heading 2',12),('Heading 3',10)]:
- D.styles[name].font.size=Pt(size);D.styles[name].font.color.rgb=RGBColor.from_string('161B22')
- D.styles[name].paragraph_format.keep_with_next=True
+for name in ('Normal','Body Text','Caption','Title','Heading 1','Heading 2','Heading 3','List Number'):
+ st=D.styles[name];st.font.name='Anthropic Sans';st.font.size=Pt(10.5)
+ st.paragraph_format.space_after=Pt(6);st.paragraph_format.line_spacing=1.25
+ st.paragraph_format.widow_control=True
+for name,size in [('Heading 1',20),('Heading 2',14),('Heading 3',11.5)]:
+ D.styles[name].font.size=Pt(size);D.styles[name].font.color.rgb=RGBColor.from_string(NAVY[1:]);D.styles[name].paragraph_format.keep_with_next=True
+D.styles['Normal'].paragraph_format.alignment=WD_ALIGN_PARAGRAPH.JUSTIFY
+for heading in ['Title','Heading 1','Heading 2','Heading 3']:D.styles[heading].paragraph_format.alignment=WD_ALIGN_PARAGRAPH.LEFT
+D.styles['Title'].font.size=Pt(24);D.styles['Title'].font.color.rgb=RGBColor(0,0,0)
+D.styles['Caption'].font.size=Pt(8.3)
+settings=D.settings.element
+el=OxmlElement('w:autoHyphenation');el.set(qn('w:val'),'true');settings.append(el)
 for prop in ('author','last_modified_by','title','subject','keywords','comments','category'):setattr(D.core_properties,prop,'')
 footer=sec.footer.paragraphs[0];footer.alignment=2
 field=OxmlElement('w:fldSimple');field.set(qn('w:instr'),'PAGE');footer._p.append(field)
 flows=[];practice=[];stats={'chapterIds':[],'skillIds':[],'labIds':[],'figureIds':[],'quizIds':[]}
-def clean(s):
- s=html.unescape(str(s))
- return s.replace('—','. ').replace('–',' to ').replace(';',',').replace('\u00a0',' ')
-def p(s,style='BodyCompact',target=None,word=True):
+def clean(s):return clean_text(s)
+def p(s,style='BodyCompact',target=None,word=True,keep=False):
  target=flows if target is None else target;s=clean(s)
- target.append(Paragraph(escape(s),styles[style]))
+ emphasis=style not in ['CaptionCompact','QuestionMeta','TitleStudy'] and not style.startswith('H')
+ pieces=text_runs(s,emphasis)
+ if style=='Option' and re.match(r'^[A-E]\. ',s):pieces=[(s[:3],True)]+text_runs(s[3:],True)
+ markup=''.join('<b>'+escape(t)+'</b>' if strong else escape(t) for t,strong in pieces)
+ target.append(Paragraph(markup,styles[style]))
  if word:
-  ws={'H1Compact':'Heading 1','H2Compact':'Heading 2','H3Compact':'Heading 3','CaptionCompact':'Caption'}.get(style,'Normal')
-  D.add_paragraph(s,ws)
+  ws={'H1Compact':'Heading 1','H2Compact':'Heading 2','H3Compact':'Heading 3','CaptionCompact':'Caption','TitleStudy':'Title'}.get(style,'Normal')
+  para=D.add_paragraph(style=ws)
+  if style!='TitleStudy' and not style.startswith('H'):para.alignment=WD_ALIGN_PARAGRAPH.JUSTIFY
+  if keep or style in ['QuestionMeta','Scenario','Answer']:para.paragraph_format.keep_with_next=True
+  if style in ['Option','Procedure']:
+   indent=16 if style=='Option' else 14;para.paragraph_format.left_indent=Pt(indent);para.paragraph_format.first_line_indent=Pt(-indent)
+  fullbold=style in ['Remember','Answer'];italic=style in ['Caution','Limit','QuestionMeta']
+  col={'Remember':TEAL,'Answer':TEAL,'Scenario':NAVY,'Caution':RUST,'Limit':RUST,'QuestionMeta':'#505A64'}.get(style)
+  for text,strong in pieces:
+   run=para.add_run(text);run.bold=fullbold or strong;run.italic=italic
+   if col:run.font.color.rgb=RGBColor.from_string(col[1:])
+   elif strong:run.font.color.rgb=RGBColor.from_string(NAVY[1:])
+def prose(text,target=None,word=True,style='BodyCompact'):
+ for block,role in rationale_blocks(text):p(block,style if style!='BodyCompact' else role,target,word)
 def h(s,level=2,**kw):p(s,f'H{level}Compact',**kw)
 def enum(items,target=None,word=True):
- for i,t in enumerate(items,1):p(f'{i}. {t}',target=target,word=word)
+ for i,t in enumerate(items,1):p(f'{i}. {t}','Procedure',target=target,word=word)
 source_entries={}
 def sources(ids,target=None,word=True):
  refs=[]
@@ -65,19 +94,24 @@ def picture(f):
  if not path.exists():return
  from PIL import Image as PILImage
  with PILImage.open(path) as im:w,hh=im.size
- scale=min(356/w,145/hh,1)
+ scale=min(348/w,210/hh,1)
+ h(f['title'],3)
  flows.append(Image(str(path),w*scale,hh*scale))
- p(f['title'],'CaptionCompact')
- p(f.get('explanation',f.get('practicalLesson','')),'CaptionCompact')
+ picture_run=D.add_picture(str(path),width=Inches(w*scale/72),height=Inches(hh*scale/72))
+ D.paragraphs[-1].paragraph_format.keep_with_next=True
+ p(f.get('explanation',f.get('practicalLesson','')))
  if f.get('readSteps'):enum(f['readSteps'])
- p(f.get('limit',''),'CaptionCompact')
+ p(f.get('limit',''),'Limit')
  p(f['sourceUrl'],'CaptionCompact')
- D.add_picture(str(path),width=Inches(w*scale/72),height=Inches(hh*scale/72))
  stats['figureIds'].append(f['id'])
-h('AIP-C01 study and practice',1)
+p('AIP-C01 study and practice','TitleStudy')
 p('Reader: A candidate who needs a first-principles route through the official exam scope.')
 p('Read the concepts. Predict the result. Explain the mechanism. Then answer a new scenario without notes.')
 p('This book covers all 98 published skills. AWS states that its exam guide is not a comprehensive list of exam content. No book guarantees a pass.')
+h('How to use the visual cues')
+p('Remember. Teal text marks a decision rule or the answer to retain.','Remember')
+p('Check the limit. Rust italics mark conditions, uncertainty, and common mistakes.','Limit')
+p('Bold terms identify the concept that controls the decision. Read the explanation before you memorize the answer.')
 h('Use the two-day route')
 enum(['Read the prerequisite primer. Explain each term in your own words.','Read Chapters 1 to 12. Trace each request from input to result.','Read Chapters 13 to 24. Compare each control with its failure case.','Answer the mastery questions before you read their answers.','Take the timed mock in the HTML course. Explain each rejected choice.','Review every weak skill. Use the separate practice booklet for more scenarios.'])
 p('The route is a study recommendation, not an AWS readiness threshold. Do not replace sleep with a complete reread of the source archive.')
@@ -113,12 +147,12 @@ dossier_by={d['skill']:d for d in C['dossiers']};printed=set()
 figure_map={'agent-build-time':11,'agent-runtime':11,'rag-ingestion':5,'rag-runtime':4,'saga-orchestration':12,'supervisor-pattern':11,'genbi-managed':14,'genbi-custom':14,'agent-infrastructure-ops':12,'app-builder-dashboard':14,'app-builder-dashboard-vpc':17,'text-app':3,'text-app-vpc':17,'agent-app':11,'agent-app-vpc':17,'mcp-server-app':12,'agent-builder-deploy':13}
 for ix,ch in enumerate(C['deep'],1):
  h(f'Chapter {ix}. {ch["title"]}',1);stats['chapterIds'].append(ch['id'])
- p(ch['idea'])
+ p(ch['idea'],'Remember')
  for section in ch['sections']:
   h(section['title'],3)
   for text in section['paragraphs']:p(text)
- h('Invariant',3);p(ch['invariant'])
- h('Controlled experiment',3);enum(ch['experiment']['steps']);p(ch['experiment']['prediction']);p(ch['experiment']['interpretation'])
+ h('Invariant',3);p(ch['invariant'],'Remember')
+ h('Controlled experiment',3);enum(ch['experiment']['steps']);p(ch['experiment']['prediction'],'Limit');p(ch['experiment']['interpretation'])
  h('Transfer check',3);p(ch['transferQuestion']);p(ch['transferAnswer'])
  for f in C.get('figures',[]):
   # Use topic keywords rather than random chapter placement.
@@ -140,16 +174,16 @@ for ix,ch in enumerate(C['deep'],1):
 h('All 98 skill cases',1)
 p('Each case adds a decision boundary, causal trace, failure test, and transfer check. These are authored study scenarios.')
 for d in C['dossiers']:
- stats['skillIds'].append(d['skill']);h(d['skill']+' '+d['title'])
+ stats['skillIds'].append(d['skill']);h(d['title'])
  p(d['principle']);p(d['mechanism'])
  h('Decision',3)
- for k in ('when','choice','reason','reject'):p(d['decision'][k])
+ for k in ('when','choice','reason','reject'):p(d['decision'][k], 'Remember' if k=='choice' else 'Caution' if k=='reject' else 'BodyCompact')
  h('Causal trace',3);enum(d['workedTrace'])
  h('Failure test',3)
  for k in ('symptom','check','fix'):p(d['failure'][k])
  h('Experiment',3)
- for k in ('change','observe','limit'):p(d['experiment'][k])
- p(d['masteryQuestion']);p(d['masteryAnswer']);sources(d.get('sources',[]))
+ for k in ('change','observe','limit'):p(d['experiment'][k], 'Limit' if k=='limit' else 'BodyCompact')
+ h('Test your understanding',3);p(d['masteryQuestion'],'Scenario');p(d['masteryAnswer'],'Remember');sources(d.get('sources',[]))
 h('Decision reference',1)
 for s in C['core']:
  if s.get('kind') in ('diagram','official-figure'):continue
@@ -157,7 +191,7 @@ for s in C['core']:
  for t in s.get('points',[]):p(t)
  for key in ('trap','why','decision'):
   v=s.get(key)
-  if isinstance(v,str):p(v)
+  if isinstance(v,str):p(v,'Caution' if key=='trap' else 'BodyCompact')
  sources(s.get('sources',[]))
 h('Architecture reference',1)
 for key,dia in C['diagrams'].items():
@@ -167,7 +201,7 @@ for key,dia in C['diagrams'].items():
   cells.append(Paragraph(escape(str(i)+'. '+clean(name))+ '<br/>'+escape(clean(body)),styles['BodyCompact']))
  rows=[cells[i:i+2] for i in range(0,len(cells),2)]
  if len(rows[-1])<2:rows[-1].append('')
- t=Table(rows,colWidths=[178,178],hAlign='LEFT');t.setStyle(TableStyle([('VALIGN',(0,0),(-1,-1),'TOP'),('GRID',(0,0),(-1,-1),.4,colors.HexColor('#999999')),('LEFTPADDING',(0,0),(-1,-1),5),('RIGHTPADDING',(0,0),(-1,-1),5)]));flows.append(t)
+ t=Table(rows,colWidths=[174,174],hAlign='LEFT');t.setStyle(TableStyle([('VALIGN',(0,0),(-1,-1),'TOP'),('GRID',(0,0),(-1,-1),.4,colors.HexColor('#999999')),('LEFTPADDING',(0,0),(-1,-1),5),('RIGHTPADDING',(0,0),(-1,-1),5)]));flows.append(t)
  table=D.add_table(rows=0, cols=2)
  table.style='Table Grid'
  for ri,row in enumerate(rows):
@@ -175,7 +209,12 @@ for key,dia in C['diagrams'].items():
   for j,v in enumerate(row):
    si=ri*2+j
    if si<len(dia['steps']):
-    name,body=dia['steps'][si];cellsw[j].text=str(si+1)+'. '+clean(name)+'\n'+clean(body)
+    name,body=dia['steps'][si];cell=cellsw[j];cell.text=''
+    cp=cell.paragraphs[0];cp.paragraph_format.keep_with_next=True
+    cr=cp.add_run(str(si+1)+'. '+clean(name));cr.bold=True;cr.font.color.rgb=RGBColor.from_string(NAVY[1:])
+    bp=cell.add_paragraph();bp.alignment=WD_ALIGN_PARAGRAPH.JUSTIFY
+    for text,strong in text_runs(body):
+     br=bp.add_run(text);br.bold=strong
  for row in table.rows:row._tr.get_or_add_trPr().append(OxmlElement('w:cantSplit'))
  if dia.get('relation'):p(dia['relation'])
  p('Numbers identify components or stages. Follow the stated relationship. Independent controls do not form a strict sequence.','CaptionCompact')
@@ -203,24 +242,35 @@ D.add_paragraph('All 250 extracted items receive a semantic review. Read each co
 for n,q in enumerate(C['quizzes'],1):
  if n==1:h('Professional practice scenarios',2,target=practice)
  if n==201:h('Prerequisite practice',2,target=practice)
- stats['quizIds'].append(q['id']);h(f'Q{n}. '+q['title'],3,target=practice)
- for i,opt in enumerate(q['options']):p(chr(65+i)+'. '+opt['text'],target=practice)
- p(('Unsettled source key. ' if q.get('keyUnsettled') and not q.get('reviewCorrection',{}).get('correctOptionIndices') else 'Practice key. ')+', '.join(chr(65+i) for i,o in enumerate(q['options']) if o['correct']),target=practice)
+ stats['quizIds'].append(q['id']);question_start=len(practice)
+ h(f'Question {n}',2,target=practice)
+ p(question_topic(q),'QuestionMeta',target=practice)
+ p(question_stem(q['title']),'Scenario',target=practice)
+ count=sum(o['correct'] for o in q['options'])
+ unresolved=q.get('keyUnsettled') and not q.get('reviewCorrection',{}).get('correctOptionIndices')
+ p('Discussion case. Compare the available choices with the documented limits.' if unresolved else 'Choose one answer.' if count==1 else f'Choose {count} answers.','QuestionMeta',target=practice)
+ for i,opt in enumerate(q['options']):p(chr(65+i)+'. '+re.sub(r'^[A-E][.)]\s*','',opt['text']),'Option',target=practice,keep=i<len(q['options'])-1)
+ practice[question_start:]=[KeepTogether(practice[question_start:])]
+ h('Answer and explanation',3,target=practice)
+ p('No reliable answer key is established for this source question.' if unresolved else 'Reviewed choice '+', '.join(chr(65+i) for i,o in enumerate(q['options']) if o['correct'])+'.','Caution' if unresolved else 'Answer',target=practice)
  if q.get('reviewCorrection'):
-  r=q['reviewCorrection'];p('Reviewed correction. '+r.get('correctedAnswer',r.get('correction','')),target=practice)
-  p(r.get('reason',''),target=practice);sources(r.get('sources',[]),target=practice)
-  p('The original rationale remains in the HTML reference archive. This reviewed explanation supersedes its disputed claim.',target=practice)
+  r=q['reviewCorrection'];prose(r.get('correctedAnswer',r.get('correction','')),target=practice)
+  reason=r.get('reason','')
+  if reason and not reason.startswith(('Narrow absolute','Remove the unsupported universal')):
+   h('Important limit',3,target=practice);p(reason,'Limit',target=practice)
+  sources(r.get('sources',[]),target=practice)
  else:
-  if q.get('reviewStatus')!='supported' and q.get('reviewNote'):p('Review note. '+q['reviewNote'],target=practice)
-  p(q['answer'],target=practice)
-  for i,o in enumerate(q['options']):
-   if o.get('reason'):p(chr(65+i)+'. '+o['reason'],target=practice)
- if q.get('corrections'):p('Review correction categories: '+', '.join(q['corrections']),target=practice)
+  if q.get('reviewStatus')!='supported' and q.get('reviewNote'):p(q['reviewNote'],'Limit',target=practice)
+  prose(q['answer'],target=practice)
+  alternatives=[(i,o) for i,o in enumerate(q['options']) if o.get('reason')]
+  if alternatives:
+   h('Why other choices fail',3,target=practice)
+   for i,o in alternatives:prose(chr(65+i)+'. '+o['reason'],target=practice)
 
 def footer_pdf(canvas,doc):
- canvas.saveState();canvas.setFont('AnthropicRegular',7);canvas.setFillColor(colors.HexColor('#555555'));canvas.drawRightString(376,9,str(doc.page));canvas.restoreState()
+ canvas.saveState();canvas.setFont('AnthropicRegular',7);canvas.setFillColor(colors.HexColor('#555555'));canvas.drawRightString(372,10,str(doc.page));canvas.restoreState()
 def make_pdf(path,story):
- doc=SimpleDocTemplate(str(path),pagesize=(396,612),leftMargin=20,rightMargin=20,topMargin=20,bottomMargin=22,title='',author='',creator='',subject='')
+ doc=SimpleDocTemplate(str(path),pagesize=(396,612),leftMargin=24,rightMargin=24,topMargin=24,bottomMargin=26,title='',author='',creator='',subject='')
  doc.build(story,onFirstPage=footer_pdf,onLaterPages=footer_pdf)
 def impose(src,dst):
  r=PdfReader(src);w=PdfWriter();mapping=[]

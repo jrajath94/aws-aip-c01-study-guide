@@ -1,7 +1,7 @@
 import {chromium} from 'playwright';import assert from 'node:assert/strict';import fs from 'node:fs/promises';
 const root=new URL('../',import.meta.url).pathname;const browser=await chromium.launch({headless:true,executablePath:'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'});const page=await browser.newPage({viewport:{width:1600,height:1100}});const errors=[];page.on('pageerror',e=>errors.push(e.message));
 await page.goto('file://'+root+'course/treatise.html');await page.waitForFunction(()=>window.TREATISE);await page.evaluate(()=>document.fonts.ready);
-assert.equal(await page.locator('.chapter').count(),24);assert.equal(await page.locator('.trace-figure').count(),48);assert.equal(await page.locator('.official-figure').count(),17);
+assert.equal(await page.locator('.chapter').count(),24);assert.equal(await page.locator('.trace-figure').count(),48);assert.equal(await page.locator('.official-figure').count(),await page.evaluate(()=>COURSE.figures.length));
 await page.screenshot({path:root+'.build/treatise-cover.png'});
 const ids=await page.evaluate(()=>TREATISE.chapters.map(c=>c.id));let checks=[];
 for(const id of ids){await page.evaluate(id=>document.getElementById(id).scrollIntoView({behavior:'instant',block:'start'}),id);const r=await page.evaluate(id=>({id,width:document.documentElement.scrollWidth<=innerWidth,heading:!!document.querySelector('#'+id+' h2'),words:document.querySelector('#'+id).innerText.split(/\s+/).length}),id);assert(r.width,id);assert(r.words>500,id+' too short');checks.push(r);await page.screenshot({path:root+'.build/treatise-'+id+'.png'});}
