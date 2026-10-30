@@ -1,0 +1,956 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>Networking for generative AI designs</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap">
+<style>
+:root { --ink:#e8e8e8; --fact:#7db8ff; --rule:#6ee7a0; --tip:#d8a6ff; --trap:#ff8a8a; --muted:#9a9a9a; --line:#2a2a2a; }
+html, body { background:#000000; }
+body { color:var(--ink); font-family:Inter,"Helvetica Neue",Arial,sans-serif; font-size:16px; line-height:1.6; margin:0; padding:24px 20px 72px; }
+main { max-width:780px; margin:0 auto; }
+main p, main li { text-align:justify; }
+h1 { font-size:1.9em; line-height:1.25; margin:0 0 0.5em; color:#ffffff; }
+h2 { font-size:1.5em; line-height:1.3; margin:1.8em 0 0.6em; color:#ffffff; border-top:1px solid var(--line); padding-top:0.6em; }
+h3 { font-size:1.2em; line-height:1.35; margin:1.4em 0 0.4em; color:#ffffff; }
+h4 { font-size:1em; line-height:1.35; margin:1em 0 0.3em; color:#ffffff; }
+p { margin:0 0 0.8em; }
+ul, ol { margin:0 0 0.8em; padding-left:1.5em; }
+li { margin-bottom:0.3em; }
+.fact { color:var(--fact); } .rule { color:var(--rule); } .tip { color:var(--tip); } .trap { color:var(--trap); }
+.src, main p.src { font-size:0.85em; color:var(--muted); overflow-wrap:anywhere; }
+.caption, figcaption { font-size:0.85em; color:var(--muted); margin:-0.2em 0 1em; text-align:left; }
+.meta { font-size:0.9em; color:var(--muted); margin-bottom:1em; }
+.mermaid { margin:0.6em 0 1em; text-align:center; overflow-x:auto; }
+.mermaid svg { max-width:100%; height:auto; }
+figure.aws { margin:0.8em 0 1em; text-align:center; }
+figure.aws img { max-width:100%; height:auto; }
+.markmap { position:relative; margin:0.5em 0 1.2em; border-top:1px solid var(--line); border-bottom:1px solid var(--line); --markmap-text-color:#e8e8e8; --markmap-a-color:#7db8ff; color:#e8e8e8; }
+.markmap > svg { width:100%; height:560px; display:block; }
+.markmap foreignObject, .markmap .markmap-foreign { color:#e8e8e8; font-size:15px; }
+nav.mod { font-size:0.9em; color:var(--muted); margin:0 0 1em; }
+nav.mod a { color:var(--fact); }
+table { border-collapse:collapse; width:100%; margin:0 0 1em; font-size:0.92em; }
+th, td { border:1px solid #333; padding:0.35em 0.5em; text-align:left; vertical-align:top; line-height:1.5; }
+th { color:#ffffff; }
+</style>
+</head>
+<body>
+<main>
+
+<nav class="mod"><a href="index.html">Index</a> | <a href="d1-domain.html">Domain 1</a> | <a href="d2-domain.html">Domain 2</a> | <a href="d3-domain.html">Domain 3</a> | <a href="d4-domain.html">Domain 4</a> | <a href="d5-domain.html">Domain 5</a> | <strong>Networking for generative AI designs</strong></nav><h2>Networking for generative AI designs</h2>
+<p>After this module, you can read a long scenario about networking for a generative AI design. You can find the one constraint that decides the answer. You can then reject each wrong option with one reason. Most network questions in this area turn on three points. Where does the caller run? Does the call need a public path or a private path? Which data crosses the boundary, and who is allowed to use it?</p>
+<div class="mermaid">
+flowchart TD
+  N1["Where does the caller run"] -->|then| N2["Public or private path"]
+  N2 -->|then| N3["Which data crosses the<br/>boundary"]
+  N3 -->|then| N4["Who may use the data"]
+  N4 -->|reject the rest| N5["One constraint decides the<br/>answer"]
+</div>
+<p class="caption">Figure: Three questions narrow the answer before the one deciding constraint is chosen.</p>
+
+<div class="markmap"><script type="text/template">
+# Networking for generative AI designs
+## Network basics
+- Subnets public and private
+- Route tables pick next hops
+- CIDR sets the address space
+- Spread subnets across Availability Zones
+## Internet and NAT egress
+- Internet gateway for public resources
+- NAT gateway for private outbound
+- NAT per Availability Zone
+- Egress-only gateway for IPv6
+## Private AWS service access
+- Interface endpoints use PrivateLink
+- Gateway endpoints for S3 DynamoDB
+- Endpoint policies limit principals
+- Private DNS keeps the same names
+## Filters and firewalls
+- Security groups are stateful
+- Network ACLs are stateless
+- Endpoint policy can deny calls
+## Compute in a VPC
+- SageMaker AI VPC-only domains
+- Lambda uses ENIs in subnets
+- Lambda needs Bedrock route
+## Data stores and APIs
+- OpenSearch Serverless network policies
+- Private API Gateway with endpoints
+- Front with ALB CloudFront WAF
+## Hybrid and perimeter
+- Transit Gateway hubs many VPCs
+- Direct Connect for private links
+- Flow logs show rejected traffic
+- Route 53 Resolver for DNS
+## Environments and troubleshooting
+- Separate VPCs per stage
+- Timeouts often mean missing routes
+- DNS failures check resolver settings
+- Check security group rules next
+</script></div>
+
+<h3>The deciding constraint</h3>
+<p>Start at the caller, not at the service. The caller location tells you whether a VPC route, an endpoint, or a public path is possible at all. Then look at what the request must reach. Stop at the first branch that the scenario settles. Each later branch only refines the answer.</p>
+<div class="mermaid">
+flowchart TD
+  A["Caller location in<br/>scenario"] -->|Outside AWS| B["Public endpoint or Direct<br/>Connect"]
+  A -->|Inside a VPC| C["Subnet type in scenario"]
+  A -->|Managed by AWS<br/>without VPC| D["Service managed networking"]
+  C -->|Private subnet and<br/>no NAT| E["Endpoint needed for each<br/>AWS service"]
+  C -->|Public subnet with<br/>IGW route| F["Public path to internet"]
+  E -->|Bedrock model calls| G["bedrock-runtime interface<br/>endpoint"]
+  E -->|Agent or knowledge<br/>base calls| H["bedrock-agent-runtime<br/>endpoint"]
+  E -->|S3 or DynamoDB<br/>objects| I["Gateway endpoint in route<br/>table"]
+  E -->|Other AWS APIs| J["Interface endpoint with<br/>private DNS"]
+</div>
+<p class="caption">Figure: first branch of the deciding constraint tree, from caller to endpoint type.</p>
+<div class="mermaid">
+flowchart TD
+  A["Target in scenario"] -->|Model inference API| B["Bedrock runtime APIs"]
+  A -->|Hosted SageMaker AI<br/>model| C["SageMaker AI runtime<br/>endpoint"]
+  A -->|Custom code in a<br/>function| D["Lambda attached to a VPC"]
+  A -->|Vector search for<br/>retrieval| E["Private vector store<br/>access"]
+  A -->|Files or objects| F["S3 with gateway endpoint"]
+  A -->|Data in an<br/>on-premises site| G["Direct Connect or VPN path"]
+  B -->|Converse or<br/>InvokeModel| H["Interface endpoint<br/>bedrock-runtime"]
+  D -->|Needs Bedrock or AWS<br/>APIs| I["Endpoints or NAT in same<br/>VPC"]
+  E -->|OpenSearch<br/>Serverless| J["Network policy with VPC<br/>endpoint"]
+  G -->|Many VPCs| K["Transit Gateway hub"]
+</div>
+<p class="caption">Figure: second branch, from the requested target to the network component.</p>
+<p>Use these signal words to pick a branch quickly.</p>
+<ul>
+<li><strong>"private subnet", "no internet gateway", "no NAT":</strong> interface or gateway endpoints for each AWS call.</li>
+<li><strong>"must not use the internet", "private access only":</strong> PrivateLink, a private API, an endpoint policy, or a network policy.</li>
+<li><strong>"data center", "on-premises", "hybrid":</strong> Direct Connect or VPN, Transit Gateway, and Route 53 Resolver.</li>
+<li><strong>"timeout", "hangs", "no response":</strong> a missing route, a missing endpoint, or a DNS record.</li>
+<li><strong>"knowledge base", "vector index", "retrieval":</strong> an OpenSearch Serverless network policy or a private database.</li>
+<li><strong>"notebook", "training job", "no outbound access":</strong> SageMaker AI VPC mode and its endpoints.</li>
+<li><strong>"one Availability Zone fails", "resilient":</strong> resources and NAT gateways in each Availability Zone.</li>
+<li><strong>"data residency", "stay in one geography":</strong> a geographic cross-Region inference profile, not a global one.</li>
+<li><strong>"same design in production", "promote from QA":</strong> separate VPCs or accounts with their own endpoints and routes.</li>
+</ul>
+
+<h3>VPC basics for AI workloads</h3>
+<p><strong>What it is.</strong> A VPC is a private network that you define in one AWS Region. <span class="fact">You split its IP address range, the CIDR block, into subnets.</span> <span class="fact">A subnet exists in one Availability Zone.</span> A route table tells each subnet where to send traffic for each destination.</p>
+<div class="mermaid">
+flowchart TD
+  N1["VPC in one Region"] -->|split CIDR block| N2["Subnets"]
+  N2 -->|each in one zone| N3["One Availability Zone"]
+  N2 -->|has gateway route| N4["Public subnet"]
+  N2 -->|no gateway route| N5["Private subnet"]
+</div>
+<p class="caption">Figure: A VPC is split into subnets, and the route table decides whether a subnet is public or private.</p>
+<p>The Sundog course slides call a VPC a regional resource and a subnet an Availability Zone resource. <span class="fact">A public subnet has a route to an internet gateway.</span> <span class="fact">A private subnet has no such route.</span> The route table decides which kind a subnet is. The subnet name does not decide it.</p>
+<p class="rule">Rule: Put model callers, Lambda functions, and SageMaker AI jobs in private subnets when they need no inbound traffic from the internet.</p>
+<p class="rule">Rule: Spread subnets for each tier across at least two Availability Zones.</p>
+<p><strong>When not to choose.</strong> Do not place a private backend in a public subnet only to reach an AWS service. The public route adds an internet path, and the scenario may forbid one.</p>
+<p class="trap">Trap: A subnet named public does not give Lambda internet access. The Lambda documentation says a function attached to a public subnet gets no internet access and no public IP address.</p>
+<p><strong>Pairs with.</strong> NAT gateways, VPC endpoints, and security groups.</p>
+<p><strong>Limits and numbers.</strong> <span class="fact">The Sundog slides state that a private subnet is not reachable from the internet.</span> The allowed VPC CIDR size range is Not in source for this module. Check the VPC quota page before you choose a size.</p>
+<p class="src">Source: https://docs.aws.amazon.com/vpc/latest/userguide/vpc-nat-gateway.html, https://docs.aws.amazon.com/lambda/latest/dg/configuration-vpc.html, and the Sundog course slide extract (VPC and Subnets slides).</p>
+
+<h3>Internet gateway</h3>
+<p><strong>What it is.</strong> An internet gateway connects a VPC to the internet. <span class="fact">The NAT gateway documentation shows the internet gateway mapping a private IPv4 address to an Elastic IP address.</span> <span class="fact">A route table sends internet-bound traffic to the internet gateway.</span> Other internet gateway behavior is Not in source for this module.</p>
+<div class="mermaid">
+flowchart TD
+  N1["Need for internet access"] -->|clients reach in| N2["Internet gateway"]
+  N2 -->|route table target| N3["Internet bound traffic"]
+  N1 -->|outbound only| N4["NAT gateway instead"]
+</div>
+<p class="caption">Figure: An internet gateway serves clients that must reach a resource, and NAT serves private outbound traffic.</p>
+<p class="rule">Rule: Choose an internet gateway for a public load balancer or public front door that clients on the internet must reach.</p>
+<p><strong>When not to choose.</strong> Do not give a private model caller or a private retrieval backend an internet route. A private workload that only needs outbound access uses a NAT gateway instead.</p>
+<p class="trap">Trap: Attaching an internet gateway to a VPC that has only a private NAT gateway does not help. <span class="fact">The internet gateway drops traffic that a private NAT gateway routes to it.</span></p>
+<p><strong>Pairs with.</strong> Public subnets, NAT gateways, and load balancers in public subnets.</p>
+<p class="src">Source: https://docs.aws.amazon.com/vpc/latest/userguide/vpc-nat-gateway.html and https://docs.aws.amazon.com/vpc/latest/userguide/nat-gateway-basics.html</p>
+
+<h3>NAT gateway</h3>
+<p><strong>What it is.</strong> A NAT gateway lets instances in private subnets start outbound connections. <span class="fact">Responses return, but external services cannot start a connection to those instances.</span> <span class="fact">A public NAT gateway sits in a public subnet and has an Elastic IP address.</span> <span class="fact">A private NAT gateway has no Elastic IP address and routes to other networks through a transit gateway or virtual private gateway.</span></p>
+<div class="mermaid">
+flowchart TD
+  N1["Instance in private subnet"] -->|starts outbound| N2["NAT gateway"]
+  N2 -->|public NAT| N3["Internet gateway"]
+  N3 -->|replies return| N1
+  N3 -->|no new inbound| N4["Outside cannot start a<br/>connection"]
+  N2 -->|private NAT| N5["Transit or virtual private<br/>gateway"]
+</div>
+<p class="caption">Figure: A NAT gateway lets private instances start outbound connections, and replies return to them.</p>
+<p>Each NAT gateway is created in one Availability Zone. <span class="fact">If resources in other zones share it and its zone fails, those resources lose internet access.</span> <span class="fact">The fix is one NAT gateway in each zone, with routes that keep each zone on its own gateway.</span></p>
+<p>The figure below shows the layout. Only the private subnet in zone B has a route to the NAT gateway in that zone. The private subnet in zone A has no route in this picture. That gap is what a per zone design closes.</p>
+<figure class="aws"><img src="img/80ee9a53ab1b68f5.png" alt="VPC with public and private subnets in two Availability Zones and a NAT gateway"><figcaption>Figure: a public NAT gateway in a public subnet routes private subnet traffic to the internet gateway. Source: AWS documentation, https://docs.aws.amazon.com/vpc/latest/userguide/nat-gateway-scenarios.html</figcaption></figure>
+<p>The image places the internet gateway at the top of the VPC. The NAT gateway sits in the public subnet of zone B. Traffic from the private subnet in zone B goes to the NAT gateway, and the NAT gateway forwards it to the internet gateway. Zone A has no NAT route in this picture, so its private resources have no outbound path.</p>
+<p><strong>Limits and numbers.</strong> <span class="fact">A NAT gateway scales from 5 Gbps up to 100 Gbps.</span> <span class="fact">Each IPv4 address supports up to 55,000 simultaneous connections to one destination.</span> <span class="fact">The default limit is 2 Elastic IP addresses for a public NAT gateway.</span> <span class="fact">You cannot attach a security group to a NAT gateway.</span> <span class="fact">A NAT gateway is charged hourly plus a charge for each gigabyte processed.</span> The exact rates are Not in source for this module. The per zone NAT quota number is Not in source for this module.</p>
+<p><strong>NAT data processing cost.</strong> <span class="fact">The pricing page advises two options.</span> Keep resources in the same zone as their NAT gateway, or create a NAT gateway in each zone that has resources. If most NAT traffic goes to AWS services that have endpoints, create the endpoints. Endpoints keep that traffic off the NAT gateway.</p>
+<p class="rule">Rule: Use a NAT gateway for private workloads that call public third-party APIs or public package sources.</p>
+<p class="rule">Rule: Do not send AWS service calls through NAT when an endpoint for that service exists.</p>
+<p><strong>When not to choose.</strong> A NAT gateway is the wrong answer when the scenario forbids any internet path. It is also the wrong answer for a service that has an endpoint and only needs AWS network access.</p>
+<p class="trap">Trap: A NAT gateway makes Bedrock calls work from a private subnet. The calls still leave the VPC through the internet path, and the data processing charge applies. A scenario that asks for no internet path rejects this option.</p>
+<p><strong>Pairs with.</strong> Public subnets, the internet gateway, route tables per zone, and VPC endpoints that remove traffic from NAT.</p>
+<p class="src">Source: https://docs.aws.amazon.com/vpc/latest/userguide/vpc-nat-gateway.html, https://docs.aws.amazon.com/vpc/latest/userguide/nat-gateway-basics.html, https://docs.aws.amazon.com/vpc/latest/userguide/nat-gateway-pricing.html, and https://docs.aws.amazon.com/vpc/latest/userguide/nat-gateway-scenarios.html</p>
+
+<h3>Egress-only internet gateway</h3>
+<p><strong>What it is.</strong> <span class="fact">An egress-only internet gateway allows outbound IPv6 traffic from a VPC to the internet.</span> <span class="fact">It prevents the internet from starting an IPv6 connection to those instances.</span> <span class="fact">A route for ::/0 in the subnet route table sends internet-bound IPv6 traffic to it.</span> <span class="fact">There is no charge for the gateway itself, but data transfer charges apply.</span></p>
+<div class="mermaid">
+flowchart TD
+  N1["Workload needs outbound<br/>IPv6"] -->|default route| N2["Egress only internet<br/>gateway"]
+  N2 -->|outbound only| N3["Internet"]
+  N2 -->|blocks new inbound| N4["No new inbound IPv6<br/>connections"]
+  N1 -->|IPv4 traffic| N5["NAT gateway fits instead"]
+</div>
+<p class="caption">Figure: The egress only gateway handles outbound IPv6, while IPv4 private egress needs a NAT gateway.</p>
+<p>The figure shows a private subnet with IPv4 and IPv6 blocks. The subnet sends traffic to the egress-only gateway, and the gateway forwards it to the internet. New inbound IPv6 connections from the internet do not reach the subnet.</p>
+<figure class="aws"><img src="img/44f18693842113f1.png" alt="Private subnet with an egress-only internet gateway for outbound IPv6"><figcaption>Figure: a private subnet with IPv4 and IPv6 blocks uses an egress-only internet gateway for outbound IPv6. Source: AWS documentation, https://docs.aws.amazon.com/vpc/latest/userguide/egress-only-internet-gateway.html</figcaption></figure>
+<p>The picture shows one zone, one private subnet, and one gateway. Traffic leaves the subnet on the IPv6 route and goes to the internet cloud. Replies return on the same path. The gateway does not filter by security group, so the network ACL on the subnet controls the traffic.</p>
+<p class="rule">Rule: Choose an egress-only internet gateway when IPv6 workloads need outbound internet access and must not accept new inbound connections.</p>
+<p><strong>When not to choose.</strong> Do not choose it for IPv4 traffic. The documentation says NAT gateways handle outbound-only IPv4 access.</p>
+<p class="trap">Trap: An egress-only internet gateway does not fix IPv4 private egress. It handles IPv6 only. The scenario may have IPv4 traffic that still needs a NAT gateway.</p>
+<p><strong>Pairs with.</strong> Dual-stack subnets. <span class="fact">Lambda outbound IPv6 needs every connected subnet to be dual-stack.</span></p>
+<p class="src">Source: https://docs.aws.amazon.com/vpc/latest/userguide/egress-only-internet-gateway.html and https://docs.aws.amazon.com/lambda/latest/dg/configuration-vpc.html</p>
+
+<h3>Interface endpoints (AWS PrivateLink)</h3>
+<p><strong>What it is.</strong> <span class="fact">An interface endpoint creates endpoint network interfaces in the subnets you choose.</span> Traffic to the service enters through those private IP addresses. <span class="fact">The connection needs no internet gateway, NAT device, VPN, or Direct Connect connection.</span> AWS PrivateLink powers the endpoint.</p>
+<div class="mermaid">
+flowchart TD
+  N1["Private subnet calls AWS<br/>API"] -->|must avoid internet| N2["Interface endpoint"]
+  N2 -->|network interfaces| N3["Private IP addresses"]
+  N3 -->|reaches| N4["AWS service"]
+  N2 -->|no internet path| N5["No gateway NAT VPN or<br/>Direct Connect"]
+</div>
+<p class="caption">Figure: An interface endpoint gives a private subnet a path to an AWS service with no internet gateway.</p>
+<p>Use the service name for each API you call. <span class="fact">Bedrock lists these endpoint names:</span> bedrock for control plane actions, bedrock-runtime for model runtime actions, bedrock-agent for build-time agent actions, and bedrock-agent-runtime for agent runtime actions. <span class="fact">Bedrock also lists bedrock-mantle, which covers Mantle actions.</span> The purpose of bedrock-mantle beyond its name is Not in source for this module.</p>
+<p><span class="fact">SageMaker AI supports interface endpoints for the SageMaker API and for the SageMaker AI Runtime.</span> <span class="fact">Studio in VPC-only mode also needs endpoints for S3, Service Catalog for projects, STS, and CloudWatch Logs for remote training jobs.</span> The service suffixes for Secrets Manager and KMS are Not in source for this module. Confirm them in the endpoint list for your Region.</p>
+<p>The first figure shows two private subnets in two zones. Each subnet reaches the service through an endpoint network interface. The service runs in the Region at the top.</p>
+<figure class="aws"><img src="img/770090864e6c56fb.png" alt="Private subnets reach AWS services through an interface endpoint"><figcaption>Figure: compute in private subnets reaches AWS services through an interface endpoint powered by AWS PrivateLink. Source: AWS documentation, https://docs.aws.amazon.com/vpc/latest/privatelink/privatelink-access-aws-services.html</figcaption></figure>
+<p>The image shows the endpoint as a single shield icon above the subnets. Each compute resource in a private subnet sends traffic into the endpoint. The endpoint then carries the call to the AWS service icons in the Region. No internet gateway appears in the path.</p>
+<p>The second figure shows how one endpoint spans zones. The endpoint places a network interface in each zone.</p>
+<figure class="aws"><img src="img/67510856bef1e492.png" alt="Interface endpoint with network interfaces in two Availability Zones"><figcaption>Figure: an interface endpoint with one network interface per Availability Zone. Source: AWS documentation, https://docs.aws.amazon.com/vpc/latest/privatelink/privatelink-access-aws-services.html</figcaption></figure>
+<p>The picture shows two zones, each with its own subnet and endpoint. Arrows cross between the zones. Client subnets in both zones can use either endpoint. Each endpoint then sends traffic on to the service. Bedrock documentation states that its endpoints are available in multiple Availability Zones.</p>
+<p class="rule">Rule: Choose an interface endpoint when a private subnet calls an AWS API and must not use the internet.</p>
+<p class="rule">Rule: Create one endpoint for each API surface that the code calls.</p>
+<p><strong>When not to choose.</strong> Do not choose an interface endpoint for S3 or DynamoDB only when a gateway endpoint does the job. <span class="fact">Interface endpoints have an extra charge, while the S3 gateway endpoint has none.</span></p>
+<p class="trap">Trap: The runtime endpoint does not cover agent calls. Bedrock lists a separate name for agent runtime. A design that calls agents needs that endpoint too.</p>
+<p><strong>Pairs with.</strong> Private subnets, security groups on the endpoint, endpoint policies, and private DNS.</p>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/vpc-interface-endpoints.html, https://docs.aws.amazon.com/sagemaker/latest/dg/interface-vpc-endpoint.html, https://docs.aws.amazon.com/sagemaker/latest/dg/studio-notebooks-and-internet-access.html, https://docs.aws.amazon.com/vpc/latest/privatelink/privatelink-access-aws-services.html, https://docs.aws.amazon.com/vpc/latest/privatelink/vpc-endpoints-s3.html</p>
+
+<h3>Gateway endpoints for S3 and DynamoDB</h3>
+<p><strong>What it is.</strong> <span class="fact">A gateway endpoint is a route table target, not a network interface.</span> <span class="fact">It lets a VPC reach S3 without an internet gateway or NAT device.</span> <span class="fact">It has no additional charge.</span> <span class="fact">A gateway endpoint works only in the Region where you create it.</span> The same gateway model applies to DynamoDB. The DynamoDB page was not fetched for this module, so DynamoDB specifics are Not in source.</p>
+<div class="mermaid">
+flowchart TD
+  N1["VPC caller needs S3 or<br/>DynamoDB"] -->|route table target| N2["Gateway endpoint"]
+  N2 -->|no extra charge| N3["Private route to S3 or<br/>DynamoDB"]
+  N2 -->|only in its Region| N4["Works in one Region"]
+  N1 -->|hybrid or peered| N5["Interface endpoint instead"]
+</div>
+<p class="caption">Figure: A gateway endpoint is a route table target for S3 or DynamoDB, and other callers need an interface endpoint.</p>
+<p class="rule">Rule: Choose a gateway endpoint for S3 or DynamoDB traffic from a VPC when no on-premises or peered network needs the same path.</p>
+<p><strong>What it pairs with.</strong> Route tables, the S3 prefix list in security group rules, and endpoint policies. <span class="fact">You cannot reference a prefix list in a network ACL rule.</span> A network ACL needs the S3 IP address range instead.</p>
+<p><strong>When not to choose.</strong> <span class="fact">A gateway endpoint does not extend to on-premises networks, peered VPCs, transit gateways, VPN connections, or Direct Connect.</span> For those callers, use an interface endpoint.</p>
+<p class="trap">Trap: A gateway endpoint does not give Bedrock or SageMaker AI a private path. It covers S3 and DynamoDB only.</p>
+<p class="trap">Trap: A hybrid user cannot reach S3 through a gateway endpoint. Use an interface endpoint with private DNS and a resolver path for that user.</p>
+<p><strong>Limits and numbers.</strong> <span class="fact">The S3 documentation states a default quota of 20 gateway endpoints per Region, adjustable, and a limit of 255 gateway endpoints per VPC.</span> <span class="fact">Changing the endpoint can reset open TCP connections to S3.</span></p>
+<p class="src">Source: https://docs.aws.amazon.com/vpc/latest/privatelink/vpc-endpoints-s3.html and the Sundog course slide extract (S3 Access Points slides, which say the endpoint policy must allow the target bucket and access point).</p>
+
+<h3>Endpoint policies and private DNS</h3>
+<p><strong>What an endpoint policy is.</strong> <span class="fact">An endpoint policy is an IAM resource attached to an interface endpoint.</span> <span class="fact">It names the principals, the actions, and the resources that may use the endpoint.</span> <span class="fact">The default policy allows full access through the endpoint.</span> A custom policy narrows that access. The Bedrock documentation gives an example that allows only InvokeModel and InvokeModelWithResponseStream.</p>
+<div class="mermaid">
+flowchart TD
+  N1["Interface endpoint"] -->|default policy| N2["Full access through<br/>endpoint"]
+  N1 -->|custom policy| N3["Names principals actions<br/>and resources"]
+  N3 -->|narrows access| N4["Only listed callers pass"]
+  N3 -->|restrict only| N5["Never grants new<br/>permissions"]
+</div>
+<p class="caption">Figure: A custom endpoint policy restricts the path and is not used to grant new permissions.</p>
+<p><strong>What private DNS is.</strong> <span class="fact">When you enable private DNS, the default Regional service name resolves to the endpoint.</span> Code needs no change. <span class="fact">When private DNS is off, the SDK must use an endpoint URL that contains the endpoint ID.</span> The Bedrock examples pass that URL to the client constructor.</p>
+<p class="rule">Rule: Add a custom endpoint policy when the scenario limits which roles or models can call through the endpoint.</p>
+<p class="rule">Rule: Enable private DNS when the code should keep the default service name.</p>
+<p><strong>When not to choose.</strong> Do not use an endpoint policy to grant new permissions. Use it to restrict the path. The fetched pages do not state the full evaluation order between endpoint policies and IAM policies. That detail is Not in source for this module.</p>
+<p class="trap">Trap: Private DNS is off, and the code uses the default Regional name. The call goes to the public name. Without NAT or another route, the call fails or times out.</p>
+<p><strong>Pairs with.</strong> Interface endpoints, IAM roles, and the Route 53 Resolver.</p>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/vpc-interface-endpoints.html</p>
+
+<h3>SageMaker AI in a VPC</h3>
+<p><strong>What it is.</strong> <span class="fact">The SageMaker API and SageMaker AI Runtime support interface endpoints through AWS PrivateLink.</span> <span class="fact">A client in a VPC reaches the runtime without an internet gateway, NAT device, VPN, or Direct Connect.</span> <span class="fact">The runtime endpoint must be active in the zone of the client for private DNS to resolve.</span></p>
+<div class="mermaid">
+flowchart TD
+  N1["Notebooks must not reach<br/>internet"] -->|choose| N2["VPC only Studio"]
+  N2 -->|private subnets| N3["Private subnets"]
+  N2 -->|endpoints or NAT| N4["SageMaker API and runtime<br/>endpoints"]
+  N1 -->|default Studio| N5["S3 and CloudWatch via<br/>internet gateway"]
+</div>
+<p class="caption">Figure: VPC only Studio needs private subnets and endpoints, while default Studio uses an internet gateway.</p>
+<p>By default, Studio gets a network interface in a VPC that SageMaker AI manages. <span class="fact">Traffic to S3 and CloudWatch from that default setup goes through an internet gateway.</span> The VPC you name holds only the domain traffic between Studio and the EFS volume.</p>
+<p><strong>VPC-only Studio.</strong> <span class="fact">VPC-only mode needs private subnets only.</span> <span class="fact">Notebooks run only when the VPC has interface endpoints to the SageMaker API and runtime, or a NAT gateway with internet access.</span> <span class="fact">Security groups must allow NFS on TCP 2049 to EFS and TCP inside the group for ports 8192 to 65535.</span> <span class="fact">Use one security group for each user profile.</span> Plan two to four IP addresses per user in the subnets.</p>
+<p>The figure shows the runtime inside a SageMaker AI managed VPC. The customer VPC reaches it through PrivateLink. The request does not use the public internet.</p>
+<figure class="aws"><img src="img/deaaded6f179739a.png" alt="SageMaker Runtime in a managed VPC reached through PrivateLink from a customer VPC"><figcaption>Figure: a client application in a customer VPC reaches the SageMaker AI runtime through AWS PrivateLink. Source: AWS documentation, https://docs.aws.amazon.com/sagemaker/latest/dg/interface-vpc-endpoint.html</figcaption></figure>
+<p>The picture has two boxes. The left box is the SageMaker managed VPC with the runtime and the endpoint. The right box is the customer VPC with the PrivateLink connector and the client application. Arrows show the request going from the client to the runtime and back. No internet gateway appears in the picture.</p>
+<p><strong>Training and processing jobs.</strong> The job setting that places a training or processing job inside your VPC is Not in source for this module. Confirm the job network settings in the SageMaker AI API reference.</p>
+<p><strong>Network isolation mode.</strong> <span class="fact">The SageMaker documentation has a topic named Run Training and Inference Containers in Internet-Free Mode.</span> The fetched page did not render, so the exact calls that this mode blocks are Not in source. <span class="fact">Inter-container traffic encryption is Not in source for this module.</span></p>
+<p class="rule">Rule: Choose a VPC-only Studio domain when notebooks must not reach the internet.</p>
+<p class="rule">Rule: Place training and processing jobs in a VPC when they read private data.</p>
+<p><strong>When not to choose.</strong> Default Studio does not meet a VPC-only requirement. It sends S3 and CloudWatch traffic through an internet gateway in the managed VPC.</p>
+<p class="trap">Trap: Enabling internet-free mode without endpoints or a route leaves the container without the AWS calls it needs. The exact list of blocked calls is Not in source.</p>
+<p><strong>Pairs with.</strong> Interface endpoints, S3 gateway or interface endpoints, IAM roles, and KMS keys.</p>
+<p class="src">Source: https://docs.aws.amazon.com/sagemaker/latest/dg/interface-vpc-endpoint.html, https://docs.aws.amazon.com/sagemaker/latest/dg/studio-notebooks-and-internet-access.html</p>
+
+<h3>Lambda in a VPC</h3>
+<p><strong>What it is.</strong> <span class="fact">Lambda attaches a function to a VPC by creating network interfaces in the subnets and security groups you choose.</span> AWS calls these Hyperplane ENIs. <span class="fact">A new function stays in the Pending state while Lambda creates the interface, which can take several minutes.</span> <span class="fact">A function with no VPC configuration has internet access by default.</span> <span class="fact">Once attached, it reaches only resources that the VPC can route to.</span></p>
+<div class="mermaid">
+flowchart TD
+  N1["Function with no VPC<br/>setting"] -->|default| N2["Internet access by default"]
+  N1 -->|attach to VPC| N3["Reaches only routable<br/>resources"]
+  N3 -->|Bedrock calls need| N4["Endpoint or NAT route"]
+  N3 -->|no route| N5["SDK waits until timeout"]
+</div>
+<p class="caption">Figure: Attaching a function to a VPC limits it to routable resources, so Bedrock calls need an endpoint or NAT route.</p>
+<p>The execution role needs EC2 network interface permissions. The AWS managed policy AWSLambdaVPCAccessExecutionRole grants them. <span class="fact">Lambda reclaims an unused Hyperplane ENI after 14 days of idle time.</span> <span class="fact">Removing the VPC setting can take up to 20 minutes to delete the ENI.</span> <span class="fact">Lambda cannot connect directly to a dedicated instance tenancy VPC.</span></p>
+<p class="rule">Rule: Attach a function to a VPC when it must reach a private database or another private resource.</p>
+<p class="rule">Rule: For Bedrock calls from a private subnet, add an interface endpoint for bedrock-runtime, or a NAT gateway when internet access is allowed.</p>
+<p><strong>When not to choose.</strong> Do not attach a function to a VPC only to call a public AWS API. It adds a network path that needs an endpoint or NAT.</p>
+<p class="trap">Trap: Attaching a function to a VPC does not add Bedrock access. The call has no route, so the SDK waits until it times out. The error then looks like a Lambda timeout, but the cause is a missing route.</p>
+<p><strong>Pairs with.</strong> Interface endpoints, NAT gateways, S3 gateway endpoints, and security groups.</p>
+<p><strong>Limits and numbers.</strong> <span class="fact">Each Hyperplane ENI supports up to 65,000 connections.</span> The function timeout maximum is Not in source for this module.</p>
+<p class="src">Source: https://docs.aws.amazon.com/lambda/latest/dg/configuration-vpc.html</p>
+
+<h3>Bedrock Knowledge Bases and vector stores with private access</h3>
+<p><strong>What it is.</strong> A knowledge base stores embeddings in a vector store. The list of vector stores that a knowledge base supports is Not in source for this module. OpenSearch Serverless is one option that the Bedrock documentation covers with private access.</p>
+<div class="mermaid">
+flowchart TD
+  N1["Collection must stay<br/>private"] -->|public flag false| N2["Policy lists VPC endpoints"]
+  N2 -->|also list| N3["Bedrock as source service"]
+  N2 -->|must exist first| N4["Create a managed VPC<br/>endpoint"]
+  N3 -->|applies to| N5["Collection endpoint only"]
+</div>
+<p class="caption">Figure: The network policy names VPC endpoints and the Bedrock source service for the collection endpoint only.</p>
+<p><strong>OpenSearch Serverless network policy.</strong> <span class="fact">A network policy has a flag named AllowFromPublic.</span> <span class="fact">When that flag is false, the policy lists the OpenSearch Serverless-managed VPC endpoints that may reach the collection.</span> <span class="fact">It can also list the service bedrock.amazonaws.com as a source service for private access.</span> <span class="fact">Private access from a service applies only to the collection endpoint, not to the dashboard endpoint.</span> <span class="fact">You must create at least one OpenSearch Serverless-managed VPC endpoint before you use VPC access.</span></p>
+<p class="rule">Rule: Use a network policy with a VPC endpoint and the Bedrock source service when the collection must stay private.</p>
+<p class="rule">Rule: Set AllowFromPublic to false when the scenario bans public access to the collection.</p>
+<p><strong>Aurora in private subnets.</strong> Aurora access rules for Knowledge Bases are Not in source for this module. Confirm the Aurora and Knowledge Bases prerequisites in the Bedrock documentation before you rely on them.</p>
+<p><strong>When not to choose.</strong> A network policy does not grant data permissions. The data access policy still decides which principals can read or write.</p>
+<p class="trap">Trap: AllowFromPublic set to true makes the collection reachable from the internet. The documentation says the VPC endpoints and source services are ignored in that case.</p>
+<p class="trap">Trap: The dashboard endpoint does not take the Bedrock source service. Bedrock access applies to the collection endpoint only.</p>
+<p><strong>Pairs with.</strong> Data access policies, IAM roles, KMS keys, and private subnets.</p>
+<p class="src">Source: https://docs.aws.amazon.com/opensearch-service/latest/developerguide/serverless-network.html and https://docs.aws.amazon.com/bedrock/latest/userguide/vpc-interface-endpoints.html</p>
+
+<h3>AWS Transit Gateway</h3>
+<p><strong>What it is.</strong> <span class="fact">Transit Gateway is a network hub that connects VPCs and on-premises networks.</span> <span class="fact">Attachments can be VPCs, Direct Connect gateways, VPN connections, Client VPN endpoints, and peering connections with other transit gateways.</span> <span class="fact">Each attachment is associated with exactly one route table.</span> <span class="fact">Routes can propagate from a VPC, a VPN connection, or a Direct Connect gateway.</span></p>
+<div class="mermaid">
+flowchart TD
+  N1["Transit Gateway hub"] -->|attach| N2["VPCs"]
+  N1 -->|attach| N3["On premises connections"]
+  N1 -->|attach| N4["Peered transit gateways"]
+  N1 -->|one table each| N5["Each attachment has one<br/>route table"]
+</div>
+<p class="caption">Figure: A transit gateway hub connects VPCs and on premises networks, with one route table for each attachment.</p>
+<p><span class="fact">The MTU is 8500 bytes between VPCs, Direct Connect, and peering attachments.</span> <span class="fact">VPN traffic has an MTU of 1500 bytes.</span> <span class="fact">You pay an hourly charge for each attachment and for traffic processed.</span> The exact rates are Not in source for this module.</p>
+<p class="rule">Rule: Choose Transit Gateway when one hub must connect many VPCs and an on-premises site.</p>
+<p><strong>When not to choose.</strong> Do not choose it for two VPCs with one simple link. A VPC peering connection is simpler for that case.</p>
+<p class="trap">Trap: A gateway endpoint in a VPC does not carry S3 traffic for callers that arrive through a transit gateway. A hybrid caller needs an interface endpoint for that path.</p>
+<p><strong>Pairs with.</strong> Direct Connect, Site-to-Site VPN, route tables, and VPC attachments.</p>
+<p class="src">Source: https://docs.aws.amazon.com/vpc/latest/tgw/what-is-transit-gateway.html and https://docs.aws.amazon.com/vpc/latest/privatelink/vpc-endpoints-s3.html</p>
+
+<h3>VPC peering</h3>
+<p><strong>What it is.</strong> <span class="fact">A VPC peering connection links two VPCs so that instances can use private IP addresses across the link.</span> <span class="fact">It uses the existing VPC infrastructure and is not a gateway, VPN connection, or hardware device.</span> <span class="fact">Peering can cross accounts and Regions.</span> <span class="fact">Inter-Region traffic stays on the AWS backbone and does not use the public internet.</span></p>
+<div class="mermaid">
+flowchart TD
+  N1["Need a link between<br/>networks"] -->|two VPCs only| N2["VPC peering connection"]
+  N2 -->|can cross| N3["Accounts and Regions"]
+  N2 -->|inter Region| N4["Stays on AWS backbone"]
+  N1 -->|many VPCs or sites| N5["Transit Gateway hub"]
+</div>
+<p class="caption">Figure: A peering connection links two VPCs, and a transit gateway hub suits larger designs.</p>
+<p class="rule">Rule: Choose a VPC peering connection for a simple one-to-one link between two VPCs.</p>
+<p><strong>When not to choose.</strong> Do not use peering as a hub for many VPCs. The peering page describes one connection between two VPCs. Whether routes transit through a peered VPC is Not in source for this module.</p>
+<p class="trap">Trap: A NAT gateway cannot be the target of a route through a VPC peering connection. The NAT gateway documentation states that restriction.</p>
+<p><strong>Pairs with.</strong> Route tables in both VPCs, and Transit Gateway when the design grows.</p>
+<p><strong>Limits and numbers.</strong> <span class="fact">There is no charge to create a peering connection.</span> <span class="fact">Data transfer within one Availability Zone is free.</span> <span class="fact">Data transfer across zones or Regions is charged.</span></p>
+<p class="src">Source: https://docs.aws.amazon.com/vpc/latest/peering/what-is-vpc-peering.html and https://docs.aws.amazon.com/vpc/latest/userguide/nat-gateway-basics.html</p>
+
+<h3>AWS Direct Connect</h3>
+<p><strong>What it is.</strong> <span class="fact">Direct Connect links your on-premises network to a Direct Connect location over fiber.</span> <span class="fact">It creates virtual interfaces that bypass the internet service providers in your path.</span> <span class="fact">A private virtual interface reaches one VPC, or many VPCs through a Direct Connect gateway.</span> <span class="fact">A public virtual interface reaches public AWS services.</span> <span class="fact">A transit virtual interface reaches Transit Gateways through a Direct Connect gateway.</span></p>
+<div class="mermaid">
+flowchart TD
+  N1["On premises network"] -->|fiber to location| N2["Direct Connect location"]
+  N2 -->|virtual interface| N3["Private virtual interface"]
+  N2 -->|virtual interface| N4["Public virtual interface"]
+  N2 -->|virtual interface| N5["Transit virtual interface"]
+  N3 -->|one VPC or many| N6["VPCs"]
+  N4 -->|public services| N7["Public AWS services"]
+  N5 -->|via a gateway| N8["Transit Gateways"]
+</div>
+<p class="caption">Figure: Each virtual interface type reaches a different target, from one VPC to Transit Gateways.</p>
+<p><span class="fact">Your router must support BGP and BGP MD5 authentication.</span> <span class="fact">802.1Q VLAN encapsulation must work across the whole connection.</span> <span class="fact">You pay for port hours and outbound data transfer.</span> Whether Direct Connect traffic is encrypted is Not in source for this module.</p>
+<p class="rule">Rule: Choose Direct Connect when the scenario asks for a dedicated private link from on-premises to AWS.</p>
+<p><strong>When not to choose.</strong> Do not choose it when the scenario only needs a quick secure link. The setup needs a colocation site or a partner.</p>
+<p class="trap">Trap: Direct Connect is a private network path, not an encryption feature. Do not assume that it encrypts traffic unless the scenario says so.</p>
+<p><strong>Pairs with.</strong> Transit Gateway, Route 53 Resolver for hybrid DNS, and private virtual interfaces to a VPC.</p>
+<p class="src">Source: https://docs.aws.amazon.com/directconnect/latest/UserGuide/Welcome.html and https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/resolver.html</p>
+
+<h3>Site-to-Site VPN</h3>
+<p><strong>What it is.</strong> <span class="fact">A Site-to-Site VPN connection links an on-premises router to a VPC through a virtual private gateway or a transit gateway.</span> <span class="fact">With a transit gateway, routes propagate to the on-premises router with BGP.</span> <span class="fact">The transit gateway MTU for VPN traffic is 1500 bytes.</span> Encryption details and tunnel limits are Not in source for this module.</p>
+<div class="mermaid">
+flowchart TD
+  N1["On premises router"] -->|VPN connection| N2["Choose the target gateway"]
+  N2 -->|single VPC| N3["Virtual private gateway"]
+  N2 -->|transit hub| N4["Transit gateway"]
+  N4 -->|BGP propagation| N5["Routes reach the router"]
+  N3 -->|no NAT path| N6["NAT gateway not reachable"]
+</div>
+<p class="caption">Figure: A VPN to a virtual private gateway cannot reach a NAT gateway, while a transit gateway can route it.</p>
+<p class="rule">Rule: Choose a VPN when the hybrid link must start quickly and a dedicated circuit is not required.</p>
+<p><strong>When not to choose.</strong> Do not choose a VPN to a virtual private gateway when the scenario needs a NAT gateway on the VPN path. A NAT gateway cannot route through a virtual private gateway, but it can route through a transit gateway.</p>
+<p class="trap">Trap: A VPN connection to a virtual private gateway cannot reach a NAT gateway. The NAT gateway documentation states this rule.</p>
+<p><strong>Pairs with.</strong> Transit Gateway, the Route 53 Resolver for hybrid DNS, and the customer gateway router.</p>
+<p class="src">Source: https://docs.aws.amazon.com/vpc/latest/tgw/what-is-transit-gateway.html and https://docs.aws.amazon.com/vpc/latest/userguide/nat-gateway-basics.html</p>
+
+<h3>Private API Gateway</h3>
+<p><strong>What it is.</strong> <span class="fact">A private API is a REST API that you can call only from inside a VPC.</span> <span class="fact">Clients reach it through an interface VPC endpoint.</span> <span class="fact">Traffic to a private API stays on the Amazon network.</span> <span class="fact">Only REST APIs can be private.</span> <span class="fact">Private APIs support TLS 1.2 only.</span></p>
+<div class="mermaid">
+flowchart TD
+  N1["Caller in VPC or on<br/>premises"] -->|via endpoint| N2["Private REST API"]
+  N2 -->|Amazon network| N3["Traffic stays private"]
+  N2 -->|resource policy| N4["Limit to source VPC or<br/>endpoint"]
+  N5["Browser on the internet"] -->|cannot reach| N2
+</div>
+<p class="caption">Figure: A private REST API serves callers inside the VPC or on premises, and it is unreachable from the internet.</p>
+<p class="rule">Rule: Choose a private REST API when the caller is inside the VPC or on-premises through Direct Connect.</p>
+<p><strong>When not to choose.</strong> Do not choose a private API for a public web chat app. A browser on the internet cannot reach it.</p>
+<p class="trap">Trap: Restricting a private API to one VPC by a resource policy condition does not make it public. It stays unreachable from the internet by design.</p>
+<p><strong>Restriction.</strong> <span class="fact">Add aws:SourceVpc or aws:SourceVpce conditions to the resource policy to limit callers.</span> <span class="fact">A VPC endpoint policy can control which endpoints invoke the API.</span></p>
+<p><strong>Limits and numbers.</strong> <span class="fact">Private APIs cannot be converted to edge-optimized APIs.</span> The endpoint service name for execute-api is Not in source for this module.</p>
+<p class="src">Source: https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-private-apis.html</p>
+
+<h3>Application Load Balancer, CloudFront, and AWS WAF in front of a chat app</h3>
+<p><strong>What they do.</strong> The architecture diagram in the AWS Solutions guide places AWS WAF in front of a REST API in API Gateway, and places CloudFront in front of the web app in S3. An Application Load Balancer is a load balancer that routes requests to targets. Its settings and limits are Not in source for this module, because the ALB page was not fetched.</p>
+<div class="mermaid">
+flowchart TD
+  N1["Public entry point for<br/>chat app"] -->|web UI| N2["CloudFront in front of web<br/>app"]
+  N1 -->|API requests| N3["AWS WAF in front of REST<br/>API"]
+  N3 -->|backend private| N4["Private API or private<br/>load balancer"]
+</div>
+<p class="caption">Figure: CloudFront fronts the static web app, and AWS WAF fronts the REST API, which stays private when required.</p>
+<p class="rule">Rule: Put AWS WAF in front of the public entry point for a chat app that must block malicious requests.</p>
+<p class="rule">Rule: Put CloudFront in front of a static web app that serves the browser UI.</p>
+<p><strong>When not to choose.</strong> Do not put a public front door in front of a backend that the scenario says must stay private. Use a private API or a private load balancer for that backend.</p>
+<p class="trap">Trap: AWS WAF in front of a private API does not make the private API reachable from the internet. It filters requests that already reach the API.</p>
+<p><strong>Pairs with.</strong> Private API Gateway, Lambda, Cognito, and the data perimeter conditions.</p>
+<p class="src">Source: https://docs.aws.amazon.com/solutions/latest/generative-ai-application-builder-on-aws/architecture-overview.html</p>
+
+<h3>Data perimeter conditions</h3>
+<p><strong>What they are.</strong> <span class="fact">The aws:SourceVpce condition checks which VPC endpoint made the request.</span> <span class="fact">The aws:SourceVpc condition checks which VPC made the request.</span> A bucket policy can deny access unless the request uses a named endpoint or VPC.</p>
+<div class="mermaid">
+flowchart TD
+  N1["Bucket policy access rule"] -->|one endpoint only| N2["Source VPC endpoint<br/>condition"]
+  N1 -->|any VPC endpoint| N3["Source VPC condition"]
+  N1 -->|private path| N4["Source IP condition"]
+  N4 -->|does not work| N5["Use VPC source IP range"]
+</div>
+<p class="caption">Figure: Endpoint and VPC conditions fit private paths, while a source IP condition does not match them.</p>
+<p><span class="fact">Through an S3 endpoint, the source address changes to a private address.</span> <span class="fact">For that reason, aws:SourceIp does not work on those requests.</span> Use aws:VpcSourceIp for an address range inside the VPC.</p>
+<p class="rule">Rule: Use aws:sourceVpce in a bucket policy when only one endpoint may read the bucket.</p>
+<p class="rule">Rule: Use aws:sourceVpc in a bucket policy when any endpoint in one VPC may read the bucket.</p>
+<p class="trap">Trap: A bucket policy that uses aws:SourceIp for a private endpoint path denies the request. The documentation names aws:VpcSourceIp as the correct condition.</p>
+<p class="src">Source: https://docs.aws.amazon.com/vpc/latest/privatelink/vpc-endpoints-s3.html</p>
+
+<h3>VPC Flow Logs</h3>
+<p><strong>What it is.</strong> <span class="fact">VPC Flow Logs capture information about IP traffic to and from network interfaces in a VPC.</span> <span class="fact">They can publish to CloudWatch Logs, S3, or Data Firehose.</span> <span class="fact">Flow log data is collected outside the traffic path, so it does not change throughput or latency.</span> <span class="fact">The Sundog slides say flow logs can exist at VPC, subnet, and network interface levels.</span></p>
+<div class="mermaid">
+flowchart TD
+  N1["Connection blocked or slow"] -->|enable flow logs| N2["Flow log records"]
+  N2 -->|rejected record| N3["Security group or network<br/>ACL"]
+  N2 -->|publishes to| N4["CloudWatch Logs S3 or Data<br/>Firehose"]
+  N1 -->|records only| N5["No change to traffic"]
+</div>
+<p class="caption">Figure: Flow logs record traffic outside the path, so they show which layer rejected a flow.</p>
+<p class="rule">Rule: Enable flow logs when the scenario asks why a connection is blocked or slow.</p>
+<p><strong>When not to choose.</strong> Do not use flow logs as the control that blocks traffic. They record traffic and do not change it.</p>
+<p class="trap">Trap: Flow logs point to the blocking layer only after you know the flow. Read the record to find whether a security group or network ACL rejected it.</p>
+<p><strong>Limits and numbers.</strong> The accepted and rejected record fields are Not in source for this module. Pricing follows the CloudWatch vended log rules.</p>
+<p class="src">Source: https://docs.aws.amazon.com/vpc/latest/userguide/flow-logs.html and the Sundog course slide extract (VPC Flow Logs slides).</p>
+
+<h3>Route 53 Resolver</h3>
+<p><strong>What it is.</strong> <span class="fact">The VPC Resolver is available by default in every VPC.</span> <span class="fact">It answers queries for VPC-specific names and private hosted zones.</span> <span class="fact">The page names it Route 53 VPC Resolver, which was formerly Route 53 Resolver.</span> <span class="fact">Inbound Resolver endpoints let on-premises DNS query the VPC.</span> <span class="fact">Outbound Resolver endpoints let the VPC query on-premises DNS.</span></p>
+<div class="mermaid">
+flowchart TD
+  N1["Name does not resolve"] -->|VPC names| N2["VPC Resolver answers by<br/>default"]
+  N1 -->|on premises DNS| N3["Inbound Resolver endpoint"]
+  N1 -->|VPC to on premises| N4["Outbound Resolver endpoint"]
+  N1 -->|not a rule issue| N5["Resolver or name problem"]
+</div>
+<p class="caption">Figure: Inbound and outbound Resolver endpoints serve hybrid DNS, and security groups do not filter DNS.</p>
+<p class="rule">Rule: Add an inbound Resolver endpoint when on-premises clients must resolve names in a private hosted zone.</p>
+<p><strong>When not to choose.</strong> Do not expect on-premises clients to resolve VPC private names without an inbound endpoint or a forwarding rule.</p>
+<p class="trap">Trap: Network ACLs and security groups do not filter Amazon DNS traffic. A DNS failure is a resolver or name problem, not a rule on those layers. Route 53 Resolver DNS Firewall is the control for DNS filtering.</p>
+<p class="src">Source: https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/resolver.html, https://docs.aws.amazon.com/vpc/latest/userguide/vpc-network-acls.html, https://docs.aws.amazon.com/vpc/latest/userguide/vpc-security-groups.html</p>
+
+<h3>Cross-Region inference and the network path</h3>
+<p><strong>What it is.</strong> <span class="fact">Geographic cross-Region inference routes requests inside a geography, such as US or EU.</span> <span class="fact">Global cross-Region inference routes requests to any supported commercial Region.</span> <span class="fact">Both use inference profiles, and inference profiles do not support Provisioned Throughput.</span></p>
+<div class="mermaid">
+flowchart TD
+  N1["Cross Region inference<br/>needed"] -->|residency rule| N2["Geographic profile"]
+  N1 -->|cost and no rule| N3["Global profile"]
+  N2 -->|inside geography| N4["Named geography only"]
+  N3 -->|routes worldwide| N5["Any supported commercial<br/>Region"]
+</div>
+<p class="caption">Figure: A geographic profile keeps routing inside one geography, and a global profile routes to any supported Region.</p>
+<p><strong>What stays on the AWS network.</strong> <span class="fact">Data sent between Regions during cross-Region inference stays on the AWS network and does not use the public internet.</span> <span class="fact">Data is encrypted in transit between Regions.</span> <span class="fact">There is no extra routing cost, and the price follows the Region that you call.</span> <span class="fact">CloudTrail records the Region that processed the request in the inference Region field.</span></p>
+<p><strong>What is Not in source.</strong> Whether a VPC interface endpoint in your source Region covers the request after it moves to another Region is Not in source for this module. The path from your VPC to the source Region depends on your endpoint or NAT design, and that is your choice.</p>
+<p class="rule">Rule: Choose a geographic profile when the scenario names a residency rule for a geography.</p>
+<p class="rule">Rule: Choose a global profile when the scenario is about cost and has no residency rule.</p>
+<p class="trap">Trap: Cross-Region does not mean the data stays in one Region. It means the data crosses Regions on the AWS network, not on the public internet.</p>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/cross-region-inference.html</p>
+
+<h3>Dev, QA, and production networks</h3>
+<p><strong>What changes.</strong> The usual difference is the account or VPC boundary. Production often uses its own account and VPC. QA and dev can share a smaller network design. The AWS guidance on multi-account layouts for this case is Not in source for this module.</p>
+<div class="mermaid">
+flowchart TD
+  N1["Network stage"] -->|production| N2["Own VPC or account"]
+  N1 -->|QA or dev| N3["Smaller shared design"]
+  N2 -->|endpoints per zone| N4["Own endpoints"]
+  N2 -->|NAT in each zone| N5["NAT gateway per zone"]
+  N3 -->|single NAT gateway| N6["Single point of failure"]
+</div>
+<p class="caption">Figure: Production gets its own VPC or account, while dev may share a smaller design with one point of failure.</p>
+<p>Endpoints differ by stage. Production needs endpoints in every zone it uses, with endpoint policies that name the production roles. QA can use a smaller set, but it must test the same endpoint policies. NAT differs too. Production needs a NAT gateway in each zone that has outbound needs. Dev may use a single NAT gateway for convenience, but that choice creates a single point of failure.</p>
+<p>Routes change in the same way. Production uses separate route tables, and it does not share a NAT gateway or a gateway endpoint route with other stages.</p>
+<p class="rule">Rule: Give production its own VPC or account, its own endpoints, and a NAT gateway in each zone.</p>
+<p class="trap">Trap: Sharing one VPC across dev, QA, and production makes it hard to show that production has no internet path. Separate VPCs or accounts make the boundary testable.</p>
+<p class="src">Source: https://docs.aws.amazon.com/vpc/latest/userguide/nat-gateway-basics.html and https://docs.aws.amazon.com/vpc/latest/privatelink/vpc-endpoints-s3.html</p>
+
+<h3>Troubleshooting network failures</h3>
+<p>Start with the symptom. A timeout points to a route or an endpoint. A name error points to DNS. A reject message points to a security group or an endpoint policy. Check in that order, and stop when one check fails.</p>
+<div class="mermaid">
+flowchart TD
+  A["Failed call in private<br/>subnet"] -->|Timeout or no<br/>response| B["Check route and endpoint"]
+  A -->|Name not found| C["Check DNS and private DNS"]
+  A -->|Access denied on<br/>endpoint| D["Check endpoint policy"]
+  A -->|Connection refused| E["Check security group rule"]
+  B -->|No route or NAT| F["Add endpoint or NAT"]
+  C -->|Public name used| G["Enable private DNS or set<br/>URL"]
+  D -->|Principal not listed| H["Update endpoint policy"]
+  E -->|Port or source<br/>missing| I["Add rule for endpoint port"]
+</div>
+<p class="caption">Figure: triage tree for network failures in a private design.</p>
+<h4>Timeouts</h4>
+<p>A timeout usually means no route or no endpoint. The call has nowhere to go, so it waits. Check the subnet route table, the NAT gateway, and the endpoint list for the service. <span class="fact">A missing endpoint in a private subnet looks like a timeout.</span></p>
+<p class="trap">Trap: A longer Lambda or SDK timeout does not fix a missing route. It only makes the wait longer.</p>
+<h4>DNS resolution</h4>
+<p>A DNS failure means the name did not resolve to the expected address. Check whether private DNS is on for the endpoint. Check whether the VPC has DNS resolution and DNS hostnames enabled. <span class="fact">For hybrid names, check the Route 53 Resolver inbound and outbound endpoints and forwarding rules.</span></p>
+<p class="trap">Trap: The public name resolves to a public address. In a private subnet with no route, that resolution looks like a timeout, not a DNS error.</p>
+<h4>Missing endpoint</h4>
+<p>A missing endpoint means no interface or gateway endpoint exists for the service in that VPC and Region. Check the endpoint list for the exact service name. Bedrock runtime and agent runtime are two different names.</p>
+<p class="trap">Trap: An endpoint in another Region or another VPC does not serve this VPC.</p>
+<h4>Security group rule</h4>
+<p>A security group blocks traffic that is not allowed by its rules. <span class="fact">Security groups are stateful, so replies are allowed back automatically.</span> Check the port and the source of the rule on the endpoint and on the caller. <span class="fact">Flow logs can show a rejected flow when a security group is too strict.</span></p>
+<p class="trap">Trap: Opening the security group does not help when the network ACL on the subnet rejects the traffic. Check both layers.</p>
+<h4>Endpoint policy deny</h4>
+<p>An endpoint policy deny looks like an authorization error, not a network error. Check the principal, action, and resource in the endpoint policy. Compare them with the role that makes the call.</p>
+<p class="trap">Trap: Changing the caller IAM policy does not fix a deny made by the endpoint policy. Update the endpoint policy.</p>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/vpc-interface-endpoints.html, https://docs.aws.amazon.com/vpc/latest/userguide/vpc-security-groups.html, https://docs.aws.amazon.com/vpc/latest/userguide/flow-logs.html, https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/resolver.html</p>
+
+<h3>Reference architecture: private RAG app with no internet path</h3>
+<p>This design serves a question-answer app over private documents. Users connect through a private link. Every AWS call uses an endpoint. The design has no internet gateway and no NAT gateway.</p>
+<div class="mermaid">
+flowchart TD
+  U["User through VPN or Direct<br/>Connect"] -->|HTTPS| P["Private REST API"]
+  P -->|Lambda proxy| L["Lambda in private subnets"]
+  L -->|Knowledge base call| KB["Bedrock Knowledge Base"]
+  L -->|Generate call| BR["Bedrock runtime via<br/>interface endpoint"]
+  KB -->|Vector search| OS["OpenSearch Serverless via<br/>VPC endpoint"]
+  L -->|Get secret| SM["Secrets Manager via<br/>interface endpoint"]
+  L -->|Write logs| CW["CloudWatch Logs via<br/>interface endpoint"]
+  L -->|Read documents| S3["S3 via gateway endpoint"]
+</div>
+<p class="caption">Figure: private RAG design with endpoints for each AWS call and no internet path.</p>
+<p>The user reaches the private API over a VPN or Direct Connect link. The API invokes Lambda in private subnets. Lambda calls the knowledge base, the model runtime, the secret store, and the logs through endpoints. The OpenSearch Serverless collection accepts the Bedrock source service through its network policy. The exact endpoint name for each knowledge base call is Not in source for this module, so confirm it in the Bedrock API reference.</p>
+<figure class="aws"><img src="img/09770f49c94e4811.png" alt="Generative AI application builder design with WAF, API Gateway, Lambda in private subnets, and VPC endpoints"><figcaption>Figure: a generative AI application with WAF, API Gateway, Lambda in private subnets, and VPC interface and gateway endpoints. Source: AWS documentation, https://docs.aws.amazon.com/solutions/latest/generative-ai-application-builder-on-aws/architecture-overview.html</figcaption></figure>
+<p>The diagram puts AWS WAF and API Gateway at the edge, and Lambda functions in private subnets behind them. Interface endpoints reach Bedrock, the Bedrock Knowledge Base, SageMaker AI, and Kendra. Gateway endpoints reach S3 and DynamoDB, and CloudWatch uses an interface endpoint. Some Lambda outbound traffic still goes through NAT gateways in this design, so it is a useful contrast with the no internet path pattern above.</p>
+
+<h3>Reference architecture: Lambda in a private subnet calling Bedrock through an interface endpoint</h3>
+<p>This is the smallest design that fixes the timeout pattern. The function has no internet path. It reaches Bedrock through one endpoint.</p>
+<div class="mermaid">
+flowchart TD
+  C["Client calls API or event<br/>source"] -->|Invoke| L["Lambda in private subnet"]
+  L -->|HTTPS 443 through<br/>security group| E["Interface endpoint<br/>bedrock-runtime"]
+  E -->|Private DNS name<br/>resolves here| B["Amazon Bedrock model"]
+  L -->|Session reads and<br/>writes| D["DynamoDB via gateway<br/>endpoint"]
+  L -->|Log events| W["CloudWatch Logs via<br/>endpoint"]
+</div>
+<p class="caption">Figure: Lambda in a private subnet reaches Bedrock through an interface endpoint.</p>
+<p>The client invokes the function. The function sends its model request to the endpoint in its own subnet. Private DNS maps the default Bedrock name to that endpoint. Session data and logs use their own endpoints, so the design still has no internet path.</p>
+
+<h3>Reference architecture: hybrid on-premises data through Direct Connect</h3>
+<p>This design lets a generative AI app read on-premises data. It uses a Direct Connect link, a transit gateway hub, and Route 53 Resolver endpoints for DNS.</p>
+<div class="mermaid">
+flowchart TD
+  O["On-premises data center"] -->|Private virtual<br/>interface| D["Direct Connect gateway"]
+  D -->|Attachment| T["Transit Gateway hub"]
+  T -->|Attachment| V1["Shared services VPC"]
+  T -->|Attachment| V2["GenAI production VPC"]
+  V2 -->|Interface endpoint| B["Bedrock and Knowledge Base<br/>endpoints"]
+  V2 -->|Gateway endpoint| S["S3 data bucket"]
+  O -->|DNS queries| R["Route 53 Resolver inbound<br/>endpoint"]
+  R -->|Resolves VPC names| V2
+</div>
+<p class="caption">Figure: hybrid design with Direct Connect, Transit Gateway, and Resolver inbound endpoint.</p>
+<p>On-premises traffic enters through the Direct Connect gateway and reaches the transit gateway hub. The hub forwards it to the production VPC. The production VPC uses endpoints for Bedrock and S3, so its AWS calls do not use the internet. On-premises clients resolve VPC names through the Resolver inbound endpoint. Whether the S3 gateway endpoint serves traffic that arrives through the hub is Not in source for this module, so the design uses a gateway endpoint only for in-VPC callers.</p>
+
+<h3>X versus Y: Internet gateway versus NAT gateway</h3>
+<div class="mermaid">
+flowchart TD
+  A["Who starts the connection"] -->|Internet client to<br/>resource| B["Internet gateway with<br/>public IP"]
+  A -->|Private resource to<br/>internet| C["NAT gateway in public<br/>subnet"]
+  A -->|Private resource to<br/>AWS service| D["Endpoint and no internet<br/>path"]
+  C -->|IPv4 outbound only| E["NAT gateway fits"]
+  C -->|IPv6 outbound only| F["Egress-only internet<br/>gateway"]
+</div>
+<p class="caption">Figure: decision tree for internet gateway, NAT gateway, and endpoints.</p>
+<ul>
+<li><strong>Purpose.</strong> An internet gateway lets resources with public addresses reach the internet in both directions. A NAT gateway lets private resources start outbound connections only.</li>
+<li><strong>Input.</strong> An internet gateway receives traffic from a public address. A NAT gateway receives traffic from a private address in a private subnet.</li>
+<li><strong>Output or effect.</strong> An internet gateway allows new inbound connections. A NAT gateway allows replies and blocks new inbound connections from the internet.</li>
+</ul>
+<p><strong>The one question.</strong> Must the internet be able to start a new connection to the resource?</p>
+<p class="trap">Trap: A NAT gateway looks like an internet gateway for private subnets. It cannot accept a new inbound connection from the internet.</p>
+
+<h3>X versus Y: Interface endpoint versus gateway endpoint</h3>
+<div class="mermaid">
+flowchart TD
+  A["Which AWS service is the<br/>target"] -->|S3 or DynamoDB| B["Gateway endpoint possible"]
+  A -->|Bedrock or SageMaker<br/>AI or other APIs| C["Interface endpoint needed"]
+  B -->|On-premises or<br/>peered caller| C
+  B -->|VPC only and cost<br/>sensitive| D["Gateway endpoint in route<br/>table"]
+  C -->|Private DNS on| E["Default service names<br/>resolve privately"]
+</div>
+<p class="caption">Figure: decision tree for choosing an endpoint type.</p>
+<ul>
+<li><strong>Purpose.</strong> A gateway endpoint gives S3 and DynamoDB a route table path with no charge. An interface endpoint gives a supported service private addresses in your subnets.</li>
+<li><strong>Input.</strong> A gateway endpoint uses a route table target. An interface endpoint uses endpoint network interfaces and security groups.</li>
+<li><strong>Output or effect.</strong> A gateway endpoint adds a prefix route. An interface endpoint adds private addresses and carries an extra charge.</li>
+</ul>
+<p><strong>The one question.</strong> Does any caller come from on-premises, a peered VPC, or a transit gateway?</p>
+<p class="trap">Trap: A gateway endpoint for Bedrock is a common wrong choice. Gateway endpoints cover S3 and DynamoDB only.</p>
+
+<h3>X versus Y: Security groups versus network ACLs</h3>
+<div class="mermaid">
+flowchart TD
+  A["Which control layer in<br/>scenario"] -->|Per instance or ENI<br/>rule| B["Security group"]
+  A -->|Per subnet rule with<br/>order| C["Network ACL"]
+  B -->|Reply traffic| D["Allowed back automatically"]
+  C -->|Reply traffic| E["Needs explicit rule"]
+</div>
+<p class="caption">Figure: decision tree for security groups and network ACLs.</p>
+<table>
+<thead><tr><th>Feature</th><th>Security group</th><th>Network ACL</th></tr></thead>
+<tbody>
+<tr><td>Stateful</td><td>Yes</td><td>No</td></tr>
+<tr><td>Attached to a subnet</td><td>No</td><td>Yes</td></tr>
+<tr><td>Attached to an instance or ENI</td><td>Yes</td><td>No</td></tr>
+<tr><td>Rules evaluated in number order</td><td>No</td><td>Yes</td></tr>
+<tr><td>Filters traffic to Amazon DNS</td><td>No</td><td>No</td></tr>
+</tbody>
+</table>
+<p><strong>The one question.</strong> Does the reply need its own rule at this layer?</p>
+<p class="trap">Trap: A network ACL allows the request but not the reply. The request fails because a stateless rule does not allow the return traffic.</p>
+<p class="src">Source: https://docs.aws.amazon.com/vpc/latest/userguide/vpc-security-groups.html and https://docs.aws.amazon.com/vpc/latest/userguide/vpc-network-acls.html</p>
+
+<h3>X versus Y: bedrock-runtime versus bedrock-agent-runtime</h3>
+<div class="mermaid">
+flowchart TD
+  A["Which API does the code<br/>call"] -->|Model invoke or<br/>Converse| B["bedrock-runtime endpoint"]
+  A -->|Agent invoke or<br/>knowledge base query| C["bedrock-agent-runtime<br/>endpoint"]
+  A -->|Create or manage<br/>agents| D["bedrock-agent endpoint"]
+  A -->|Control plane model<br/>actions| E["bedrock endpoint"]
+</div>
+<p class="caption">Figure: decision tree for Bedrock endpoint names.</p>
+<ul>
+<li><strong>Purpose.</strong> The runtime name serves model calls. The agent runtime name serves agent and knowledge base calls.</li>
+<li><strong>Input.</strong> A runtime call names a model. An agent runtime call names an agent or a knowledge base.</li>
+<li><strong>Output or effect.</strong> The runtime returns model output. The agent runtime returns agent or retrieval output. Which knowledge base calls use this name is Not in source for this module.</li>
+</ul>
+<p><strong>The one question.</strong> Does the code call a model directly, or an agent or a knowledge base?</p>
+<p class="trap">Trap: A design that calls agents with only the runtime endpoint has no path for the agent calls. The agent calls need their own endpoint name.</p>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/vpc-interface-endpoints.html</p>
+
+<h3>X versus Y: Transit Gateway versus VPC peering</h3>
+<div class="mermaid">
+flowchart TD
+  A["How many networks connect"] -->|Two VPCs| B["VPC peering is simple"]
+  A -->|Many VPCs or<br/>on-premises| C["Transit Gateway hub"]
+  B -->|Hub needed later| C
+  C -->|Hybrid with Direct<br/>Connect or VPN| D["Transit Gateway with<br/>attachments"]
+</div>
+<p class="caption">Figure: decision tree for peering versus a transit gateway hub.</p>
+<ul>
+<li><strong>Purpose.</strong> Peering links two VPCs directly. A transit gateway is a hub that routes between many attachments.</li>
+<li><strong>Input.</strong> Peering needs a peering connection and routes in each VPC. A transit gateway needs attachments, route tables, and route propagation.</li>
+<li><strong>Output or effect.</strong> Peering carries private IP traffic between two VPCs. A transit gateway carries traffic between all attached networks, with an hourly charge for each attachment.</li>
+</ul>
+<p><strong>The one question.</strong> Does one hub need to connect many VPCs and on-premises sites?</p>
+<p class="trap">Trap: Using peering as a hub. Peering links two VPCs, and whether routes pass through a peered VPC is Not in source for this module.</p>
+
+<h3>X versus Y: Direct Connect versus Site-to-Site VPN</h3>
+<div class="mermaid">
+flowchart TD
+  A["On-premises link need in<br/>scenario"] -->|Dedicated private<br/>circuit| B["Direct Connect"]
+  A -->|Quick VPN connection| C["Site-to-Site VPN"]
+  B -->|One VPC| D["Private virtual interface"]
+  B -->|Many VPCs through<br/>hub| E["Transit virtual interface"]
+  C -->|Hub or single VPC| F["Transit Gateway or virtual<br/>gateway"]
+</div>
+<p class="caption">Figure: decision tree for Direct Connect and VPN.</p>
+<ul>
+<li><strong>Purpose.</strong> Direct Connect is a dedicated private link to AWS. A Site-to-Site VPN is a connection through a VPN to a gateway in AWS.</li>
+<li><strong>Input.</strong> Direct Connect needs a connection at a Direct Connect location, BGP, and VLAN tagging. A VPN needs a customer gateway and a virtual private gateway or transit gateway.</li>
+<li><strong>Output or effect.</strong> Direct Connect carries port hour and data transfer charges. A VPN propagates routes to the on-premises router with BGP when a transit gateway is the target.</li>
+</ul>
+<p><strong>The one question.</strong> Does the scenario require a dedicated private circuit to AWS?</p>
+<p class="trap">Trap: Assuming Direct Connect is encrypted by default. Encryption for Direct Connect is Not in source for this module.</p>
+
+<h3>X versus Y: Geographic versus global cross-Region inference</h3>
+<div class="mermaid">
+flowchart TD
+  A["Residency rule in scenario"] -->|Must stay in a<br/>geography| B["Geographic inference<br/>profile"]
+  A -->|Cost matters and no<br/>rule| C["Global inference profile"]
+  B -->|Check destination<br/>Regions in SCP| D["Confirm SCP allows listed<br/>Regions"]
+  C -->|Check unspecified<br/>Region condition| D
+</div>
+<p class="caption">Figure: decision tree for geographic and global inference profiles.</p>
+<ul>
+<li><strong>Purpose.</strong> A geographic profile keeps processing inside a named geography. A global profile can process in any supported commercial Region.</li>
+<li><strong>Input.</strong> A geographic profile names a geography. A global profile names no geography.</li>
+<li><strong>Output or effect.</strong> The geographic profile routes inside the geography. The global profile routes worldwide, and the documentation lists about 10 percent savings for it.</li>
+</ul>
+<p><strong>The one question.</strong> Does the scenario name a geography that the data must stay in?</p>
+<p class="trap">Trap: A global profile for a residency rule. Requests can route to any supported Region, so the rule fails.</p>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/cross-region-inference.html</p>
+
+<h3>X versus Y: OpenSearch Serverless network policy versus data access policy</h3>
+<div class="mermaid">
+flowchart TD
+  A["Which question does the<br/>scenario ask"] -->|Where the call comes<br/>from| B["Network policy"]
+  A -->|Who may read or<br/>write data| C["Data access policy"]
+  B -->|AllowFromPublic set<br/>to true| D["VPC endpoints and services<br/>ignored"]
+  B -->|Bedrock private<br/>access| E["Source service and VPC<br/>endpoint listed"]
+  C -->|Caller lacks<br/>permission| F["Add principal to data<br/>access policy"]
+</div>
+<p class="caption">Figure: decision tree for OpenSearch Serverless network and data access policies.</p>
+<ul>
+<li><strong>Purpose.</strong> A network policy decides which networks and services reach the collection endpoint. A data access policy decides which principals may do what to the data.</li>
+<li><strong>Input.</strong> A network policy takes VPC endpoint IDs, source services, and the public flag. A data access policy takes principals and permissions.</li>
+<li><strong>Output or effect.</strong> A network policy allows or blocks the endpoint path. A data access policy allows or denies each operation.</li>
+</ul>
+<p><strong>The one question.</strong> Is the problem about the network path or about the principal?</p>
+<p class="trap">Trap: Turning on public access to fix a data permission error. Public access does not grant a principal any data permission.</p>
+
+<h3>Read a long question</h3>
+<p>Use this method on each long scenario. Mark the constraint words first. Eliminate each option that breaks a constraint. Then choose the remaining option that meets all constraints with the least extra design.</p>
+<div class="mermaid">
+flowchart TD
+  N1["Mark the constraint words"] -->|then| N2["Drop options that break a<br/>constraint"]
+  N2 -->|remaining options| N3["Pick the option that meets<br/>all"]
+  N3 -->|least extra design| N4["Final answer"]
+</div>
+<p class="caption">Figure: Mark the constraints, drop the options that break one, and pick the option that meets all of them.</p>
+<h4>Worked scenario 1: Lambda times out on a model call</h4>
+<p>A team runs a Lambda function in private subnets. The function calls a foundation model to summarize notes. The call times out, and the VPC has no NAT gateway and no endpoints.</p>
+<p>Constraint words: <strong>private subnets</strong>, <strong>no NAT gateway</strong>, <strong>no endpoints</strong>, <strong>times out</strong>, <strong>model call</strong>.</p>
+<ul>
+<li>Move the function to a public subnet. Wrong, because a public subnet alone gives no internet access.</li>
+<li>Add an S3 gateway endpoint. Wrong, because gateway endpoints cover S3 and DynamoDB only.</li>
+<li>Raise the Lambda timeout. Wrong, because the call has no route, so a longer wait does not help.</li>
+<li>Add an interface endpoint for bedrock-runtime in the function subnets. Correct, because it gives the call a private route.</li>
+</ul>
+<p class="rule">Rule: Create an interface endpoint for bedrock-runtime in the function subnets, with a security group that allows HTTPS.</p>
+<p class="tip">Exam tip: Read the word timeout as a route or endpoint problem before you read it as a code problem.</p>
+
+<h4>Worked scenario 2: On-premises records and a residency rule</h4>
+<p>A company keeps records in an on-premises data center. A generative AI app in a VPC must read those records and call a model. The company forbids the public internet on the data path and requires processing in one geography.</p>
+<p>Constraint words: <strong>on-premises data center</strong>, <strong>forbids the public internet</strong>, <strong>one geography</strong>.</p>
+<ul>
+<li>Use the public Bedrock endpoint. Wrong, because the path crosses the internet.</li>
+<li>Use a global inference profile. Wrong, because requests can route worldwide.</li>
+<li>Use VPC peering to the on-premises network. Wrong, because peering connects two VPCs, not a data center.</li>
+<li>Use Direct Connect with a private virtual interface, a geographic profile, and a Resolver inbound endpoint. Correct, because it meets the path, the geography, and the DNS need.</li>
+</ul>
+<p class="rule">Rule: For on-premises data with a geography rule, use Direct Connect, a geographic profile, and endpoints in the VPC.</p>
+<p class="tip">Exam tip: Words such as data center and forbids the public internet point to a private link, not to a peering or public option.</p>
+
+<h4>Worked scenario 3: A batch job writes to a private bucket</h4>
+<p>A data team runs a batch job in a private subnet. The job writes reports to an S3 bucket. The security team wants the bucket reachable only from the VPC, and the design must not use a NAT gateway.</p>
+<p>Constraint words: <strong>private subnet</strong>, <strong>reachable only from the VPC</strong>, <strong>must not use a NAT gateway</strong>.</p>
+<ul>
+<li>Add a NAT gateway. Wrong, because the scenario bans NAT.</li>
+<li>Write a bucket policy with aws:SourceIp for a NAT address. Wrong, because no NAT exists and aws:SourceIp does not apply to endpoint traffic.</li>
+<li>Use a bucket policy with aws:sourceVpce and a gateway endpoint on the route table. Correct, because the bucket accepts only the endpoint and no NAT is needed.</li>
+</ul>
+<p class="rule">Rule: For a private bucket with no NAT, use an S3 gateway endpoint and a bucket policy that names the endpoint.</p>
+<p class="tip">Exam tip: Words such as only from the VPC point to an endpoint condition in the bucket policy.</p>
+
+<h3>Distractor patterns seen in the tests</h3>
+<p>These patterns repeat across many scenarios. Each one looks correct until you check the constraint.</p>
+<div class="mermaid">
+flowchart TD
+  N1["Option looks correct"] -->|check constraint| N2["Constraint in the scenario"]
+  N2 -->|option breaks it| N3["Reject the option"]
+  N2 -->|option meets it| N4["Keep the option"]
+</div>
+<p class="caption">Figure: An option that looks correct is kept only when it meets the constraint in the scenario.</p>
+<ul>
+<li><strong>The public path that works in a demo.</strong> <span class="trap">Trap: It breaks a no internet rule that the scenario states.</span></li>
+<li><strong>The gateway endpoint for a service that needs an interface endpoint.</strong> <span class="trap">Trap: Gateway endpoints cover S3 and DynamoDB only.</span></li>
+<li><strong>The runtime endpoint for an agent design.</strong> <span class="trap">Trap: Agent calls use a separate endpoint name.</span></li>
+<li><strong>The fix that adds a public subnet.</strong> <span class="trap">Trap: A public subnet does not give internet access by itself.</span></li>
+<li><strong>The single NAT gateway for many zones.</strong> <span class="trap">Trap: One zone failure removes outbound access for the other zones.</span></li>
+<li><strong>The security group fix for a subnet block.</strong> <span class="trap">Trap: A network ACL on the subnet can block the traffic even when the security group allows it.</span></li>
+<li><strong>The stateless reply problem.</strong> <span class="trap">Trap: A network ACL does not allow replies back automatically.</span></li>
+<li><strong>The peering hub.</strong> <span class="trap">Trap: Peering connects two VPCs, so many VPCs need a hub.</span></li>
+<li><strong>The private API for public users.</strong> <span class="trap">Trap: A private API is unreachable from the internet.</span></li>
+<li><strong>The global profile for residency.</strong> <span class="trap">Trap: A global profile can route to any supported Region.</span></li>
+<li><strong>The public network setting for a permission error.</strong> <span class="trap">Trap: Public access does not grant data permissions. The data access policy does.</span></li>
+<li><strong>The cost cut in production.</strong> <span class="trap">Trap: Removing endpoints from production moves AWS calls onto NAT or the internet.</span></li>
+</ul>
+
+<h3>Drill</h3>
+<p>Read the prompt, cover the answer line, and say the answer aloud before you read it.</p>
+<div class="mermaid">
+flowchart TD
+  N1["Read the prompt"] -->|cover answer| N2["Say the answer aloud"]
+  N2 -->|then| N3["Read the answer line"]
+  N3 -->|check| N4["Match the Rule or Trap"]
+</div>
+<p class="caption">Figure: Each drill prompt is answered aloud before the answer line is read.</p>
+<p><strong>Drill 1.</strong> A private Lambda function must call a model API and the scenario bans internet access. What is the first fix?</p>
+<p class="rule">Rule: Add an interface endpoint for bedrock-runtime in the function subnets.</p>
+<p><strong>Drill 2.</strong> A private app reads objects from S3 only. Which endpoint type fits, and why?</p>
+<p class="rule">Rule: A gateway endpoint in the route table, because it has no extra charge and S3 is the only target.</p>
+<p><strong>Drill 3.</strong> Model calls work from a private subnet, but agent calls fail. What is missing?</p>
+<p class="rule">Rule: The bedrock-agent-runtime interface endpoint.</p>
+<p><strong>Drill 4.</strong> Private subnets in three zones need outbound internet access that survives one zone failure. What changes?</p>
+<p class="rule">Rule: A NAT gateway in each zone, with routes that keep each zone on its own gateway.</p>
+<p><strong>Drill 5.</strong> A browser on the internet must call an API in a VPC. Which API type fits?</p>
+<p class="trap">Trap: A private API does not fit. Use a public front door with a private backend.</p>
+<p><strong>Drill 6.</strong> Ten VPCs and an on-premises site need one routing hub. Which service fits?</p>
+<p class="rule">Rule: Transit Gateway.</p>
+<p><strong>Drill 7.</strong> The security group allows a request, but the reply is blocked. Which control is the likely cause?</p>
+<p class="rule">Rule: The network ACL on the subnet, because it is stateless and needs a reply rule.</p>
+<p><strong>Drill 8.</strong> Private DNS is off, and the code uses the default Regional name with no NAT. What happens?</p>
+<p class="trap">Trap: The call goes to the public name and fails or times out.</p>
+<p><strong>Drill 9.</strong> A residency rule keeps inference inside one geography. Which profile fits?</p>
+<p class="rule">Rule: A geographic cross-Region inference profile.</p>
+<p><strong>Drill 10.</strong> The network path works, but the caller gets a permission denial on data reads. Which policy do you change?</p>
+<p class="rule">Rule: The data access policy, because it decides which principals may read or write data.</p>
+<p><strong>Drill 11.</strong> Dev and production share one NAT gateway and one set of endpoints. What changes for production?</p>
+<p class="rule">Rule: Give production its own VPC or account with its own endpoints and a NAT gateway in each zone.</p>
+<p><strong>Drill 12.</strong> A function sits in a public subnet, but it cannot reach the internet. Why?</p>
+<p class="trap">Trap: The public subnet route alone is not enough. The function needs a NAT gateway or an endpoint design that fits the scenario.</p>
+
+<h3>Sources</h3>
+<ul>
+<li>https://docs.aws.amazon.com/bedrock/latest/userguide/vpc-interface-endpoints.html</li>
+<li>https://docs.aws.amazon.com/bedrock/latest/userguide/cross-region-inference.html</li>
+<li>https://docs.aws.amazon.com/vpc/latest/userguide/vpc-nat-gateway.html</li>
+<li>https://docs.aws.amazon.com/vpc/latest/userguide/nat-gateway-basics.html</li>
+<li>https://docs.aws.amazon.com/vpc/latest/userguide/nat-gateway-pricing.html</li>
+<li>https://docs.aws.amazon.com/vpc/latest/userguide/nat-gateway-scenarios.html</li>
+<li>https://docs.aws.amazon.com/vpc/latest/userguide/egress-only-internet-gateway.html</li>
+<li>https://docs.aws.amazon.com/vpc/latest/userguide/vpc-security-groups.html</li>
+<li>https://docs.aws.amazon.com/vpc/latest/userguide/vpc-network-acls.html</li>
+<li>https://docs.aws.amazon.com/vpc/latest/userguide/flow-logs.html</li>
+<li>https://docs.aws.amazon.com/vpc/latest/privatelink/create-interface-endpoint.html</li>
+<li>https://docs.aws.amazon.com/vpc/latest/privatelink/privatelink-access-aws-services.html</li>
+<li>https://docs.aws.amazon.com/vpc/latest/privatelink/vpc-endpoints-s3.html</li>
+<li>https://docs.aws.amazon.com/vpc/latest/tgw/what-is-transit-gateway.html</li>
+<li>https://docs.aws.amazon.com/vpc/latest/peering/what-is-vpc-peering.html</li>
+<li>https://docs.aws.amazon.com/directconnect/latest/UserGuide/Welcome.html</li>
+<li>https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/resolver.html</li>
+<li>https://docs.aws.amazon.com/lambda/latest/dg/configuration-vpc.html</li>
+<li>https://docs.aws.amazon.com/sagemaker/latest/dg/interface-vpc-endpoint.html</li>
+<li>https://docs.aws.amazon.com/sagemaker/latest/dg/studio-notebooks-and-internet-access.html</li>
+<li>https://docs.aws.amazon.com/opensearch-service/latest/developerguide/serverless-network.html</li>
+<li>https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-private-apis.html</li>
+<li>https://docs.aws.amazon.com/solutions/latest/generative-ai-application-builder-on-aws/architecture-overview.html</li>
+</ul>
+<div class="mermaid">
+flowchart TD
+  N1["Sources for this module"] -->|links listed| N2["AWS documentation pages"]
+  N2 -->|cited by section| N3["Source line in each<br/>section"]
+  N3 -->|supports| N4["Facts in that section"]
+</div>
+<p class="caption">Figure: Each source line names the AWS pages behind the facts in its section.</p></main>
+<script type="module">
+  import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.esm.min.mjs";
+  mermaid.initialize({
+    startOnLoad: true, theme: "base",
+    themeVariables: { background:"#000000", mainBkg:"#000000", primaryColor:"#000000", primaryTextColor:"#f2f2f2", primaryBorderColor:"#7db8ff", secondaryColor:"#000000", tertiaryColor:"#000000", lineColor:"#d0d0d0", textColor:"#f2f2f2", edgeLabelBackground:"#000000", clusterBkg:"#000000", clusterBorder:"#7db8ff", titleColor:"#ffffff", fontFamily:"Inter, Helvetica, Arial, sans-serif", fontSize:"15px" },
+    flowchart: { htmlLabels: true, curve: "basis", useMaxWidth: false, padding: 12, nodeSpacing: 34, rankSpacing: 46 }
+  });
+</script>
+<script>window.MEMO_DARK = true;</script>
+<script>window.markmap = { autoLoader: { manual: false, toolbar: false } };</script>
+<script src="https://cdn.jsdelivr.net/npm/markmap-autoloader@0.18.12"></script>
+<script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+<script>
+(function () {
+  var palette = ["#1d4ed8", "#15803d", "#7e22ce", "#b91c1c", "#b45309", "#0e7490", "#be185d"];
+  var dark = !!window.MEMO_DARK;
+  var ink = dark ? "#f2f2f2" : "#1f2328";
+  var halo = dark ? "#000000" : "#ffffff";
+  function draw(host, data) {
+    var root = d3.hierarchy(data);
+    var width = Math.max(560, Math.min(host.clientWidth || 720, 900));
+    var leaves = root.leaves().length;
+    var height = Math.max(240, leaves * 24 + 60);
+    var depthMax = root.height || 1;
+    var colW = (width - 300) / depthMax;
+    d3.tree().size([height - 40, 1])(root);
+    root.each(function (d) { d.y = d.depth * colW; });
+    var svg = d3.select(host).append("svg")
+      .attr("viewBox", [0, 0, width, height]).attr("width", "100%").attr("height", height)
+      .style("font-family", "Inter, Helvetica, Arial, sans-serif");
+    var g = svg.append("g").attr("transform", "translate(12,34)");
+    function branch(d) {
+      if (d.depth === 0) return null;
+      return d.ancestors().reverse()[1];
+    }
+    function colorOf(d) {
+      if (d.depth === 0) return ink;
+      var b = branch(d);
+      return palette[root.children.indexOf(b) % palette.length];
+    }
+    g.selectAll("path").data(root.links()).join("path")
+      .attr("fill", "none").attr("stroke", function (l) { return colorOf(l.target); })
+      .attr("stroke-opacity", 0.55).attr("stroke-width", 1.4)
+      .attr("d", d3.linkHorizontal().x(function (d) { return d.y; }).y(function (d) { return d.x; }));
+    var node = g.selectAll("g.node").data(root.descendants()).join("g")
+      .attr("transform", function (d) { return "translate(" + d.y + "," + d.x + ")"; });
+    node.append("circle").attr("r", function (d) { return d.depth === 0 ? 6 : 4; })
+      .attr("fill", colorOf);
+    node.append("text").attr("x", function (d) { return d.children ? 0 : 9; })
+      .attr("y", function (d) { return d.children ? (d.depth === 0 ? -22 : -10) : 0; })
+      .attr("dy", function (d) { return d.children ? null : "0.32em"; })
+      .attr("text-anchor", "start")
+      .text(function (d) { return d.data.name; })
+      .attr("fill", colorOf)
+      .attr("stroke", halo).attr("stroke-width", 4).attr("paint-order", "stroke")
+      .style("font-size", function (d) { return d.depth === 0 ? "15px" : d.depth === 1 ? "13px" : "12px"; })
+      .style("font-weight", function (d) { return d.depth <= 1 ? "600" : "400"; });
+  }
+  function run() {
+    document.querySelectorAll("script.map-data").forEach(function (s) {
+      var host = s.nextElementSibling;
+      if (!host || !host.classList.contains("d3map")) return;
+      try { draw(host, JSON.parse(s.textContent)); }
+      catch (e) { host.textContent = "Map failed to render: " + e.message; }
+    });
+    document.body.setAttribute("data-maps", "done");
+  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", run); else run();
+})();
+</script>
+
+</body>
+</html>
