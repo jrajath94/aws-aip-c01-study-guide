@@ -1,0 +1,45 @@
+# Muse prompt, scene list (curriculum only)
+
+- Scene 1. Part 0, the exam at a glance.
+- Scene 2. Part 1, how AWS asks questions.
+- Scene 3. Part 1A, components and architecture.
+- Scene 4. Part 1B, concepts course.
+- Scene 5. Part 1C, AWS AppConfig and Amazon SageMaker AI.
+- Scene 6. Part 1D, tie-in map.
+- Scene 7. Part 1E, visual units for components and ideas.
+- Scene 8. Part 1F, console and API steps.
+- Scene 9. Part 2, Domain 1, weight 31 percent.
+- Scene 10. Domain 1 knowledge base units R1, R6, and Q17.
+- Scene 11. Unit Q5, chunk size.
+- Scene 12. Unit Q7, cross-Region routing.
+- Scene 13. Units Q9 and P1, storage and versioning.
+- Scene 14. Units Q10 and Q11, data extraction and invocation logs.
+- Scene 15. Domain 2, weight 26 percent, and units Q1 to Q4.
+- Scene 16. Units H1 and H2, error codes and batch input.
+- Scene 17. Domain 3, weight 20 percent, and units Q12 and Q13.
+- Scene 18. Units P5 and R3, secrets and permissions.
+- Scene 19. Unit R4, S3 events invoke Lambda.
+- Scene 20. Unit R5, Step Functions timeouts and retries.
+- Scene 21. Domain 4, weight 12 percent, and units Q14 to Q16.
+- Scene 22. Unit Q14, prompt caching.
+- Scene 23. Unit Q16, cost attribution.
+- Scene 24. Domain 5, weight 11 percent, and unit R1.
+- Scene 25. Unit R2, OpenSearch shard count.
+- Scene 26. Part 7, traps AWS reuses.
+- Scene 27. Part 8, method for each question.
+- Scene 28. Units P2, P3, P4, and P6, compute, network, data, and ML basics.
+- Scene 29. Unit Q15, deploy across accounts.
+- Scene 30. Units G1 to G4, gap units.
+- Scene 31. Unit H3, the Well-Architected Generative AI Lens.
+- Scene 32. Units R6 and Q8, corrections and terms.
+- Scene 33. Part 8A7, official AWS diagrams.
+- Scene 34. Part 9, gaps, limits, and checks.
+- Scene 35. Closing method, without a summary of content.
+- Scene 36. Unit N1, prompt management.
+- Scene 37. Unit N2, Converse tool use and guardrails.
+- Scene 38. Unit N3, SageMaker AI real-time endpoints.
+- Scene 39. Unit N4, Bedrock Flows.
+- Scene 40. Unit N5, AgentCore Gateway.
+- Scene 41. Unit N6, API Gateway front door.
+- Scene 42. Unit N7, Amazon Q Developer.
+- Scene 43. Topic coverage index.
