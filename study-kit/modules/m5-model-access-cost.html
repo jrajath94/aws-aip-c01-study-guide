@@ -1,0 +1,649 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>5. Model access, performance, and cost</title>
+<style>
+:root {
+  --bg: #000000;
+  --ink: #f2f2f2;
+  --fact: #7db8ff;
+  --rule: #6ee7a0;
+  --tip: #d8a6ff;
+  --trap: #ff8a8a;
+  --muted: #a8a8a8;
+  --line: #333333;
+}
+html, body { background: #000000; }
+body {
+  color: var(--ink);
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 19px;
+  line-height: 1.7;
+  margin: 0;
+  padding: 24px 20px 72px;
+}
+main { max-width: 780px; margin: 0 auto; }
+main p, main li { text-align: justify; }
+h1 { font-size: 32px; line-height: 1.3; margin: 0 0 12px; color: #ffffff; }
+h2 { font-size: 26px; line-height: 1.35; margin: 48px 0 14px; color: #ffffff; border-top: 1px solid var(--line); padding-top: 22px; }
+h3 { font-size: 21px; line-height: 1.4; margin: 32px 0 10px; color: #ffffff; }
+h4 { font-size: 19px; line-height: 1.4; margin: 24px 0 8px; color: #ffffff; }
+p { margin: 0 0 18px; }
+ul, ol { margin: 0 0 18px; padding-left: 26px; }
+li { margin-bottom: 10px; }
+.fact { color: var(--fact); }
+.rule { color: var(--rule); }
+.tip { color: var(--tip); }
+.trap { color: var(--trap); }
+.src { font-size: 16px; color: var(--muted); }
+.meta { font-size: 16px; color: var(--muted); margin-bottom: 24px; }
+.caption { font-size: 16px; color: var(--muted); margin: -8px 0 26px; text-align: left; }
+.legend p { margin-bottom: 6px; text-align: left; }
+.mermaid { margin: 14px 0 26px; font-size: 21px; text-align: left; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; }
+.mermaid svg { max-width: none; height: auto; }
+@media print {
+  .mermaid { overflow: visible; break-inside: avoid; }
+  .mermaid svg { max-width: 100% !important; height: auto !important; }
+  body { padding: 14mm 10mm; }
+  h1, h2, h3, h4 { break-after: avoid; }
+  p.caption, p.src { break-before: avoid; }
+}
+.markmap { position: relative; margin: 10px 0 28px; border-top: 1px solid #222; border-bottom: 1px solid #222; --markmap-text-color: #f2f2f2; --markmap-a-color: #7db8ff; color: #f2f2f2; }
+.markmap > svg { width: 100%; height: 560px; display: block; }
+.markmap foreignObject, .markmap .markmap-foreign { color: #f2f2f2; font-size: 17px; }
+nav.mod { font-size: 16px; color: #a8a8a8; margin: 0 0 18px; }
+nav.mod a { color: #7db8ff; }
+table { border-collapse: collapse; width: 100%; margin: 0 0 22px; font-size: 17px; }
+th, td { border: 1px solid #333; padding: 6px 8px; text-align: left; vertical-align: top; }
+th { color: #ffffff; }
+</style>
+</head>
+<body>
+<main>
+
+<nav class="mod"><a href="index.html">All modules</a> <a href="m4-agents-orchestration.html">Previous</a> <a href="m6-customization-sagemaker.html">Next</a></nav>
+<h2>Model access, performance, and cost: how you call the model and how you pay</h2>
+<p>After this module, you can decide how an application calls a foundation model, how that call is throttled, and how it is paid for. You can read a long scenario, find the one constraint that decides the answer, and reject each wrong option with one reason. Most errors in this area come from mixing four layers: the API, the capacity model, the routing feature, and the cost tool. Keep those layers apart and the answer usually becomes clear.</p>
+
+<div class="markmap"><script type="text/template">
+# Model access performance cost
+## Call pattern
+- Converse for chat messages
+- InvokeModel for native bodies
+- Streaming for first tokens
+## Capacity model
+- On-demand for spiky traffic
+- Provisioned for steady volume
+- Provisioned required for custom models
+## Offline work
+- Batch inference reads S3 JSONL
+- No interactive user waits
+- Results land in S3
+## Routing and residency
+- Geographic profile keeps data local
+- Global profile maximizes throughput
+- Application profile tracks cost
+## Speed and reuse
+- Prompt caching reuses static prefixes
+- Latency optimized per request
+- Semantic caching needs tuned threshold
+## Limits and errors
+- 429 means quota exceeded
+- 503 means capacity pressure
+- Retry with backoff and jitter
+## Size and tokens
+- Input plus max tokens reserved
+- CountTokens before inference
+- Stop reason shows truncation cause
+## Cost decisions
+- Cheapest model passing quality tests
+- Distill or prune repeated tasks
+- Cost Explorer and CloudWatch
+## Monitoring
+- Metrics show trends
+- Invocation logs show content
+- CloudTrail shows who called
+</script></div>
+
+<h3>The deciding constraint</h3>
+<p>Start at the scenario, not at the service names. Ask four questions in order.</p>
+<ol>
+<li>Is a user waiting for the answer?</li>
+<li>Is the volume steady or spiky?</li>
+<li>Must the data stay in one geography?</li>
+<li>Is the model customized?</li>
+</ol>
+<p>Each answer removes whole branches of options, so you rarely need to compare every choice in detail.</p>
+
+<div class="mermaid">
+flowchart TD
+  A["Scenario needs<br/>model inference"] -->|User waits for<br/>reply| B["Interactive path"]
+  A -->|Backlog in S3<br/>can finish in<br/>hours| C["Batch inference<br/>job"]
+  B -->|Steady volume<br/>or custom<br/>model| D["Provisioned<br/>Throughput ARN"]
+  B -->|Spiky or<br/>unknown volume| E["On-demand Converse<br/>call"]
+  E -->|Data must stay<br/>in one<br/>geography| F["Geographic<br/>inference profile"]
+  E -->|Any Region<br/>allowed and<br/>cost matters| G["Global inference<br/>profile"]
+  E -->|Cost per team<br/>or tenant| H["Application<br/>inference profile"]
+  B -->|Slow first<br/>words| I["Streaming plus<br/>latency optimized"]
+</div>
+<p class="caption">Figure: The first split is whether a person waits for the answer.</p>
+
+<p>Use these signal words to move down the tree.</p>
+<ul>
+<li><span class="rule">Rule:</span> Words such as chat, live agent, or typing point to the interactive path.</li>
+<li><span class="rule">Rule:</span> Words such as overnight, backlog, S3 files, or by morning point to batch inference.</li>
+<li><span class="rule">Rule:</span> Words such as guaranteed, reserved, or steady high volume point to Provisioned Throughput.</li>
+<li><span class="rule">Rule:</span> The words customized model or fine-tuned model mean you must purchase Provisioned Throughput.</li>
+<li><span class="rule">Rule:</span> Words such as spike, sale, or unpredictable point to on-demand plus quota planning.</li>
+<li><span class="rule">Rule:</span> Words such as residency, jurisdiction, or stay in the country point to a geographic profile.</li>
+<li><span class="rule">Rule:</span> Words such as maximize throughput with no residency limit point to a global profile.</li>
+<li><span class="rule">Rule:</span> Words such as chargeback, cost per team, or tags point to an application inference profile.</li>
+</ul>
+<p class="tip">Exam tip: The word steady in a stem usually supports reserved capacity, while the word nightly usually supports batch. Read the time window and the user type before you read the options.</p>
+
+<h3>Converse API</h3>
+<p><strong>What it is.</strong> <span class="fact">The Converse API sends a conversation to a model through one request shape. It runs on the bedrock-runtime endpoint. The request carries messages, an inference configuration with maxTokens, temperature, topP, and stop sequences, and optional tool and guardrail settings. The response carries output, stopReason, usage, and metrics.</span></p>
+<p><strong>Why it matters.</strong> The same code path can call several models that support messages. Model-specific settings go in a separate field, so you change less code when you switch models.</p>
+<p class="rule">Rule: Choose Converse for chat and multi-turn messages, especially when you may change models later. Choose it when you want one response shape for every caller.</p>
+<p class="trap">Trap: Converse does not remove every model difference. Provider-specific parameters still belong in the additional model request field, and not every model supports messages.</p>
+<p><strong>Pairs with.</strong> Guardrails in the request, tool use, ConverseStream for live output, and the usage fields for cost tracking.</p>
+<p class="fact">Limits: The usage object reports inputTokens, outputTokens, and totalTokens. When prompt caching is on, total input equals inputTokens plus cacheReadInputTokens plus cacheWriteInputTokens. Context window size per model: Not in source.</p>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/conversation-inference.html , https://docs.aws.amazon.com/bedrock/latest/userguide/prompt-caching.html</p>
+
+<h3>InvokeModel and InvokeModelWithResponseStream</h3>
+<p><strong>What it is.</strong> <span class="fact">These base operations send a model-native JSON body. You build the body for each provider and model family. The response is also model-specific. The streaming variant returns the output as an event stream.</span></p>
+<p class="rule">Rule: Choose InvokeModel when you need a parameter that only the native body exposes, or when the model does not use the message format. Choose the streaming variant when the native body is required and users read output live.</p>
+<p class="trap">Trap: Do not pick InvokeModel only because it sounds lower level. Each model switch then needs a new body format. Also, calling the streaming variant and reading only the final body removes the benefit of streaming.</p>
+<p><strong>Pairs with.</strong> The model ID or an inference profile in modelId, a provisioned model ARN in modelId, and Bedrock invocation logging for supported calls.</p>
+<p class="fact">Limits: Body schema per model: Not in source for this module. Check the model parameter reference before you write the payload.</p>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/conversation-inference.html</p>
+
+<h3>Streaming with ConverseStream</h3>
+<p><strong>What it is.</strong> <span class="fact">Streaming sends output in pieces while the model generates it. The TimeToFirstToken metric applies to streaming calls. Streaming changes when a user sees the first words. It does not reduce the work the model does.</span></p>
+<p class="rule">Rule: Choose streaming when a person reads the answer as it forms. Choose a non-streaming call when a program needs the complete answer before it acts.</p>
+<p class="trap">Trap: Streaming does not fix throttling, and it does not make a slow model fast. A proxy or gateway that buffers the response also hides the stream from the browser.</p>
+<p><strong>Pairs with.</strong> Latency optimized inference, the TimeToFirstToken metric, and an API front end that can pass chunks through.</p>
+<p class="fact">Limits: Gateway streaming rules for API Gateway: Not in source for this module. Check the API Gateway documentation before you choose the API type.</p>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/conversation-inference.html , Sundog slides page 286 (TimeToFirstToken in streaming)</p>
+
+<h3>On-demand inference</h3>
+<p><strong>What it is.</strong> <span class="fact">On-demand inference charges per token and shares model capacity with other customers. Your ceiling is the account quota for each model and Region. Quotas limit tokens per minute, and some models also limit requests per minute.</span></p>
+<p class="rule">Rule: Choose on-demand for unknown, variable, or low volume traffic. Choose it when a short wait or a retry during a spike is acceptable.</p>
+<p class="trap">Trap: On-demand does not guarantee capacity during a spike. Retries and higher client concurrency do not create capacity, and they can add load during the spike.</p>
+<p><strong>Pairs with.</strong> Token-aware admission control, retries with backoff, cross-Region inference profiles, and Service Quotas increase requests.</p>
+<p class="fact">Limits: Default quota values: Not in source for this module. Read your values in Service Quotas, because account allocations can differ from published defaults.</p>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/quotas.html , https://docs.aws.amazon.com/bedrock/latest/userguide/scaling-throughput-best-practices.html</p>
+
+<h3>Provisioned Throughput</h3>
+<p><strong>What it is.</strong> <span class="fact">You buy Model Units for one model. Each Model Unit sets how many input tokens and output tokens per minute the model can process for you. You choose no commitment, a 1-month commitment, or a 6-month commitment, and longer commitments cost less per hour. Billing continues until you delete the throughput.</span></p>
+<p><strong>Custom models.</strong> A customized model must use Provisioned Throughput. You then pass the provisioned model ARN as the modelId in the runtime call.</p>
+<p class="rule">Rule: Choose Provisioned Throughput for steady high volume with a latency target, or for any customized model. Choose it when the workload runs for most hours of the day.</p>
+<p class="trap">Trap: Do not buy it for a weekly or nightly job, because you pay every hour until you delete it. Do not pair it with cross-Region inference profiles, because profiles do not support it. Batch inference also does not run on provisioned models.</p>
+<p><strong>Pairs with.</strong> CloudWatch utilization dashboards, Cost Explorer for attributing model cost, and the runtime quota planning that starts from tokens per minute.</p>
+<p class="fact">Limits: Tokens per minute for each Model Unit: Not in source. Price per hour and commitment discounts: Not in source. Ask the AWS account team for these numbers.</p>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/prov-throughput.html , https://docs.aws.amazon.com/bedrock/latest/userguide/cross-region-inference.html , Sundog slides page 291</p>
+
+<h3>Batch inference</h3>
+<p><strong>What it is.</strong> <span class="fact">Batch inference reads many prompts from files in Amazon S3 and writes responses back to S3. The job runs asynchronously. You can format the input for either the InvokeModel or the Converse request style.</span></p>
+<p><strong>Limits in the docs.</strong> Batch inference is not supported for provisioned models. Jobs that use the Converse invocation type do not accept tool configuration, and such records fail with a 400 error. Structured output works with both invocation types.</p>
+<p class="rule">Rule: Choose batch when no user waits and records sit in S3. A completion window of hours must be acceptable. Use it for backfills, nightly summaries, and bulk classification.</p>
+<p class="trap">Trap: Do not choose batch for live chat. Do not expect prompt caching to apply, because the docs say caching is not supported with batch. Do not choose the Converse invocation type when the job needs tools.</p>
+<p><strong>Pairs with.</strong> S3 input and output locations, a service role that grants access to the buckets, and EventBridge notifications for job state changes.</p>
+<p class="fact">Limits: Records per job, file size, and job duration: Not in source for this module. Discount versus on-demand: Not in source. The Sundog slides say batch is for submitting many prompts in S3 and getting responses in S3.</p>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/batch-inference.html , https://docs.aws.amazon.com/bedrock/latest/userguide/prompt-caching.html , Sundog slides page 290</p>
+
+<h3>Cross-Region inference profiles</h3>
+<p><strong>What it is.</strong> <span class="fact">A cross-Region inference profile defines a foundation model and the Regions where Bedrock may route your request. A geographic profile keeps routing inside one geography, for example the US, the EU, or APAC. A global profile routes to any supported commercial Region. Traffic stays on the AWS network and is encrypted in transit.</span></p>
+<p><strong>Cost and logging.</strong> Geographic profiles use standard pricing. Global profiles are listed at about 10 percent savings in the docs table. There is no extra routing fee, and the price follows the Region you call from. CloudTrail records the inference Region in the additionalEventData field.</p>
+<p class="rule">Rule: Choose a geographic profile when data residency keeps processing in one geography. Choose a global profile when residency allows any commercial Region and you want the lower price and the widest capacity.</p>
+<p class="trap">Trap: A global profile is not a residency tool. A Service Control Policy can block profile Regions. Allow every Region in the profile, or allow the unspecified Region condition for global profiles.</p>
+<p><strong>Pairs with.</strong> Application inference profiles, Service Control Policies, CloudTrail, and the modelId field in Converse or InvokeModel.</p>
+<p class="fact">Limits: Profiles do not support Provisioned Throughput. The docs give the US geographic profile as an example that routes across us-east-1, us-east-2, and us-west-2. The complete Region list for each profile: Not in source for this module.</p>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/cross-region-inference.html , Sundog slides pages 304 and 305</p>
+
+<h3>Application inference profiles</h3>
+<p><strong>What it is.</strong> <span class="fact">An application inference profile tracks usage and cost for the requests that use it. You create it from one foundation model, which tracks one Region, or from a cross-Region system-defined profile, which tracks the Regions in that profile. It accepts tags and returns an ARN that you use as the modelId.</span></p>
+<p class="rule">Rule: Choose an application profile when you need cost attribution per application, team, or tenant. Create it from the cross-Region profile when you also need multi-Region routing.</p>
+<p class="trap">Trap: An application profile is not a capacity purchase. A profile made from a single model keeps single-Region routing, so it does not add failover. Do not expect it to replace Provisioned Throughput.</p>
+<p><strong>Pairs with.</strong> Cost allocation tags, Cost Explorer reports, and the system-defined profile it copies.</p>
+<p class="fact">Limits: Quota per account for profiles: Not in source. Required fields are a name and a model source. Description, tags, and client token are optional.</p>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/inference-profiles-create.html</p>
+
+<h3>Prompt caching</h3>
+<p><strong>What it is.</strong> <span class="fact">Prompt caching reuses a repeated prompt prefix so the model does not process it again. Implicit caching is automatic and best effort. Explicit caching places cache checkpoints in the request. Each checkpoint needs a minimum prefix length. The docs table lists 512 to 4,096 tokens, depending on the model.</span></p>
+<p class="fact">Checkpoints are processed in the order tools, then system, then messages. Up to four checkpoints per request apply to the listed Claude models. The time to live is 5 minutes for most listed models. Some models also allow 1 hour, set with a ttl value.</p>
+<p><strong>Billing.</strong> Cache reads are billed at a lower rate. Cache writes can cost more than standard input tokens. A cache hit is not guaranteed, so read cacheReadInputTokens and cacheWriteInputTokens on every response.</p>
+<p class="rule">Rule: Choose prompt caching when a long static prefix repeats, such as policy text or a tool schema. Put static content first and the changing user input last.</p>
+<p class="trap">Trap: Do not put per-user data in a prefix that you expect to repeat. Do not expect a benefit when every prompt is unique. Prompt caching is not a response cache, so it does not return a saved answer.</p>
+<p><strong>Pairs with.</strong> The cachePoint field in Converse, the cache control field in InvokeModel for Claude models, CloudWatch cache token metrics, and semantic caching for answers.</p>
+<p class="fact">Limits: Cache hit rate for your workload: Not in source. Batch inference is not supported. Cross-Region inference can be used with caching, and it can increase cache writes at peak demand.</p>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/prompt-caching.html , Sundog slides pages 293 and 294</p>
+
+<h3>Intelligent prompt routing</h3>
+<p><strong>What it is.</strong> <span class="fact">Intelligent prompt routing gives one serverless endpoint that sends each request to one of two models from one model family. Bedrock predicts the response quality of each model for the prompt. A fallback model acts as the baseline, and a response quality difference setting decides when to leave the baseline.</span></p>
+<p><strong>Limits in the docs.</strong> The feature is optimized for English prompts. It cannot adjust routing from your application performance data. Default routers use selected Amazon Nova and Meta Llama models, and a configured router must contain exactly two models from the same family.</p>
+<p class="rule">Rule: Choose intelligent routing when one family holds a cheaper model and a stronger model, the traffic is English, and you want no custom router. Test the quality difference before you set the criterion.</p>
+<p class="trap">Trap: Do not use it across different model families, because the feature routes inside one family. Do not use it to meet a residency rule or a latency target, because it does not solve either.</p>
+<p><strong>Pairs with.</strong> Model evaluation for quality tests, Cost Explorer for cost checks, and a custom router in application code when families differ.</p>
+<p class="fact">Limits: The supported model and Region table is in the docs and changes over time. Response quality difference values in the docs example: 10 percent for a fallback comparison.</p>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/prompt-routing.html , Sundog slides pages 288 and 289</p>
+
+<h3>Latency optimized inference</h3>
+<p><strong>What it is.</strong> <span class="fact">You set performanceConfig with latency set to optimized on a runtime call. The default is standard. The feature is in preview. It keeps the same model, and it needs no fine-tuning or new endpoint.</span></p>
+<p><strong>Fallback and visibility.</strong> When the optimized quota for a model is used up, Bedrock serves the request at standard latency and bills it at standard rates. The served setting appears in the API response and in CloudTrail. CloudWatch shows latency-optimized requests under a separate model ID suffix.</p>
+<p class="rule">Rule: Choose latency optimized when the same supported model must stay, the call is interactive, and you can set the flag on each request. Use it for the live path and leave background calls on standard.</p>
+<p class="trap">Trap: Do not treat it as extra capacity. It targets response speed, not throughput. Do not assume every model or Region supports it, because the docs list specific models and cross-Region profiles.</p>
+<p><strong>Pairs with.</strong> Streaming for early words, prompt caching for long prefixes, and cross-Region profiles where the table lists them.</p>
+<p class="fact">Limits: The docs list a request size limit for one Llama model in optimized mode, and larger requests fall back to standard. The current model list: Not in source for this module.</p>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/latency-optimized-inference.html , Sundog slides page 295</p>
+
+<h3>Service quotas and token burndown</h3>
+<p><strong>What it is.</strong> <span class="fact">Quotas are set per model and per Region. Token quotas count input tokens, output tokens, and cache write tokens, while cache read tokens do not count. The system deducts input tokens plus max_tokens at the start of a request, and it refunds unused reservation after the response.</span></p>
+<p><strong>Output weighting.</strong> Output tokens count at 1 to 1 for most models. The burndown page lists higher output rates for some Anthropic model versions, such as 5 times, 10 times, or 15 times. Check the model card for the rate that applies to your model.</p>
+<p class="rule">Rule: When throttling appears while request count is under the limit, check token quotas and the max_tokens value first. Lower the reserved amount before you ask for more quota.</p>
+<p class="trap">Trap: A quota is an upper bound, not a promise that every request runs at once. Quota increases are not automatic, and the requests per minute limit is not the only control for token-heavy traffic.</p>
+<p><strong>Pairs with.</strong> CountTokens for input estimates, maxTokens for output reservation, retries, and Provisioned Throughput when the steady load is known.</p>
+<p class="fact">Limits: Default values per model: Not in source. The bedrock-runtime and bedrock-mantle endpoints have separate quota allocations. Daily token quotas also exist, and their values are Not in source.</p>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/quotas-token-burndown.html , https://docs.aws.amazon.com/bedrock/latest/userguide/quotas.html , https://docs.aws.amazon.com/bedrock/latest/userguide/scaling-throughput-best-practices.html</p>
+
+<div class="mermaid">
+flowchart TD
+  A["Request arrives"] -->|Input plus max<br/>tokens| B["Reserved at request start"]
+  B -->|Fits remaining quota| C["Request admitted"]
+  B -->|Does not fit| D["ThrottlingException 429"]
+  C -->|After completion| E["Refund unused reservation"]
+  E -->|Final charge uses<br/>weighted output| F["Cache reads not counted"]
+</div>
+<p class="caption">Figure: A large max_tokens value reserves quota before any output exists.</p>
+
+<h3>Error codes, throttling, and retry with backoff</h3>
+<p><strong>What it is.</strong> <span class="fact">A 429 ThrottlingException means the request exceeded an account quota. A 503 ServiceUnavailable means temporary demand or capacity pressure, and it is not an account quota. A 529 overloaded_error is a transient capacity error. A 400 ValidationError means the input broke a rule, and a 403 AccessDeniedException means the caller lacks permission.</span></p>
+<p><strong>Retry pattern.</strong> For 429, 503, and 529, retry with exponential backoff and random jitter. Honor a Retry-After header when one is present. Keep the total attempt count bounded, and count the first attempt in that bound when you use the SDK setting total_max_attempts.</p>
+<p class="rule">Rule: For a 429, reduce token demand or request a quota increase, then retry with bounded backoff. For a 503 or 529, back off, reduce concurrency, and consider another Region when the model and residency rules allow it.</p>
+<p class="trap">Trap: Do not retry a ValidationError, because the same input fails again. Do not treat a 503 as a quota problem. Retry storms and extra Lambda concurrency send more load into the same capacity.</p>
+<p><strong>Connection trap.</strong> NAT Gateways, interface endpoints, and Network Load Balancers drop connections that sit idle for 350 seconds. The client may see a timeout or a long first call after idle time. The docs require both SDK TCP keep-alive and a lower OS keep-alive interval below 350 seconds.</p>
+<p class="fact">Limits: The SDK default attempt count: Not in source. The six total attempts in the docs example are a sample budget, not a default.</p>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/troubleshooting-api-error-codes.html , https://docs.aws.amazon.com/bedrock/latest/userguide/scaling-throughput-best-practices.html</p>
+
+<h3>Max tokens and context windows</h3>
+<p><strong>What it is.</strong> <span class="fact">maxTokens in inferenceConfig caps the generated output. The stopReason field explains why generation ended. The docs show max_tokens when the cap was reached, and end_turn when the model finished on its own.</span></p>
+<p class="rule">Rule: Set maxTokens to the real answer budget for each task class. If stopReason is max_tokens, raise or change the cap for that class. If the prompt itself is too large, prune input instead.</p>
+<p class="trap">Trap: Raising maxTokens does not fix an input that is too large for the context window. Setting it to the model maximum wastes quota reservation on every request, and reducing it does not shrink retrieved context.</p>
+<p><strong>Pairs with.</strong> CountTokens for input size, stop reason logging for diagnosis, and token budgets in the gateway or in application code.</p>
+<p class="fact">Limits: Context window size for each model: Not in source. The name of the stop reason for input overflow: Not in source for this module. Check the Converse stop reason list before you write a handler for that case.</p>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/conversation-inference.html , https://docs.aws.amazon.com/bedrock/latest/userguide/quotas-token-burndown.html</p>
+
+<div class="mermaid">
+flowchart TD
+  A["Answer cut or<br/>missing content"] -->|Stop reason<br/>max_tokens| B["Output cap reached"]
+  A -->|Input close to<br/>context limit| C["Input too large"]
+  A -->|Stop reason<br/>end_turn| D["Model finished<br/>normally"]
+  B -->|Raise cap for<br/>this task<br/>class| E["Recheck maxTokens<br/>setting"]
+  C -->|Count input<br/>before call| F["CountTokens on<br/>full request"]
+  F -->|Over budget| G["Prune chunks or<br/>summarize history"]
+</div>
+<p class="caption">Figure: Read the stop reason before you change any limit.</p>
+
+<h3>CountTokens</h3>
+<p><strong>What it is.</strong> <span class="fact">CountTokens returns the input token count for a request, for one named model, without running inference. Different models count the same text differently. Sundog course slides state that the call costs nothing.</span></p>
+<p class="rule">Rule: Call CountTokens on the full assembled request, for the same model you will invoke. Use the count to reject, prune, or summarize the request before the model runs.</p>
+<p class="trap">Trap: CountTokens counts input only, so it does not predict output. Do not use the count from one model for another model. Do not treat the count as a replacement for maxTokens.</p>
+<p><strong>Pairs with.</strong> Prompt pruning, maxTokens, token budgets, and the usage fields that report actual counts after the call.</p>
+<p class="fact">Limits: Request size limits for CountTokens: Not in source for this module.</p>
+<p class="src">Source: Sundog slides pages 285 and 289, https://docs.aws.amazon.com/bedrock/latest/userguide/quotas.html</p>
+
+<div class="mermaid">
+flowchart TD
+  A["Assemble full<br/>request"] -->|Same model as<br/>invocation| B["CountTokens call"]
+  B -->|Input count<br/>within budget| C["Invoke with<br/>maxTokens set"]
+  B -->|Input count<br/>over budget| D["Prune or summarize"]
+  D -->|Recount after<br/>change| B
+  C -->|Read usage<br/>fields after<br/>call| E["Persist input and<br/>output counts"]
+</div>
+<p class="caption">Figure: Count, decide, then invoke. The count covers input only.</p>
+
+<h3>Model selection by cost and quality</h3>
+<p><strong>What it is.</strong> <span class="fact">Model selection matches a model to each task, then measures quality and cost for that task. Bedrock evaluations can compare models with your own prompts, using human judges, LLM judges, or predefined metrics. Price per token alone does not show cost per correct result.</span></p>
+<p class="rule">Rule: Choose the smallest model that passes your acceptance tests for each task. Test each stage of a workflow on its own, because the stages often need different capability.</p>
+<p class="trap">Trap: Do not choose by leaderboard score, by list price alone, or by the largest model for every stage. A cheaper model that needs retries can cost more per correct answer.</p>
+<p><strong>Pairs with.</strong> Intelligent routing inside one family, distillation for narrow repeated tasks, and CloudWatch token metrics for the measured cost.</p>
+<p class="fact">Limits: Model prices by Region: Not in source for this module. Use the pricing page and your own test results.</p>
+<p class="src">Source: Sundog slides pages 288 and 289, https://docs.aws.amazon.com/bedrock/latest/userguide/prompt-routing.html</p>
+
+<div class="mermaid">
+flowchart TD
+  A["Need cheaper<br/>model for some<br/>traffic"] -->|Two models<br/>in one<br/>family| B["Intelligent<br/>prompt routing"]
+  A -->|Different<br/>families or<br/>custom rules| C["Router in<br/>application<br/>code"]
+  A -->|Bounded<br/>preprocessing<br/>step| D["Smaller model<br/>for that stage"]
+  A -->|Narrow task<br/>repeated at<br/>scale| E["Consider<br/>distillation"]
+  B -->|Prompts are<br/>English| F["Check quality<br/>before routing"]
+  C -->|Route by<br/>measured<br/>test score| G["Keep score<br/>table current"]
+  E -->|Self-hosted<br/>model| H["Host on<br/>SageMaker AI"]
+</div>
+<p class="caption">Figure: Pick the mechanism by the family rule first, then by the cost goal.</p>
+
+<h3>Distillation, pruning, and smaller models</h3>
+<p><strong>What it is.</strong> <span class="fact">Knowledge distillation trains a smaller model from a larger model. Quantization lowers the precision of model weights, and pruning removes weights. The Sundog slides place these methods in the self-hosting part of the course, where teams run model servers such as those in SageMaker AI.</span></p>
+<p class="rule">Rule: Use a smaller model for bounded preprocessing, such as classification, chunking, or compression. Consider distillation when you host the model yourself and the task is narrow and repeated at scale.</p>
+<p class="trap">Trap: Distillation is training work, not a setting you toggle on a Bedrock call. Do not distill before you measure cost and quality. Do not move final generation to a small model when the output quality is the goal.</p>
+<p><strong>Pairs with.</strong> SageMaker AI hosting, model selection tests, and token pruning in the prompt.</p>
+<p class="fact">Limits: Bedrock custom distillation product details: Not in source for this module. Size reduction percentages: Not in source.</p>
+<p class="src">Source: Sundog slides pages 288 and 319</p>
+
+<h3>Semantic caching</h3>
+<p><strong>What it is.</strong> <span class="fact">Semantic caching stores embeddings of earlier prompts and their responses. For a new prompt, the application embeds it, searches for nearest neighbors, and returns the cached response when the similarity score passes a threshold. The Sundog slides name ElastiCache for Valkey as a vector store for this pattern.</span></p>
+<p class="rule">Rule: Choose semantic caching when many users ask similar questions and the same answer stays correct for all of them. Tune the threshold, and set an expiry time for the cached entries.</p>
+<p class="trap">Trap: Do not use it for personal, account-specific, or fast-changing answers. Do not confuse it with prompt caching. Prompt caching reuses prefix tokens inside the model. Semantic caching returns a saved answer outside the model.</p>
+<p><strong>Pairs with.</strong> ElastiCache for Valkey or MemoryDB, and edge caching for deterministic request fingerprints.</p>
+<p class="fact">Limits: Similarity threshold value: Not in source. The overhead of embedding and search must be lower than the saved inference cost, which you measure in your own tests.</p>
+<p class="src">Source: Sundog slides pages 292, 294, and 571</p>
+
+<h3>Cost monitoring with CloudWatch and Cost Explorer</h3>
+<p><strong>What it is.</strong> <span class="fact">The AWS/Bedrock namespace in CloudWatch publishes runtime metrics. Useful ones include InputTokenCount, OutputTokenCount, CacheReadInputTokenCount, CacheWriteInputTokenCount, InvocationLatency, TimeToFirstToken for streaming, and InvocationThrottles. Cost Explorer shows spend by service, and tags let you attribute model cost to business functions.</span></p>
+<p class="rule">Rule: Use CloudWatch for token, latency, and throttle trends. Use Cost Explorer for money by service or tag. Use invocation logs to inspect content, and use CloudTrail to see who called the API and when.</p>
+<p class="trap">Trap: Metrics do not show prompt or response text. Cost Explorer does not show throttles. Do not read TimeToFirstToken for a non-streaming call, because the metric applies to streaming calls.</p>
+<p><strong>Pairs with.</strong> Application inference profiles for tags, Cost Anomaly Detection for unusual spend, and dashboards that compare token growth with request growth.</p>
+<p class="fact">Limits: Log destinations, retention, and cost of invocation logs: Not in source for this module. Output tokens per second is a value you calculate from metrics. The exact formula: Not in source here.</p>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/quotas-token-burndown.html , https://docs.aws.amazon.com/bedrock/latest/userguide/inference-profiles-create.html , Sundog slides pages 286, 291, 446, 608, and 609</p>
+
+<div class="mermaid">
+flowchart TD
+  A["Question about<br/>AI cost or<br/>health"] -->|Tokens<br/>throttles<br/>latency<br/>trend| B["CloudWatch AWS<br/>Bedrock<br/>metrics"]
+  A -->|Money by<br/>service or<br/>tag| C["Cost Explorer"]
+  A -->|What the<br/>prompt and<br/>reply said| D["Invocation<br/>logs"]
+  A -->|Who called<br/>the API and<br/>when| E["CloudTrail"]
+  B -->|Streaming<br/>first token| F["TimeToFirstToken<br/>metric"]
+  C -->|Unusual<br/>spend| G["Cost Anomaly<br/>Detection"]
+  D -->|Supported<br/>runtime<br/>calls only| H["Check endpoint<br/>coverage"]
+</div>
+<p class="caption">Figure: Each tool answers a different question, so match the tool to the question.</p>
+
+<h2>Versus pairs: the confusable choices</h2>
+<p>Each pair below has one decision tree, a three-row comparison, one question to ask yourself, and one trap. Read the question first. The question usually names the constraint that decides the pair.</p>
+
+<h3>Converse versus InvokeModel</h3>
+<div class="mermaid">
+flowchart TD
+  A["Chat or<br/>message<br/>exchange"] -->|Same request<br/>shape across<br/>models| B["Converse on<br/>bedrock-runtime"]
+  A -->|Need<br/>model-native<br/>body or<br/>parameter| C["InvokeModel on<br/>bedrock-runtime"]
+  A -->|Model does<br/>not use<br/>messages| C
+  B -->|Live text<br/>display| D["ConverseStream"]
+  C -->|Live text<br/>display| E["InvokeModelWithResponseStream"]
+  B -->|Code needs<br/>full answer| F["One response<br/>object"]
+</div>
+<p class="caption">Figure: Pick the request style first, then decide on streaming.</p>
+<ul>
+<li>Purpose: Converse gives one message format for many models. InvokeModel gives direct access to each model body.</li>
+<li>Input: Converse takes messages and an inference configuration. InvokeModel takes a model-specific JSON body.</li>
+<li>Output or effect: Converse returns a normalized envelope with usage and stop reason. InvokeModel returns the body that the model family defines.</li>
+</ul>
+<p><strong>The one question:</strong> Will the same code path call more than one model family?</p>
+<p class="trap">Trap: Choosing InvokeModel for a chat app because it looks more direct. The result is one payload parser per model, and a model switch becomes a code change.</p>
+
+<h3>On-demand versus Provisioned Throughput</h3>
+<div class="mermaid">
+flowchart TD
+  A["Need model<br/>capacity"] -->|Custom model| B["Provisioned<br/>Throughput<br/>required"]
+  A -->|Traffic steady<br/>and high| C["Check load for<br/>each hour"]
+  C -->|Runs most<br/>hours| D["Provisioned<br/>Throughput with<br/>commitment"]
+  C -->|Idle most<br/>hours| E["On-demand with<br/>quota planning"]
+  C -->|Short known<br/>peak| F["Compare quota<br/>increase first"]
+  F -->|Quota covers<br/>peak| E
+  F -->|Quota cannot<br/>cover peak| D
+</div>
+<p class="caption">Figure: Hours of use decide whether reserved capacity pays off.</p>
+<ul>
+<li>Purpose: On-demand serves variable load with shared capacity. Provisioned Throughput reserves model units for one model.</li>
+<li>Input: On-demand takes tokens as they come. Provisioned Throughput takes a purchased model unit count and a provisioned model ARN.</li>
+<li>Output or effect: On-demand bills per token and can throttle. Provisioned Throughput bills per hour until deleted and gives a reserved token rate.</li>
+</ul>
+<p><strong>The one question:</strong> Do you pay for capacity during hours when nobody sends traffic?</p>
+<p class="trap">Trap: A stem that says guaranteed capacity still needs a check for custom models and for residency. Profiles do not support Provisioned Throughput, so a residency rule can rule it out for cross-Region routing.</p>
+
+<h3>Batch inference versus real-time calls</h3>
+<div class="mermaid">
+flowchart LR
+  A["Prompts ready<br/>as files"] -->|Records in<br/>S3 as JSONL| B["Batch<br/>inference job"]
+  A -->|Caller waits<br/>for each<br/>reply| C["Real-time call"]
+  B -->|Output<br/>written to<br/>S3| D["Result files<br/>in S3 bucket"]
+  B -->|Tool config<br/>in Converse<br/>format| E["Use<br/>InvokeModel<br/>invocation<br/>type"]
+  B -->|Provisioned<br/>model in use| F["Not supported<br/>for batch"]
+  C -->|Long<br/>repeated<br/>prefix| G["Prompt caching<br/>applies"]
+  C -->|Strict<br/>capacity<br/>needed| H["Provisioned<br/>Throughput ARN"]
+</div>
+<p class="caption">Figure: A waiting user rules out batch, and a file backlog rules out real-time loops.</p>
+<ul>
+<li>Purpose: Batch processes a large backlog asynchronously. Real-time calls answer one request while someone waits.</li>
+<li>Input: Batch reads prompt records from S3. Real-time calls read one request from the application.</li>
+<li>Output or effect: Batch writes result files to S3 after the job. Real-time calls return a response within the request.</li>
+</ul>
+<p><strong>The one question:</strong> Does a person or a system wait for each answer?</p>
+<p class="trap">Trap: Using a Lambda loop over S3 files to mimic batch. It adds retry logic, concurrency tuning, and throttling risk that the managed job avoids.</p>
+
+<h3>Geographic versus global cross-Region profile</h3>
+<div class="mermaid">
+flowchart TD
+  A["Cross-Region<br/>profile needed"] -->|Residency by<br/>geography| B["Geographic<br/>profile US or<br/>EU or APAC"]
+  A -->|No residency<br/>limit| C["Global profile"]
+  B -->|Standard<br/>pricing| D["Routes only<br/>inside<br/>geography"]
+  C -->|Lower price<br/>in docs<br/>table| E["Routes to any<br/>commercial<br/>Region"]
+  C -->|Org policy<br/>blocks<br/>Regions| F["Allow<br/>unspecified<br/>Region in<br/>policy"]
+  B -->|Provisioned<br/>Throughput<br/>needed| G["Profile does<br/>not support it"]
+</div>
+<p class="caption">Figure: Residency language is the first filter, and price is the second.</p>
+<ul>
+<li>Purpose: A geographic profile keeps processing in a geography. A global profile maximizes the Regions available for routing.</li>
+<li>Input: Both take a profile ID or ARN as the modelId.</li>
+<li>Output or effect: Geographic has standard pricing and keeps data in the geography. Global is about 10 percent lower in the docs table and can route worldwide.</li>
+</ul>
+<p><strong>The one question:</strong> Does the rule name a geography or only a cost goal?</p>
+<p class="trap">Trap: Choosing global because it is cheaper, when the stem names data residency. The cheaper option breaks the rule.</p>
+
+<h3>System-defined profile versus application inference profile</h3>
+<div class="mermaid">
+flowchart TD
+  A["Need<br/>multi-Region<br/>routing or<br/>tracking"] -->|Shared<br/>routing for<br/>all callers| B["System-defined<br/>profile ID or<br/>ARN"]
+  A -->|Cost tags<br/>per<br/>application| C["Application<br/>inference<br/>profile"]
+  C -->|Copy from<br/>cross-Region<br/>profile| D["Keeps<br/>multi-Region<br/>routing"]
+  C -->|Copy from<br/>one model| E["Single-Region<br/>tracking only"]
+  C -->|Attach cost<br/>allocation<br/>tags| F["Cost reports<br/>by tag"]
+  B -->|Same profile<br/>for every<br/>caller| G["No per-app<br/>tags"]
+</div>
+<p class="caption">Figure: Tracking and routing are separate jobs, and a profile can do one or both.</p>
+<ul>
+<li>Purpose: The system-defined profile routes. The application profile routes and also labels usage for cost reports.</li>
+<li>Input: Each takes a profile ARN or ID as the modelId in the runtime call.</li>
+<li>Output or effect: The application profile returns its own ARN and tracks usage and cost for its Regions.</li>
+</ul>
+<p><strong>The one question:</strong> Do you need per-application cost, and does the copy keep multi-Region routing?</p>
+<p class="trap">Trap: Copying an application profile from a single-Region model and expecting failover. The routing set stays at one Region.</p>
+
+<h3>Prompt caching versus semantic caching</h3>
+<div class="mermaid">
+flowchart TD
+  A["Repeated cost<br/>or latency<br/>problem"] -->|Same long<br/>prefix each<br/>call| B["Prompt caching"]
+  A -->|Similar<br/>questions<br/>get same<br/>answer| C["Semantic<br/>caching"]
+  A -->|Fixed<br/>questions<br/>and nightly<br/>data| D["Precomputed<br/>answers"]
+  B -->|Dynamic<br/>content goes<br/>last| E["Checkpoint<br/>after static<br/>block"]
+  C -->|Answer<br/>depends on<br/>the user| F["Do not cache<br/>the answer"]
+  C -->|Threshold<br/>too loose| G["Wrong cached<br/>answers<br/>returned"]
+  D -->|Lookup<br/>before model<br/>call| H["Serve from a<br/>fast store"]
+</div>
+<p class="caption">Figure: Prompt caching saves model work, and semantic caching skips the model.</p>
+<ul>
+<li>Purpose: Prompt caching reuses model input processing. Semantic caching reuses a final answer.</li>
+<li>Input: Prompt caching needs an identical prefix. Semantic caching needs an embedding of the new prompt.</li>
+<li>Output or effect: Prompt caching lowers input cost and latency when it hits. Semantic caching can skip the model call entirely when the similarity passes.</li>
+</ul>
+<p><strong>The one question:</strong> Is the expensive part the input that repeats, or the answer that repeats?</p>
+<p class="trap">Trap: Expecting prompt caching to return the same answer for similar questions. It does not do that, and cache hits are not guaranteed.</p>
+
+<h3>Latency optimized inference versus streaming</h3>
+<div class="mermaid">
+flowchart TD
+  A["Slow first<br/>words in live<br/>chat"] -->|Throttles<br/>stay at zero| B["Check TTFT and<br/>latency"]
+  B -->|Full text<br/>appears only<br/>at end| C["Turn on<br/>streaming"]
+  B -->|Supported<br/>model and<br/>Region| D["Set latency to<br/>optimized per<br/>call"]
+  B -->|Long<br/>repeated<br/>prefix| E["Add prompt<br/>caching"]
+  B -->|Throttles<br/>rising| F["Fix quota or<br/>capacity first"]
+  D -->|Optimized<br/>quota used<br/>up| G["Served at<br/>standard<br/>latency and<br/>rate"]
+</div>
+<p class="caption">Figure: Streaming changes display timing, and optimized latency changes model serving speed.</p>
+<ul>
+<li>Purpose: Streaming shows output while it forms. Latency optimized inference asks the service for faster serving on a supported model.</li>
+<li>Input: Streaming uses ConverseStream or the streaming InvokeModel variant. Optimized latency uses performanceConfig on the call.</li>
+<li>Output or effect: Streaming lowers time to first visible text. Optimized latency can lower time to first token and total latency, but only where the feature applies.</li>
+</ul>
+<p><strong>The one question:</strong> Is the delay in the model or in when the user sees the text?</p>
+<p class="trap">Trap: Buying Provisioned Throughput to fix first-token delay when there are no throttles. Capacity does not change how fast the first token arrives for a single call.</p>
+
+<h3>429 versus 503 and 529</h3>
+<div class="mermaid">
+flowchart TD
+  A["Bedrock call<br/>fails"] -->|429<br/>ThrottlingException| B["Account quota<br/>exceeded"]
+  A -->|503<br/>ServiceUnavailable| C["Capacity or<br/>demand<br/>pressure"]
+  A -->|529<br/>overloaded_error| D["Transient<br/>model capacity"]
+  A -->|400<br/>ValidationError| E["Bad input and<br/>no retry"]
+  B -->|Lower tokens<br/>or raise<br/>quota| F["Token-aware<br/>admission and<br/>backoff"]
+  C -->|Back off<br/>then change<br/>Region| G["Cross-Region<br/>profile if<br/>allowed"]
+  D -->|Honor<br/>Retry-After<br/>header| H["Retry with<br/>jitter"]
+</div>
+<p class="caption">Figure: The status code separates your quota from the service capacity.</p>
+<ul>
+<li>Purpose: A 429 is your account limit. A 503 or 529 is service-side pressure.</li>
+<li>Input: The error type and the status code. Check the quota graph and the request token sizes.</li>
+<li>Output or effect: A 429 needs less token demand or more quota. A 503 or 529 needs backoff, lower concurrency, and sometimes another Region.</li>
+</ul>
+<p><strong>The one question:</strong> Is my account over its quota, or is the service busy for everyone?</p>
+<p class="trap">Trap: Answering a 503 with a quota increase request. The quota increase does not change service-side capacity.</p>
+
+<h2>Read a long question</h2>
+<p>Each scenario below is written for practice. Underline the constraint words first. Then reject each wrong option by its type, and give one reason for each rejection. The answer comes last, so you can test yourself before you read it.</p>
+
+<h4>Scenario 1: Nightly backlog</h4>
+<p>A ticketing company summarizes forty thousand support threads each night. Nobody waits for a result, and the summaries must reach the warehouse by morning. The thread files already sit in S3, and the team does not want capacity that bills during the day.</p>
+<ul>
+<li>Constraint words: nobody waits, by morning, already in S3, no daytime capacity cost.</li>
+<li>Rejected type: a real-time loop with higher concurrency. Reason: it creates throttling and retry load for work that has no user.</li>
+<li>Rejected type: Provisioned Throughput. Reason: it bills every hour, which breaks the daytime cost rule.</li>
+<li>Rejected type: a self-hosted endpoint. Reason: it adds hosting work that the stem did not ask for.</li>
+</ul>
+<p><strong>Answer:</strong> Run a batch inference job with S3 input and S3 output.</p>
+<p class="rule">Rule: A backlog in S3 with no waiting user points to batch.</p>
+
+<h4>Scenario 2: Residency with spikes</h4>
+<p>A public agency runs a citizen assistant and must keep all processing inside the European Union. Demand rises sharply near tax deadlines. The budget does not allow dedicated capacity.</p>
+<ul>
+<li>Constraint words: inside the European Union, sharp rises, no budget for dedicated capacity.</li>
+<li>Rejected type: a global profile. Reason: it can route outside the geography, which breaks the residency rule.</li>
+<li>Rejected type: one Region with a larger quota. Reason: a single Region still has one ceiling and cannot absorb the spike.</li>
+<li>Rejected type: Provisioned Throughput. Reason: the budget excludes it.</li>
+</ul>
+<p><strong>Answer:</strong> Use a European Union geographic profile as the modelId, with token-aware admission and bounded backoff.</p>
+<p class="rule">Rule: A geography rule selects the geographic profile, not the global one.</p>
+
+<h4>Scenario 3: Slow first words, no throttling</h4>
+<p>A sales assistant answers in a chat window. Users complain that the first words take too long to appear. Throttling is zero, the prompts are short and unique, and the team must keep the same model.</p>
+<ul>
+<li>Constraint words: first words, zero throttling, short unique prompts, same model.</li>
+<li>Rejected type: Provisioned Throughput. Reason: the metrics show no throttling, so capacity is not the bottleneck.</li>
+<li>Rejected type: prompt caching. Reason: unique prompts give few cache hits, so the benefit is small.</li>
+<li>Rejected type: cross-Region routing with standard latency. Reason: it spreads load, but it does not target the first-token delay.</li>
+</ul>
+<p><strong>Answer:</strong> Stream the output and set latency to optimized on the live calls when the model and Region support it.</p>
+<p class="rule">Rule: A first-token complaint with no throttling points to streaming and optimized latency.</p>
+
+<h2>Distractor patterns seen in the tests</h2>
+<p>These patterns repeat across questions in this area. Each one is a concept-level mistake, so learn the reason, not only the example.</p>
+<ul>
+<li><span class="trap">Trap: Right service, wrong capacity model.</span> Provisioned capacity for a nightly job pays for idle hours. On-demand for a guaranteed latency target risks shared-capacity throttling.</li>
+<li><span class="trap">Trap: Retries as the fix for a quota.</span> Backoff spreads the same demand over time. It does not add tokens per minute, and a quota-bound workload still fails.</li>
+<li><span class="trap">Trap: Concurrency as the fix for a token limit.</span> A worker pool that counts requests ignores large prompts. Admission should count tokens.</li>
+<li><span class="trap">Trap: A larger output cap as a fix for missing input.</span> maxTokens controls the reply length. It does not add context.</li>
+<li><span class="trap">Trap: CountTokens as an output predictor.</span> The call counts input only, so output still needs a budget.</li>
+<li><span class="trap">Trap: A global profile for a residency rule.</span> The cheaper option is wrong because the geography is the constraint.</li>
+<li><span class="trap">Trap: Hand-built failover when a managed profile exists.</span> A custom router adds code and failure modes that the profile already covers.</li>
+<li><span class="trap">Trap: Prompt caching for answers.</span> The feature reuses input processing, not final text.</li>
+<li><span class="trap">Trap: Semantic caching for personal answers.</span> A similar question from another user can return the wrong account data.</li>
+<li><span class="trap">Trap: Metrics as a content audit.</span> Metrics show counts and latency. Content review needs invocation logs.</li>
+<li><span class="trap">Trap: A cost tag on a request as a billing tag.</span> Request metadata and application profile tags help attribution, and each has its own rules. Do not assume they are the same thing.</li>
+<li><span class="trap">Trap: Lambda concurrency as model capacity.</span> The Lambda limit controls the callers. It does not raise Bedrock capacity.</li>
+</ul>
+
+<h2>Drill</h2>
+<p>Read the prompt, cover the answer line, and say the answer aloud before you read it.</p>
+<p><strong>Drill 1.</strong> A nightly job of 200,000 records in S3 must finish within 12 hours.</p>
+<p class="rule">Rule: Run a batch inference job. Put JSONL records in S3 and read the results from S3.</p>
+<p><strong>Drill 2.</strong> A customized model must serve production traffic. Which capacity option is required?</p>
+<p class="rule">Rule: Provisioned Throughput, and pass its provisioned model ARN as modelId.</p>
+<p><strong>Drill 3.</strong> The rule keeps processing inside the United States. The team wants the lowest price.</p>
+<p class="trap">Trap: A global profile is cheaper but can route outside the United States. Use the US geographic profile.</p>
+<p><strong>Drill 4.</strong> Finance wants cost per team, and multi-Region routing must stay.</p>
+<p class="rule">Rule: Create an application inference profile from the cross-Region profile, and attach the team tag.</p>
+<p><strong>Drill 5.</strong> Every call repeats the same policy text, and the user question comes last.</p>
+<p class="rule">Rule: Use prompt caching with a checkpoint after the policy text.</p>
+<p><strong>Drill 6.</strong> Thousands of users ask near-identical questions, and the answer is the same for each of them.</p>
+<p class="rule">Rule: Use semantic caching with a tuned similarity threshold and an expiry time.</p>
+<p><strong>Drill 7.</strong> Requests fail with 429 while the request count is under the limit, and prompts are large.</p>
+<p class="trap">Trap: Raising the request-per-minute limit does not help. Check the token quota and the reserved input plus max_tokens.</p>
+<p><strong>Drill 8.</strong> A 503 spike happens at peak, and the quota graph is flat.</p>
+<p class="rule">Rule: Back off with jitter, reduce concurrency, and use cross-Region routing when the rules allow it.</p>
+<p><strong>Drill 9.</strong> Answers stop mid-sentence, and the stop reason is max_tokens.</p>
+<p class="rule">Rule: Raise or tune the output cap for that task class. Input overflow is a separate case.</p>
+<p><strong>Drill 10.</strong> You need the input size of a full request before you call the model.</p>
+<p class="rule">Rule: Call CountTokens on the same model with the full assembled request.</p>
+<p><strong>Drill 11.</strong> Which metric shows the first-token delay of a chat stream?</p>
+<p class="rule">Rule: TimeToFirstToken, because it applies to streaming calls.</p>
+<p><strong>Drill 12.</strong> Which record shows which IAM identity called the API and when?</p>
+<p class="trap">Trap: CloudWatch metrics do not identify callers. Use CloudTrail for the identity and the time of the call.</p>
+
+<h2>Sources</h2>
+<ul>
+<li>https://docs.aws.amazon.com/bedrock/latest/userguide/conversation-inference.html</li>
+<li>https://docs.aws.amazon.com/bedrock/latest/userguide/prov-throughput.html</li>
+<li>https://docs.aws.amazon.com/bedrock/latest/userguide/batch-inference.html</li>
+<li>https://docs.aws.amazon.com/bedrock/latest/userguide/cross-region-inference.html</li>
+<li>https://docs.aws.amazon.com/bedrock/latest/userguide/prompt-caching.html</li>
+<li>https://docs.aws.amazon.com/bedrock/latest/userguide/prompt-routing.html</li>
+<li>https://docs.aws.amazon.com/bedrock/latest/userguide/quotas.html</li>
+<li>https://docs.aws.amazon.com/bedrock/latest/userguide/quotas-token-burndown.html</li>
+<li>https://docs.aws.amazon.com/bedrock/latest/userguide/latency-optimized-inference.html</li>
+<li>https://docs.aws.amazon.com/bedrock/latest/userguide/troubleshooting-api-error-codes.html</li>
+<li>https://docs.aws.amazon.com/bedrock/latest/userguide/scaling-throughput-best-practices.html</li>
+<li>https://docs.aws.amazon.com/bedrock/latest/userguide/inference-profiles-create.html</li>
+<li>Sundog course slides, pages 21, 225, 285, 286, 288 to 295, 304, 305, 319, 446, 571, 608, and 609 (second source of facts for this module)</li>
+</ul>
+<nav class="mod"><a href="index.html">All modules</a> <a href="m4-agents-orchestration.html">Previous</a> <a href="m6-customization-sagemaker.html">Next</a></nav>
+</main>
+<script type="module">
+  import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.esm.min.mjs";
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: "base",
+    themeVariables: {
+      background: "#000000",
+      mainBkg: "#000000",
+      primaryColor: "#000000",
+      primaryTextColor: "#f2f2f2",
+      primaryBorderColor: "#7db8ff",
+      secondaryColor: "#000000",
+      tertiaryColor: "#000000",
+      lineColor: "#d0d0d0",
+      textColor: "#f2f2f2",
+      edgeLabelBackground: "#000000",
+      clusterBkg: "#000000",
+      clusterBorder: "#7db8ff",
+      titleColor: "#ffffff",
+      fontFamily: "Helvetica, Arial, sans-serif",
+      fontSize: "22px"
+    },
+    flowchart: { htmlLabels: true, curve: "basis", useMaxWidth: false, padding: 16, nodeSpacing: 40, rankSpacing: 56 }
+  });
+</script>
+<script>window.markmap = { autoLoader: { manual: false, toolbar: false } };</script>
+<script src="https://cdn.jsdelivr.net/npm/markmap-autoloader@0.18.12"></script>
+</body>
+</html>

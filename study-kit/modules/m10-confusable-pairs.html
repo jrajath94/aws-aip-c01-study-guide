@@ -1,0 +1,1041 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>10. Confusable pairs atlas</title>
+<style>
+:root {
+  --bg: #000000;
+  --ink: #f2f2f2;
+  --fact: #7db8ff;
+  --rule: #6ee7a0;
+  --tip: #d8a6ff;
+  --trap: #ff8a8a;
+  --muted: #a8a8a8;
+  --line: #333333;
+}
+html, body { background: #000000; }
+body {
+  color: var(--ink);
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 19px;
+  line-height: 1.7;
+  margin: 0;
+  padding: 24px 20px 72px;
+}
+main { max-width: 780px; margin: 0 auto; }
+main p, main li { text-align: justify; }
+h1 { font-size: 32px; line-height: 1.3; margin: 0 0 12px; color: #ffffff; }
+h2 { font-size: 26px; line-height: 1.35; margin: 48px 0 14px; color: #ffffff; border-top: 1px solid var(--line); padding-top: 22px; }
+h3 { font-size: 21px; line-height: 1.4; margin: 32px 0 10px; color: #ffffff; }
+h4 { font-size: 19px; line-height: 1.4; margin: 24px 0 8px; color: #ffffff; }
+p { margin: 0 0 18px; }
+ul, ol { margin: 0 0 18px; padding-left: 26px; }
+li { margin-bottom: 10px; }
+.fact { color: var(--fact); }
+.rule { color: var(--rule); }
+.tip { color: var(--tip); }
+.trap { color: var(--trap); }
+.src { font-size: 16px; color: var(--muted); }
+.meta { font-size: 16px; color: var(--muted); margin-bottom: 24px; }
+.caption { font-size: 16px; color: var(--muted); margin: -8px 0 26px; text-align: left; }
+.legend p { margin-bottom: 6px; text-align: left; }
+.mermaid { margin: 14px 0 26px; font-size: 21px; text-align: left; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; }
+.mermaid svg { max-width: none; height: auto; }
+@media print {
+  .mermaid { overflow: visible; break-inside: avoid; }
+  .mermaid svg { max-width: 100% !important; height: auto !important; }
+  body { padding: 14mm 10mm; }
+  h1, h2, h3, h4 { break-after: avoid; }
+  p.caption, p.src { break-before: avoid; }
+}
+.markmap { position: relative; margin: 10px 0 28px; border-top: 1px solid #222; border-bottom: 1px solid #222; --markmap-text-color: #f2f2f2; --markmap-a-color: #7db8ff; color: #f2f2f2; }
+.markmap > svg { width: 100%; height: 560px; display: block; }
+.markmap foreignObject, .markmap .markmap-foreign { color: #f2f2f2; font-size: 17px; }
+nav.mod { font-size: 16px; color: #a8a8a8; margin: 0 0 18px; }
+nav.mod a { color: #7db8ff; }
+table { border-collapse: collapse; width: 100%; margin: 0 0 22px; font-size: 17px; }
+th, td { border: 1px solid #333; padding: 6px 8px; text-align: left; vertical-align: top; }
+th { color: #ffffff; }
+</style>
+</head>
+<body>
+<main>
+
+<nav class="mod"><a href="index.html">All modules</a> <a href="m9-integration-apps.html">Previous</a> </nav>
+<h2>Confusable pairs atlas: how to tell look-alike answers apart in long questions</h2>
+<p>After this module, you can read a long scenario, find the one constraint that decides the service, and reject each look-alike option with one reason. Most lost points in this exam come from two services that do part of the same job. The fix is to ask what the service does at run time, what it accepts as input, and what it returns. This module teaches that test for 32 pairs, ordered by how often they appear in the practice corpus.</p>
+
+<div class="markmap"><script type="text/template">
+# Confusable pairs atlas
+## Model choice and hosting
+- Bedrock versus SageMaker endpoint
+- Lambda versus SageMaker AI
+- Fine-tuning versus RAG
+## Safety and data controls
+- Guardrails versus Comprehend
+- Sensitive filter versus Macie
+- Contextual grounding versus reasoning
+## Retrieval and vector stores
+- Knowledge Bases versus Kendra
+- OpenSearch versus S3 Vectors
+## Orchestration
+- Agents versus Flows
+- Flows versus Step Functions
+- Step Functions versus Lambda
+## Capacity and cost
+- Provisioned versus batch versus on-demand
+## Observability
+- CloudWatch versus CloudTrail versus X-Ray
+- Model Evaluation versus CloudWatch
+## Messaging and APIs
+- SQS versus EventBridge versus SNS
+- API Gateway versus function URL
+## Configuration and prompts
+- Parameter Store versus Secrets Manager
+- Prompt Management versus Parameter Store
+</script></div>
+
+<h2>The deciding constraint</h2>
+<p>Most long questions contain five to eight services, and only one or two of them match the stated constraint. Start with the constraint word, not with the service names. Words about who owns the runtime, how long the job runs, who must read the output, and when a rule applies decide most answers. The tree below starts from a scenario and ends at a service family. Use it first, then open the pair section for the two services that remain.</p>
+
+<div class="mermaid">
+flowchart LR
+  A["Scenario names<br/>a constraint"] -->|Needs a<br/>model reply| B["Model reply<br/>needed"]
+  A -->|No model<br/>reply needed| C["Plumbing or<br/>workflow<br/>needed"]
+  B -->|Managed<br/>foundation<br/>model access| D["Amazon Bedrock"]
+  B -->|Own<br/>container<br/>and instance<br/>control| E["SageMaker AI<br/>endpoint"]
+  C -->|Code between<br/>services| F["AWS Lambda"]
+  C -->|Steps with<br/>waits and<br/>retries| G["AWS Step<br/>Functions"]
+  C -->|Routing<br/>events by<br/>pattern| H["Amazon<br/>EventBridge"]
+</div>
+<p class="caption">Figure: First split the scenario by whether a model reply is required.</p>
+
+<p><strong>Signal words that point to a model reply:</strong> generate, summarize, draft, answer, foundation model, token, prompt, grounded. <strong>Signal words that point to plumbing:</strong> trigger, retry, wait, route, queue, schedule, event, handler. The same sentence can contain both, so decide what the question asks you to choose.</p>
+
+<p class="rule">Rule: Name the one constraint in the scenario before you read any option. Write it in your own words.</p>
+
+<p class="tip">Exam tip: Long stems often add a sentence that changes the answer, such as a limit on data location, a latency target, or a staff role. Underline that sentence first.</p>
+
+<h2>Confusable pairs atlas</h2>
+<p>Each section below gives one pair. The count line shows how often the practice corpus put the two services against each other. Counts add both directions, and labels that differ only by the words Amazon Bedrock are merged. A count of 0 means the two services did not meet directly in the corpus. In those cases, the nearest row is shown. The pairs with a count of 0 are still in the atlas because the learner needs them.</p>
+<p>Each pair uses the same layout. You get a decision tree, three lines for purpose, input, and effect, one question to ask yourself, the signal words for each side, and the trap. The source line lists the AWS pages or Sundog slides behind the facts.</p>
+
+<h3>Bedrock versus Lambda</h3>
+<p><span class="fact">Corpus count: 98 (74 and 24 in the two directions). The most frequent pair in the corpus.</span></p>
+<div class="mermaid">
+flowchart TD
+  A["Task needs a generated<br/>reply"] -->|Yes and the model is<br/>managed| B["Amazon Bedrock"]
+  A -->|No only code runs<br/>between services| C["AWS Lambda"]
+  B -->|Glue code still<br/>needed around the<br/>call| D["Lambda calls Bedrock"]
+  C -->|Code calls a model| D
+</div>
+<p class="caption">Figure: Bedrock returns the reply. Lambda decides when and how the call happens.</p>
+<ul>
+<li><strong>Purpose:</strong> Bedrock gives managed access to foundation models. Lambda runs your code in response to an event.</li>
+<li><strong>Input:</strong> Bedrock takes messages or a prompt plus model settings. Lambda takes an event from a trigger, such as an API call or a queue message.</li>
+<li><strong>Effect:</strong> Bedrock returns generated content. Lambda returns whatever your code returns, often after calling Bedrock.</li>
+</ul>
+<p><strong>Ask yourself:</strong> Does the requirement describe the content of a reply, or the code that runs around the reply?</p>
+<ul>
+<li><strong>Bedrock signal words:</strong> model, foundation model, prompt, token, summarize, grounded answer, guardrail.</li>
+<li><strong>Lambda signal words:</strong> event, trigger, handler, transform payload, call an API, retry in code, glue.</li>
+</ul>
+<p class="trap">Trap: Lambda appears in most correct architectures, so it looks like the answer whenever it is named. Lambda is the caller in these designs. Pick it only when the requirement is about code between services.</p>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/flows.html, Sundog slide page 118.</p>
+
+<h3>Bedrock versus CloudWatch</h3>
+<p><span class="fact">Corpus count: 62 (44 and 18 in the two directions).</span></p>
+<div class="mermaid">
+flowchart TD
+  A["Model output or service<br/>health"] -->|Model output| B["Amazon Bedrock"]
+  A -->|Metrics logs alarms<br/>or dashboards| C["Amazon CloudWatch"]
+  B -->|Runtime metrics for<br/>the calls| C
+</div>
+<p class="caption">Figure: Bedrock produces the output. CloudWatch watches the calls.</p>
+<ul>
+<li><strong>Purpose:</strong> Bedrock runs model inference. CloudWatch monitors resources and applications with metrics, logs, alarms, and dashboards.</li>
+<li><strong>Input:</strong> Bedrock takes prompts. CloudWatch takes metric data points and log events from services.</li>
+<li><strong>Effect:</strong> Bedrock returns model output. CloudWatch raises alarms and shows trends.</li>
+</ul>
+<p><strong>Ask yourself:</strong> Is the question asking the system to produce content, or asking how the system behaves over time?</p>
+<ul>
+<li><strong>Bedrock signal words:</strong> generate, answer, draft, classify text, respond to users.</li>
+<li><strong>CloudWatch signal words:</strong> alarm, threshold, dashboard, metric, log group, latency trend, error rate.</li>
+</ul>
+<p class="trap">Trap: Bedrock publishes runtime metrics into CloudWatch, so the two services appear together. The monitoring answer is still CloudWatch. Bedrock does not become a monitoring service because its metrics appear there.</p>
+<p class="src">Source: https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/WhatIsCloudWatch.html, https://docs.aws.amazon.com/bedrock/latest/userguide/prov-throughput.html, Sundog slide page 291.</p>
+
+<h3>Bedrock versus Step Functions</h3>
+<p><span class="fact">Corpus count: 53 (33 and 20 in the two directions).</span></p>
+<div class="mermaid">
+flowchart TD
+  A["Requirement describes<br/>steps and state"] -->|Steps with waits<br/>branches and<br/>approvals| B["AWS Step Functions"]
+  A -->|One model call with<br/>one prompt| C["Amazon Bedrock"]
+  B -->|Each step calls a<br/>model| C
+</div>
+<p class="caption">Figure: Step Functions owns the order of work. Bedrock owns one model call.</p>
+<ul>
+<li><strong>Purpose:</strong> Step Functions coordinates a sequence of tasks with state, retries, waits, and parallel branches. Bedrock performs model inference.</li>
+<li><strong>Input:</strong> Step Functions takes a state machine definition and a payload. Bedrock takes a prompt or messages.</li>
+<li><strong>Effect:</strong> Step Functions records each execution and its state transitions. Bedrock returns one generated reply per call.</li>
+</ul>
+<p><strong>Ask yourself:</strong> Does the question care about what happens between steps, or about the text of one reply?</p>
+<ul>
+<li><strong>Step Functions signal words:</strong> state machine, retry, wait, approval, branch, parallel, long-running, audit history.</li>
+<li><strong>Bedrock signal words:</strong> single prompt, reply, model, token, summary, answer.</li>
+</ul>
+<p class="trap">Trap: A state machine around one model call adds work with no benefit. When the stem asks only for a reply, Bedrock is the answer even if a workflow service is mentioned.</p>
+<p class="src">Source: https://docs.aws.amazon.com/step-functions/latest/dg/choosing-workflow-type.html, https://docs.aws.amazon.com/bedrock/latest/userguide/flows.html.</p>
+
+<h3>Bedrock versus Guardrails</h3>
+<p><span class="fact">Corpus count: 44 (25 and 19, both with Bedrock as the correct answer, merged across both label forms).</span></p>
+<div class="mermaid">
+flowchart TD
+  A["Requirement asks for a<br/>rule on text"] -->|Rule screens prompts<br/>or replies| B["Bedrock Guardrails"]
+  A -->|Requirement asks<br/>which model answers| C["Amazon Bedrock model"]
+  B -->|Attached to a<br/>Bedrock call| C
+</div>
+<p class="caption">Figure: Guardrails is a policy layer. It does not pick or host a model.</p>
+<ul>
+<li><strong>Purpose:</strong> Guardrails screens inputs and outputs against configured policies. Bedrock gives access to the model that produces the output.</li>
+<li><strong>Input:</strong> Guardrails takes the text and a guardrail configuration. Bedrock takes the prompt and a model ID.</li>
+<li><strong>Effect:</strong> Guardrails blocks, masks, or only detects content. Bedrock returns the model output, which Guardrails can then screen.</li>
+</ul>
+<p><strong>Ask yourself:</strong> Is the requirement a model choice or a policy that screens text in each request?</p>
+<ul>
+<li><strong>Guardrails signal words:</strong> block, mask, denied topic, PII filter, harmful content, grounding threshold, policy.</li>
+<li><strong>Bedrock signal words:</strong> model, invoke, converse, tokens, throughput, model ID.</li>
+</ul>
+<p class="trap">Trap: Guardrails appears in the same answer as a model call, so it is easy to pick it as the model. A guardrail is attached to a request and does not return a reply by itself. The model still comes from Bedrock.</p>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-sensitive-filters.html, https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-contextual-grounding-check.html, Sundog slide pages 21 and 57.</p>
+
+<h3>SageMaker endpoint versus Bedrock</h3>
+<p><span class="fact">Corpus count: 43 (38 with Bedrock as the correct answer, 5 with SageMaker as the correct answer).</span></p>
+<div class="mermaid">
+flowchart TD
+  A["Requirement names runtime<br/>ownership"] -->|AWS manages the<br/>foundation model| B["Amazon Bedrock"]
+  A -->|Team picks instance<br/>and container| C["SageMaker AI endpoint"]
+  C -->|Team trained weights| D["Bedrock Custom Model<br/>Import"]
+  D -->|Imported model is<br/>then served by<br/>Bedrock| B
+</div>
+<p class="caption">Figure: Custom weights can reach Bedrock, but the team still chooses the training path.</p>
+<ul>
+<li><strong>Purpose:</strong> Bedrock gives API access to managed foundation models. A SageMaker AI endpoint hosts a model on infrastructure you choose.</li>
+<li><strong>Input:</strong> Bedrock takes a model ID and a request body. SageMaker takes a model artifact, a container, and an instance type.</li>
+<li><strong>Effect:</strong> Bedrock returns inference from a managed model. SageMaker returns inference from your hosted model, with control over scaling and deployment settings.</li>
+</ul>
+<p><strong>Ask yourself:</strong> Does the team need to own the serving stack, or does it need a managed model API?</p>
+<ul>
+<li><strong>Bedrock signal words:</strong> managed foundation model, serverless inference, no instance choice, guardrails, provisioned capacity.</li>
+<li><strong>SageMaker signal words:</strong> instance type, container, multi-model endpoint, asynchronous inference, model registry, own weights.</li>
+</ul>
+<p class="trap">Trap: A model that was fine-tuned in SageMaker AI does not force a SageMaker endpoint. Bedrock can serve an imported model when the artifact and architecture are supported. A customized Bedrock model also needs Provisioned Throughput before you can call it.</p>
+<p class="src">Source: Sundog slide pages 291, 316, and 317. https://docs.aws.amazon.com/bedrock/latest/userguide/prov-throughput.html.</p>
+
+<h3>Bedrock versus API Gateway</h3>
+<p><span class="fact">Corpus count: 39 (33 and 6 in the two directions).</span></p>
+<div class="mermaid">
+flowchart TD
+  A["HTTP front door concern"] -->|Validation<br/>throttling or domain| B["Amazon API Gateway"]
+  A -->|Requirement concerns<br/>the reply content| C["Amazon Bedrock"]
+  B -->|Forwards the request<br/>to| C
+</div>
+<p class="caption">Figure: API Gateway receives and checks the call. Bedrock writes the reply.</p>
+<ul>
+<li><strong>Purpose:</strong> API Gateway exposes an HTTP interface and applies request checks, throttling, and access controls. Bedrock produces model output.</li>
+<li><strong>Input:</strong> API Gateway takes HTTP requests. Bedrock takes the payload that the backend sends.</li>
+<li><strong>Effect:</strong> API Gateway accepts, rejects, or forwards a request. Bedrock returns generated content for an accepted request.</li>
+</ul>
+<p><strong>Ask yourself:</strong> Does the requirement control who calls the endpoint and what the request must contain, or does it control the reply?</p>
+<ul>
+<li><strong>API Gateway signal words:</strong> request validation, usage plan, throttle, custom domain, WebSocket, WAF, routes.</li>
+<li><strong>Bedrock signal words:</strong> model reply, summary, inference, token, generated text.</li>
+</ul>
+<p class="trap">Trap: Adding API Gateway does not change the model. A stem that adds a front door to a model call still has Bedrock as the model service.</p>
+<p class="src">Source: https://docs.aws.amazon.com/lambda/latest/dg/urls-configuration.html, Sundog slide pages 9 and 663.</p>
+
+<h3>Bedrock versus DynamoDB</h3>
+<p><span class="fact">Corpus count: 33 (26 and 7 in the two directions).</span></p>
+<div class="mermaid">
+flowchart TD
+  A["Stored items or similar<br/>vectors"] -->|Keep and query<br/>records| B["Amazon DynamoDB"]
+  A -->|Generate a reply<br/>from context| C["Amazon Bedrock"]
+  B -->|Returned items feed<br/>the prompt| C
+</div>
+<p class="caption">Figure: DynamoDB keeps and finds data. Bedrock writes the answer from it.</p>
+<ul>
+<li><strong>Purpose:</strong> DynamoDB stores items and can run vector similarity searches with a vector index. Bedrock generates model output.</li>
+<li><strong>Input:</strong> DynamoDB takes keys, items, and a query vector. Bedrock takes a prompt that may contain retrieved text.</li>
+<li><strong>Effect:</strong> DynamoDB returns stored items and their similarity results. Bedrock returns a generated reply.</li>
+</ul>
+<p><strong>Ask yourself:</strong> Does the question need records returned, or a sentence written from records?</p>
+<ul>
+<li><strong>DynamoDB signal words:</strong> items, keys, chat history, session store, vector index, similarity search, TTL.</li>
+<li><strong>Bedrock signal words:</strong> generate, answer, summarize, explain, reply.</li>
+</ul>
+<p class="trap">Trap: A DynamoDB vector index can return the nearest items for a query. It does not write a reply. The answer still needs a model call, which means Bedrock appears in the correct architecture.</p>
+<p class="src">Source: Sundog slide pages 186 and 187.</p>
+
+<h3>CloudWatch versus CloudTrail versus X-Ray</h3>
+<p><span class="fact">Corpus count: 33 (CloudWatch over CloudTrail 20, CloudTrail over CloudWatch 8, CloudWatch over X-Ray 5).</span></p>
+<div class="mermaid">
+flowchart TD
+  A["Question to answer"] -->|Who called which<br/>action| B["AWS CloudTrail"]
+  A -->|Where did the time<br/>go across hops| C["AWS X-Ray"]
+  A -->|Metric crosses a<br/>threshold| D["Amazon CloudWatch"]
+</div>
+<p class="caption">Figure: Each service answers one kind of question. Do not swap them.</p>
+<ul>
+<li><strong>Purpose:</strong> CloudWatch monitors metrics, logs, and alarms. CloudTrail records account activity and API actions. X-Ray traces individual requests across services.</li>
+<li><strong>Input:</strong> CloudWatch takes metric points and log events. CloudTrail takes API activity from the account. X-Ray takes trace segments from an SDK or from Lambda.</li>
+<li><strong>Effect:</strong> CloudWatch raises alarms and shows dashboards. CloudTrail gives an audit record with the identity, time, and resource. X-Ray gives a trace map and timing for each hop.</li>
+</ul>
+<p><strong>Ask yourself:</strong> Is the question about who acted, which hop is slow, or which value crossed a line?</p>
+<ul>
+<li><strong>CloudWatch signal words:</strong> alarm, threshold, dashboard, metric, log group, error rate.</li>
+<li><strong>CloudTrail signal words:</strong> who, principal, audit, governance, management event, history.</li>
+<li><strong>X-Ray signal words:</strong> trace, segment, service map, latency per hop, bottleneck, downstream call.</li>
+</ul>
+<p class="trap">Trap: X-Ray shows where a request spent its time, but it does not tell you which user changed a setting. CloudTrail does the second job and does not show latency per hop.</p>
+<p class="src">Source: https://docs.aws.amazon.com/xray/latest/devguide/aws-xray.html, https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-user-guide.html, https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/WhatIsCloudWatch.html, Sundog slide page 459.</p>
+
+<h3>Bedrock versus CloudTrail</h3>
+<p><span class="fact">Corpus count: 31 (27 and 4 in the two directions).</span></p>
+<div class="mermaid">
+flowchart TD
+  A["Requirement needs model<br/>output"] -->|Yes| B["Amazon Bedrock"]
+  A -->|Needs an audit trail<br/>of API actions| C["AWS CloudTrail"]
+  C -->|Records the calls<br/>Bedrock received| B
+</div>
+<p class="caption">Figure: CloudTrail records that a call happened. It does not produce the reply.</p>
+<ul>
+<li><strong>Purpose:</strong> Bedrock produces model output. CloudTrail records actions that users, roles, and services take, including API calls.</li>
+<li><strong>Input:</strong> Bedrock takes prompts. CloudTrail takes the account API activity it records.</li>
+<li><strong>Effect:</strong> Bedrock returns generated content. CloudTrail gives a searchable event record for audit.</li>
+</ul>
+<p><strong>Ask yourself:</strong> Does the stem need evidence that a call happened, or the content of the call?</p>
+<ul>
+<li><strong>Bedrock signal words:</strong> generate, reply, token, model, guardrail, inference.</li>
+<li><strong>CloudTrail signal words:</strong> audit, record, who invoked, compliance evidence, principal, event history.</li>
+</ul>
+<p class="trap">Trap: CloudTrail is not a log of prompts and replies. A stem that asks for the text sent to a model needs a content log feature, not an API audit trail.</p>
+<p class="src">Source: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-user-guide.html, https://docs.aws.amazon.com/bedrock/latest/userguide/evaluation.html.</p>
+
+<h3>Lambda versus CloudWatch</h3>
+<p><span class="fact">Corpus count: 29 (16 and 13 in the two directions).</span></p>
+<div class="mermaid">
+flowchart TD
+  A["Action on an event"] -->|Run code for the<br/>event| B["AWS Lambda"]
+  A -->|Watch a value over<br/>time| C["Amazon CloudWatch"]
+  B -->|Writes metrics and<br/>logs to| C
+</div>
+<p class="caption">Figure: Lambda produces the signal. CloudWatch judges and alarms on it.</p>
+<ul>
+<li><strong>Purpose:</strong> Lambda runs a function when an event arrives. CloudWatch stores metrics and logs and raises alarms when thresholds are crossed.</li>
+<li><strong>Input:</strong> Lambda takes an event payload. CloudWatch takes metric data and log events.</li>
+<li><strong>Effect:</strong> Lambda returns a result or performs an action. CloudWatch sends an alarm action or shows a dashboard.</li>
+</ul>
+<p><strong>Ask yourself:</strong> Is the requirement the code that acts, or the rule that decides when to act on a measured value?</p>
+<ul>
+<li><strong>Lambda signal words:</strong> trigger, handler, event, transform, call, process.</li>
+<li><strong>CloudWatch signal words:</strong> threshold, alarm, metric filter, dashboard, log insights, anomaly.</li>
+</ul>
+<p class="trap">Trap: A Lambda function can check a metric and send a message. That is still monitoring logic, and the signal and the alarm belong to CloudWatch. Lambda is the action, not the monitor.</p>
+<p class="src">Source: https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/WhatIsCloudWatch.html, Sundog slide page 291.</p>
+
+<h3>Step Functions versus Lambda</h3>
+<p><span class="fact">Corpus count: 24 (12 and 12 in the two directions).</span></p>
+<div class="mermaid">
+flowchart TD
+  A["Order and waiting between<br/>steps"] -->|Yes| B["AWS Step Functions"]
+  A -->|No the hard part is<br/>one task body| C["AWS Lambda"]
+  B -->|Each task can run a<br/>Lambda function| C
+</div>
+<p class="caption">Figure: Step Functions manages the sequence. Lambda does one unit of work.</p>
+<ul>
+<li><strong>Purpose:</strong> Step Functions runs a state machine with retries, waits, and branches. Lambda runs one function invocation.</li>
+<li><strong>Input:</strong> Step Functions takes a state machine definition and an execution input. Lambda takes an event.</li>
+<li><strong>Effect:</strong> Step Functions records state and execution history. Standard workflows run up to one year and follow exactly-once execution. Express workflows run up to five minutes and follow at-least-once or at-most-once execution.</li>
+</ul>
+<p><strong>Ask yourself:</strong> Does the stem care about the path through several steps, or about what one step computes?</p>
+<ul>
+<li><strong>Step Functions signal words:</strong> wait, retry across steps, approval, branch, parallel, long-running, durable.</li>
+<li><strong>Lambda signal words:</strong> single task, transform, call an API, handler, short run.</li>
+</ul>
+<p class="trap">Trap: Retry loops and sleep logic written inside a Lambda function can work for short jobs. When the stem asks for durable state and an execution history, the orchestration belongs in Step Functions.</p>
+<p class="src">Source: https://docs.aws.amazon.com/step-functions/latest/dg/choosing-workflow-type.html.</p>
+
+<h3>Lambda versus EventBridge</h3>
+<p><span class="fact">Corpus count: 22 (17 and 5 in the two directions).</span></p>
+<div class="mermaid">
+flowchart TD
+  A["Event must reach the right<br/>consumers"] -->|Routing by event<br/>pattern| B["Amazon EventBridge"]
+  A -->|Code runs when the<br/>event arrives| C["AWS Lambda"]
+  B -->|Matched events<br/>invoke| C
+</div>
+<p class="caption">Figure: EventBridge decides who receives an event. Lambda does the work.</p>
+<ul>
+<li><strong>Purpose:</strong> EventBridge routes events from sources to targets by rules. Lambda runs code for a single event.</li>
+<li><strong>Input:</strong> EventBridge takes events from AWS services, applications, and partners. Lambda takes the events it is given.</li>
+<li><strong>Effect:</strong> EventBridge delivers matched events to one or more targets. Lambda returns a result or performs an action.</li>
+</ul>
+<p><strong>Ask yourself:</strong> Does the stem ask which consumers receive an event, or what a consumer does with it?</p>
+<ul>
+<li><strong>EventBridge signal words:</strong> event bus, rule, pattern, schedule, many targets, filter by attribute.</li>
+<li><strong>Lambda signal words:</strong> process, compute, transform, handler, one consumer.</li>
+</ul>
+<p class="trap">Trap: A single Lambda function that reads every incoming message and branches in code is not a router. When many sources must reach many targets by pattern, the routing belongs in EventBridge.</p>
+<p class="src">Source: https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-what-is.html.</p>
+
+<h3>API Gateway versus Lambda function URL</h3>
+<p><span class="fact">Corpus count: 20 (all 20 in the direction where Lambda was the correct answer).</span></p>
+<div class="mermaid">
+flowchart TD
+  A["Needs controls beyond one<br/>function"] -->|Yes| B["Amazon API Gateway"]
+  A -->|No one function with<br/>IAM or open access| C["Lambda function URL"]
+  C -->|Public internet only| D["No PrivateLink path"]
+</div>
+<p class="caption">Figure: A function URL is simple. It is also public, so private access rules it out.</p>
+<ul>
+<li><strong>Purpose:</strong> API Gateway is a full HTTP front door with routes and controls. A Lambda function URL is a dedicated HTTPS endpoint for one function or alias.</li>
+<li><strong>Input:</strong> API Gateway takes requests on routes you define. A function URL takes HTTP calls for one function.</li>
+<li><strong>Effect:</strong> API Gateway applies checks and forwards to a backend. A function URL invokes the function directly, with auth set to IAM or none, and CORS settings.</li>
+</ul>
+<p><strong>Ask yourself:</strong> Does the endpoint need controls beyond one function, such as validation across routes or a usage plan?</p>
+<ul>
+<li><strong>API Gateway signal words:</strong> request validation, usage plan, API key, WAF, custom domain, many routes, WebSocket.</li>
+<li><strong>Function URL signal words:</strong> one function, webhook, quick endpoint, CORS, IAM auth, reserved concurrency.</li>
+</ul>
+<p class="trap">Trap: Function URLs use the public internet only. The page states that they do not support PrivateLink. A stem that requires private connectivity cannot pick a function URL. The page also does not list request validation or usage plans, so Not in source for those features.</p>
+<p class="src">Source: https://docs.aws.amazon.com/lambda/latest/dg/urls-configuration.html, Sundog slide page 663.</p>
+
+<h3>Bedrock versus Comprehend</h3>
+<p><span class="fact">Corpus count: 19 (15 and 4 in the two directions).</span></p>
+<div class="mermaid">
+flowchart TD
+  A["Labels or positions in<br/>text"] -->|Yes entities PII or<br/>offsets| B["Amazon Comprehend"]
+  A -->|No new text must be<br/>written| C["Amazon Bedrock"]
+  B -->|Cleaned text can<br/>feed| C
+</div>
+<p class="caption">Figure: Comprehend reads and labels text. Bedrock writes text.</p>
+<ul>
+<li><strong>Purpose:</strong> Comprehend analyzes text with natural language processing. Bedrock generates model output.</li>
+<li><strong>Input:</strong> Comprehend takes UTF-8 text. For real-time PII detection, the page states up to 100 KB per document in English or Spanish. Bedrock takes prompts.</li>
+<li><strong>Effect:</strong> Comprehend returns entity types, scores, and character offsets. Bedrock returns generated text.</li>
+</ul>
+<p><strong>Ask yourself:</strong> Does the output need a label and a location in the source text, or a new piece of writing?</p>
+<ul>
+<li><strong>Comprehend signal words:</strong> detect, entities, PII, offsets, classify, sentiment, redact, language.</li>
+<li><strong>Bedrock signal words:</strong> generate, summarize, draft, answer, reply.</li>
+</ul>
+<p class="trap">Trap: Comprehend can find and redact PII before a model call. It does not decide the model reply or enforce a rule on the model output. When the stem asks for control of the model reply, Guardrails or Bedrock is the answer.</p>
+<p class="src">Source: https://docs.aws.amazon.com/comprehend/latest/dg/how-pii.html, Sundog slide pages 57 and 118.</p>
+
+<h3>Guardrails versus Comprehend</h3>
+<p><span class="fact">Corpus count: 19 (11 with Guardrails as the correct answer and 8 with Comprehend as the correct answer, merged across label forms).</span></p>
+<div class="mermaid">
+flowchart TD
+  A["Requirement names the<br/>control point"] -->|Inline on a model<br/>call| B["Bedrock Guardrails"]
+  A -->|Detection step<br/>before any model<br/>call| C["Amazon Comprehend"]
+  C -->|Redacted text then<br/>sent to| B
+</div>
+<p class="caption">Figure: Comprehend can prepare the text. Guardrails enforces the policy on the model call.</p>
+<ul>
+<li><strong>Purpose:</strong> Guardrails applies configured policies to prompts and model responses. Comprehend detects PII and other entities in text.</li>
+<li><strong>Input:</strong> Guardrails takes the prompt and response text with a guardrail configuration. Comprehend takes text documents.</li>
+<li><strong>Effect:</strong> Guardrails blocks, masks, or detects. Comprehend returns labels, offsets, or redacted copies. The caller decides what to do with the result.</li>
+</ul>
+<p><strong>Ask yourself:</strong> Must the control act on the model call itself, or is a separate detection step enough?</p>
+<ul>
+<li><strong>Guardrails signal words:</strong> block, mask, denied topic, prompt attack, response, policy, inline.</li>
+<li><strong>Comprehend signal words:</strong> detect, offsets, redact before inference, entity type, batch job.</li>
+</ul>
+<p class="trap">Trap: Comprehend masking a field is not the same as a guardrail on the reply. If the stem asks that the reply itself never contain a blocked type, the guardrail is the control. A pre-step alone does not check the reply.</p>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-sensitive-filters.html, https://docs.aws.amazon.com/comprehend/latest/dg/how-pii.html, Sundog slide page 57.</p>
+
+<h3>Lambda versus SageMaker AI</h3>
+<p><span class="fact">Corpus count: 19 (9 and 10 in the two directions).</span></p>
+<div class="mermaid">
+flowchart TD
+  A["Workload is glue code or a<br/>model host"] -->|Glue short code path| B["AWS Lambda"]
+  A -->|Model training or<br/>hosting| C["SageMaker AI"]
+  B -->|Calls a hosted or<br/>managed model| C
+</div>
+<p class="caption">Figure: Lambda calls models. SageMaker AI is where you train or host your own.</p>
+<ul>
+<li><strong>Purpose:</strong> Lambda runs short code in response to events. SageMaker AI builds, trains, and hosts machine learning models.</li>
+<li><strong>Input:</strong> Lambda takes events. SageMaker takes training data, containers, and model artifacts.</li>
+<li><strong>Effect:</strong> Lambda returns a result from code. SageMaker returns predictions from a deployed endpoint or batch job.</li>
+</ul>
+<p><strong>Ask yourself:</strong> Is the requirement to run code between services, or to own the model and its deployment?</p>
+<ul>
+<li><strong>Lambda signal words:</strong> event, short, glue, call, transform, serverless function.</li>
+<li><strong>SageMaker signal words:</strong> train, tune, endpoint, instance, model registry, asynchronous inference, inference component.</li>
+</ul>
+<p class="trap">Trap: Lambda that calls Bedrock for a reply does not become a model host. When the team must choose the serving container or the instance, SageMaker AI is the answer and Lambda is only the caller.</p>
+<p class="src">Source: Sundog slide pages 118, 316, and 317.</p>
+
+<h3>Provisioned Throughput versus batch versus on-demand</h3>
+<p><span class="fact">Corpus count: 17 for Bedrock as the on-demand answer over Provisioned Throughput. Batch has no direct row in the corpus.</span></p>
+<div class="mermaid">
+flowchart TD
+  A["Workload shape<br/>decides capacity"] -->|Steady high<br/>volume or<br/>custom model| B["Provisioned<br/>Throughput"]
+  A -->|Large job with<br/>results in S3<br/>later| C["Batch inference"]
+  A -->|Spiky or<br/>interactive<br/>traffic| D["On-demand"]
+</div>
+<p class="caption">Figure: Pick the capacity model from the traffic shape, the timing of results, and the model type.</p>
+<ul>
+<li><strong>Purpose:</strong> Provisioned Throughput reserves model units for a model at a fixed hourly price. Batch inference runs many prompts asynchronously. On-demand uses account quotas and pays per use.</li>
+<li><strong>Input:</strong> Provisioned Throughput needs a purchased model ARN used as the model ID. Batch takes input files in S3. On-demand takes ordinary inference calls.</li>
+<li><strong>Effect:</strong> Provisioned Throughput gives predictable capacity with a commitment choice of none, one month, or six months. Batch writes results to S3 when the job completes. On-demand returns each reply as it is generated, within quotas.</li>
+</ul>
+<p><strong>Ask yourself:</strong> Does the business need a reply now, a reply later, or a guaranteed rate every hour?</p>
+<ul>
+<li><strong>Provisioned Throughput signal words:</strong> predictable, steady, model units, reserved, customized model, commitment.</li>
+<li><strong>Batch signal words:</strong> overnight, large dataset, S3 input and output, no user waiting, asynchronous.</li>
+<li><strong>On-demand signal words:</strong> spiky, interactive, sporadic, pay per use, account quotas.</li>
+</ul>
+<p class="trap">Trap: Batch is not an answer for interactive chat, even at high volume. Provisioned Throughput is not an answer when traffic is sporadic and the stem asks for the lowest fixed cost. The page also states that batch inference is not supported for provisioned models.</p>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/prov-throughput.html, https://docs.aws.amazon.com/bedrock/latest/userguide/batch-inference.html, Sundog slide pages 225, 290, and 291.</p>
+
+<h3>Bedrock versus Flows</h3>
+<p><span class="fact">Corpus count: 15 (10 and 5 in the two directions).</span></p>
+<div class="mermaid">
+flowchart TD
+  A["One call or a designed<br/>path"] -->|One prompt and one<br/>model call| B["Amazon Bedrock"]
+  A -->|Designed path with<br/>nodes and versions| C["Amazon Bedrock Flows"]
+  C -->|Each node calls| B
+</div>
+<p class="caption">Figure: A flow is built from Bedrock calls. Use it when the path itself is the requirement.</p>
+<ul>
+<li><strong>Purpose:</strong> Bedrock gives model access. Flows links prompts, models, knowledge bases, and AWS services into a visual workflow.</li>
+<li><strong>Input:</strong> Bedrock takes a request. A flow takes an input and runs its nodes in order.</li>
+<li><strong>Effect:</strong> Bedrock returns one reply. A flow returns the output of its final node. A flow can be versioned and deployed behind an alias.</li>
+</ul>
+<p><strong>Ask yourself:</strong> Is the requirement one model call, or a path that someone designs and changes over time?</p>
+<ul>
+<li><strong>Bedrock signal words:</strong> single prompt, invoke, converse, one reply.</li>
+<li><strong>Flows signal words:</strong> visual builder, nodes, versions, alias, invoke flow, prompt node, knowledge base node.</li>
+</ul>
+<p class="trap">Trap: Flows is built on Bedrock, so Bedrock is in the answer either way. Choose Flows only when the stem asks for a designed path. A stem that asks only which model reads a document still points to Bedrock.</p>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/flows.html.</p>
+
+<h3>Lambda versus Prompt Management</h3>
+<p><span class="fact">Corpus count: 15 (10 with Prompt Management correct over Lambda, 5 with Lambda correct over Prompt Management).</span></p>
+<div class="mermaid">
+flowchart TD
+  A["Prompt must be versioned<br/>and tested"] -->|Yes| B["Bedrock Prompt Management"]
+  A -->|No prompt is one<br/>function detail| C["AWS Lambda code"]
+  B -->|Prompt is used by<br/>inference or a flow| C
+</div>
+<p class="caption">Figure: Prompt Management stores and versions the prompt. Lambda calls it.</p>
+<ul>
+<li><strong>Purpose:</strong> Prompt Management stores prompt templates with variables, variants, and versions. Lambda runs code that can contain prompt strings.</li>
+<li><strong>Input:</strong> Prompt Management takes prompt text, variables, and a model choice. Lambda takes events and calls.</li>
+<li><strong>Effect:</strong> Prompt Management gives a versioned prompt that apps and flows can reference. Lambda returns the result of its code.</li>
+</ul>
+<p><strong>Ask yourself:</strong> Does the prompt need versions, variants, and reuse across several applications?</p>
+<ul>
+<li><strong>Prompt Management signal words:</strong> reusable prompt, variant, version, variables, prompt builder, compare outputs.</li>
+<li><strong>Lambda signal words:</strong> code, handler, one function, prompt in code, single app.</li>
+</ul>
+<p class="trap">Trap: Keeping prompt text in Lambda code works for one app. It does not give the managed version and variant workflow that the stem asks for when several teams reuse a prompt.</p>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/prompt-management.html, https://docs.aws.amazon.com/bedrock/latest/userguide/flows.html.</p>
+
+<h3>CloudWatch versus EventBridge</h3>
+<p><span class="fact">Corpus count: 12 (CloudWatch over EventBridge, no reverse row).</span></p>
+<div class="mermaid">
+flowchart TD
+  A["Trigger is a measured<br/>value or an event"] -->|Metric crosses a<br/>threshold| B["Amazon CloudWatch alarm"]
+  A -->|Event matches a<br/>pattern| C["Amazon EventBridge rule"]
+  B -->|Alarm action can<br/>publish an event| C
+</div>
+<p class="caption">Figure: An alarm can emit an event, but the rule that matches events is EventBridge.</p>
+<ul>
+<li><strong>Purpose:</strong> CloudWatch alarms watch metrics. EventBridge rules match events and route them to targets.</li>
+<li><strong>Input:</strong> CloudWatch takes metric data. EventBridge takes events from services and applications.</li>
+<li><strong>Effect:</strong> CloudWatch changes alarm state and can run an action. EventBridge delivers matched events to targets.</li>
+</ul>
+<p><strong>Ask yourself:</strong> Is the trigger a number that crossed a line, or an event whose attributes must be matched?</p>
+<ul>
+<li><strong>CloudWatch signal words:</strong> threshold, metric, alarm, dashboard, anomaly.</li>
+<li><strong>EventBridge signal words:</strong> event pattern, rule, target, schedule, route by attribute.</li>
+</ul>
+<p class="trap">Trap: An alarm can trigger work, so it looks like routing. When the stem asks for routing of many event types by content, EventBridge is the answer.</p>
+<p class="src">Source: https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/WhatIsCloudWatch.html, https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-what-is.html.</p>
+
+<h3>Flows versus Step Functions</h3>
+<p><span class="fact">Corpus count: 11 (Flows over Step Functions, no reverse row).</span></p>
+<div class="mermaid">
+flowchart TD
+  A["Workflow is mainly model<br/>nodes"] -->|Prompts knowledge<br/>bases and model<br/>steps| B["Amazon Bedrock Flows"]
+  A -->|General service<br/>coordination with<br/>state| C["AWS Step Functions"]
+  C -->|A state can invoke a<br/>model| B
+</div>
+<p class="caption">Figure: Flows is the model-first path builder. Step Functions is the general orchestrator.</p>
+<ul>
+<li><strong>Purpose:</strong> Flows builds generative AI workflows from Bedrock nodes. Step Functions coordinates any set of AWS service tasks with state.</li>
+<li><strong>Input:</strong> Flows takes a flow input and node configuration. Step Functions takes a state machine definition and an execution input.</li>
+<li><strong>Effect:</strong> Flows returns the output of its nodes and can be versioned. Step Functions returns the final state and keeps an execution history.</li>
+</ul>
+<p><strong>Ask yourself:</strong> Are the steps mostly model and knowledge base nodes, or mostly service tasks with retries and waits?</p>
+<ul>
+<li><strong>Flows signal words:</strong> prompt node, knowledge base node, analysts edit, visual builder, versions.</li>
+<li><strong>Step Functions signal words:</strong> state machine, retry, wait, service integration, long-running, exactly once.</li>
+</ul>
+<p class="trap">Trap: A flow is not a general orchestrator. If the stem needs durable waits, retries across many AWS services, or an execution history, Step Functions is the better fit even when a model step appears in the path.</p>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/flows.html, https://docs.aws.amazon.com/step-functions/latest/dg/choosing-workflow-type.html.</p>
+
+<h3>Amazon Q versus Bedrock</h3>
+<p><span class="fact">Corpus count: 11 (6 with Amazon Q correct over Bedrock, 5 with Bedrock correct over Amazon Q).</span></p>
+<div class="mermaid">
+flowchart TD
+  A["Who uses the generative<br/>feature"] -->|A developer working<br/>in code| B["Amazon Q Developer"]
+  A -->|An application<br/>calling a model at<br/>run time| C["Amazon Bedrock"]
+</div>
+<p class="caption">Figure: Q helps people build software. Bedrock is the API your software calls.</p>
+<ul>
+<li><strong>Purpose:</strong> Amazon Q Developer assists developers with code work. Bedrock gives an application access to foundation models.</li>
+<li><strong>Input:</strong> Q takes developer prompts and code context in a supported IDE. Bedrock takes API requests from your application.</li>
+<li><strong>Effect:</strong> Q returns code help to the developer. Bedrock returns model output to your application.</li>
+</ul>
+<p><strong>Ask yourself:</strong> Is the person using the feature a developer working on code, or an end user of an application?</p>
+<ul>
+<li><strong>Amazon Q signal words:</strong> IDE, developer productivity, code suggestions, refactor, tests for developers.</li>
+<li><strong>Bedrock signal words:</strong> application, runtime, API call, end user, customers.</li>
+</ul>
+<p class="trap">Trap: Amazon Q is not the service your application calls at run time. The Q product pages were not fetched for this module, so details beyond this split are Not in source.</p>
+<p class="src">Source: Sundog slide page 6 lists Amazon Q under agentic AI tools. Product detail for Amazon Q Developer: Not in source.</p>
+
+<h3>SQS versus EventBridge versus SNS</h3>
+<p><span class="fact">Corpus count: 5 (SQS over EventBridge). SNS has no direct row.</span></p>
+<div class="mermaid">
+flowchart TD
+  A["Messaging need is<br/>named in the stem"] -->|Backlog<br/>drained by<br/>workers| B["Amazon SQS queue"]
+  A -->|One message to<br/>many<br/>subscribers| C["Amazon SNS topic"]
+  A -->|Rules match<br/>event<br/>attributes| D["Amazon EventBridge"]
+  C -->|Subscriber can<br/>be a queue| B
+</div>
+<p class="caption">Figure: Queue for a backlog, topic for broadcast, bus for rule-based routing.</p>
+<ul>
+<li><strong>Purpose:</strong> SQS holds messages until consumers receive and delete them. SNS publishes a message to a topic that fans out to many endpoints. EventBridge routes events by rules to targets.</li>
+<li><strong>Input:</strong> SQS takes messages from producers. SNS takes published messages. EventBridge takes events from sources.</li>
+<li><strong>Effect:</strong> SQS buffers work for consumers. SNS pushes copies to subscribers. EventBridge delivers each matched event to its rule targets.</li>
+</ul>
+<p><strong>Ask yourself:</strong> Is the message work to drain, a copy for each subscriber, or an event matched by its content?</p>
+<ul>
+<li><strong>SQS signal words:</strong> queue, buffer, workers, decouple, retention, at least once, FIFO.</li>
+<li><strong>SNS signal words:</strong> topic, publish, fan out, subscribers, email, push, many endpoints.</li>
+<li><strong>EventBridge signal words:</strong> event bus, rule, event pattern, schedule, targets.</li>
+</ul>
+<p class="trap">Trap: SNS feeding an SQS queue is a fan-out pattern, and both names appear in one correct design. Read the verb in the stem. A queue drains work, a topic broadcasts, and a bus filters by pattern.</p>
+<p class="src">Source: https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/welcome.html, https://docs.aws.amazon.com/sns/latest/dg/welcome.html, https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-what-is.html.</p>
+
+<h3>OpenSearch versus Aurora pgvector versus S3 Vectors</h3>
+<p><span class="fact">Corpus count: 5 (OpenSearch over Aurora). S3 Vectors has no direct row.</span></p>
+<div class="mermaid">
+flowchart LR
+  A["Vector store<br/>requirement in the<br/>stem"] -->|Hybrid keyword<br/>and vector<br/>search| B["Amazon OpenSearch<br/>Service"]
+  A -->|Vectors inside<br/>an existing<br/>relational<br/>database| C["Aurora PostgreSQL<br/>with pgvector"]
+  A -->|Low cost and<br/>rare queries<br/>at large scale| D["Amazon S3 Vectors"]
+</div>
+<p class="caption">Figure: Pick the store from search style, existing database, and query rate.</p>
+<ul>
+<li><strong>Purpose:</strong> OpenSearch offers search with keyword, vector, and hybrid queries. Aurora with pgvector keeps vectors next to relational data. S3 Vectors stores vectors in vector buckets and queries them by similarity.</li>
+<li><strong>Input:</strong> OpenSearch takes indexed documents and vectors. Aurora takes rows with a vector column. S3 Vectors takes vectors and metadata in a vector index.</li>
+<li><strong>Effect:</strong> OpenSearch returns ranked search hits. Aurora returns rows that match a vector and relational filters. S3 Vectors returns similar vectors with sub-second latency for infrequent queries.</li>
+</ul>
+<p><strong>Ask yourself:</strong> Does the query need keyword or hybrid search, or is it a similarity lookup where cost matters more than speed?</p>
+<ul>
+<li><strong>OpenSearch signal words:</strong> hybrid search, keyword, full text, faceting, provisioned cluster.</li>
+<li><strong>Aurora pgvector signal words:</strong> relational data, transactions, existing PostgreSQL, joins with vectors.</li>
+<li><strong>S3 Vectors signal words:</strong> vector bucket, cost optimized, infrequent queries, metadata filter, storage at scale.</li>
+</ul>
+<p class="trap">Trap: S3 Vectors is the cheapest option in the source, but the slides say it has higher latency than the database and search options. Limits for vector counts and metadata sizes: Not in source for this run.</p>
+<p class="src">Source: https://docs.aws.amazon.com/AmazonS3/latest/userguide/s3-vectors.html, Sundog slide pages 139, 187, and 657.</p>
+
+<h3>Knowledge Bases versus Kendra</h3>
+<p><span class="fact">Corpus count: 0 direct. The nearest row is Bedrock over Kendra, with 6.</span></p>
+<div class="mermaid">
+flowchart TD
+  A["Managed RAG pipeline for a<br/>model"] -->|Yes| B["Bedrock Knowledge Bases"]
+  A -->|Need is an<br/>enterprise search<br/>index first| C["Amazon Kendra"]
+  C -->|Kendra GenAI index<br/>can back| B
+</div>
+<p class="caption">Figure: Kendra can be the search layer under a knowledge base. The two are not exclusive.</p>
+<ul>
+<li><strong>Purpose:</strong> Knowledge Bases runs retrieval augmented generation with ingestion, chunking, embeddings, and a vector store. Kendra is an enterprise search service with an index and document access control.</li>
+<li><strong>Input:</strong> Knowledge Bases takes documents from data sources. Kendra takes documents and connector content into an index.</li>
+<li><strong>Effect:</strong> Knowledge Bases returns retrieved passages and can generate a cited answer. Kendra returns search results for users.</li>
+</ul>
+<p><strong>Ask yourself:</strong> Does the team need a search product with access control, or a managed retrieval layer that feeds a model?</p>
+<ul>
+<li><strong>Knowledge Bases signal words:</strong> RAG, citations, embeddings, chunking, retrieve and generate, managed knowledge base.</li>
+<li><strong>Kendra signal words:</strong> enterprise search, document-level access, index, connectors, search results.</li>
+</ul>
+<p class="trap">Trap: Document-level permissions appear in both answers. The Knowledge Bases page says document-level permission filtering applies to managed knowledge bases, and that connectors and some features depend on the managed type. Check which type the stem describes.</p>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/knowledge-base.html, Sundog slide pages 36, 657, and 662.</p>
+
+<h3>Model Evaluation versus CloudWatch</h3>
+<p><span class="fact">Corpus count: 5 (Model Evaluation over CloudWatch, no reverse row).</span></p>
+<div class="mermaid">
+flowchart TD
+  A["Question is about answer<br/>quality"] -->|Quality of model or<br/>RAG output| B["Bedrock model evaluation"]
+  A -->|Question is about<br/>service health| C["Amazon CloudWatch"]
+</div>
+<p class="caption">Figure: Evaluation grades the answers. CloudWatch watches the service.</p>
+<ul>
+<li><strong>Purpose:</strong> Bedrock evaluations score a model or a knowledge base using automatic metrics, a judge model, or human workers. CloudWatch monitors operational health with metrics, logs, and alarms.</li>
+<li><strong>Input:</strong> Evaluation takes a prompt dataset in S3 and reference answers when they are needed. CloudWatch takes metric data and logs.</li>
+<li><strong>Effect:</strong> Evaluation returns quality scores and reports. CloudWatch returns alarms and dashboards.</li>
+</ul>
+<p><strong>Ask yourself:</strong> Does the stem measure whether the answers are correct, or whether the service is up and fast?</p>
+<ul>
+<li><strong>Model Evaluation signal words:</strong> correctness, judge model, human rating, faithfulness, RAG retrieve only, retrieve and generate.</li>
+<li><strong>CloudWatch signal words:</strong> latency, error rate, throttles, alarm, dashboard.</li>
+</ul>
+<p class="trap">Trap: A dashboard of token counts and latency does not show answer quality. The quality question needs an evaluation job.</p>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/evaluation.html, https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/WhatIsCloudWatch.html, Sundog slide pages 430 and 431.</p>
+
+<h3>Guardrails sensitive information filter versus Macie</h3>
+<p><span class="fact">Corpus count: 0 direct. The nearest rows are Bedrock over Macie with 7 and Comprehend over Macie with 5.</span></p>
+<div class="mermaid">
+flowchart TD
+  A["Where is the sensitive<br/>data"] -->|In a prompt or a<br/>model reply| B["Bedrock Guardrails filter"]
+  A -->|At rest in S3<br/>buckets| C["Amazon Macie"]
+  B -->|Blocks or masks<br/>inline| D["Model call continues or<br/>stops"]
+</div>
+<p class="caption">Figure: Data in motion to a model needs an inline filter. Data at rest needs discovery.</p>
+<ul>
+<li><strong>Purpose:</strong> The sensitive information filter detects PII in prompts and responses and blocks or masks it. Macie discovers and classifies sensitive data in S3 and reports security findings.</li>
+<li><strong>Input:</strong> The filter takes the text of a request or reply. Macie takes S3 objects and bucket inventory.</li>
+<li><strong>Effect:</strong> The filter changes the text in the call. Macie produces findings for review and can publish them to EventBridge.</li>
+</ul>
+<p><strong>Ask yourself:</strong> Is the data moving to a model right now, or sitting in a bucket that needs an inventory?</p>
+<ul>
+<li><strong>Sensitive filter signal words:</strong> prompt, response, mask, block, inline, per request, regex pattern.</li>
+<li><strong>Macie signal words:</strong> S3 bucket, discover, classify, findings, at rest, inventory.</li>
+</ul>
+<p class="trap">Trap: Macie does not filter a prompt before a model call. The guardrail filter does not inventory S3 buckets. The guardrail page also says masking does not change model invocation logs, so the logs need separate protection.</p>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-sensitive-filters.html, https://docs.aws.amazon.com/macie/latest/user/what-is-macie.html.</p>
+
+<h3>Contextual grounding versus Automated Reasoning</h3>
+<p><span class="fact">Corpus count: 0 direct. Neither service has a corpus row in this set.</span></p>
+<div class="mermaid">
+flowchart TD
+  A["Check needed on a model<br/>reply"] -->|Reply must match a<br/>supplied passage| B["Contextual grounding check"]
+  A -->|Reply must satisfy<br/>formal rules| C["Automated Reasoning checks"]
+</div>
+<p class="caption">Figure: Grounding compares to a source passage. Automated Reasoning compares to a rule set.</p>
+<ul>
+<li><strong>Purpose:</strong> Contextual grounding scores whether a reply is supported by a source and relevant to the query. Automated Reasoning checks a reply against a policy written as rules.</li>
+<li><strong>Input:</strong> Grounding takes a grounding source, a query, and the reply. Automated Reasoning takes a policy built from source material.</li>
+<li><strong>Effect:</strong> Grounding returns grounding and relevance scores, and blocks replies under the thresholds you set. Automated Reasoning returns the result of its rule checks.</li>
+</ul>
+<p><strong>Ask yourself:</strong> Is the proof a passage that supports the reply, or a rule that the reply must satisfy?</p>
+<ul>
+<li><strong>Grounding signal words:</strong> source passage, grounded, relevant, hallucination, threshold, RAG answer.</li>
+<li><strong>Automated Reasoning signal words:</strong> formal rules, policy, logical check, deterministic check.</li>
+</ul>
+<p class="trap">Trap: A high grounding score does not prove that a rule is met. The grounding page covers only grounding and relevance. Details of the Automated Reasoning checks: Not in source for this run, because the fetched page did not render.</p>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-contextual-grounding-check.html. Automated Reasoning: Not in source.</p>
+
+<h3>Agents versus Flows</h3>
+<p><span class="fact">Corpus count: 0 direct. Bedrock over Agents has 10, and Flows appears only with Bedrock, Lambda, and Step Functions.</span></p>
+<div class="mermaid">
+flowchart TD
+  A["Who decides the next step"] -->|The model decides at<br/>run time| B["Bedrock Agents"]
+  A -->|The designer fixes<br/>the path| C["Bedrock Flows"]
+  C -->|A node can call an<br/>agent| B
+</div>
+<p class="caption">Figure: Agents plan with the model. Flows follows a path the designer draws.</p>
+<ul>
+<li><strong>Purpose:</strong> An agent lets the model choose tools and knowledge sources for a task. A flow connects nodes in a path that the designer defines.</li>
+<li><strong>Input:</strong> An agent takes a user request, action group definitions, and optional knowledge bases. A flow takes an input and the node configuration.</li>
+<li><strong>Effect:</strong> An agent returns the result of the tools it chose. A flow returns the output of its nodes in the designed order.</li>
+</ul>
+<p><strong>Ask yourself:</strong> Should the model pick the next tool, or should the order be fixed in advance so auditors can read it?</p>
+<ul>
+<li><strong>Agents signal words:</strong> decides, chooses tool, action group, plan, multi-step reasoning, varying requests.</li>
+<li><strong>Flows signal words:</strong> fixed order, node, condition, analysts edit, deterministic path, version.</li>
+</ul>
+<p class="trap">Trap: Picking Flows does not rule out agents. A flow can call an agent node. Read whether the stem fixes the order or leaves the order to the model.</p>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/flows.html, Sundog slide pages 224 and 288.</p>
+
+<h3>Prompt Management versus Parameter Store</h3>
+<p><span class="fact">Corpus count: 0 direct. The nearest row is Bedrock over Parameter Store, with 7.</span></p>
+<div class="mermaid">
+flowchart TD
+  A["Value is read at run time"] -->|Prompt template with<br/>variables| B["Bedrock Prompt Management"]
+  A -->|Plain configuration<br/>string| C["Systems Manager Parameter<br/>Store"]
+  B -->|Prompt can be stored<br/>as a parameter| C
+</div>
+<p class="caption">Figure: A prompt needs versions and variants. A configuration value needs a name and a value.</p>
+<ul>
+<li><strong>Purpose:</strong> Prompt Management stores and tests prompt templates for models. Parameter Store stores named configuration values and secrets with versions.</li>
+<li><strong>Input:</strong> Prompt Management takes prompt text, variables, and a model choice. Parameter Store takes a name and a value of type String, StringList, or SecureString.</li>
+<li><strong>Effect:</strong> Prompt Management gives a prompt version that inference or flows can use. Parameter Store returns the value on each read.</li>
+</ul>
+<p><strong>Ask yourself:</strong> Is the stored value a prompt to compare and vary, or a setting such as an endpoint or a flag?</p>
+<ul>
+<li><strong>Prompt Management signal words:</strong> prompt, variant, variables, model choice, compare outputs, prompt version.</li>
+<li><strong>Parameter Store signal words:</strong> parameter, path, SecureString, endpoint, AMI ID, version history.</li>
+</ul>
+<p class="trap">Trap: Parameter Store can hold prompt text, but it has no prompt builder, no variant comparison, and no model link. A stem that asks for prompt testing points to Prompt Management.</p>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/prompt-management.html, https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-parameter-store.html.</p>
+
+<h3>Parameter Store versus Secrets Manager versus AppConfig</h3>
+<p><span class="fact">Corpus count: 0 direct. The nearest row is Bedrock over Parameter Store, with 7.</span></p>
+<div class="mermaid">
+flowchart TD
+  A["Value type in the stem"] -->|Credential that must<br/>rotate| B["AWS Secrets Manager"]
+  A -->|Setting that must<br/>roll out safely| C["AWS AppConfig"]
+  A -->|Plain value or<br/>SecureString| D["Systems Manager Parameter<br/>Store"]
+  C -->|Can read values from| D
+</div>
+<p class="caption">Figure: Secrets rotate, dynamic settings roll out with checks, and plain values stay simple.</p>
+<ul>
+<li><strong>Purpose:</strong> Secrets Manager stores and rotates credentials. AppConfig deploys configuration and feature flags with validation and rollback. Parameter Store stores configuration values and SecureString values.</li>
+<li><strong>Input:</strong> Secrets Manager takes a secret value and a rotation setting. AppConfig takes a configuration profile with validators. Parameter Store takes named values.</li>
+<li><strong>Effect:</strong> Secrets Manager returns the current credential and can rotate it on a schedule. AppConfig rolls out the change gradually and rolls back on a CloudWatch alarm. Parameter Store returns the value on each read.</li>
+</ul>
+<p><strong>Ask yourself:</strong> Does the value need automatic rotation, a gradual rollout with rollback, or only a stored setting?</p>
+<ul>
+<li><strong>Secrets Manager signal words:</strong> rotate, database credential, API key, OAuth token, rotation schedule.</li>
+<li><strong>AppConfig signal words:</strong> feature flag, gradual rollout, validator, rollback, allow list, tuning.</li>
+<li><strong>Parameter Store signal words:</strong> parameter, configuration value, version history, SecureString, hierarchy.</li>
+</ul>
+<p class="trap">Trap: Parameter Store SecureString encrypts a value, but it does not rotate it. The Parameter Store page recommends Secrets Manager for credentials that need rotation. AppConfig can also read from Parameter Store, so the stem may name both.</p>
+<p class="src">Source: https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-parameter-store.html, https://docs.aws.amazon.com/appconfig/latest/userguide/what-is-appconfig.html, https://docs.aws.amazon.com/secretsmanager/latest/userguide/intro.html, Sundog slide page 364.</p>
+
+<h3>Fine-tuning versus RAG</h3>
+<p><span class="fact">Corpus count: 0. The pair does not appear in the corpus. It is kept because the learner confuses it often.</span></p>
+<div class="mermaid">
+flowchart TD
+  A["Knowledge or behavior must<br/>change"] -->|Facts change often<br/>and need citations| B["Retrieval augmented<br/>generation"]
+  A -->|Style or task<br/>behavior must change| C["Fine-tuning or<br/>customization"]
+  C -->|Customized Bedrock<br/>model needs capacity| D["Provisioned Throughput"]
+</div>
+<p class="caption">Figure: RAG adds passages at query time. Fine-tuning changes the model.</p>
+<ul>
+<li><strong>Purpose:</strong> RAG retrieves passages from a source at query time and places them in the prompt. Fine-tuning trains the model on examples so that its behavior changes.</li>
+<li><strong>Input:</strong> RAG takes a query and retrieves from documents. Fine-tuning takes labeled training examples and a base model.</li>
+<li><strong>Effect:</strong> RAG answers from the current passages and can cite them. Fine-tuning changes the behavior of the model for future calls.</li>
+</ul>
+<p><strong>Ask yourself:</strong> Does the answer need up-to-date facts with sources, or a change in how the model writes and decides?</p>
+<ul>
+<li><strong>RAG signal words:</strong> current documents, citations, source passage, updated often, knowledge base.</li>
+<li><strong>Fine-tuning signal words:</strong> style, format, labeled examples, behavior, customized model.</li>
+</ul>
+<p class="trap">Trap: Fine-tuning does not give citations to a source document. A customized Bedrock model also needs Provisioned Throughput before it can serve calls, so the cost and capacity choice follows the customization choice.</p>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/knowledge-base.html, https://docs.aws.amazon.com/bedrock/latest/userguide/prov-throughput.html, Sundog slide pages 36 and 317.</p>
+
+<h2>Read a long question</h2>
+<p>Each scenario below is short and original. Read the constraint words first, then remove each option by type. Name one reason for each removal. The answer comes last. Use the same method on the real stem.</p>
+
+<h3>Scenario one: policy answers with citations</h3>
+<p>A bank wants an assistant that answers loan questions from policy documents stored in S3. Each answer must show the paragraph that supports it. The team does not want to write retrieval code or run a vector database.</p>
+<p><strong>Constraint words:</strong> policy documents, show the supporting paragraph, no retrieval code, no vector database.</p>
+<ul>
+<li>A Lambda function with a self-managed vector store is out. It adds the retrieval work the stem bans.</li>
+<li>A SageMaker AI endpoint is out. It hosts a model, but it does not manage retrieval or citations.</li>
+<li>Comprehend is out. It labels text, but it does not write a cited answer.</li>
+</ul>
+<p><strong>Answer:</strong> Bedrock Knowledge Bases with a managed knowledge base. It runs retrieval and generation and returns the passages used.</p>
+
+<h3>Scenario two: data screened in each request</h3>
+<p>A clinic sends free text from patients to a model. Patient names and phone numbers must be masked before the model reads the text. Staff also want the model to refuse dosage advice, and that rule must act on each request.</p>
+<p><strong>Constraint words:</strong> masked before the model reads, refuse a topic, each request.</p>
+<ul>
+<li>Macie is out. It scans S3 objects at rest, so it does not screen a live prompt.</li>
+<li>A regex in Lambda alone is out. Regex misses names that depend on context, and it cannot enforce a topic rule.</li>
+<li>Comprehend alone is out. It masks PII, but it does not enforce a topic rule on the model reply.</li>
+</ul>
+<p><strong>Answer:</strong> Bedrock Guardrails with a sensitive information filter set to mask and a denied topic. The guardrail acts inline on the prompt and the reply.</p>
+
+<h3>Scenario three: who acted and how slow it was</h3>
+<p>An operations team must find which IAM principal changed a model access setting last week. The same team needs an alert when the latency of the assistant stays above a threshold for ten minutes. The two answers must come from different evidence.</p>
+<p><strong>Constraint words:</strong> which principal, last week, alert, threshold, latency.</p>
+<ul>
+<li>X-Ray is out for the first need. It traces requests, and it does not record who changed a setting.</li>
+<li>CloudTrail alone is out for the second need. It records actions, and it does not raise a latency alarm.</li>
+<li>Model Evaluation is out for both. It scores answer quality, and it does not record actions or watch latency.</li>
+</ul>
+<p><strong>Answer:</strong> CloudTrail for the principal and change record, and a CloudWatch alarm on latency. Each service answers only its own question.</p>
+
+<h3>Scenario four: a large job with results later</h3>
+<p>A publisher must summarize two million archived articles before the next morning. Results go to an S3 bucket, and no user waits for a reply. The team wants the lowest cost for this job.</p>
+<p><strong>Constraint words:</strong> two million, before morning, results in S3, nobody waits.</p>
+<ul>
+<li>A Lambda loop calling on-demand inference is out. It is synchronous, and the stem expects a batch process with results in S3.</li>
+<li>Provisioned Throughput is out. The batch page states that batch inference does not support provisioned models, and a commitment is not the lowest cost for a one-time job.</li>
+<li>Step Functions express synchronous execution is out. It has a five-minute limit, and the job is too large for one execution.</li>
+</ul>
+<p><strong>Answer:</strong> Bedrock batch inference with input and output in S3.</p>
+
+<h3>Scenario five: analysts change the path</h3>
+<p>Business analysts must change the steps of a generative workflow without writing code. Each step calls a prompt, a knowledge base, or a Lambda function. The team wants versions of the workflow and an alias that the application calls.</p>
+<p><strong>Constraint words:</strong> analysts without code, prompt, knowledge base, versions, alias.</p>
+<ul>
+<li>Agents are out. The model would choose the tools, and the stem fixes the path for analysts.</li>
+<li>Lambda alone is out. Each change would need a code deployment.</li>
+<li>Step Functions is out. It coordinates service tasks in a state machine, and the stem centers on prompt and knowledge base nodes that analysts edit.</li>
+</ul>
+<p><strong>Answer:</strong> Bedrock Flows. The visual builder, versions, and alias match the stem.</p>
+
+<p class="tip">Exam tip: Write the constraint in five words or fewer before you read the options. Then remove options by type first. A type removal takes one sentence. A detailed comparison of two near-identical options is slower and less reliable.</p>
+
+<h2>Distractor patterns seen in the tests</h2>
+<p>Most wrong options are not random. They follow a small set of patterns. Recognizing the pattern lets you reject an option without knowing every detail of the service.</p>
+<ul>
+<li><strong>Right family, wrong layer.</strong> A policy feature is offered as a model choice, or a model is offered as a control. It is wrong because each layer has a different job, and a policy does not pick a model.</li>
+<li><strong>Right purpose, wrong time.</strong> A tool that checks data after it sits in storage is offered for data in a live request. It is wrong because the stem asks for a control at request time.</li>
+<li><strong>Right service, wrong network surface.</strong> A private endpoint for one API set is offered for another API set. It is wrong because each Bedrock API surface has its own endpoint.</li>
+<li><strong>Build it yourself.</strong> Custom code is offered where a managed feature exists. It is wrong when the stem asks for less operational work or for a managed control.</li>
+<li><strong>Managed feature where ownership is required.</strong> A managed model API is offered when the stem asks for control of the serving container. It is wrong because the stem names the ownership boundary.</li>
+<li><strong>Wrong capacity model.</strong> Committed capacity is offered for sporadic traffic, or on-demand is offered for a steady high load with a fixed rate need. It is wrong because the capacity choice follows the traffic shape.</li>
+<li><strong>Storage posed as retrieval or retrieval posed as storage.</strong> A store that returns items is offered as an answer writer, or a model is offered as a store. It is wrong because the stem asks for one of the two jobs.</li>
+<li><strong>Monitoring posed as evaluation.</strong> A dashboard is offered for answer quality. It is wrong because health metrics do not show whether an answer is correct.</li>
+<li><strong>Config posed as secret.</strong> A plain parameter store is offered for a credential that must rotate. It is wrong because rotation belongs to the secrets service.</li>
+<li><strong>Heavy orchestration for a simple call.</strong> A workflow service is offered for one model call. It is wrong because it adds state and cost with no requirement that needs it.</li>
+</ul>
+
+<h2>Drill</h2>
+<p>Read each prompt, then cover the answer line. Say the service and one reason before you read on.</p>
+<ol>
+<li>
+<p>A stem asks to mask names in each prompt before the model reads it, with the rule applied inline.</p>
+<p class="rule">Rule: Bedrock Guardrails sensitive information filter on the model call, set to mask.</p>
+</li>
+<li>
+<p>A stem asks which principal changed a model access setting last month.</p>
+<p class="rule">Rule: CloudTrail event history or a trail.</p>
+</li>
+<li>
+<p>A stem asks where the time goes across three services in one slow request.</p>
+<p class="rule">Rule: X-Ray trace timeline and service map.</p>
+</li>
+<li>
+<p>Analysts must change the order of prompt and knowledge base steps without code.</p>
+<p class="rule">Rule: Bedrock Flows with versions and an alias.</p>
+</li>
+<li>
+<p>A workflow needs retries, waits, and a manual approval step with a durable history.</p>
+<p class="rule">Rule: Step Functions standard workflow.</p>
+</li>
+<li>
+<p>Ten thousand documents must be summarized by morning, with results written to S3.</p>
+<p class="rule">Rule: Bedrock batch inference with S3 input and output.</p>
+</li>
+<li>
+<p>A custom model must serve steady traffic with predictable capacity every hour.</p>
+<p class="rule">Rule: Provisioned Throughput with model units.</p>
+</li>
+<li>
+<p>A stem asks to find PII in documents already stored in S3 buckets.</p>
+<p class="trap">Trap: Macie. It discovers sensitive data at rest, and it does not filter live prompts.</p>
+</li>
+<li>
+<p>A stem asks for character offsets of PII in one text string.</p>
+<p class="rule">Rule: Amazon Comprehend PII detection on text.</p>
+</li>
+<li>
+<p>A reply must be checked against a supplied source passage and a user query.</p>
+<p class="rule">Rule: Contextual grounding check. Set a threshold for grounding and a threshold for relevance.</p>
+</li>
+<li>
+<p>A reply must satisfy rules written as formal logic from policy documents.</p>
+<p class="rule">Rule: Automated Reasoning checks. Details of the feature: Not in source for this run.</p>
+</li>
+<li>
+<p>A webhook must reach one function over private connectivity from a VPC.</p>
+<p class="trap">Trap: A function URL is public internet only. It does not use PrivateLink, so pick a private path instead.</p>
+</li>
+<li>
+<p>An endpoint needs request validation, usage plans, and WAF across several routes.</p>
+<p class="rule">Rule: Amazon API Gateway.</p>
+</li>
+<li>
+<p>Workers must drain a backlog of messages at their own pace.</p>
+<p class="rule">Rule: Amazon SQS queue.</p>
+</li>
+<li>
+<p>One event must reach several subscribers at the same moment.</p>
+<p class="rule">Rule: Amazon SNS topic with subscribers.</p>
+</li>
+<li>
+<p>Events must be matched by content and sent to different targets, with scheduled runs.</p>
+<p class="rule">Rule: Amazon EventBridge rules.</p>
+</li>
+<li>
+<p>A prompt template needs versions, variables, and variant comparison before release.</p>
+<p class="rule">Rule: Bedrock Prompt Management.</p>
+</li>
+<li>
+<p>A configuration change must roll out gradually and roll back on a CloudWatch alarm.</p>
+<p class="rule">Rule: AWS AppConfig with a deployment strategy.</p>
+</li>
+</ol>
+
+<h2>Sources</h2>
+<p class="src">AWS documentation pages fetched for this module:</p>
+<ul>
+<li>https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-sensitive-filters.html</li>
+<li>https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-contextual-grounding-check.html</li>
+<li>https://docs.aws.amazon.com/bedrock/latest/userguide/prov-throughput.html</li>
+<li>https://docs.aws.amazon.com/bedrock/latest/userguide/batch-inference.html</li>
+<li>https://docs.aws.amazon.com/bedrock/latest/userguide/flows.html</li>
+<li>https://docs.aws.amazon.com/bedrock/latest/userguide/prompt-management.html</li>
+<li>https://docs.aws.amazon.com/bedrock/latest/userguide/evaluation.html</li>
+<li>https://docs.aws.amazon.com/bedrock/latest/userguide/knowledge-base.html</li>
+<li>https://docs.aws.amazon.com/step-functions/latest/dg/choosing-workflow-type.html</li>
+<li>https://docs.aws.amazon.com/lambda/latest/dg/urls-configuration.html</li>
+<li>https://docs.aws.amazon.com/AmazonS3/latest/userguide/s3-vectors.html</li>
+<li>https://docs.aws.amazon.com/macie/latest/user/what-is-macie.html</li>
+<li>https://docs.aws.amazon.com/appconfig/latest/userguide/what-is-appconfig.html</li>
+<li>https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-parameter-store.html</li>
+<li>https://docs.aws.amazon.com/comprehend/latest/dg/how-pii.html</li>
+<li>https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-user-guide.html</li>
+<li>https://docs.aws.amazon.com/xray/latest/devguide/aws-xray.html</li>
+<li>https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/WhatIsCloudWatch.html</li>
+<li>https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-what-is.html</li>
+<li>https://docs.aws.amazon.com/sns/latest/dg/welcome.html</li>
+<li>https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/welcome.html</li>
+<li>https://docs.aws.amazon.com/secretsmanager/latest/userguide/intro.html</li>
+</ul>
+<p class="src">Course slides used as a second source: Sundog slide pages 6, 9, 21, 36, 57, 118, 139, 186, 187, 224, 225, 288, 290, 291, 316, 317, 364, 430, 431, 459, 657, 662, and 663.</p>
+<p class="src">Not in source for this run: Automated Reasoning checks feature details, Amazon Q Developer product details, Lambda function URL features such as usage plans, and S3 Vectors numeric limits.</p>
+<nav class="mod"><a href="index.html">All modules</a> <a href="m9-integration-apps.html">Previous</a> </nav>
+</main>
+<script type="module">
+  import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.esm.min.mjs";
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: "base",
+    themeVariables: {
+      background: "#000000",
+      mainBkg: "#000000",
+      primaryColor: "#000000",
+      primaryTextColor: "#f2f2f2",
+      primaryBorderColor: "#7db8ff",
+      secondaryColor: "#000000",
+      tertiaryColor: "#000000",
+      lineColor: "#d0d0d0",
+      textColor: "#f2f2f2",
+      edgeLabelBackground: "#000000",
+      clusterBkg: "#000000",
+      clusterBorder: "#7db8ff",
+      titleColor: "#ffffff",
+      fontFamily: "Helvetica, Arial, sans-serif",
+      fontSize: "22px"
+    },
+    flowchart: { htmlLabels: true, curve: "basis", useMaxWidth: false, padding: 16, nodeSpacing: 40, rankSpacing: 56 }
+  });
+</script>
+<script>window.markmap = { autoLoader: { manual: false, toolbar: false } };</script>
+<script src="https://cdn.jsdelivr.net/npm/markmap-autoloader@0.18.12"></script>
+</body>
+</html>

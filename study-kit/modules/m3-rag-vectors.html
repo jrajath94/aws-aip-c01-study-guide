@@ -1,0 +1,762 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>3. Retrieval and vector stores</title>
+<style>
+:root {
+  --bg: #000000;
+  --ink: #f2f2f2;
+  --fact: #7db8ff;
+  --rule: #6ee7a0;
+  --tip: #d8a6ff;
+  --trap: #ff8a8a;
+  --muted: #a8a8a8;
+  --line: #333333;
+}
+html, body { background: #000000; }
+body {
+  color: var(--ink);
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 19px;
+  line-height: 1.7;
+  margin: 0;
+  padding: 24px 20px 72px;
+}
+main { max-width: 780px; margin: 0 auto; }
+main p, main li { text-align: justify; }
+h1 { font-size: 32px; line-height: 1.3; margin: 0 0 12px; color: #ffffff; }
+h2 { font-size: 26px; line-height: 1.35; margin: 48px 0 14px; color: #ffffff; border-top: 1px solid var(--line); padding-top: 22px; }
+h3 { font-size: 21px; line-height: 1.4; margin: 32px 0 10px; color: #ffffff; }
+h4 { font-size: 19px; line-height: 1.4; margin: 24px 0 8px; color: #ffffff; }
+p { margin: 0 0 18px; }
+ul, ol { margin: 0 0 18px; padding-left: 26px; }
+li { margin-bottom: 10px; }
+.fact { color: var(--fact); }
+.rule { color: var(--rule); }
+.tip { color: var(--tip); }
+.trap { color: var(--trap); }
+.src { font-size: 16px; color: var(--muted); }
+.meta { font-size: 16px; color: var(--muted); margin-bottom: 24px; }
+.caption { font-size: 16px; color: var(--muted); margin: -8px 0 26px; text-align: left; }
+.legend p { margin-bottom: 6px; text-align: left; }
+.mermaid { margin: 14px 0 26px; font-size: 21px; text-align: left; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; }
+.mermaid svg { max-width: none; height: auto; }
+@media print {
+  .mermaid { overflow: visible; break-inside: avoid; }
+  .mermaid svg { max-width: 100% !important; height: auto !important; }
+  body { padding: 14mm 10mm; }
+  h1, h2, h3, h4 { break-after: avoid; }
+  p.caption, p.src { break-before: avoid; }
+}
+.markmap { position: relative; margin: 10px 0 28px; border-top: 1px solid #222; border-bottom: 1px solid #222; --markmap-text-color: #f2f2f2; --markmap-a-color: #7db8ff; color: #f2f2f2; }
+.markmap > svg { width: 100%; height: 560px; display: block; }
+.markmap foreignObject, .markmap .markmap-foreign { color: #f2f2f2; font-size: 17px; }
+nav.mod { font-size: 16px; color: #a8a8a8; margin: 0 0 18px; }
+nav.mod a { color: #7db8ff; }
+table { border-collapse: collapse; width: 100%; margin: 0 0 22px; font-size: 17px; }
+th, td { border: 1px solid #333; padding: 6px 8px; text-align: left; vertical-align: top; }
+th { color: #ffffff; }
+</style>
+</head>
+<body>
+<main>
+
+<nav class="mod"><a href="index.html">All modules</a> <a href="m2-safety-pii.html">Previous</a> <a href="m4-agents-orchestration.html">Next</a></nav>
+<h2>Retrieval and vector stores: Knowledge Bases, chunking, embeddings, and where vectors live</h2>
+<p>After this module, you can read a long retrieval scenario, find the constraint that decides the design, and reject each wrong option with one reason. You will separate retrieval from fine-tuning and long prompts. You will pick a Knowledge Bases setting and a vector store from the constraint, not from a service name you recognize.</p>
+
+<div class="markmap"><script type="text/template">
+# Retrieval and vector stores
+## Approach choice
+- Facts change, choose RAG
+- Fixed style, consider tuning
+- Small fixed context, long prompt
+## Knowledge Bases ingestion
+- Sync is the index update
+- Parser decides what is read
+- Chunking sets the retrieval unit
+## Chunking choices
+- Fixed size with overlap
+- Hierarchical keeps parent context
+- Semantic costs model calls
+## Retrieve or generate
+- Retrieve returns chunks only
+- RetrieveAndGenerate returns cited answer
+- Debug with Retrieve first
+## Relevance levers
+- Metadata filter removes wrong scope
+- Reranker reorders candidates
+- Hybrid adds exact keyword matches
+## Vector store choice
+- OpenSearch for search control
+- Aurora for relational joins
+- Neptune for relationship paths
+- S3 Vectors for cheap, rare queries
+## Symptoms
+- Wrong chunks, inspect retrieval
+- Stale data, check sync
+- Missing tables, check parser
+- Slow answers, time each stage
+## Traps
+- DynamoDB is not a KB store
+- Copying to a second store doubles cost
+- Reranker cannot add missing chunks
+</script></div>
+
+<h2>The deciding constraint</h2>
+<p>Start from the scenario, not from the service list. First ask what the model lacks. Then ask what shape the missing facts have, because the shape decides the store. The tree below moves from the scenario to a service in a fixed order.</p>
+
+<div class="mermaid">
+flowchart TD
+  A["Model needs<br/>facts it lacks"] -->|facts are<br/>few and<br/>fixed| B["Long prompt<br/>may be enough"]
+  A -->|facts are<br/>large or<br/>change| C["RAG path"]
+  C -->|rows with a<br/>fixed schema| D["Structured<br/>retrieval to<br/>SQL"]
+  C -->|documents or<br/>files| E["Bedrock<br/>Knowledge<br/>Bases"]
+  E -->|needs<br/>managed<br/>connectors<br/>and ACLs| F["Managed<br/>Knowledge Base"]
+  E -->|needs own<br/>vector store<br/>control| G["Customer-managed<br/>Knowledge Base"]
+  E -->|must reuse<br/>enterprise<br/>search| H["Kendra GenAI<br/>index"]
+  G -->|vectors next<br/>to<br/>relational<br/>data| I["Aurora<br/>PostgreSQL<br/>pgvector"]
+  G -->|relationships<br/>are the main<br/>question| J["Neptune<br/>Analytics<br/>GraphRAG"]
+  G -->|large and<br/>rarely<br/>queried| K["S3 Vectors"]
+  G -->|search<br/>platform<br/>with tuning| L["OpenSearch<br/>Service"]
+</div>
+<p class="caption">Figure: the first split is data shape, the second is permissions and control, and the third is the store.</p>
+
+<p>Signal words in the scenario tell you which branch to take. Underline them in your head before you read the options. Each signal word below points to one branch.</p>
+<ul>
+<li><span class="rule">Rule: "few and fixed" facts point to a long prompt, not to retrieval.</span></li>
+<li><span class="rule">Rule: "rows", "columns", "total", and "count" point to structured retrieval.</span></li>
+<li><span class="rule">Rule: "existing document permissions" points to ACL-aware retrieval or Kendra.</span></li>
+<li><span class="rule">Rule: "who knows who" or "path between" points to a graph store.</span></li>
+<li><span class="rule">Rule: "exact codes" or "rare names" points to hybrid search.</span></li>
+<li><span class="rule">Rule: "rarely queried" plus "lowest cost" points to S3 Vectors.</span></li>
+</ul>
+<p class="tip">Exam tip: a long scenario often lists five services and one constraint. The constraint is usually a number, a frequency, a permission, or a data shape. Find that first.</p>
+
+<h2>Services and features in scope</h2>
+
+<h3>Retrieval augmented generation</h3>
+<p>RAG means the application fetches relevant source text at request time and adds it to the prompt. The model then answers from that text. AWS describes Knowledge Bases as a way to improve relevance and accuracy with this pattern, and to include citations so a reader can check the source.</p>
+<p class="fact">Fact: RAG changes the facts the model sees, not the model weights. Updating a document updates the answer after the next sync.</p>
+<p class="rule">Rule: choose RAG when facts change often, are too large for a prompt, or need source citations.</p>
+<p class="trap">Trap: RAG does not change the tone or output format of a model. For a fixed format, a customization approach is the better fit.</p>
+<p class="trap">Trap: a RAG system returns the wrong answer when retrieval returns the wrong chunks. A strong generator cannot repair missing evidence.</p>
+<p>RAG pairs with a knowledge base, a vector store, a chunking strategy, and a reranker. The retrieval step is where most failures start.</p>
+<p class="fact">Limits: the number of chunks you can pass depends on the model context window. Not in source for a specific token budget in the pages fetched.</p>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/knowledge-base.html and course slides, pages 36 and 287.</p>
+
+<h3>Amazon Bedrock Knowledge Bases, managed and customer-managed</h3>
+<p>Knowledge Bases is the managed RAG feature in Bedrock. It has two types. A managed knowledge base runs ingestion, indexing, storage, and retrieval for you. A customer-managed knowledge base lets you choose and run the vector store, parsing, and ingestion settings.</p>
+<p class="fact">Fact: managed knowledge bases offer connectors for S3, SharePoint, Confluence, Google Drive, OneDrive, and a web crawler. Document-level permission filtering with access control lists works with them, except for the web crawler.</p>
+<p class="fact">Fact: third-party connectors and document-level permissions are listed as managed knowledge base features. Customer-managed bases need you to build those parts.</p>
+<p class="rule">Rule: choose a managed knowledge base when the question needs SaaS connectors or ACL-aware retrieval with little setup.</p>
+<p class="rule">Rule: choose a customer-managed knowledge base when the question names a specific vector store or demands your own parsing and index settings.</p>
+<p class="trap">Trap: a managed knowledge base hides the storage choice. If the scenario requires Aurora or S3 Vectors by name, the managed type fails that constraint.</p>
+<p class="tip">Exam tip: read whether the scenario says "managed" as a business need or as a Bedrock type. The overview separates both meanings.</p>
+<p>The customer-managed type pairs with a vector store you create, an embedding model, and a service role that allows access to that store. The managed type pairs with Bedrock-selected models by default, with an option to choose your own.</p>
+<p class="fact">Limits: the supported models and Regions page was not fetched. Regions for each feature: Not in source.</p>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/knowledge-base.html</p>
+
+<h3>Data sources, sync, and ingestion jobs</h3>
+<p>A data source is the place where your files live. Ingestion reads the data source, parses it, chunks it, creates embeddings, and writes them to the vector store. Syncing starts an ingestion job. Each job reports status, and a finished job reports COMPLETE.</p>
+<p class="fact">Fact: sync is incremental. Only added, modified, or deleted documents are processed since the previous sync. Deleted documents are removed from the vector store.</p>
+<p class="fact">Fact: the API calls are StartIngestionJob, GetIngestionJob, ListIngestionJobs, and StopIngestionJob. A running job must exist before you stop it.</p>
+<p class="fact">Fact: when only a metadata file changes, and the source is not CSV and no custom transformation Lambda is set, Bedrock updates metadata without calling the embedding model again.</p>
+<p class="rule">Rule: when the question asks how to keep the index current with the least code, use a managed sync, triggered on a schedule or by an event.</p>
+<p class="trap">Trap: uploading a new file to S3 does not change the index by itself. The index changes only after a sync or ingestion job runs.</p>
+<p class="trap">Trap: a full rebuild with custom embedding code is not needed when the managed sync already handles adds, edits, and deletes.</p>
+<p class="fact">Limits: for vector stores other than Aurora, new vectors can take a few minutes to become queryable after a job finishes. CSV files are always re-ingested when their metadata file changes.</p>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/kb-data-source-sync-ingest.html and course slides, page 36.</p>
+
+<h3>Parsing options</h3>
+<p>Parsing turns raw files into text and structure before chunking. A parser that reads only text misses tables and images inside a PDF. The choice of parser therefore decides whether a table value can ever be retrieved.</p>
+<p class="fact">Fact: the default parser reads text in txt, md, html, doc, docx, xls, xlsx, and pdf files. It has no usage charge.</p>
+<p class="fact">Fact: Bedrock Data Automation and foundation model parsers process figures, charts, tables, and images in PDF, JPEG, and PNG files. They can store extracted images and tables as files in an S3 destination.</p>
+<p class="fact">Fact: Bedrock Data Automation charges per page or per image. The foundation model parser charges by input and output tokens, lets you customize the extraction prompt, and accepts a total of at most 100 GB across all files.</p>
+<p class="rule">Rule: choose a multimodal parser when the answer sits in a table, chart, or image inside a PDF.</p>
+<p class="rule">Rule: choose the foundation model parser when the question needs a custom extraction instruction. Choose Bedrock Data Automation when no prompt is needed.</p>
+<p class="trap">Trap: the default parser on a PDF of rate tables returns text only. The table values are not indexed as table content.</p>
+<p class="trap">Trap: once a multimodal parser is selected, it applies to every PDF in the source, including text-only PDFs. Those files still incur parser charges.</p>
+<p class="tip">Exam tip: the words "customize the extraction instruction" point to the foundation model parser. The words "fully managed with no prompting" point to Bedrock Data Automation.</p>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/kb-advanced-parsing.html</p>
+
+<h3>Chunking strategies</h3>
+<p>Chunking splits a document into pieces. Each piece becomes one embedding and one retrievable unit. The chunk size sets how much text the model sees per match. A chunk that is too large dilutes the meaning. A chunk that is too small loses the context around the match.</p>
+<p class="fact">Fact: fixed-size chunking takes a maximum token count per chunk and an overlap percentage between chunks. Default chunking targets about 300 tokens and keeps sentences whole. The course example uses 300 tokens with 20 percent overlap. The default overlap is Not in source.</p>
+<p class="fact">Fact: hierarchical chunking takes a parent maximum size, a child maximum size, and an overlap in tokens. Retrieval matches child chunks and returns their parent chunks for more context.</p>
+<p class="fact">Fact: semantic chunking takes a maximum token count, a buffer size, and a breakpoint percentile. A buffer of 1 combines the current sentence with one sentence before and one after. Semantic chunking calls a foundation model, so it has extra cost.</p>
+<p class="fact">Fact: with no chunking, the whole document becomes one chunk. Custom chunking uses a transformation Lambda function that you write.</p>
+<p class="fact">Fact: when a parsed page or table is 10,000 characters or fewer, retrieval can return the full page or table in place of the matched chunk. The number of results can then be lower than the number you asked for.</p>
+<p class="rule">Rule: choose hierarchical chunking when small matches work but answers need the surrounding section.</p>
+<p class="rule">Rule: choose semantic chunking when topic changes mark the right boundary and the extra model cost is acceptable.</p>
+<p class="rule">Rule: choose custom Lambda chunking when the document structure is special and no native strategy fits.</p>
+<p class="trap">Trap: hierarchical chunking is not recommended with S3 Vectors. Large parent and child token counts can exceed the metadata size limit per vector.</p>
+<p class="trap">Trap: a chunk-size change does not fix a table that the parser never extracted. Check the parser first.</p>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/kb-chunking.html and course slides, pages 42 to 44.</p>
+
+<h3>Embedding models and dimensions</h3>
+<p>An embedding model turns a chunk or a query into a vector. The vector has a fixed number of dimensions. The index in the vector store must use the same number. A mismatch causes a failure, so the model and the store must agree before you create the knowledge base.</p>
+<p class="fact">Fact: the documented dimensions are Titan G1 Text 1,536, Titan V2 Text 1,024, 512, or 256, Cohere Embed English 1,024, and Cohere Embed Multilingual 1,024.</p>
+<p class="fact">Fact: binary vectors are supported only in OpenSearch Serverless and OpenSearch managed clusters. S3 Vectors supports float32 only.</p>
+<p class="fact">Fact: smaller vectors cost less to store and search, but retrieval quality can drop. The course slide describes this trade-off as a balance against domain fit.</p>
+<p class="fact">Fact: binary vectors are described in the course slides as 32 times smaller than float32 vectors. Binary vectors are not embeddings in the strict sense and need a distance search that suits them.</p>
+<p class="rule">Rule: pick the embedding model first, then pick a store that supports its dimension and vector type.</p>
+<p class="trap">Trap: a question that asks for binary vectors and names S3 Vectors has a conflict. S3 Vectors does not store binary vectors.</p>
+<p class="trap">Trap: the dimension in the index must match the model. Changing the model later usually means a new knowledge base, not a small edit.</p>
+<p class="tip">Exam tip: find the number of dimensions in the scenario, then check the table. If no model matches, the store choice is wrong.</p>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/knowledge-base-setup.html and course slides, pages 45 and 141.</p>
+
+<h3>Retrieve and RetrieveAndGenerate</h3>
+<p>Retrieve sends a query to a knowledge base and returns matching chunks. Each result carries content, a location, metadata, a score, and a document ID. RetrieveAndGenerate runs retrieval and then a model call, and returns an answer with citations.</p>
+<p class="fact">Fact: Retrieve takes a retrieval query and a retrieval configuration. The vector configuration can hold numberOfResults, a filter, an override search type, and a reranking configuration. A managed knowledge base uses a managed search configuration instead.</p>
+<p class="fact">Fact: Retrieve accepts user context. Bedrock uses it for access control filtering, so results include only documents the user can read.</p>
+<p class="fact">Fact: the response field for results is retrievalResults. Each result has a score, so you can compare matches. Retrieve supports nextToken paging.</p>
+<p class="fact">Limits: the default for numberOfResults is Not in source. The exact response shape of RetrieveAndGenerate was not fetched.</p>
+<p class="rule">Rule: choose Retrieve when your code controls the prompt, changes the ranking, or must test retrieval alone.</p>
+<p class="rule">Rule: choose RetrieveAndGenerate when a managed answer with citations is the whole requirement.</p>
+<p class="trap">Trap: calling RetrieveAndGenerate to debug a bad answer hides the chunks. The model may still answer well from the wrong text.</p>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock/latest/APIReference/API_agent-runtime_Retrieve.html and https://docs.aws.amazon.com/bedrock/latest/userguide/kb-chunking.html</p>
+
+<h3>Metadata filtering</h3>
+<p>Metadata filtering removes chunks that fail a rule before ranking. The rule uses keys and values attached to each source document. A filter does not read the text. It reads the attributes you stored at ingestion.</p>
+<p class="fact">Fact: for S3 sources, attach metadata with a sidecar file. The file name is the source file name plus a .metadata.json suffix. A CSV file can use one column as content and other columns as metadata.</p>
+<p class="fact">Fact: supported attribute types are STRING, NUMBER, BOOLEAN, and STRING_LIST. CSV metadata values are stored as strings.</p>
+<p class="fact">Fact: the filter examples show equals, greaterThan, in, and startsWith conditions. Conditions combine with andAll and orAll. Each filter object in the examples holds one condition.</p>
+<p class="fact">Fact: for OpenSearch custom fields, map the field as keyword, or as text with a keyword subfield. Otherwise filtering fails with a rewrite error.</p>
+<p class="fact">Fact: on Aurora, metadata lives in a JSONB column with a GIN index. If a selective filter returns fewer results than expected, the docs recommend iterative index scans with pgvector 0.8.0 or later.</p>
+<p class="rule">Rule: filter on attributes the user already has, such as region, product line, or effective date.</p>
+<p class="trap">Trap: a filter cannot find a chunk that was never indexed. Add the metadata file, then sync again.</p>
+<p class="trap">Trap: telling the model to ignore other regions in the prompt is not a filter. The chunks are still retrieved and sent.</p>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/kb-metadata.html and https://docs.aws.amazon.com/bedrock/latest/userguide/knowledge-base-setup.html</p>
+
+<h3>Reranking</h3>
+<p>A reranker model scores each candidate chunk against the query and reorders the list. It does not search the store. It works only on candidates that retrieval already returned.</p>
+<p class="fact">Fact: reranking can run through the Rerank operation on any list of documents. It can also run inside Retrieve or RetrieveAndGenerate, and then its order replaces the default knowledge base order.</p>
+<p class="fact">Fact: reranking works only on text data. Reranker models come from Amazon or Cohere, and availability is limited by Region in the course slides.</p>
+<p class="fact">Fact: the Retrieve request holds a reranking configuration with a model ARN and a numberOfRerankedResults value.</p>
+<p class="rule">Rule: retrieve a wider candidate set, then rerank down to a smaller set for the prompt.</p>
+<p class="trap">Trap: a reranker cannot add a chunk that retrieval missed. If the right passage is absent, fix chunking or widen retrieval.</p>
+<p class="trap">Trap: a reranker is a weaker fix for the wrong region than a metadata filter, because the wrong region chunk can still be ranked high.</p>
+<p class="fact">Limits: reranker pricing and the supported Regions list were not fetched. Not in source for exact values.</p>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/rerank.html and course slides, page 192.</p>
+
+<h3>Hybrid search</h3>
+<p>Hybrid search combines vector similarity with keyword matching. Vector search finds meaning. Keyword search finds exact tokens, such as codes, names, and rare words. The mix helps when the question contains both kinds of signal.</p>
+<p class="fact">Fact: in OpenSearch, hybrid search needs filterable keyword fields for metadata. The course slides flag this as a required setup step.</p>
+<p class="fact">Fact: on Aurora, hybrid search uses a full-text GIN index on the chunk text. The docs suggest an English dictionary for English content.</p>
+<p class="fact">Fact: the vector configuration has an override search type field. Its enumerated values are Not in source in the pages fetched.</p>
+<p class="rule">Rule: choose hybrid search when exact codes, SKUs, or rare names must match.</p>
+<p class="trap">Trap: hybrid search widens the match, and a reranker orders the matches. They solve different problems, so one does not replace the other.</p>
+<p class="trap">Trap: S3 Vectors has no native keyword search described in the pages fetched. For exact-match needs, the course slides point to a copy in OpenSearch, which adds cost.</p>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/knowledge-base-setup.html and course slides, page 139.</p>
+
+<h3>Query decomposition and query rewriting</h3>
+<p>A single embedding of a multi-part question can average two topics. The result may match neither topic well. Decomposition splits the question into parts, and each part gets its own retrieval.</p>
+<p class="fact">Fact: managed knowledge bases use agentic retrieval. The overview says it decomposes complex queries into sub-queries, retrieves across several knowledge bases, and checks whether the evidence is enough.</p>
+<p class="fact">Fact: the course slides advise breaking up multi-part questions and reducing ambiguity before retrieval.</p>
+<p class="rule">Rule: split a multi-part question when each part needs different evidence. Rewrite a follow-up question with its earlier turn before retrieval.</p>
+<p class="trap">Trap: a follow-up such as "what about that one" embeds poorly on its own. The retrieval then returns unrelated chunks.</p>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/knowledge-base.html and course slides, page 297.</p>
+
+<h3>Citations</h3>
+<p>A citation links a generated statement to the source that supports it. Citations are only as reliable as the retrieval result behind them. The source of truth is the retrieval location, not the text the model writes.</p>
+<p class="fact">Fact: Knowledge Bases can include citations in generated responses, so the original source can be checked.</p>
+<p class="fact">Fact: each retrieval result carries a location. The location types include S3, web, SharePoint, Confluence, Salesforce, Kendra document, and SQL.</p>
+<p class="rule">Rule: attribution must come from retrieval location fields in the response, not from text the model writes about its own sources.</p>
+<p class="trap">Trap: asking the model to list its sources in plain text is not traceable. The model can invent a source name.</p>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/knowledge-base.html and https://docs.aws.amazon.com/bedrock/latest/APIReference/API_agent-runtime_Retrieve.html</p>
+
+<h3>Structured data retrieval to SQL</h3>
+<p>A knowledge base can connect to a structured data store, such as a table or a warehouse with a schema. The service converts the user question into a query for that store. The result is exact rows, not similar text.</p>
+<p class="fact">Fact: Retrieve and RetrieveAndGenerate convert the user query into a query suitable for the connected store. The GenerateQuery operation converts natural language into SQL on its own, so you can place it in your own workflow.</p>
+<p class="fact">Fact: the course slides describe a common pattern. A relational store holds structured records, and each record points to a larger object in S3.</p>
+<p class="fact">Limits: the supported query engines and the permission setup were not fetched. Not in source.</p>
+<p class="rule">Rule: choose structured retrieval when the answer is a count, a total, or a filter over rows with a schema.</p>
+<p class="trap">Trap: vector search over row text returns passages that look similar. It does not calculate an exact total.</p>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/knowledge-base-build-structured.html and course slides, page 154.</p>
+
+<h3>Amazon OpenSearch Serverless as a vector store</h3>
+<p>OpenSearch Serverless runs a vector search collection with no cluster to manage. The team creates an index with a vector field, a text field, and a Bedrock metadata field. Billing follows requests and stored data, not always-on nodes.</p>
+<p class="fact">Fact: the index uses the faiss engine. The docs recommend Euclidean distance for float vectors. The course slides call it the default serverless choice for a quick development setup.</p>
+<p class="fact">Fact: a vector collection can be private through a VPC endpoint. Binary vectors are supported.</p>
+<p class="fact">Limits: serverless does not mean it scales to zero. Unused collections keep billing. Collection capacity limits: Not in source.</p>
+<p class="rule">Rule: choose OpenSearch Serverless when traffic is uneven and the team wants low operations.</p>
+<p class="trap">Trap: a serverless collection is a poor choice when the question demands shard and node tuning. Use a managed cluster for that.</p>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/knowledge-base-setup.html and course slides, pages 139 and 660.</p>
+
+<h3>Amazon OpenSearch Service managed clusters</h3>
+<p>A managed cluster is a provisioned domain. You choose instance types and shards, and you pay for capacity while it runs. It gives more control and more things to manage.</p>
+<p class="fact">Fact: for Knowledge Bases, the managed domain must have public network access. VPC-only domains are not supported.</p>
+<p class="fact">Fact: binary vectors need engine version 2.16 or later. The k-NN index needs version 2.13 or later. The nmslib engine is not supported, so use faiss.</p>
+<p class="fact">Fact: the course slides suggest shard sizes near 30 to 50 GB for semantic search and 10 to 30 GB for hybrid search. The slides also describe OpenSearch with an S3 Vectors engine, which works only on managed clusters.</p>
+<p class="rule">Rule: choose a managed cluster when the question needs control over capacity, shards, or predictable latency.</p>
+<p class="trap">Trap: a VPC-only domain is a common wrong choice. Knowledge Bases needs public access on that domain type.</p>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/knowledge-base-setup.html and course slides, pages 142 and 149.</p>
+
+<h3>Amazon Aurora PostgreSQL with pgvector</h3>
+<p>Aurora PostgreSQL with pgvector stores vectors in a column next to ordinary relational data. Similarity search uses SQL operators. The vectors can take part in the same transaction as business rows.</p>
+<p class="fact">Fact: the knowledge base table needs an id, an embedding vector, a text column, a metadata JSON column, and an optional custom metadata JSONB column. The embedding index uses hnsw with cosine operators.</p>
+<p class="fact">Fact: the Aurora cluster must sit in the same account as the knowledge base.</p>
+<p class="fact">Fact: the course slides say pgvector can compute cosine, L2, and inner product distances. It suits small and medium RAG systems with mostly structured data.</p>
+<p class="rule">Rule: choose Aurora when vectors must join with, or commit with, relational business data.</p>
+<p class="trap">Trap: an Aurora cluster in another account is not a valid setup for a knowledge base in the docs. Move the cluster or choose another store.</p>
+<p class="trap">Trap: Aurora is a weak fit for a huge archive chosen only for storage cost. The course table notes that you run the tuning yourself.</p>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/knowledge-base-setup.html and course slides, pages 159 and 657.</p>
+
+<h3>Neptune Analytics GraphRAG</h3>
+<p>Neptune Analytics is a graph analytics engine with a vector search index. GraphRAG uses the graph edges and the vector match together. The graph answers questions about paths and relationships, and the vectors find the starting points.</p>
+<p class="fact">Fact: the vector index is created when the graph is created. Its dimension must match the embedding model.</p>
+<p class="fact">Fact: a graph is sized in m-NCUs, and each m-NCU has about one GiB of memory. The capacity can change later.</p>
+<p class="fact">Limits: the maximum number of hops and the graph size limits were not fetched. Not in source.</p>
+<p class="rule">Rule: choose Neptune Analytics when the answer depends on paths between entities, such as ownership chains or dependencies.</p>
+<p class="trap">Trap: a graph with no vector index does not do semantic search. A vector store alone does not do graph traversal.</p>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/knowledge-base-setup.html and course slides, page 657.</p>
+
+<h3>Amazon S3 Vectors</h3>
+<p>S3 Vectors stores vectors in vector buckets. You create a vector index inside a bucket, write vectors with metadata, and query by similarity. It needs no infrastructure to provision. The design goal is low cost for large sets that are not queried often.</p>
+<p class="fact">Fact: writes are strongly consistent. The docs describe latency of sub-second for infrequent queries and as low as 100 milliseconds for more frequent queries.</p>
+<p class="fact">Fact: the dimension range is 1 to 4,096. The distance choices are cosine or Euclidean. Only float32 vectors are supported.</p>
+<p class="fact">Fact: with Knowledge Bases, you can attach up to 1 KB of custom metadata and 35 metadata keys per vector. The metadata is filterable by default. Non-filterable keys are set on the index.</p>
+<p class="fact">Fact: Block Public Access is always on for vector buckets. Access uses IAM with the s3vectors namespace.</p>
+<p class="fact">Limits: the course slides state 10,000 indices per bucket and 2 billion vectors per index. The AWS limits page was not fetched, so the AWS value is Not in source.</p>
+<p class="rule">Rule: choose S3 Vectors when the corpus is large, queries are rare, and sub-second latency is acceptable.</p>
+<p class="trap">Trap: S3 Vectors cannot store binary vectors. A binary requirement points to OpenSearch.</p>
+<p class="trap">Trap: copying S3 Vectors data into OpenSearch for speed means you pay for both stores. The course slides warn about this.</p>
+<p class="src">Source: https://docs.aws.amazon.com/AmazonS3/latest/userguide/s3-vectors.html and https://docs.aws.amazon.com/bedrock/latest/userguide/knowledge-base-setup.html and course slides, pages 145 and 149.</p>
+
+<h3>MemoryDB</h3>
+<p>MemoryDB is a Redis-compatible durable in-memory database. The course slides say it now has vector capabilities. The Knowledge Bases store list in the pages fetched does not name MemoryDB.</p>
+<p class="fact">Fact: the Knowledge Bases store list in the setup page names OpenSearch Serverless, OpenSearch managed clusters, Aurora, Neptune Analytics, S3 Vectors, Pinecone, Redis Enterprise Cloud, and MongoDB Atlas.</p>
+<p class="fact">Limits: MemoryDB support as a Knowledge Bases store is Not in source.</p>
+<p class="rule">Rule: for a Knowledge Bases question, choose only a store from the listed set. For a general low-latency vector need, MemoryDB is a separate design question.</p>
+<p class="trap">Trap: MemoryDB and Redis Enterprise Cloud are different products. The listed Redis option does not make MemoryDB a valid knowledge base store.</p>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/knowledge-base-setup.html and course slides, page 37.</p>
+
+<h3>DynamoDB</h3>
+<p>DynamoDB is an operational key-value and document database. It is not on the Knowledge Bases store list. The course slides describe a newer vector index feature on DynamoDB, which is a separate capability from a Knowledge Bases store.</p>
+<p class="fact">Fact: the course slides describe a SearchVectors operation with approximate nearest neighbor search. It is on-demand capacity only, returns at most 16 MB with no pagination, and filters only on equality.</p>
+<p class="fact">Fact: the course slides describe a zero-ETL pipeline from DynamoDB to OpenSearch, which you can then use as a Knowledge Bases store. The AWS page for the vector index feature was not fetched. Its current status is Not in source.</p>
+<p class="rule">Rule: when DynamoDB is the requested Knowledge Bases store, reject it. Keep DynamoDB as the source and sync to a supported store.</p>
+<p class="trap">Trap: a DynamoDB scan with a similarity check in code is not vector search. It reads every item and does not rank by meaning.</p>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/knowledge-base-setup.html and course slides, pages 186 to 188.</p>
+
+<h3>Kendra as a retriever</h3>
+<p>Kendra is an enterprise search service with document permission handling. The Knowledge Bases docs include a Kendra GenAI index option. Kendra is the right retriever when existing document permissions must decide what a user sees.</p>
+<p class="fact">Fact: the Knowledge Bases overview lists a build path with a Kendra GenAI index. Retrieval results can carry a Kendra document location.</p>
+<p class="fact">Fact: the course slides say Kendra fits document-level access control with SharePoint and Confluence. The slides also say its cost can be high for large deployments.</p>
+<p class="fact">Limits: Kendra query pricing and index size limits were not fetched. Not in source.</p>
+<p class="rule">Rule: choose Kendra, or a managed knowledge base with ACL filtering, when existing document permissions must hold at retrieval time.</p>
+<p class="trap">Trap: a metadata field named owner does not enforce permissions by itself. The application must set the filter from a trusted identity.</p>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/knowledge-base.html and https://docs.aws.amazon.com/bedrock/latest/APIReference/API_agent-runtime_Retrieve.html and course slides, pages 657 to 658.</p>
+
+<h2>X versus Y: confusable pairs</h2>
+<p>Each pair below has one decision tree, a three-line comparison, one question, and one trap. Use the question to decide, then check the trap against the distractors in the options.</p>
+
+<h3>RAG versus fine-tuning</h3>
+<div class="mermaid">
+flowchart TD
+  A["Model gives wrong company<br/>facts"] -->|facts change or need<br/>citations| B["RAG"]
+  A -->|same task style<br/>every time| C["Fine-tuning"]
+  A -->|facts fit in every<br/>prompt| D["Long prompt"]
+</div>
+<p class="caption">Figure: change in facts points to retrieval, change in behavior points to tuning.</p>
+<ul>
+<li>Purpose: RAG supplies facts at request time. Fine-tuning changes how the model behaves.</li>
+<li>Input: RAG takes a query and an index. Fine-tuning takes labeled training examples and a training job.</li>
+<li>Output or effect: RAG returns an answer with source spans. Fine-tuning bakes old facts in until you train again.</li>
+</ul>
+<p>The one question to ask yourself is whether the answer must change when a source document changes. If yes, the fix is retrieval. Fine-tuning can teach a format or a tone, but it does not give a per-answer source.</p>
+<p class="trap">Trap: fine-tuning on policy text to make the model "know" new rules. The answer has no citation, and each policy edit needs another training run.</p>
+
+<h3>RAG versus long prompts</h3>
+<div class="mermaid">
+flowchart TD
+  A["Context source for each<br/>request"] -->|whole material fits<br/>budget| B["Long prompt"]
+  A -->|material too large<br/>or changing| C["RAG retrieval"]
+  C -->|wrong chunks<br/>returned| D["Fix retrieval before<br/>generation"]
+</div>
+<p class="caption">Figure: the size of the material and its change rate decide the approach.</p>
+<ul>
+<li>Purpose: a long prompt sends all material each call. RAG sends only the matched chunks.</li>
+<li>Input: a long prompt needs the full text in the context window. RAG needs an index and a query.</li>
+<li>Output or effect: a long prompt pays for every token on every call. RAG pays less per call but depends on retrieval quality.</li>
+</ul>
+<p>The one question is whether the full material fits the budget on every call. If it does and it rarely changes, a prompt can be simpler and safer.</p>
+<p class="trap">Trap: a long prompt is not always the cheap choice. When the material grows or changes often, the per-call token cost grows with it.</p>
+
+<h3>Retrieve versus RetrieveAndGenerate</h3>
+<div class="mermaid">
+flowchart TD
+  A["Need chunks before the<br/>model runs"] -->|own prompt or own<br/>ranking| B["Retrieve"]
+  A -->|one call with cited<br/>answer| C["RetrieveAndGenerate"]
+  B -->|inspect content<br/>score location| D["Diagnose retrieval"]
+</div>
+<p class="caption">Figure: Retrieve gives control, RetrieveAndGenerate gives a managed answer.</p>
+<ul>
+<li>Purpose: Retrieve returns evidence. RetrieveAndGenerate returns evidence plus a generated answer.</li>
+<li>Input: Retrieve takes a query and a configuration. RetrieveAndGenerate takes the query and the generation settings.</li>
+<li>Output or effect: Retrieve returns results with scores. RetrieveAndGenerate returns text with citations.</li>
+</ul>
+<p>The one question is whether your code must see or change the chunks before the model runs. If yes, call Retrieve. If the managed answer with citations is enough, use RetrieveAndGenerate.</p>
+<p class="trap">Trap: using RetrieveAndGenerate to find out why an answer is wrong. You cannot see which chunks drove the error.</p>
+
+<h3>Hierarchical versus semantic chunking</h3>
+<div class="mermaid">
+flowchart TD
+  A["Chunk quality<br/>problem"] -->|answer needs<br/>surrounding<br/>section| B["Hierarchical<br/>chunking"]
+  A -->|topics mix<br/>inside one<br/>chunk| C["Semantic chunking"]
+  A -->|one document<br/>is one unit| D["No chunking"]
+</div>
+<p class="caption">Figure: the failure type decides the strategy, not the size of the document.</p>
+<ul>
+<li>Purpose: hierarchical keeps small matches with parent context. Semantic places boundaries at topic changes.</li>
+<li>Input: hierarchical takes parent size, child size, and overlap. Semantic takes maximum tokens, buffer size, and breakpoint percentile.</li>
+<li>Output or effect: hierarchical can return fewer results than requested. Semantic makes variable chunks and calls a foundation model.</li>
+</ul>
+<p>The one question is whether the answer lacks surrounding context, or whether one chunk mixes two topics. Those are different failures with different fixes.</p>
+<p class="trap">Trap: semantic chunking does not recover a table that the parser never extracted. That is a parser problem.</p>
+
+<h3>Default parser versus multimodal parsers</h3>
+<div class="mermaid">
+flowchart TD
+  A["Source contains<br/>figures or tables"] -->|no, text only| B["Default parser"]
+  A -->|yes, need no<br/>custom prompt| C["Bedrock Data<br/>Automation"]
+  A -->|yes, need<br/>custom<br/>extraction| D["Foundation model<br/>parser"]
+</div>
+<p class="caption">Figure: the content type and the need for a custom instruction decide the parser.</p>
+<ul>
+<li>Purpose: the default parser reads text. The multimodal parsers also read figures, charts, tables, and images.</li>
+<li>Input: the default parser takes text file types. The multimodal parsers take PDF, JPEG, and PNG files.</li>
+<li>Output or effect: the default parser returns text only. The multimodal parsers return text plus extracted visual elements stored in S3.</li>
+</ul>
+<p>The one question is whether the answer lives inside a table, chart, or image. If it does, the default parser cannot supply it.</p>
+<p class="trap">Trap: a multimodal parser on a text-only PDF set still incurs parser charges. Choose the parser by content, not by habit.</p>
+
+<h3>Metadata filter versus reranker</h3>
+<div class="mermaid">
+flowchart TD
+  A["Wrong result in the list"] -->|wrong category or<br/>scope| B["Metadata filter"]
+  A -->|right category,<br/>wrong rank| C["Reranker"]
+  A -->|right chunk missing| D["Fix chunking or retrieval<br/>breadth"]
+</div>
+<p class="caption">Figure: a filter removes candidates, a reranker reorders them, and neither adds missing text.</p>
+<ul>
+<li>Purpose: a filter removes candidates that fail a rule. A reranker orders the candidates by relevance.</li>
+<li>Input: a filter uses metadata keys and values. A reranker uses the query and candidate text.</li>
+<li>Output or effect: a filter shrinks the set. A reranker keeps the set and changes the order.</li>
+</ul>
+<p>The one question is whether the wrong result belongs to the wrong category, or the right category sits too low. A category problem needs a filter.</p>
+<p class="trap">Trap: a reranker is not a scope control. It can still place a wrong-region chunk high if the words match.</p>
+
+<h3>Hybrid search versus semantic-only search</h3>
+<div class="mermaid">
+flowchart TD
+  A["Query has exact tokens"] -->|codes or names must<br/>match| B["Hybrid search"]
+  A -->|meaning matters most| C["Semantic search"]
+  B -->|needs filterable<br/>keyword fields| D["Index setup check"]
+</div>
+<p class="caption">Figure: exact tokens in the question point to a keyword component.</p>
+<ul>
+<li>Purpose: hybrid adds keyword matching to vector similarity. Semantic search uses vector similarity only.</li>
+<li>Input: hybrid takes the query text and its vector. Semantic takes the vector.</li>
+<li>Output or effect: hybrid can rank exact matches higher. Semantic can miss a code that has no close meaning.</li>
+</ul>
+<p>The one question is whether a missing exact match would make the answer wrong. For codes, names, and rare terms, the answer is yes.</p>
+<p class="trap">Trap: a semantic-only index on SKU codes returns products that sound alike. Exact codes need the keyword part.</p>
+
+<h3>OpenSearch Serverless versus managed OpenSearch</h3>
+<div class="mermaid">
+flowchart TD
+  A["OpenSearch choice"] -->|uneven traffic and<br/>few operations| B["Serverless collection"]
+  A -->|shard and node<br/>tuning needed| C["Managed cluster"]
+  C -->|Knowledge Bases<br/>needs public access| D["Check network before<br/>choosing"]
+</div>
+<p class="caption">Figure: operations effort and tuning control separate the two options.</p>
+<ul>
+<li>Purpose: both store and search vectors. Serverless removes node management. Managed gives full control.</li>
+<li>Input: serverless takes a collection and an index. Managed takes a domain with instance and shard settings.</li>
+<li>Output or effect: serverless bills per request and storage, with variable latency. Managed bills for running capacity, with more predictable latency.</li>
+</ul>
+<p>The one question is whether the team must tune shards and nodes, or accept variable latency to avoid that work.</p>
+<p class="trap">Trap: choosing a managed cluster for uneven traffic and a small ops team. The always-on capacity cost then fits the traffic badly.</p>
+
+<h3>Aurora pgvector versus OpenSearch</h3>
+<div class="mermaid">
+flowchart TD
+  A["Vector data lives where"] -->|joins and<br/>transactions with<br/>rows| B["Aurora pgvector"]
+  A -->|full text and facets<br/>at scale| C["OpenSearch"]
+  C -->|hybrid keyword and<br/>vector| D["OpenSearch hybrid query"]
+</div>
+<p class="caption">Figure: relational work points to Aurora, search engine work points to OpenSearch.</p>
+<ul>
+<li>Purpose: Aurora keeps vectors with relational data. OpenSearch is a search engine with vector support.</li>
+<li>Input: Aurora takes rows with an embedding column and SQL. OpenSearch takes documents with mappings.</li>
+<li>Output or effect: Aurora returns SQL joins and transactional consistency. OpenSearch returns hybrid and faceted search.</li>
+</ul>
+<p>The one question is whether the vectors must join or commit with business rows. If yes, Aurora fits.</p>
+<p class="trap">Trap: Aurora as the choice for a large keyword search platform. The search features and tuning control sit in OpenSearch.</p>
+
+<h3>S3 Vectors versus OpenSearch</h3>
+<div class="mermaid">
+flowchart TD
+  A["Query pattern decides<br/>store"] -->|large corpus and<br/>rare queries| B["S3 Vectors"]
+  A -->|frequent queries and<br/>low latency| C["OpenSearch"]
+  B -->|needs a faster tier| D["Copy to OpenSearch"]
+  D -->|two stores billed| E["Cost check before copying"]
+</div>
+<p class="caption">Figure: rare queries favor S3 Vectors, frequent low-latency queries favor OpenSearch.</p>
+<ul>
+<li>Purpose: S3 Vectors stores large sets cheaply. OpenSearch gives fast, rich search.</li>
+<li>Input: S3 Vectors takes a vector bucket, an index, and metadata. OpenSearch takes an index with mappings.</li>
+<li>Output or effect: S3 Vectors gives sub-second to about 100 ms latency. OpenSearch gives predictable, faster response at higher cost.</li>
+</ul>
+<p>The one question is how often the store is queried, and how fast the answer must arrive.</p>
+<p class="trap">Trap: a tiered design with S3 Vectors for storage and OpenSearch for speed doubles the stored data cost. Check the bill before choosing it.</p>
+
+<h3>Neptune Analytics versus Aurora pgvector</h3>
+<div class="mermaid">
+flowchart TD
+  A["Question shape"] -->|path between<br/>entities| B["Neptune Analytics GraphRAG"]
+  A -->|rows filtered and<br/>joined| C["Aurora pgvector"]
+  B -->|nodes and edges hold<br/>text| D["Graph and vector index"]
+</div>
+<p class="caption">Figure: the answer shape, a path or a row set, decides the store.</p>
+<ul>
+<li>Purpose: Neptune traverses relationships. Aurora filters and joins rows.</li>
+<li>Input: Neptune takes nodes, edges, and a vector index. Aurora takes tables and a vector column.</li>
+<li>Output or effect: Neptune answers multi-hop paths. Aurora answers row sets and joins.</li>
+</ul>
+<p>The one question is whether the answer is a chain of relationships between entities.</p>
+<p class="trap">Trap: a relational join is not graph traversal. A query that follows unknown numbers of hops needs a graph store.</p>
+
+<h3>Kendra versus a knowledge base with ACL filtering</h3>
+<div class="mermaid">
+flowchart TD
+  A["Permission rule in<br/>scenario"] -->|existing document<br/>ACLs must hold| B["Kendra or managed ACL<br/>filtering"]
+  A -->|user group filter in<br/>app| C["Customer filter with user<br/>context"]
+  C -->|identity set by<br/>client| D["Reject, filter is<br/>spoofable"]
+</div>
+<p class="caption">Figure: permissions must come from a trusted identity, not from a client value.</p>
+<ul>
+<li>Purpose: both enforce which documents a user may see at retrieval time.</li>
+<li>Input: Kendra and managed ACL filtering read document permissions. A customer-managed base needs a filter built from identity.</li>
+<li>Output or effect: results contain only documents the user can read.</li>
+</ul>
+<p>The one question is whether existing document permissions must decide each chunk.</p>
+<p class="trap">Trap: a filter that uses a user ID sent by the browser is not a security control. The server must set it from a trusted identity.</p>
+
+<h3>Vector search versus structured SQL retrieval</h3>
+<div class="mermaid">
+flowchart TD
+  A["Answer type needed"] -->|passage or<br/>explanation| B["Vector retrieval"]
+  A -->|exact count or total| C["Structured retrieval to<br/>SQL"]
+  B -->|similar text<br/>returned| D["Not a calculation"]
+</div>
+<p class="caption">Figure: passages come from similarity, totals come from a query over rows.</p>
+<ul>
+<li>Purpose: vector retrieval finds similar text. SQL retrieval computes exact results over rows.</li>
+<li>Input: vector retrieval takes a query embedding. SQL retrieval takes a natural language question against a schema.</li>
+<li>Output or effect: vector retrieval returns passages with scores. SQL retrieval returns rows or aggregates.</li>
+</ul>
+<p>The one question is whether the answer is a passage or an exact calculation.</p>
+<p class="trap">Trap: a vector index of product rows returns similar products. It does not give the correct sum for a region.</p>
+
+<h3>DynamoDB versus a supported vector store</h3>
+<div class="mermaid">
+flowchart TD
+  A["DynamoDB role in design"] -->|source of truth| B["Keep as source"]
+  A -->|named as Knowledge<br/>Bases store| C["Reject"]
+  B -->|stream to pipeline| D["Supported vector store"]
+</div>
+<p class="caption">Figure: DynamoDB can feed a store, but it is not the listed store in this design.</p>
+<ul>
+<li>Purpose: DynamoDB stores operational items. A Knowledge Bases store indexes vectors for retrieval.</li>
+<li>Input: DynamoDB takes items and streams. A Knowledge Bases store takes embeddings from the ingestion job.</li>
+<li>Output or effect: DynamoDB returns items by key. A supported store returns ranked chunks.</li>
+</ul>
+<p>The one question is whether the named store is on the Knowledge Bases list.</p>
+<p class="trap">Trap: a stream from DynamoDB to Lambda that writes embeddings to OpenSearch is valid. Naming DynamoDB as the Knowledge Bases store itself is not.</p>
+
+<h2>Read a long question</h2>
+<p>Each worked scenario below uses three sentences. Underline the constraint words, eliminate each wrong option with one reason, then check the answer.</p>
+
+<h3>Worked scenario one: contracts with rate tables</h3>
+<p class="fact">Scenario: A legal team stores contracts as PDFs with rate tables. Users ask for one rate and need the source page, but only for their own region. The team wants managed generation with citations and no model training.</p>
+<p>Constraint words: <strong>rate tables</strong>, <strong>source page</strong>, <strong>their own region</strong>, <strong>citations</strong>, <strong>no model training</strong>.</p>
+<ul>
+<li><span class="trap">Trap: fine-tune a model on the contracts. It fails "no model training" and gives no page citation.</span></li>
+<li><span class="trap">Trap: the default parser on the PDFs. It keeps text only, so the rate tables are lost.</span></li>
+<li><span class="trap">Trap: store contracts as DynamoDB items and scan by region. DynamoDB is not a Knowledge Bases store, and a scan does not rank by meaning.</span></li>
+</ul>
+<p class="rule">Rule: answer is a Knowledge Base with a multimodal parser, a region metadata filter, and RetrieveAndGenerate.</p>
+
+<h3>Worked scenario two: a support site that changes hourly</h3>
+<p class="fact">Scenario: A product support site changes every hour. The assistant must answer with the newest article and must match exact model codes. The team also wants no custom sync code.</p>
+<p>Constraint words: <strong>every hour</strong>, <strong>newest article</strong>, <strong>exact model codes</strong>, <strong>no custom sync code</strong>.</p>
+<ul>
+<li><span class="trap">Trap: place all articles in every prompt. The set grows past the budget, and every call pays for all of it.</span></li>
+<li><span class="trap">Trap: rebuild the whole index weekly with a script. It misses hourly change and adds custom code.</span></li>
+<li><span class="trap">Trap: vector search only on S3 Vectors. Exact codes need keyword matching, and the pages fetched show no native keyword search there.</span></li>
+</ul>
+<p class="rule">Rule: answer is a Knowledge Base on OpenSearch Serverless with hybrid search, and a scheduled ingestion job that runs every hour.</p>
+
+<h3>Worked scenario three: a rarely queried research archive</h3>
+<p class="fact">Scenario: A research group keeps 40 million vectors from archived papers. Analysts run a few queries each month and accept a delay of up to one second. The budget is the first priority.</p>
+<p>Constraint words: <strong>few queries each month</strong>, <strong>accept a delay</strong>, <strong>budget first</strong>.</p>
+<ul>
+<li><span class="trap">Trap: an always-on OpenSearch managed cluster. It bills for capacity that sits idle between monthly queries.</span></li>
+<li><span class="trap">Trap: an always-on Aurora cluster. The scenario has no need for SQL joins or transactions, so the database adds cost with no matching need.</span></li>
+<li><span class="trap">Trap: a Kendra index. The scenario names no permission rule, and the course slides flag Kendra cost at scale.</span></li>
+</ul>
+<p class="rule">Rule: answer is an S3 Vectors index as the Knowledge Base store, with the dimension matching the chosen model.</p>
+
+<h2>Troubleshooting RAG by symptom</h2>
+<p>Start from the symptom, then check the stage that produces it. The retrieval stage is checked before the generation stage. Work in this order each time.</p>
+
+<div class="mermaid">
+flowchart LR
+  A["Bad RAG answer<br/>reported"] -->|wrong passage<br/>returned| B["Inspect Retrieve<br/>results"]
+  A -->|answer ignores<br/>new content| C["Check sync and<br/>metadata"]
+  A -->|table value<br/>missing| D["Check parser and<br/>chunks"]
+  A -->|right passage<br/>ranked low| E["Add reranker or<br/>hybrid"]
+  A -->|response is<br/>slow| F["Time each stage"]
+</div>
+<p class="caption">Figure: each symptom maps to one stage, and that stage is checked first.</p>
+
+<h3>Symptom: wrong chunks</h3>
+<p><strong>Procedure:</strong> Call Retrieve alone with the same question. Read the content, location, and score.</p>
+<p class="fact">Fact: a wrong chunk can come from the chunking strategy, the embedding model, or a missing filter. The retrieval output shows which one is likely.</p>
+<p class="rule">Rule: if the top results are wrong, change retrieval or chunking before you change the generator.</p>
+<p class="trap">Trap: switching to a larger generation model when retrieval returns the wrong passage. The larger model still sees the wrong text.</p>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock/latest/APIReference/API_agent-runtime_Retrieve.html</p>
+
+<h3>Symptom: stale data</h3>
+<p><strong>Procedure:</strong> Confirm the last ingestion job reached COMPLETE. Then run Retrieve again.</p>
+<p class="fact">Fact: sync is incremental and processes only changed documents. Non-Aurora stores can need a few minutes after the job finishes.</p>
+<p class="rule">Rule: if the source changed and no sync ran, the fix is a sync, not a prompt edit.</p>
+<p class="trap">Trap: a prompt that says "use the newest version" does not refresh the index.</p>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/kb-data-source-sync-ingest.html</p>
+
+<h3>Symptom: missing tables</h3>
+<p><strong>Procedure:</strong> Check the parser setting. Then inspect one chunk that should hold the table.</p>
+<p class="fact">Fact: the default parser keeps text only. A multimodal parser extracts tables and figures from PDFs.</p>
+<p class="fact">Fact: a table or page of 10,000 characters or fewer can return with full context. A table that is never parsed cannot return at all.</p>
+<p class="rule">Rule: if the table is absent from the chunks, change the parser before the chunk size.</p>
+<p class="trap">Trap: increasing numberOfResults does not add a table that was never parsed.</p>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/kb-advanced-parsing.html and https://docs.aws.amazon.com/bedrock/latest/userguide/kb-chunking.html</p>
+
+<h3>Symptom: irrelevant results</h3>
+<p><strong>Procedure:</strong> Add a metadata filter for the scope. Compare results with and without it.</p>
+<p class="fact">Fact: a filter removes candidates by attribute. Hybrid search adds exact keyword matching. A reranker reorders the candidates.</p>
+<p class="rule">Rule: a wrong category needs a filter, a wrong order needs a reranker, and a missing exact term needs hybrid search.</p>
+<p class="trap">Trap: adding more chunks to the prompt when the results are irrelevant. More noise does not add relevance.</p>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/rerank.html and https://docs.aws.amazon.com/bedrock/latest/userguide/kb-metadata.html</p>
+
+<h3>Symptom: latency</h3>
+<p><strong>Procedure:</strong> Time Retrieve and generation as separate steps before changing any model.</p>
+<p class="fact">Fact: a reranker adds a model call. RetrieveAndGenerate adds generation time. Semantic chunking adds cost at ingestion, not at query time.</p>
+<p class="fact">Fact: S3 Vectors is designed for sub-second latency on infrequent queries. OpenSearch managed clusters use provisioned capacity, and Serverless latency can vary.</p>
+<p class="rule">Rule: if retrieval is the slow step, change the store or the candidate count. If generation is slow, change the generator or the output length.</p>
+<p class="trap">Trap: moving to a larger model when retrieval is the slow stage. The delay stays in the search.</p>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/rerank.html and https://docs.aws.amazon.com/AmazonS3/latest/userguide/s3-vectors.html</p>
+
+<h2>Distractor patterns seen in the tests</h2>
+<p>These patterns repeat across long questions. Each one looks correct at first read. Each one fails for a concept reason, not a memorized fact.</p>
+<p class="trap">Trap: right store, wrong scale of control. A serverless option is offered for a team that needs shard tuning. The control need decides, not the store name.</p>
+<p class="trap">Trap: right store, manual pipeline. A custom re-embedding job is offered where a managed sync already handles changes. More code adds failure points.</p>
+<p class="trap">Trap: a fix at the wrong stage. A reranker or larger prompt is offered for missing chunks. The stage that produced the gap must change.</p>
+<p class="trap">Trap: model change instead of retrieval fix. Fine-tuning or a bigger model is offered for a facts problem. Facts live in the index, not in the weights.</p>
+<p class="trap">Trap: transactional store named as a vector store. DynamoDB or another operational database is offered as the Knowledge Bases store. The listed store set decides.</p>
+<p class="trap">Trap: two stores billed for one job. A copy into a faster store is offered without a cost check. The data cost doubles.</p>
+<p class="trap">Trap: network setting that breaks the setup. A private-only domain is offered for a Knowledge Base. The docs require public access for managed domains.</p>
+<p class="trap">Trap: security by instruction. A prompt that says to hide other tenants is offered instead of a filter or ACL. Instructions do not stop retrieval of the wrong chunks.</p>
+<p class="trap">Trap: cross-account mismatch. An Aurora cluster in another account is offered for a Knowledge Base. The docs require the same account.</p>
+
+<h2>Drill</h2>
+<p>Each prompt is one line. Read the answer on the next line, then say why the wrong option fails.</p>
+
+<p>Policy PDFs hold the answers in tables. Which parser setting comes first?</p>
+<p class="rule">Rule: a multimodal parser, because the default parser keeps text only.</p>
+
+<p>Source files change daily, and users still get an answer from an older version. What runs first?</p>
+<p class="rule">Rule: a sync or ingestion job, so added, changed, and deleted files reach the index.</p>
+
+<p>A reranker is on, but the right passage never appears in the candidates. What is wrong?</p>
+<p class="trap">Trap: the reranker only reorders candidates. Widen retrieval or fix chunking.</p>
+
+<p>Users may see only documents their group can read. What must hold at retrieval time?</p>
+<p class="rule">Rule: access control filtering from a trusted identity, or a Kendra or managed ACL path.</p>
+
+<p>Vectors must commit with order rows in one transaction. Which store fits?</p>
+<p class="rule">Rule: Aurora PostgreSQL with pgvector, in the same account as the knowledge base.</p>
+
+<p>An archive holds tens of millions of vectors, with monthly queries and a strict budget. Which store?</p>
+<p class="rule">Rule: S3 Vectors as the store, because it is cheap for large, rarely queried sets.</p>
+
+<p>A team names DynamoDB as the Knowledge Bases vector store. What is the issue?</p>
+<p class="trap">Trap: DynamoDB is not on the Knowledge Bases store list. Keep it as the source.</p>
+
+<p>Exact product codes are missed by meaning-only search. What search type fixes it?</p>
+<p class="rule">Rule: hybrid search, with filterable keyword fields in the index.</p>
+
+<p>Application code builds its own prompt from chunks. Which operation?</p>
+<p class="rule">Rule: Retrieve, because your code receives the chunks and scores.</p>
+
+<p>A question asks for total sales by region from rows. Which path?</p>
+<p class="rule">Rule: structured retrieval to SQL, because it calculates over rows.</p>
+
+<p>An OpenSearch filter on a custom field fails with a rewrite error. What is the mapping fix?</p>
+<p class="rule">Rule: map the field as keyword, or as text with a keyword subfield.</p>
+
+<p>A team picks a VPC-only managed domain for a Knowledge Base. What is the issue?</p>
+<p class="trap">Trap: a Knowledge Base needs public network access on a managed OpenSearch domain.</p>
+
+<h2>Sources</h2>
+<p class="src">Source: AWS documentation fetched for this module.</p>
+<ul>
+<li class="src">https://docs.aws.amazon.com/bedrock/latest/userguide/knowledge-base.html</li>
+<li class="src">https://docs.aws.amazon.com/bedrock/latest/userguide/kb-chunking.html</li>
+<li class="src">https://docs.aws.amazon.com/bedrock/latest/userguide/knowledge-base-setup.html</li>
+<li class="src">https://docs.aws.amazon.com/bedrock/latest/userguide/rerank.html</li>
+<li class="src">https://docs.aws.amazon.com/bedrock/latest/userguide/kb-metadata.html</li>
+<li class="src">https://docs.aws.amazon.com/AmazonS3/latest/userguide/s3-vectors.html</li>
+<li class="src">https://docs.aws.amazon.com/bedrock/latest/userguide/kb-advanced-parsing.html</li>
+<li class="src">https://docs.aws.amazon.com/bedrock/latest/APIReference/API_agent-runtime_Retrieve.html</li>
+<li class="src">https://docs.aws.amazon.com/bedrock/latest/userguide/kb-data-source-sync-ingest.html</li>
+<li class="src">https://docs.aws.amazon.com/bedrock/latest/userguide/knowledge-base-build-structured.html</li>
+</ul>
+<p class="src">Source: course slide extract for this module, cited by page number in each section.</p>
+<nav class="mod"><a href="index.html">All modules</a> <a href="m2-safety-pii.html">Previous</a> <a href="m4-agents-orchestration.html">Next</a></nav>
+</main>
+<script type="module">
+  import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.esm.min.mjs";
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: "base",
+    themeVariables: {
+      background: "#000000",
+      mainBkg: "#000000",
+      primaryColor: "#000000",
+      primaryTextColor: "#f2f2f2",
+      primaryBorderColor: "#7db8ff",
+      secondaryColor: "#000000",
+      tertiaryColor: "#000000",
+      lineColor: "#d0d0d0",
+      textColor: "#f2f2f2",
+      edgeLabelBackground: "#000000",
+      clusterBkg: "#000000",
+      clusterBorder: "#7db8ff",
+      titleColor: "#ffffff",
+      fontFamily: "Helvetica, Arial, sans-serif",
+      fontSize: "22px"
+    },
+    flowchart: { htmlLabels: true, curve: "basis", useMaxWidth: false, padding: 16, nodeSpacing: 40, rankSpacing: 56 }
+  });
+</script>
+<script>window.markmap = { autoLoader: { manual: false, toolbar: false } };</script>
+<script src="https://cdn.jsdelivr.net/npm/markmap-autoloader@0.18.12"></script>
+</body>
+</html>

@@ -1,0 +1,642 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>9. The application around the model</title>
+<style>
+:root {
+  --bg: #000000;
+  --ink: #f2f2f2;
+  --fact: #7db8ff;
+  --rule: #6ee7a0;
+  --tip: #d8a6ff;
+  --trap: #ff8a8a;
+  --muted: #a8a8a8;
+  --line: #333333;
+}
+html, body { background: #000000; }
+body {
+  color: var(--ink);
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 19px;
+  line-height: 1.7;
+  margin: 0;
+  padding: 24px 20px 72px;
+}
+main { max-width: 780px; margin: 0 auto; }
+main p, main li { text-align: justify; }
+h1 { font-size: 32px; line-height: 1.3; margin: 0 0 12px; color: #ffffff; }
+h2 { font-size: 26px; line-height: 1.35; margin: 48px 0 14px; color: #ffffff; border-top: 1px solid var(--line); padding-top: 22px; }
+h3 { font-size: 21px; line-height: 1.4; margin: 32px 0 10px; color: #ffffff; }
+h4 { font-size: 19px; line-height: 1.4; margin: 24px 0 8px; color: #ffffff; }
+p { margin: 0 0 18px; }
+ul, ol { margin: 0 0 18px; padding-left: 26px; }
+li { margin-bottom: 10px; }
+.fact { color: var(--fact); }
+.rule { color: var(--rule); }
+.tip { color: var(--tip); }
+.trap { color: var(--trap); }
+.src { font-size: 16px; color: var(--muted); }
+.meta { font-size: 16px; color: var(--muted); margin-bottom: 24px; }
+.caption { font-size: 16px; color: var(--muted); margin: -8px 0 26px; text-align: left; }
+.legend p { margin-bottom: 6px; text-align: left; }
+.mermaid { margin: 14px 0 26px; font-size: 21px; text-align: left; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; }
+.mermaid svg { max-width: none; height: auto; }
+@media print {
+  .mermaid { overflow: visible; break-inside: avoid; }
+  .mermaid svg { max-width: 100% !important; height: auto !important; }
+  body { padding: 14mm 10mm; }
+  h1, h2, h3, h4 { break-after: avoid; }
+  p.caption, p.src { break-before: avoid; }
+}
+.markmap { position: relative; margin: 10px 0 28px; border-top: 1px solid #222; border-bottom: 1px solid #222; --markmap-text-color: #f2f2f2; --markmap-a-color: #7db8ff; color: #f2f2f2; }
+.markmap > svg { width: 100%; height: 560px; display: block; }
+.markmap foreignObject, .markmap .markmap-foreign { color: #f2f2f2; font-size: 17px; }
+nav.mod { font-size: 16px; color: #a8a8a8; margin: 0 0 18px; }
+nav.mod a { color: #7db8ff; }
+table { border-collapse: collapse; width: 100%; margin: 0 0 22px; font-size: 17px; }
+th, td { border: 1px solid #333; padding: 6px 8px; text-align: left; vertical-align: top; }
+th { color: #ffffff; }
+</style>
+</head>
+<body>
+<main>
+
+<nav class="mod"><a href="index.html">All modules</a> <a href="m8-evaluation-testing.html">Previous</a> <a href="m10-confusable-pairs.html">Next</a></nav>
+<h2>Build the App Around the Model</h2>
+<p>After this module you can read a long scenario, find the constraint that decides the service, and reject each wrong option with one reason. The deciding constraint is usually the caller wait time, the payload size, the consumer count, or the need to replay. Most wrong options are real services that solve a different hop in the request path.</p>
+
+<div class="markmap"><script type="text/template">
+# Build the app around the model
+## Front door
+- REST, HTTP, or WebSocket choice
+- Integration limit near 29 seconds
+- Throttling and API keys
+- Streaming needs REST transfer mode
+## Compute
+- Lambda timeout and memory
+- Sync payload limit 6 MB
+- Concurrency and cold starts
+- Async for slow work
+## Data and files
+- S3 objects and event notifications
+- Presigned URLs for direct bytes
+- DynamoDB history with TTL
+- Object Lock for retention
+## Decoupling
+- SQS holds backlog
+- Dead-letter queue for failures
+- SNS copies to many subscribers
+- EventBridge routes by pattern
+## Streams and prep
+- Kinesis for ordered replayable records
+- Glue crawler versus Glue ETL
+- Textract for documents
+- Transcribe for audio
+## Identity and edge
+- Cognito user pools for sign-in
+- Identity pools for AWS credentials
+- CloudFront and WAF at edge
+## Front ends
+- AppSync for GraphQL subscriptions
+- Amplify for app scaffolding
+## Decision habits
+- Find the deciding constraint first
+- Check the slowest hop first
+- Reject options with one reason
+</script></div>
+
+<h2>The deciding constraint</h2>
+<p>Start from the scenario, not from the service names. Ask what the caller waits for, how large the data is, and how many consumers need the event. The first answer usually removes most of the options.</p>
+<p>The order of the checks matters. A caller that must wait rules out a batch design before storage details matter. A payload that is too large rules out a direct API body before queue details matter. Check the hardest limit first, then choose the service that owns that limit.</p>
+
+<div class="mermaid">
+flowchart LR
+  A["Scenario needs a<br/>service decision"] -->|Client waits<br/>for the reply| B["Synchronous<br/>request path"]
+  A -->|Work can<br/>finish later| C["Asynchronous<br/>request path"]
+  A -->|Payload is a<br/>file or large<br/>object| D["S3 with presigned<br/>URL"]
+  A -->|One event many<br/>receivers| E["SNS topic fan-out"]
+  A -->|Events<br/>filtered or<br/>run on a timer| F["EventBridge rules<br/>and Scheduler"]
+</div>
+<p class="caption">Figure: the first split of the deciding constraint tree, from the scenario to a path.</p>
+
+<p>Each branch has signal words. Read the first branch that matches a strong signal, then check the others for a second constraint.</p>
+<ul>
+<li><span class="tip">Exam tip: Waiting words such as "waits", "as it is generated", or "live" point to the synchronous path.</span></li>
+<li><span class="tip">Exam tip: Words such as "overnight", "batch", "job ID", or "no user waits" point to the asynchronous path.</span></li>
+<li><span class="tip">Exam tip: Words such as "upload", "PDF", "video", or "larger than the payload limit" point to S3 with a pointer or presigned URL.</span></li>
+<li><span class="tip">Exam tip: Words such as "every subscriber", "several teams", or "each consumer receives" point to fan-out.</span></li>
+<li><span class="tip">Exam tip: Words such as "every weekday", "cron", or "when a field equals" point to EventBridge.</span></li>
+</ul>
+
+<h3>Synchronous branch in detail</h3>
+<p>A synchronous path keeps the caller on an open connection until the reply is ready. The shape of the reply decides which API type fits. A plain reply uses a request-response API. A reply that arrives in pieces needs a streaming path. A session with messages in both directions needs a WebSocket.</p>
+
+<div class="mermaid">
+flowchart TD
+  A["Synchronous<br/>request path"] -->|Plain reply<br/>under the<br/>time limit| B["API Gateway<br/>REST or HTTP"]
+  A -->|Reply<br/>streams as<br/>text is made| C["Streaming<br/>response path"]
+  A -->|Client needs<br/>two way<br/>messages| D["API Gateway<br/>WebSocket"]
+  C -->|One way<br/>server<br/>events from<br/>browser| E["Lambda<br/>function URL<br/>streaming"]
+  C -->|REST proxy<br/>with STREAM<br/>transfer<br/>mode| F["API Gateway<br/>REST streaming"]
+  B -->|Needs API<br/>keys and<br/>quotas| G["REST API with<br/>usage plan"]
+  B -->|Simple front<br/>door and<br/>proxy only| H["HTTP API with<br/>Lambda proxy"]
+</div>
+<p class="caption">Figure: the synchronous branch, split by reply shape and client needs.</p>
+
+<p><span class="rule">Rule: If the reply must stream through API Gateway, pick a REST API with a proxy integration and STREAM transfer mode.</span> The fetched API Gateway page limits response streaming to REST APIs. An HTTP API is the wrong answer for that requirement, even when the rest of the scenario fits it.</p>
+
+<h3>Which limit breaks first</h3>
+<p>A request crosses several hops. Each hop has its own limit. The first limit that the reply exceeds is the one that breaks, and the others never matter for that request. For a slow model call, the front door usually breaks first.</p>
+
+<div class="mermaid">
+flowchart TD
+  A["Slow model call<br/>behind a front<br/>door"] -->|Reply takes<br/>longer than 29<br/>seconds| B["Break point at API<br/>Gateway<br/>integration"]
+  B -->|Keep the<br/>connection and<br/>stream| C["Stream within the<br/>REST stream limit"]
+  B -->|Return a job<br/>ID now| D["Queue the work<br/>with SQS"]
+  A -->|Input over the<br/>6 MB sync<br/>payload| E["Store input in S3<br/>and pass key"]
+  D -->|Burst beyond<br/>model quota| F["Cap consumers and<br/>retry with DLQ"]
+  E -->|Caller uploads<br/>directly| G["Presigned URL to<br/>S3"]
+</div>
+<p class="caption">Figure: where a slow model call breaks first, and the fix for each break point.</p>
+
+<p>The fetched API Gateway page says that streaming lets a response run past the 29-second integration timeout without a quota increase. The Lambda timeout is 15 minutes, so a longer Lambda timeout does not help a caller behind a buffered REST integration. Lambda may keep running after the client connection closes, and the client still sees a failure.</p>
+
+<div class="mermaid">
+flowchart TD
+  A["API Gateway rate quota per<br/>account"] --> B["Lambda default concurrency<br/>1000"] --> C["Model quota throttling"]
+</div>
+<p class="caption">Figure: the order of three rate limits for a burst of model calls.</p>
+
+<p><span class="trap">Trap: Reading the 15-minute Lambda timeout as the answer to a slow API call. The request still ends at the API Gateway integration limit unless the response streams or the work runs asynchronously.</span></p>
+
+<h2>Services in scope</h2>
+
+<h3>API Gateway</h3>
+<p><span class="fact">Fact: API Gateway fronts REST, HTTP, and WebSocket APIs. Integrations can point to Lambda, an HTTP backend, or a direct AWS service call. Course slide 358 and 359 list these features.</span></p>
+<p><span class="rule">Rule: Choose API Gateway when clients need a managed front door with authentication, throttling, and request validation before the model call.</span></p>
+<p><span class="trap">Trap: Using API Gateway to hold a long reply open with a buffered integration. The integration limit of about 29 seconds applies unless the response streams.</span></p>
+<p><span class="fact">Limits: The account throttle is 10,000 requests per second per Region, with a burst bucket of up to 5,000 requests. The response payload limit is 10 MB, and streaming can exceed it. Usage plan and API key numbers: Not in source. WebSocket connection duration and idle timeout: Not in source.</span></p>
+<p>Pairs with Cognito authorizers, Lambda proxy integrations, and WAF on the public edge. The course slide also lists request validation and API keys as reasons to use the front door.</p>
+<p>Why this matters: API Gateway is the first place that a slow reply meets a time limit. The front door decides whether a streamed reply, a buffered reply, or a queued job is possible. Throttling and API keys at this layer protect the model quota before traffic reaches Lambda.</p>
+<p class="src">Source: https://docs.aws.amazon.com/apigateway/latest/developerguide/limits.html and https://docs.aws.amazon.com/apigateway/latest/developerguide/response-transfer-mode.html. Course slide extract, pages 358 to 362.</p>
+
+<h3>Lambda</h3>
+<p><span class="fact">Fact: A Lambda invocation can run up to 15 minutes. A function can use 128 MB to 10,240 MB of memory. Memory also sets the CPU share, and 1,769 MB equals one vCPU.</span></p>
+<p><span class="rule">Rule: Use Lambda for the code around a model call when each call finishes inside the timeout and the payload limits.</span></p>
+<p><span class="trap">Trap: Raising the function timeout to fix a slow API call. The client still sees a timeout at the API layer.</span></p>
+<p>Lambda response streaming works through function URLs, the InvokeWithResponseStream API, or the API Gateway proxy integration. The fetched page says native streaming works on Node.js managed runtimes. Python needs a custom runtime or the Lambda Web Adapter. Streamed responses are billed for the full duration, and they are not stopped when the client disconnects.</p>
+<p><span class="fact">Limits: Synchronous request and response payloads are 6 MB each. Asynchronous payloads are 1 MB. A streamed response can reach 200 MB. The first 6 MB of a stream is uncapped, then the rate is 2 MBps.</span></p>
+<p><span class="fact">Limits: Default concurrency is 1,000 per Region. Cold start duration: Not in source.</span></p>
+<p>Pairs with API Gateway, SQS event sources, Kinesis batches, and CodeDeploy traffic shifts on Lambda aliases. The course slide lists the canary and linear shift options for Lambda aliases (slide 388).</p>
+<p>Why this matters: the default concurrency of 1,000 sets how many model calls can run at once. A burst of requests therefore needs a queue or a reserved cap. The 6 MB synchronous payload is the reason that large model inputs move to S3 first.</p>
+<p class="src">Source: https://docs.aws.amazon.com/lambda/latest/dg/gettingstarted-limits.html and https://docs.aws.amazon.com/lambda/latest/dg/configuration-response-streaming.html.</p>
+
+<h3>S3</h3>
+<p><span class="fact">Fact: S3 stores documents as objects under keys. Object creation events can start a Lambda function, and S3 events can appear as an EventBridge rule source (course slides 48 and 407).</span></p>
+<p><span class="fact">Fact: A presigned URL grants time-limited access to one object and one HTTP method. It has the permissions of the signer. A PUT with the same key replaces the existing object.</span></p>
+<p><span class="rule">Rule: Give the client a presigned URL when the client should move bytes straight to or from S3 and the API path should stay small.</span></p>
+<p><span class="trap">Trap: Expecting a presigned URL to outlive its signer. It expires when the role session or temporary credential expires, even if the URL shows a later time.</span></p>
+<p><span class="fact">Limits: The console allows 1 minute to 12 hours. The CLI and SDKs allow up to 7 days. An AssumeRole session defaults to 1 hour in the fetched FAQ. Object Lock retention modes and lifecycle timing: Not in source.</span></p>
+<p>Pairs with Lambda for event handling, EventBridge for routing, and the knowledge base sync step. The course slide shows an S3 event that starts an ingestion job through Lambda.</p>
+<p>Why this matters: a presigned URL keeps the object path out of the API and out of Lambda. The client gets rights to one key, and the signer keeps the underlying permissions. That is why the pattern fits uploads of large files that need a short-lived grant.</p>
+<p class="src">Source: https://docs.aws.amazon.com/AmazonS3/latest/userguide/using-presigned-url.html. Course slide extract, pages 48, 190, and 407.</p>
+
+<h3>DynamoDB</h3>
+<p><span class="fact">Fact: Time to Live reads a Number attribute in Unix epoch seconds. Expired items are deleted by the system, typically within a few days after expiry. Deleted items go to DynamoDB Streams as service deletions, and they leave the local and global secondary indexes.</span></p>
+<p><span class="rule">Rule: Store chat turns with a session key and a TTL attribute when the history must expire without a cleanup job.</span></p>
+<p><span class="trap">Trap: Treating TTL as an exact expiry timer. An expired item can still come back from a scan or query until the system deletes it, so the read path needs a filter.</span></p>
+<p><span class="trap">Trap: Confusing DAX with TTL. The course slide gives a 5-minute default TTL for the DAX cache, which is a cache setting and not item expiry.</span></p>
+<p><span class="fact">Limits: DAX has up to 10 nodes in a cluster, and it gives microsecond cached reads (slide 182). Item size limit and table capacity: Not in source.</span></p>
+<p>Pairs with Lambda for reads and writes, DAX for read-heavy keys, and OpenSearch for vector search. The course slide shows a zero-ETL path from DynamoDB to OpenSearch (slide 188).</p>
+<p>Why this matters: a conversation history table grows without limit unless something removes old turns. TTL is the managed answer when the expiry rule is a time after the last write. A rule that needs removal at an exact moment needs a check in the read path or a different store.</p>
+<p class="src">Source: https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/TTL.html. Course slide extract, pages 182 and 188.</p>
+
+<h3>SQS</h3>
+<p><span class="fact">Fact: SQS keeps a message until a consumer deletes it. Standard queues give at-least-once delivery and best-effort ordering. Consumers receive up to 10 messages per call (course slides 399 to 401).</span></p>
+<p><span class="rule">Rule: Put a queue between the caller and a model call when bursts exceed the model quota or the caller should not wait.</span></p>
+<p><span class="trap">Trap: Setting the visibility timeout shorter than the model call. The message reappears while the first worker still runs, so a second worker processes the same job.</span></p>
+<p><span class="fact">Limits: Maximum message size is 1 MiB. Larger payloads use the Extended Client Library with an S3 reference, up to 2 GB. Retention defaults to 4 days, with a maximum of 14 days.</span></p>
+<p><span class="fact">Limits: Visibility timeout defaults to 30 seconds, with a maximum of 12 hours. Delay is up to 15 minutes. A batch holds 10 messages.</span></p>
+<p><span class="fact">Dead-letter queues: The maxReceiveCount sets how many receives happen before a move to the DLQ. The DLQ has to live in the account and Region of its source queue. The redrive allow policy can name up to 10 source queues. For a standard queue, set the DLQ retention longer than the source retention, because the original enqueue time is kept.</span></p>
+<p><span class="rule">Rule: Add a dead-letter queue when failed model jobs must stay for inspection or a later replay.</span></p>
+<p><span class="trap">Trap: Setting maxReceiveCount to 1. One transient throttle then sends a good job to the DLQ.</span></p>
+<p>Pairs with Lambda event source mappings, SNS fan-out to one queue per consumer, and Kinesis when the records need replay.</p>
+<p>Why this matters: the visibility timeout is the lease that a worker holds on a job. A model call that runs longer than the lease creates duplicate work, so the lease must cover the slowest call plus a margin. The dead-letter queue turns silent retries into a list that people can inspect.</p>
+<p class="src">Source: https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/quotas-messages.html and https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-dead-letter-queues.html. Course slide extract, pages 399 to 404.</p>
+
+<div class="mermaid">
+flowchart TD
+  A["Message received by<br/>consumer"] -->|Processing succeeds| B["Consumer deletes message"]
+  A -->|Processing fails| C["Message returns after<br/>timeout"]
+  C -->|Receive count<br/>reaches limit| D["Moved to dead-letter queue"]
+  D -->|Inspect then redrive| E["Replay after fix"]
+</div>
+<p class="caption">Figure: the path of a failed SQS message to the dead-letter queue and back.</p>
+
+<h3>SNS</h3>
+<p><span class="fact">Fact: SNS takes one publish and sends a copy to every subscriber. Subscriber types include SQS, Lambda, Firehose, email, SMS, and HTTP(S) endpoints (slide 412).</span></p>
+<p><span class="rule">Rule: Use SNS when one event must reach several receivers at once, such as an alert to operations and an index job at the same time.</span></p>
+<p><span class="trap">Trap: Using SNS as the buffer for slow model calls. SNS delivers to subscribers, so put an SQS queue behind each consumer to hold its backlog.</span></p>
+<p><span class="fact">Limits: Up to 12,500,000 subscriptions per topic and 100,000 topics (slide 412). Message retention inside SNS: Not in source.</span></p>
+<p>Pairs with SQS for each consumer, with Lambda for simple handlers, and with EventBridge when the producer needs filters on event fields.</p>
+<p class="src">Source: course slide extract, pages 411 to 415. No AWS page fetched for SNS.</p>
+
+<h3>EventBridge</h3>
+<p><span class="fact">Fact: EventBridge has event buses that route events to targets, pipes for one source to one target with enrichment, and Scheduler for cron, rate, and one-time schedules. Scheduler can set retry limits and the maximum retention for failed invocations.</span></p>
+<p><span class="fact">Fact: The Custom Event Bus keeps events for a set period, supports replay and ordered delivery, and accepts non-JSON payloads. New applications should start with the Custom Event Bus. The Classic bus uses rules and targets only.</span></p>
+<p><span class="rule">Rule: Use a schedule for a timed job and an event rule for a reaction to a service event.</span></p>
+<p><span class="trap">Trap: Building a timer from a Lambda loop or a rule with no retry plan. Scheduler is the managed timer, and it holds the retry settings.</span></p>
+<p><span class="fact">Limits: Rule count, targets per rule, and event size: Not in source. The course slides cover a schema registry for inferred event schemas and a resource-based policy for cross-account buses (slides 409 and 410).</span></p>
+<p>Pairs with S3 events, DynamoDB Streams through Pipes, SQS, and Step Functions as targets.</p>
+<p>Why this matters: an event bus decouples the producer from its consumers, so a new consumer does not change the producer. Scheduler removes the need for a timer process in your own code. Pipes reduce glue code when the source and the target are fixed.</p>
+<p class="src">Source: https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-what-is.html. Course slide extract, pages 406 to 410.</p>
+
+<h3>Kinesis Data Streams</h3>
+<p><span class="fact">Fact: Kinesis Data Streams collects real-time records. Retention runs up to 365 days, and consumers can replay records within that window. Records are up to 1 MB, and ordering holds for records with the same partition key (slide 543).</span></p>
+<p><span class="rule">Rule: Choose Kinesis for ordered, high-volume records that several consumers read or replay.</span></p>
+<p><span class="trap">Trap: Using Kinesis as a one-time job queue. Records stay until they expire, so each consumer tracks its own position.</span></p>
+<p><span class="fact">Limits: Lambda reads batches of up to 10,000 records, with batches split beyond the 6 MB payload limit. A failing batch is retried until it succeeds, and it can stall the shard (slide 355). Shard throughput numbers: Not in source.</span></p>
+<p>Pairs with Lambda consumers, Firehose for delivery to storage, and MSK when the team already runs Kafka (slides 546 to 548).</p>
+<p class="src">Source: course slide extract, pages 355 and 542 to 548. No AWS page fetched for Kinesis limits.</p>
+
+<h3>Glue and DataBrew</h3>
+<p><span class="fact">Fact: A Glue crawler scans S3, infers the schema, and stores table definitions in the Glue Data Catalog. The data stays in S3 (slide 104). Glue Studio builds visual ETL jobs with sources such as S3, Kinesis, Kafka, and JDBC, and it writes to S3 or the Catalog (slide 106).</span></p>
+<p><span class="rule">Rule: Use a crawler to record a schema, and use an ETL job to change the data. Use Comprehend inside Lambda for PII checks before a prompt (slide 118).</span></p>
+<p><span class="trap">Trap: Running a crawler to flatten nested records. A crawler reads the schema only, and it does not write reshaped data.</span></p>
+<p><span class="fact">DataBrew: Features and limits: Not in source. Treat DataBrew as a visual preparation option only when the scenario says so, and check the AWS docs before the exam.</span></p>
+<p>Pairs with Lake Formation for table and column permissions, Athena for queries, and Kinesis for streaming ETL.</p>
+<p class="src">Source: course slide extract, pages 104, 106, and 118. No AWS page fetched for Glue or DataBrew.</p>
+
+<h3>Textract and Transcribe</h3>
+<p><span class="fact">Fact: The course slide places Transcribe in the data preparation group, next to Comprehend (slide 5). Textract and Transcribe limits and features: Not in source.</span></p>
+<p><span class="fact">Purpose from general service knowledge, not from a fetched page: Textract reads text and fields from scanned documents, and Transcribe turns speech into text.</span></p>
+<p><span class="rule">Rule: Put Textract or Transcribe first in an ingestion pipeline when the input is not text yet.</span></p>
+<p><span class="trap">Trap: Sending scanned PDFs straight to a model. The model sees no extracted text, so the answer has no source content.</span></p>
+<p>Pairs with S3 events for the start of the pipeline, Glue for cataloging, and Comprehend for PII redaction.</p>
+<p class="src">Source: course slide extract, page 5 and page 118. No AWS page fetched for Textract or Transcribe.</p>
+
+<h3>AppSync</h3>
+<p><span class="fact">Fact: AppSync is a serverless GraphQL and pub/sub service. Resolvers can call Lambda, and Apache Velocity Template Language maps GraphQL requests to data sources (slide 391).</span></p>
+<p><span class="rule">Rule: Use AppSync when clients need one GraphQL schema for reads, writes, and live updates.</span></p>
+<p><span class="trap">Trap: Choosing AppSync for a single model call with a fixed REST shape. The GraphQL schema adds work the scenario does not ask for.</span></p>
+<p><span class="fact">Limits: Subscription duration and request quotas: Not in source.</span></p>
+<p>Pairs with Cognito for sign-in, Lambda resolvers for model calls, and WAF on the GraphQL API (slide 508).</p>
+<p class="src">Source: course slide extract, pages 391 and 508. No AWS page fetched for AppSync.</p>
+
+<h3>Amplify</h3>
+<p><span class="fact">Fact: Amplify is a set of tools for full stack web and mobile apps. It has frontend libraries, a CLI, a console for hosting and CI/CD, and backend services for auth, storage, API, and AI predictions (slide 405).</span></p>
+<p><span class="rule">Rule: Use Amplify when the question is about building and deploying the app shell and its backend resources.</span></p>
+<p><span class="trap">Trap: Choosing Amplify to design the model workflow or the API contract. Amplify builds the app around the model path, and it does not decide that path.</span></p>
+<p><span class="fact">Limits: Not in source.</span></p>
+<p class="src">Source: course slide extract, page 405. No AWS page fetched for Amplify.</p>
+
+<h3>Cognito</h3>
+<p><span class="fact">Fact: User pools sign in app users and integrate with API Gateway and Application Load Balancer. Identity pools exchange an identity for temporary AWS credentials, and the IAM policies can depend on the user identity (slides 502 to 505).</span></p>
+<p><span class="rule">Rule: Use a user pool for app sign-in. Use IAM roles for internal users who already have AWS access.</span></p>
+<p><span class="trap">Trap: Giving every web user an IAM identity. The course slide names hundreds of users, mobile users, and SAML as signals for Cognito.</span></p>
+<p><span class="fact">Limits: Token lifetimes and user pool quotas: Not in source.</span></p>
+<p>Pairs with API Gateway authorizers, AppSync, DynamoDB row-level access through identity pools (slide 507), and Kendra for document-level access (slide 662).</p>
+<p class="src">Source: course slide extract, pages 502 to 507 and 662. No AWS page fetched for Cognito.</p>
+
+<h3>CloudFront</h3>
+<p>CloudFront matters most when the question is about outside users. The edge location absorbs traffic and terminates TLS before the request reaches the API. Put it where the public path starts, not behind the model call.</p>
+<p><span class="fact">Fact: CloudFront is the edge content delivery service. The course slides place it in front of a public chatbot, with WAF and API Gateway behind it (slide 663). WAF can attach to CloudFront (slide 508).</span></p>
+<p><span class="rule">Rule: Add CloudFront and WAF when outside users reach the app over the internet.</span></p>
+<p><span class="trap">Trap: Adding CloudFront to an internal-only assistant. The course example skips CloudFront and WAF for internal use (slide 662).</span></p>
+<p><span class="fact">Limits: Not in source.</span></p>
+<p class="src">Source: course slide extract, pages 508 and 662 to 663. No AWS page fetched for CloudFront.</p>
+
+<h2>X versus Y decisions</h2>
+<p>Each pair below has one decision tree, a three-row comparison, the question to ask, and the trap. Ask the question first. Use the comparison only to confirm the answer.</p>
+
+<h3>API Gateway REST versus HTTP versus WebSocket</h3>
+<div class="mermaid">
+flowchart LR
+  A["Choose an API<br/>Gateway type"] -->|Needs response<br/>streaming| B["REST API"]
+  A -->|Needs usage<br/>plans and API<br/>keys| B
+  A -->|Client and<br/>server send<br/>messages<br/>anytime| C["WebSocket API"]
+  A -->|Simple HTTP<br/>proxy to<br/>Lambda| D["HTTP API"]
+</div>
+<p class="caption">Figure: picking the API type from the feature the scenario needs.</p>
+<ul>
+<li>Purpose: REST for the full feature set, HTTP for a simple proxy, WebSocket for two-way messages.</li>
+<li>Input: REST and HTTP take request-response calls, and WebSocket takes connected clients that send messages.</li>
+<li>Output or effect: The fetched page limits response streaming to REST APIs with a proxy integration.</li>
+</ul>
+<p><span class="tip">Exam tip: Find the word that describes the reply shape, then match it to the API type. The reply shape is more decisive than the traffic volume.</span></p>
+<p>The question to ask yourself: does the reply need to stream, or does the client need two-way messages?</p>
+<p>Why this pair confuses learners: all three types share the same front door name and accept similar requests. The difference appears in the protocol and in the streaming rule, so the scenario wording carries the answer.</p>
+<p><span class="trap">Trap: Picking an HTTP API because it looks simpler, when the scenario needs streamed text through API Gateway. The fetched page says streaming is supported only for REST APIs.</span></p>
+
+<h3>Synchronous versus asynchronous model calls</h3>
+<div class="mermaid">
+flowchart TD
+  A["Caller needs<br/>the model<br/>reply"] -->|Caller waits<br/>on the open<br/>connection| B["Synchronous<br/>call"]
+  A -->|Caller<br/>accepts a<br/>later result| C["Asynchronous<br/>call"]
+  B -->|Reply<br/>finishes<br/>under 29<br/>seconds| D["API Gateway<br/>returns body"]
+  B -->|Reply runs<br/>longer| E["Stream or<br/>switch to<br/>async"]
+  C -->|Result<br/>stored or<br/>pushed later| F["Job ID then<br/>poll or<br/>callback"]
+  C -->|Large input<br/>or output| G["Object in S3<br/>with pointer"]
+</div>
+<p class="caption">Figure: the choice between a waiting call and a job that returns later.</p>
+<ul>
+<li>Purpose: A synchronous call returns the answer in the same request. An asynchronous call returns a job reference first.</li>
+<li>Input: A synchronous call sends the prompt in the request body. An asynchronous call sends the prompt to a queue or stores it in S3.</li>
+<li>Output or effect: The caller gets a body or a stream now, or a job ID now and the result later.</li>
+</ul>
+<p>The question to ask yourself: will the caller still hold an open connection when the model finishes?</p>
+<p>Why this pair confuses learners: the synchronous call looks simpler, so learners choose it even when the reply runs past the limit. The asynchronous design adds a job ID and a result path, which feels like extra work. The time limit decides the pair, so read the wait time before anything else.</p>
+<p><span class="trap">Trap: Raising the Lambda timeout to 15 minutes so an API call can wait longer. The API layer still stops the wait at its integration limit, so the client sees a failure.</span></p>
+
+<h3>SQS versus SNS</h3>
+<div class="mermaid">
+flowchart TD
+  A["Work item must<br/>reach a<br/>consumer"] -->|One worker<br/>pool<br/>processes<br/>each job| B["SQS queue"]
+  A -->|Several<br/>services<br/>need the<br/>same event| C["SNS topic"]
+  B -->|Failed<br/>messages<br/>after<br/>retries| D["Dead-letter<br/>queue"]
+  B -->|Consumers<br/>slower than<br/>producers| E["Queue holds<br/>backlog"]
+  C -->|Each<br/>subscriber<br/>gets a copy| F["Queues Lambda<br/>email or HTTP"]
+  C -->|Routing by<br/>event fields<br/>needed| G["Use<br/>EventBridge<br/>instead"]
+</div>
+<p class="caption">Figure: one job for one pool versus one event for many receivers.</p>
+<ul>
+<li>Purpose: SQS holds work for a consumer group. SNS sends a copy of one message to each subscriber.</li>
+<li>Input: A producer calls SendMessage on SQS. A producer publishes once to an SNS topic.</li>
+<li>Output or effect: SQS removes the message only after a consumer deletes it. SNS delivers a copy to each subscriber.</li>
+</ul>
+<p>The question to ask yourself: is this one job for one worker pool, or one event for many receivers?</p>
+<p>Why this pair confuses learners: both move messages between parts of the app. SNS sends one copy to each of many receivers, while SQS keeps one copy for one group of workers. Count the consumers before you choose.</p>
+<p><span class="trap">Trap: Using SNS as the backlog for a slow model consumer. The course slide describes SQS as the holder of messages until deletion, so the backlog belongs in a queue after the topic.</span></p>
+
+<h3>SNS versus EventBridge</h3>
+<div class="mermaid">
+flowchart TD
+  A["Event producer<br/>needs fan-out"] -->|Plain<br/>publish to<br/>many<br/>endpoints| B["SNS topic"]
+  A -->|Filter on<br/>event<br/>content| C["EventBridge<br/>rule"]
+  A -->|Run on a<br/>cron or rate| D["EventBridge<br/>Scheduler"]
+  A -->|Events from<br/>another<br/>account| E["Event bus<br/>resource<br/>policy"]
+  C -->|Targets<br/>include<br/>Lambda or<br/>SQS| F["Route to many<br/>targets"]
+</div>
+<p class="caption">Figure: plain broadcast versus content routing and scheduling.</p>
+<ul>
+<li>Purpose: SNS broadcasts to subscribers. EventBridge routes events by pattern and runs schedules.</li>
+<li>Input: SNS takes a publish call. EventBridge takes events from AWS services, applications, and schedules.</li>
+<li>Output or effect: SNS sends copies to endpoints. EventBridge sends matching events to each target that the rule names.</li>
+</ul>
+<p>The question to ask yourself: must the router match fields in the event, or run on a timer?</p>
+<p><span class="trap">Trap: Writing a Lambda cron to publish to SNS on a schedule. Scheduler is the managed timer, and it needs no extra publishing code.</span></p>
+
+<h3>EventBridge rule versus Pipes</h3>
+<div class="mermaid">
+flowchart TD
+  A["One source to one target<br/>path"] -->|Enrich or transform<br/>before target| B["EventBridge Pipes"]
+  A -->|Many sources or many<br/>targets| C["Event bus with rules"]
+  B -->|Source is stream or<br/>queue| D["Pipe with one source"]
+  C -->|Rule matches event<br/>pattern| E["Targets receive matching<br/>events"]
+</div>
+<p class="caption">Figure: a single point-to-point path versus a routed bus.</p>
+<ul>
+<li>Purpose: A rule routes to several targets. A pipe connects one source to one target and can enrich the event.</li>
+<li>Input: A rule reads events on a bus. A pipe reads from one source such as a stream or a queue.</li>
+<li>Output or effect: Each matching target gets the event from a rule. The single pipe target gets the transformed event.</li>
+</ul>
+<p>The question to ask yourself: is there one source and one target with a transform step between them?</p>
+<p>Why this pair confuses learners: both connect an event source to a target. A pipe is a point-to-point integration, so one source and one target are the signal. A bus fits many sources or many targets, and the rules on the bus do the routing.</p>
+<p><span class="trap">Trap: Using a pipe as the router for many consumers. A pipe has one target, so a bus with rules is the fan-out choice.</span></p>
+
+<h3>Kinesis versus SQS</h3>
+<div class="mermaid">
+flowchart TD
+  A["Records arrive as a stream"] -->|Consumers replay<br/>history| B["Kinesis Data Streams"]
+  A -->|Each job handled<br/>once then removed| C["SQS queue"]
+  B -->|Ordering per<br/>partition key| D["Ordered within each key"]
+  C -->|Message deleted<br/>after success| E["Consumer deletes message"]
+</div>
+<p class="caption">Figure: replayable ordered records versus one-time jobs.</p>
+<ul>
+<li>Purpose: Kinesis keeps an ordered record history for many readers. SQS holds jobs for one consumer group.</li>
+<li>Input: Producers write records with a partition key to Kinesis. Producers send messages to SQS.</li>
+<li>Output or effect: Each Kinesis reader keeps its position and can replay. An SQS message leaves the queue after a delete.</li>
+</ul>
+<p>The question to ask yourself: will more than one consumer read the same records, or will someone replay them later?</p>
+<p>Why this pair confuses learners: both hold data while a consumer is busy. Kinesis keeps an ordered history for replay, and SQS removes work after a successful delete. The word replay is usually the strongest signal in the scenario.</p>
+<p><span class="trap">Trap: Choosing SQS when the scenario asks for records from last week to be read again. The message is gone after the consumer deletes it.</span></p>
+
+<h3>Glue crawler versus Glue ETL job</h3>
+<div class="mermaid">
+flowchart TD
+  A["Glue data preparation need"] -->|Record schema in<br/>catalog| B["Glue crawler"]
+  A -->|Change or reshape<br/>the data| C["Glue Studio ETL job"]
+  B -->|Stores table<br/>definitions only| D["Data stays in S3"]
+  C -->|Targets S3 or Glue<br/>Data Catalog| E["Output written to target"]
+</div>
+<p class="caption">Figure: schema capture versus data transformation in Glue.</p>
+<ul>
+<li>Purpose: A crawler captures the schema. An ETL job transforms the data.</li>
+<li>Input: A crawler reads S3 objects. An ETL job reads its configured sources.</li>
+<li>Output or effect: A crawler writes table definitions to the Catalog. An ETL job writes a new dataset to a target.</li>
+</ul>
+<p>The question to ask yourself: is the goal to know the schema, or to change the data?</p>
+<p>Why this pair confuses learners: both sit in the same Glue family and both read the same S3 data. The crawler creates metadata, and the ETL job creates new data. Ask which output the scenario needs before you read the options.</p>
+<p><span class="trap">Trap: Using a crawler to flatten nested JSON for a knowledge base. Only the ETL job writes changed data.</span></p>
+
+<h3>Textract versus Transcribe</h3>
+<div class="mermaid">
+flowchart TD
+  A["Raw input to ingest"] -->|Scanned forms or PDF<br/>pages| B["Textract for text in<br/>documents"]
+  A -->|Recorded speech or<br/>calls| C["Transcribe for speech to<br/>text"]
+  B -->|Extracted text goes<br/>to chunking| D["Downstream RAG pipeline"]
+  C -->|Transcript goes to<br/>chunking| D
+</div>
+<p class="caption">Figure: the first extraction step, chosen by the type of raw input.</p>
+<ul>
+<li>Purpose: Textract reads text and fields from documents. Transcribe converts speech to text. Purpose is from general service knowledge, not a fetched page.</li>
+<li>Input: Textract takes scanned pages or images. Transcribe takes audio.</li>
+<li>Output or effect: Textract returns text and fields. Transcribe returns a transcript.</li>
+</ul>
+<p>The question to ask yourself: is the raw input a document image or a recording?</p>
+<p>Why this pair confuses learners: both turn raw content into text, so the output looks the same. The input type decides the service. A scanned bill is a page image, and a call recording is audio.</p>
+<p><span class="trap">Trap: Choosing Transcribe for scanned bills. Transcribe takes audio, so the page images never reach it as speech.</span></p>
+
+<h3>AppSync versus API Gateway for a front end</h3>
+<div class="mermaid">
+flowchart TD
+  A["Front end API need"] -->|GraphQL schema<br/>and live<br/>updates| B["AppSync GraphQL<br/>API"]
+  A -->|Resource paths<br/>and verbs| C["API Gateway REST<br/>or HTTP"]
+  A -->|Bidirectional<br/>socket<br/>messages| D["API Gateway<br/>WebSocket"]
+  B -->|Resolvers call<br/>Lambda or data<br/>sources| E["Lambda resolver<br/>for model call"]
+</div>
+<p class="caption">Figure: choosing the front-end API type from the client data shape.</p>
+<ul>
+<li>Purpose: AppSync gives a GraphQL schema with subscriptions. API Gateway gives a resource API with a managed front door.</li>
+<li>Input: AppSync takes GraphQL queries, mutations, and subscriptions. API Gateway takes HTTP methods or socket messages.</li>
+<li>Output or effect: AppSync returns graph-shaped data and pushes updates. API Gateway returns HTTP responses or socket frames.</li>
+</ul>
+<p>The question to ask yourself: does the client need a typed graph with live subscriptions?</p>
+<p>Why this pair confuses learners: both serve a web or mobile front end. GraphQL with subscriptions is the feature that separates them. A scenario that asks for live updates to a typed graph points to AppSync, and a scenario that names resource paths points to API Gateway.</p>
+<p><span class="trap">Trap: Choosing AppSync because the team uses a React front end. The front-end framework does not decide the API type.</span></p>
+
+<h3>Cognito user pools versus identity pools</h3>
+<div class="mermaid">
+flowchart TD
+  A["Identity need for users"] -->|Sign in to app and<br/>API| B["Cognito user pool"]
+  A -->|Temporary AWS<br/>credentials for<br/>users| C["Cognito identity pool"]
+  B -->|Authorizer on API<br/>Gateway or ALB| D["Protected API route"]
+  C -->|Policies set by user<br/>identity| E["Direct access to AWS<br/>resources"]
+</div>
+<p class="caption">Figure: app sign-in versus direct AWS access for an authenticated user.</p>
+<ul>
+<li>Purpose: A user pool signs app users in. An identity pool grants AWS credentials.</li>
+<li>Input: A user pool takes app sign-in with a user directory or a federated login. An identity pool takes an identity from a user pool or a third party.</li>
+<li>Output or effect: A user pool gives an API authorizer a token. An identity pool gives temporary AWS credentials under IAM policies.</li>
+</ul>
+<p>The question to ask yourself: does the user need an API token, or direct AWS access?</p>
+<p>Why this pair confuses learners: both belong to the same identity service family. The first gives an app a sign-in result for its own API. The second gives a user temporary AWS access, and the IAM policy decides what that user can touch.</p>
+<p><span class="trap">Trap: Giving a browser identity pool credentials to call a model directly when the app must apply business checks first.</span></p>
+
+<h3>Presigned URL versus Lambda upload</h3>
+<div class="mermaid">
+flowchart TD
+  A["Client must upload<br/>a file"] -->|File larger<br/>than sync<br/>payload limit| B["Presigned S3<br/>upload URL"]
+  A -->|Small JSON<br/>with a few<br/>fields| C["Lambda through API<br/>Gateway"]
+  B -->|Client sends<br/>bytes to S3| D["Lambda never sees<br/>file body"]
+  B -->|Expiry tied to<br/>signing<br/>credentials| E["Check role session<br/>length"]
+</div>
+<p class="caption">Figure: the upload path for a large file versus a small request body.</p>
+<ul>
+<li>Purpose: A presigned URL moves a large object straight to S3. A Lambda upload passes a small body through the function.</li>
+<li>Input: A presigned URL goes to the client. A Lambda upload sends the body through API Gateway.</li>
+<li>Output or effect: The presigned path keeps the file out of the Lambda payload. The Lambda path is limited to the synchronous payload size.</li>
+</ul>
+<p>The question to ask yourself: does the file body need to pass through the API at all?</p>
+<p>Why this pair confuses learners: both let a client send a file to storage. The difference is the path the bytes take. Payload size and signer lifetime decide the path, so check both numbers in the scenario.</p>
+<p><span class="trap">Trap: Handing out a presigned URL with a long expiry, expecting it to outlive a role session that ends in one hour.</span></p>
+
+<h2>Read a long question</h2>
+<p>Each worked scenario below is my own. Constraint words are in bold. Each wrong option is removed by one reason. The answer is the option that keeps every constraint.</p>
+
+<h3>Scenario one: streamed text over one HTTP path</h3>
+<p>A health information portal shows a chat answer in the browser as it is written. The front end already calls one request-response path. Some answers take about 40 seconds, and the team wants to <strong>keep the request-response shape</strong>.</p>
+<p>Constraint words: <strong>as it is written</strong>, <strong>request-response shape</strong>, <strong>40 seconds</strong>.</p>
+<ul>
+<li>Buffered REST API with a long Lambda timeout: removed, because the 29-second integration limit still ends the request.</li>
+<li>HTTP API with proxy streaming: removed, because the fetched page limits response streaming to REST APIs.</li>
+<li>WebSocket API: removed, because it changes the protocol that the scenario says to keep.</li>
+<li>REST API with a proxy integration set to STREAM, and a streaming Lambda: kept, because it meets streaming and the request shape.</li>
+</ul>
+<p>Answer: the REST API with STREAM transfer mode and a streaming Lambda function.</p>
+<p>Why it wins: it is the only option that keeps the reply open past the integration limit while it keeps the HTTP request shape. Each other option fails one named constraint.</p>
+
+<h3>Scenario two: overnight work with failures kept</h3>
+<p>A claims team sends about 80,000 records each night for a model summary. No user waits, and each failed record must remain for a later replay. Each record is about 300 KB, and the model has a per-minute quota.</p>
+<p>Constraint words: <strong>no user waits</strong>, <strong>failed record must remain</strong>, <strong>per-minute quota</strong>.</p>
+<ul>
+<li>One synchronous API call per record: removed, because the 29-second limit and the per-minute quota break the run.</li>
+<li>SNS topic with one Lambda subscriber: removed, because SNS sends to subscribers and does not hold a backlog for a slow consumer.</li>
+<li>One scheduled Lambda that loops over every record: removed, because one invocation has a 15-minute timeout that may not cover the run.</li>
+<li>SQS standard queue with a dead-letter queue and a Lambda consumer with capped concurrency: kept, because it holds the backlog, keeps failures, and limits the rate. The 300 KB record is under the 1 MiB message limit.</li>
+</ul>
+<p>Answer: the SQS queue with a dead-letter queue and a capped Lambda consumer.</p>
+<p>Why it wins: the queue holds the backlog, the dead-letter queue keeps failures for replay, and the consumer cap respects the model quota. No user waits, so the asynchronous design costs nothing that the scenario values.</p>
+
+<h3>Scenario three: a timed job and an upload trigger</h3>
+<p>A publisher must run a summary job at 07:00 each weekday. Editors also upload files to S3, and each upload must start a review job. The team wants no servers for the timer.</p>
+<p>Constraint words: <strong>07:00 each weekday</strong>, <strong>each upload</strong>, <strong>no servers for the timer</strong>.</p>
+<ul>
+<li>SNS topic as the timer: removed, because SNS does not run on a schedule.</li>
+<li>Kinesis stream for uploads: removed, because S3 object events are not a record stream that producers write.</li>
+<li>DynamoDB TTL as the trigger: removed, because TTL deletes items at an unfixed later time and does not run on a clock.</li>
+<li>EventBridge Scheduler for the timer, plus an S3 event into an EventBridge rule for uploads: kept, because it meets both triggers with managed services.</li>
+</ul>
+<p>Answer: EventBridge Scheduler for the weekday job, and an EventBridge rule on S3 upload events.</p>
+<p>Why it wins: each trigger has its own managed source, and no code runs as a timer. The scenario named two triggers, and this is the only option that covers both.</p>
+
+<h2>Distractor patterns seen in the tests</h2>
+<p>These patterns repeat across the practice scenarios. Each one is a real service used at the wrong layer. Learn the pattern, and you can reject the option even when the service name is new to you.</p>
+<p>Each pattern works because the scenario hides a second constraint in one line. Read the verb in each option first. Storage, transport, schedule, identity, and cache words each name a different layer, and the option that uses the wrong layer usually sounds the most familiar.</p>
+<ul>
+<li><strong>Right service, wrong layer.</strong> A Lambda timeout is offered for an API limit. Trap reason: the limit lives at the front door, so a longer function timeout does not move it.</li>
+<li><strong>Streaming versus protocol change.</strong> WebSocket is offered when the scenario only needs one-way text. Trap reason: the protocol change adds connection state the scenario did not ask for.</li>
+<li><strong>Broadcast versus backlog.</strong> SNS is offered as a buffer for slow consumers. Trap reason: SNS delivers to subscribers, and the queue behind each subscriber holds the backlog.</li>
+<li><strong>Delete versus replay.</strong> SQS is offered for replaying old records. Trap reason: a consumer deletes the message after success, so there is nothing left to replay.</li>
+<li><strong>Cache versus expiry.</strong> DAX is offered for item expiry. Trap reason: DAX is a read cache with its own TTL, and item expiry belongs to the table TTL setting.</li>
+<li><strong>Identity layer mix-up.</strong> An identity pool is offered for API sign-in. Trap reason: identity pools grant AWS credentials, while user pools give API authorizers a sign-in result.</li>
+<li><strong>Pipeline order.</strong> A model call comes before text extraction or PII redaction. Trap reason: the model cannot use text that has not been extracted or cleaned yet.</li>
+<li><strong>Removed control.</strong> An option is cheaper because it drops a dead-letter queue or a retry rule. Trap reason: the scenario names the control, so the option fails that constraint.</li>
+</ul>
+
+<h2>Drill</h2>
+<p>Read each prompt, then cover the answer line. Say the reason before you read the answer.</p>
+<p><strong>Prompt:</strong> A browser needs text as it is written, over one HTTP path, with no WebSocket.</p>
+<p class="rule">Rule: Use a REST API with STREAM transfer mode and a streaming Lambda, not an HTTP API.</p>
+<p><strong>Prompt:</strong> A model reply takes 40 seconds behind a front door. The team plans to raise the Lambda timeout only.</p>
+<p class="trap">Trap: The 29-second integration limit still breaks first. Stream the reply or switch to an asynchronous job.</p>
+<p><strong>Prompt:</strong> Several teams need the same order event, each with its own backlog.</p>
+<p class="rule">Rule: Publish to an SNS topic, and put one SQS queue behind each consumer.</p>
+<p><strong>Prompt:</strong> One worker pool must process each job once, and failed jobs must be kept.</p>
+<p class="rule">Rule: Use an SQS queue with a dead-letter queue and a suitable maxReceiveCount.</p>
+<p><strong>Prompt:</strong> A new consumer next week must read records from last week.</p>
+<p class="rule">Rule: Use Kinesis Data Streams inside its retention window, not SQS.</p>
+<p><strong>Prompt:</strong> A browser uploads a 50 MB file for a later review step.</p>
+<p class="rule">Rule: Give the browser a presigned upload URL, so the bytes skip the Lambda payload.</p>
+<p><strong>Prompt:</strong> Expired chat turns must stop appearing in a table after 30 days.</p>
+<p class="trap">Trap: TTL deletion can lag by days. The read path must filter expired items.</p>
+<p><strong>Prompt:</strong> Web users must sign in before they call an API.</p>
+<p class="rule">Rule: Use a Cognito user pool with an authorizer on the API.</p>
+<p><strong>Prompt:</strong> A summary job runs each weekday at 07:00.</p>
+<p class="rule">Rule: Use EventBridge Scheduler for the timer.</p>
+<p><strong>Prompt:</strong> A scanned bill must become text before it is chunked for a knowledge base.</p>
+<p class="rule">Rule: Put Textract first in the ingestion pipeline, then the chunking step.</p>
+<p><strong>Prompt:</strong> Clients need GraphQL queries and live updates for a chat panel.</p>
+<p class="rule">Rule: Use AppSync with subscriptions, and Lambda resolvers for the model call.</p>
+<p><strong>Prompt:</strong> A public chatbot faces the internet and must block abusive traffic.</p>
+<p class="rule">Rule: Put CloudFront and WAF in front of the API, and keep the API Gateway authorizer.</p>
+
+<h2>Sources</h2>
+<p class="src">Source: AWS documentation fetched for this module.</p>
+<ul>
+<li>https://docs.aws.amazon.com/apigateway/latest/developerguide/limits.html</li>
+<li>https://docs.aws.amazon.com/apigateway/latest/developerguide/response-transfer-mode.html</li>
+<li>https://docs.aws.amazon.com/lambda/latest/dg/gettingstarted-limits.html</li>
+<li>https://docs.aws.amazon.com/lambda/latest/dg/configuration-response-streaming.html</li>
+<li>https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/TTL.html</li>
+<li>https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-dead-letter-queues.html</li>
+<li>https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/quotas-messages.html</li>
+<li>https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-what-is.html</li>
+<li>https://docs.aws.amazon.com/AmazonS3/latest/userguide/using-presigned-url.html</li>
+</ul>
+<p class="src">Source: course slide extract for this module, pages cited in each section. Slide facts are used only where an AWS page did not cover them.</p>
+<nav class="mod"><a href="index.html">All modules</a> <a href="m8-evaluation-testing.html">Previous</a> <a href="m10-confusable-pairs.html">Next</a></nav>
+</main>
+<script type="module">
+  import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.esm.min.mjs";
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: "base",
+    themeVariables: {
+      background: "#000000",
+      mainBkg: "#000000",
+      primaryColor: "#000000",
+      primaryTextColor: "#f2f2f2",
+      primaryBorderColor: "#7db8ff",
+      secondaryColor: "#000000",
+      tertiaryColor: "#000000",
+      lineColor: "#d0d0d0",
+      textColor: "#f2f2f2",
+      edgeLabelBackground: "#000000",
+      clusterBkg: "#000000",
+      clusterBorder: "#7db8ff",
+      titleColor: "#ffffff",
+      fontFamily: "Helvetica, Arial, sans-serif",
+      fontSize: "22px"
+    },
+    flowchart: { htmlLabels: true, curve: "basis", useMaxWidth: false, padding: 16, nodeSpacing: 40, rankSpacing: 56 }
+  });
+</script>
+<script>window.markmap = { autoLoader: { manual: false, toolbar: false } };</script>
+<script src="https://cdn.jsdelivr.net/npm/markmap-autoloader@0.18.12"></script>
+</body>
+</html>

@@ -1,0 +1,801 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>Crash course: mega cheatsheet</title>
+<style>
+:root {
+  --bg: #000000;
+  --ink: #f2f2f2;
+  --fact: #7db8ff;
+  --rule: #6ee7a0;
+  --tip: #d8a6ff;
+  --trap: #ff8a8a;
+  --muted: #a8a8a8;
+  --line: #333333;
+}
+html, body { background: #000000; }
+body {
+  color: var(--ink);
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 19px;
+  line-height: 1.7;
+  margin: 0;
+  padding: 24px 20px 72px;
+}
+main { max-width: 780px; margin: 0 auto; }
+main p, main li { text-align: justify; }
+h1 { font-size: 32px; line-height: 1.3; margin: 0 0 12px; color: #ffffff; }
+h2 { font-size: 26px; line-height: 1.35; margin: 48px 0 14px; color: #ffffff; border-top: 1px solid var(--line); padding-top: 22px; }
+h3 { font-size: 21px; line-height: 1.4; margin: 32px 0 10px; color: #ffffff; }
+h4 { font-size: 19px; line-height: 1.4; margin: 24px 0 8px; color: #ffffff; }
+p { margin: 0 0 18px; }
+ul, ol { margin: 0 0 18px; padding-left: 26px; }
+li { margin-bottom: 10px; }
+.fact { color: var(--fact); }
+.rule { color: var(--rule); }
+.tip { color: var(--tip); }
+.trap { color: var(--trap); }
+.src { font-size: 16px; color: var(--muted); }
+.meta { font-size: 16px; color: var(--muted); margin-bottom: 24px; }
+.caption { font-size: 16px; color: var(--muted); margin: -8px 0 26px; text-align: left; }
+.legend p { margin-bottom: 6px; text-align: left; }
+.mermaid { margin: 14px 0 26px; font-size: 21px; text-align: left; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; }
+.mermaid svg { max-width: none; height: auto; }
+@media print {
+  .mermaid { overflow: visible; break-inside: avoid; }
+  .mermaid svg { max-width: 100% !important; height: auto !important; }
+  body { padding: 14mm 10mm; }
+  h1, h2, h3, h4 { break-after: avoid; }
+  p.caption, p.src { break-before: avoid; }
+}
+</style>
+</head>
+<body>
+<main>
+
+<h2>Crash course: mega cheatsheet</h2>
+<p class="meta">One page of diagrams and decision rules. Read each diagram first. Then read the rule and the trap under it.</p>
+<div class="legend">
+<p><span class="fact">Blue: key fact.</span></p>
+<p><span class="rule">Green: decision rule.</span></p>
+<p><span class="tip">Purple: exam tip on wording.</span></p>
+<p><span class="trap">Red: trap.</span></p>
+<p class="src">Grey lines name the source section for each fact.</p>
+</div>
+
+<h2>0. Layers and caveats at a glance</h2>
+<p class="meta">Read this block before the domain map. It gives the four layers and the four caveats that decide most designs.</p>
+<div class="mermaid">
+flowchart TB
+  O["Orchestration: API<br/>Gateway, Lambda, Step<br/>Functions, SQS,<br/>EventBridge"] --> M["Model access: Bedrock, or<br/>SageMaker AI for a model<br/>you host"]
+  M --> G["Grounding and data:<br/>Knowledge Bases,<br/>OpenSearch Service, Aurora<br/>pgvector, S3 Vectors,<br/>DynamoDB, S3"]
+  O --> C["Control: IAM, KMS,<br/>Guardrails, CloudTrail,<br/>CloudWatch"]
+  M --> C
+</div>
+<p class="caption">Figure: four layers. Control applies to every layer.</p>
+<div class="mermaid">
+flowchart LR
+  Q1["A managed service meets<br/>every hard constraint"] --> R1["Choose the managed service"]
+  Q2["A cheaper option meets<br/>every hard constraint"] --> R2["Choose the cheaper option"]
+  Q3["A cheaper option misses<br/>one hard constraint"] --> R3["Reject the cheaper option"]
+  Q4["A design adds services the<br/>stem does not require"] --> R4["Reject the extra services"]
+</div>
+<p class="caption">Figure: four caveats. Each caveat has one test.</p>
+<p class="rule">Decision rule: Bedrock serves the base and customized models that AWS hosts. SageMaker AI serves a model that you host in an endpoint you control.</p>
+<p class="trap">Trap: A cheaper design that misses a hard constraint is wrong. Cost is a tie-breaker only after every hard constraint holds.</p>
+
+<h2>1. Domain map</h2>
+<p><span class="fact">Five domains carry 31, 26, 20, 12, and 11 percent of the exam guide weight.</span></p>
+<div class="mermaid">
+flowchart TD
+  R["Five domains<br/>and weights"] --> D1["Domain 1<br/>weight 31<br/>percent<br/>Foundation<br/>model<br/>integration<br/>data<br/>management and<br/>compliance"]
+  R --> D2["Domain 2<br/>weight 26<br/>percent<br/>Implementation<br/>and<br/>integration"]
+  R --> D3["Domain 3<br/>weight 20<br/>percent AI<br/>safety<br/>security and<br/>governance"]
+  R --> D4["Domain 4<br/>weight 12<br/>percent<br/>Operational<br/>efficiency and<br/>optimization"]
+  R --> D5["Domain 5<br/>weight 11<br/>percent<br/>Testing<br/>validation and<br/>troubleshooting"]
+  D1 --> T1["Tasks 1.1 to<br/>1.6 Design<br/>first then<br/>prove it.<br/>Choose a model<br/>on five axes.<br/>Four stage<br/>data pipeline.<br/>Vector stores<br/>and<br/>embeddings.<br/>RAG end to<br/>end. Prompt<br/>governance and<br/>workflows"]
+  D2 --> T2["Tasks 2.1 to<br/>2.5 Agents.<br/>Deployment<br/>patterns.<br/>Enterprise<br/>gateway and<br/>access.<br/>Streaming and<br/>reliable<br/>calls.<br/>Application<br/>tools and<br/>prompt<br/>versions"]
+  D3 --> T3["Tasks 3.1 to<br/>3.4 Guardrail<br/>policies.<br/>Privacy and<br/>private paths.<br/>Data lake<br/>access and<br/>audit.<br/>Responsible AI"]
+  D4 --> T4["Tasks 4.1 to<br/>4.3 Cost<br/>levers and<br/>token<br/>economics.<br/>Latency and<br/>sampling.<br/>Monitoring<br/>signals"]
+  D5 --> T5["Tasks 5.1 and<br/>5.2 Evaluation<br/>methods and<br/>judges.<br/>Troubleshooting<br/>by symptom"]
+</div>
+<p class="caption">Figure: five domains, their weights, and their task statements. Task labels summarize the source section headings.</p>
+<p class="src">Source: repo guide, Part 0 domain weights table. Task labels from the Part 2 to Part 6 section headings.</p>
+<p class="trap">Trap: domain 4 weighs 12 percent and domain 5 weighs 11 percent. Do not swap them.</p>
+<p class="rule">Decision rule: read the final sentence of the scenario. Then list each constraint before you choose a service.</p>
+<p class="tip">Exam tip on wording: the domain weights come from the official exam guide, as the repo guide states.</p>
+
+<h2>2. Service selection master tree</h2>
+<p class="rule">Decision rule: choose the simplest managed service that meets every constraint. Choose custom work only when a constraint forces it.</p>
+<div class="mermaid">
+flowchart LR
+  R["What does the workload<br/>need"] --> A["A model answer"]
+  R --> B["Facts from private or<br/>changing documents"]
+  R --> C["Actions in systems or APIs"]
+  R --> D["Safety and policy checks"]
+  R --> E["A wait for a person or a<br/>long durable flow"]
+  R --> F["A model that the team owns<br/>or tuned"]
+  R --> G["Settings that change<br/>without a code release"]
+  A --> A1["Chat and tool use with<br/>Converse"]
+  A --> A2["Embeddings or provider<br/>body with InvokeModel"]
+  B --> B1["Managed RAG with Bedrock<br/>Knowledge Bases"]
+  B --> B2["Vector store OpenSearch<br/>Serverless Aurora pgvector<br/>or S3 Vectors"]
+  C --> C1["Bedrock Agents for<br/>existing use only"]
+  C --> C2["AgentCore Runtime Gateway<br/>Memory Identity and Policy"]
+  D --> D1["Guardrails on model input<br/>and output"]
+  D --> D2["ApplyGuardrail for text<br/>from any model"]
+  E --> E1["Step Functions Standard<br/>with a callback task token"]
+  F --> F1["SageMaker AI endpoint<br/>real-time serverless or<br/>asynchronous"]
+  G --> G1["AWS AppConfig with a<br/>CloudWatch alarm for<br/>rollback"]
+</div>
+<p class="caption">Figure: start at the workload need, then follow one branch to the component.</p>
+<p class="src">Source: repo guide, Part 1A component table, Part 1D tie-in table, and the Part 1 constraint method.</p>
+<p class="trap">Trap: Bedrock Agents is no longer open to new customers. The documented alternative is AgentCore.</p>
+<p class="tip">Exam tip on wording: no redeploy or no code change points to a configuration pattern such as AppConfig.</p>
+
+<h2>3. Model access</h2>
+<p class="fact">Three groups shape each model call: the API, the capacity mode, and the routing.</p>
+
+<h3>3A. API surface: Converse, InvokeModel, and streaming</h3>
+<div class="mermaid">
+flowchart TD
+  S["Call a model"] --> K1["Chat tool use<br/>or multimodal<br/>input"]
+  S --> K2["Embeddings or<br/>provider<br/>specific<br/>fields"]
+  S --> K3["Tokens as they<br/>arrive"]
+  K1 --> C["Converse one<br/>request format<br/>for supported<br/>models"]
+  K2 --> I["InvokeModel<br/>you build each<br/>provider body"]
+  K3 --> CS["ConverseStream<br/>or<br/>InvokeModelWithResponseStream"]
+  C --> CN["Converse is<br/>not an<br/>embeddings API"]
+  I --> CL["Claude body<br/>needs<br/>anthropic_version<br/>and max_tokens"]
+  CS --> WS["Browser needs<br/>a WebSocket<br/>API or<br/>server-sent<br/>events"]
+  WS --> GW["A REST<br/>integration<br/>still stops at<br/>the gateway<br/>limit"]
+</div>
+<p class="caption">Figure: pick the API by the output type. Streaming lowers the time to the first token. It does not shorten total time.</p>
+<p class="src">Source: repo guide, Part 1 section 1.2 three ways to call a model API. Part 3 sections 2.3 and 2.4.</p>
+<p class="rule">Decision rule: use Converse for chat and tools. Use InvokeModel for embeddings and provider fields.</p>
+<p class="trap">Trap: a Titan body sent to Claude fails. Converse does not produce embeddings.</p>
+<p class="tip">Exam tip on wording: streaming improves perceived speed. It does not extend a REST timeout.</p>
+
+<h3>3B. Capacity: on-demand, Provisioned Throughput, and batch</h3>
+<div class="mermaid">
+flowchart LR
+  L["Shape of the<br/>load"] --> S1["Spiky or<br/>unknown<br/>traffic"]
+  L --> S2["Steady<br/>baseline with<br/>a predictable<br/>rate"]
+  L --> S3["Offline work<br/>that can wait<br/>for hours"]
+  L --> S4["Mixed traffic"]
+  S1 --> O["On-demand pay<br/>per token with<br/>no commitment"]
+  S2 --> P["Provisioned<br/>Throughput<br/>reserved model<br/>units billed<br/>hourly"]
+  S3 --> B["Batch<br/>inference from<br/>S3 to S3 at a<br/>lower price"]
+  S4 --> M["Provisioned<br/>baseline plus<br/>on-demand<br/>spikes"]
+  P --> PC["Commitment<br/>none 1 month<br/>or 6 months"]
+  P --> PA["Call the<br/>provisioned<br/>model ARN not<br/>the base model<br/>ID"]
+  B --> BX["Batch is not<br/>supported for<br/>provisioned<br/>models"]
+  B --> BD["Exact batch<br/>discount Not<br/>in source on<br/>the docs page"]
+  O --> RT["A user who<br/>waits for a<br/>reply needs<br/>real-time<br/>calls"]
+</div>
+<p class="caption">Figure: match the purchase to the shape of the traffic.</p>
+<p class="src">Source: repo guide, Part 3 section 2.2 deployment patterns. Part 5 section 4.1 batch for work that can wait. Part 8D decision ladders unit for commitment terms.</p>
+<p class="src">Not in source: the exact batch discount. The docs page gives no percentage, and Part 9 lists it as an open check.</p>
+<p class="rule">Decision rule: start on-demand. Buy Provisioned Throughput only after a proof of concept shows a steady baseline.</p>
+<p class="trap">Trap: more model units do not help a call that still uses the base model ID.</p>
+<p class="tip">Exam tip on wording: offline and can wait point to batch. A user who waits on a reply rules batch out.</p>
+
+<h3>3C. Routing: cross-Region, intelligent routing, and latency mode</h3>
+<div class="mermaid">
+flowchart LR
+  G["Routing need"] --> X1["More<br/>throughput or<br/>availability<br/>across Regions"]
+  G --> X2["Choose between<br/>two models in<br/>one family"]
+  G --> X3["Latency target<br/>for one call"]
+  X1 --> CR["Cross-Region<br/>inference<br/>profile with a<br/>us or eu<br/>prefix"]
+  CR --> GEO["Geographic<br/>profile routes<br/>only inside<br/>its listed<br/>Regions"]
+  CR --> GLO["Global profile<br/>can leave a<br/>strict<br/>residency<br/>boundary"]
+  CR --> FO["Not automatic<br/>failover add<br/>retries and<br/>fallback in<br/>the app"]
+  X2 --> IPR["Intelligent<br/>prompt routing<br/>by predicted<br/>quality and<br/>cost"]
+  IPR --> EN["Optimized for<br/>English<br/>prompts only"]
+  X3 --> LM["Latency mode<br/>Not in source<br/>as a Bedrock<br/>setting"]
+  LM --> MS["Measure time<br/>to first token<br/>and tokens per<br/>second"]
+  G --> LR["Lambda routing<br/>with AppConfig<br/>when you write<br/>the rules"]
+</div>
+<p class="caption">Figure: three routing choices. Cross-Region spreads load. Intelligent routing picks a model in one family.</p>
+<p class="src">Source: repo guide, Part 2 section 1.2 routing mechanisms and cross-Region inference and data scope. Part 8A4 cross-Region routing unit for the global profile savings.</p>
+<p class="src">Not in source: latency mode as a Bedrock setting. The study guide names latency only as a model axis and a measure.</p>
+<p class="rule">Decision rule: a cross-Region profile routes for throughput and availability. It does not pick a model by prompt complexity.</p>
+<p class="trap">Trap: a global profile does not meet an EU residency rule. Use a geographic EU profile.</p>
+<p class="tip">Exam tip on wording: a profile ID with a us or eu prefix means cross-Region inference.</p>
+
+<h2>4. Retrieval-augmented generation</h2>
+<p class="fact">RAG adds facts at query time. Knowledge Bases runs the ingest path and the query path for you.</p>
+<p class="rule">Decision rule: choose Bedrock Knowledge Bases for least effort. Choose hand-built RAG only when a stated requirement forces it.</p>
+
+<h3>4A. Ingest path, which runs ahead of time</h3>
+<div class="mermaid">
+flowchart TD
+  D["Documents in<br/>S3 or another<br/>data source"] --> K["Chunking is<br/>set when the<br/>data source is<br/>created"]
+  K --> C1["Fixed size for<br/>FAQs and short<br/>text"]
+  K --> C2["Hierarchical<br/>parent and<br/>child chunks<br/>for manuals"]
+  K --> C3["Semantic<br/>chunking costs<br/>more to<br/>process"]
+  K --> C4["Custom Lambda<br/>chunking keeps<br/>tables and<br/>figures whole"]
+  C2 --> HS["Hierarchical<br/>chunking is<br/>not<br/>recommended<br/>with an S3<br/>vector bucket"]
+  C1 --> E["Embed with<br/>Titan Text<br/>Embeddings v2<br/>or Cohere<br/>Embed"]
+  C2 --> E
+  C3 --> E
+  C4 --> E
+  E --> V["Store in a<br/>vector store"]
+  V --> SY["Sync with<br/>StartIngestionJob<br/>or direct<br/>ingest"]
+  SY --> FR["Sync is<br/>incremental<br/>and removes<br/>deleted<br/>documents"]
+  K --> CH["Change<br/>chunking by<br/>creating a new<br/>data source<br/>then syncing<br/>it"]
+</div>
+<p class="caption">Figure: ingest path. The chunking strategy belongs to the data source.</p>
+<p class="src">Source: repo guide, Part 2 sections 1.3 and 1.4. Part 8A5 knowledge base freshness unit.</p>
+
+<h3>4B. Query path, which runs per request</h3>
+<div class="mermaid">
+flowchart TD
+  U["User query"] --> EQ["Embed the query with input<br/>type search_query for<br/>Cohere"]
+  EQ --> HS["Hybrid search with keyword<br/>and vector signals"]
+  HS --> EX["Example 50 keyword and 50<br/>vector merged to 100 then<br/>top 5 illustrative"]
+  HS --> MF["Metadata filter for Region<br/>or product line"]
+  MF --> RR["Reranker scores each<br/>candidate for relevance"]
+  RR --> TP["Send the top few chunks to<br/>the model"]
+  TP --> GN["RetrieveAndGenerate<br/>returns an answer with<br/>citations"]
+  GN --> GS["Contextual grounding check<br/>gives a score per answer"]
+  GS --> AU["Auditors sample citations<br/>and scores"]
+</div>
+<p class="caption">Figure: query path. Each chunk adds input tokens. Rerank first, then send fewer chunks.</p>
+<p class="src">Source: repo guide, Part 2 section 1.5 RAG end to end and citations and grounding. Part 1E visual unit 7 and Part 2 visual unit 60.</p>
+
+<h3>4C. Retrieval fixes by symptom</h3>
+<div class="mermaid">
+flowchart LR
+  SY["Symptom in the<br/>answer"] --> S1["Chunks look<br/>relevant but the<br/>answer is wrong"]
+  SY --> S2["Keyword heavy<br/>queries drift"]
+  SY --> S3["Results are<br/>related but not<br/>right"]
+  SY --> S4["Vocabulary gap<br/>such as refund and<br/>return"]
+  SY --> S5["Multi-hop request<br/>needs several<br/>lookups"]
+  SY --> S6["A table is split<br/>across two chunks"]
+  SY --> S7["Quality dropped<br/>after a re-sync"]
+  S1 --> F1["Check chunks then<br/>ranking then the<br/>generator"]
+  S2 --> F2["Hybrid search with<br/>semantic and<br/>keyword signals"]
+  S3 --> F3["Reranker before<br/>generation"]
+  S4 --> F4["Query expansion"]
+  S5 --> F5["Query<br/>decomposition into<br/>sub queries then<br/>merge the results"]
+  S6 --> F6["Custom Lambda<br/>chunking keeps the<br/>table whole"]
+  S7 --> F7["Check the chunking<br/>setting and<br/>embedding model<br/>version then the<br/>golden set"]
+</div>
+<p class="caption">Figure: fix the stage that failed. A reranker orders chunks. It does not add a chunk that retrieval missed.</p>
+<p class="src">Source: repo guide, Part 2 section 1.5 retrieval fixes. Part 2 section 1.3 retrieval symptoms. Part 6 section 5.2.</p>
+<p class="rule">Decision rule: diagnose by stage. Check the chunks first, then retrieval, then generation.</p>
+<p class="trap">Trap: a bigger model does not fix broken retrieval or broken chunking. Changing the generator is a later step.</p>
+<p class="tip">Exam tip on wording: least effort points to Knowledge Bases. A custom retrieval algorithm points to hand-built RAG.</p>
+
+<h2>5. Agents and AgentCore</h2>
+<p class="rule">Decision rule: callers use an alias. Edit DRAFT, prepare the agent, create a version, then point the alias to it.</p>
+
+<h3>5A. DRAFT, version, and alias flow</h3>
+<div class="mermaid">
+flowchart TD
+  ED["Edit DRAFT"] --> CT["Console tests run<br/>on DRAFT only"]
+  ED --> PR["Prepare the agent"]
+  PR --> VE["Create a version<br/>from the prepared<br/>DRAFT"]
+  VE --> AL["Point the alias to<br/>the new version"]
+  AL --> TS["Test the alias not<br/>only DRAFT"]
+  AL --> CL["Callers send<br/>agentId and<br/>agentAliasId"]
+  CL --> MV["Move the alias to<br/>move traffic with<br/>no caller change"]
+</div>
+<p class="caption">Figure: change flow for an agent. Callers never use DRAFT directly.</p>
+<p class="src">Source: repo guide, Part 3 section 2.1 DRAFT, versions, and aliases. Part 3 visual unit 29.</p>
+<p class="trap">Trap: a console test on DRAFT does not prove the alias works. A multi-agent collaborator in DRAFT cannot take delegations.</p>
+
+<h3>5B. Agent loop with limits</h3>
+<div class="mermaid">
+flowchart TD
+  RE["Reason about<br/>the next step"] --> AC["Act through an<br/>action group<br/>or knowledge<br/>base"]
+  AC --> OB["Observe the<br/>result and<br/>write a trace<br/>record"]
+  OB --> ST["Stop condition<br/>or step limit<br/>reached"]
+  ST -->|No| RE
+  ST -->|Yes| OUT["Return the<br/>final answer"]
+  AC --> LIM["Limits sit in<br/>the workflow<br/>or the tool<br/>layer"]
+  LIM --> TO["Timeouts in<br/>Lambda and<br/>Step Functions"]
+  LIM --> IAM["IAM bounds<br/>what each tool<br/>can touch"]
+  LIM --> CB["Circuit<br/>breaker stops<br/>repeated tool<br/>failures"]
+</div>
+<p class="caption">Figure: the agent loop. Each step costs time and money.</p>
+<p class="src">Source: repo guide, Part 3 section 2.1 agent loop limits. Part 3 visual unit 28.</p>
+<p class="trap">Trap: a prompt that says stop is not a control. Enforce the limit in the workflow or the tool layer.</p>
+
+<h3>5C. AgentCore components</h3>
+<div class="mermaid">
+flowchart TD
+  U["Client or user"] --> ID["AgentCore<br/>Identity<br/>decides who<br/>and what can<br/>call"]
+  ID --> RT["AgentCore<br/>Runtime hosts<br/>agent code<br/>from any<br/>framework"]
+  RT --> MD["AgentCore<br/>Memory keeps<br/>short and long<br/>term context"]
+  RT --> GW["AgentCore<br/>Gateway<br/>exposes tools<br/>as MCP tools"]
+  GW --> PO["AgentCore<br/>Policy checks<br/>each tool call<br/>before it runs"]
+  PO --> TL["Tool on Lambda<br/>or a remote<br/>MCP server<br/>with<br/>Streamable<br/>HTTP"]
+  RT --> OB["AgentCore<br/>Observability<br/>records traces<br/>and metrics"]
+  RT --> NM["AgentCore is<br/>not a model.<br/>It governs the<br/>agent around<br/>the model"]
+</div>
+<p class="caption">Figure: AgentCore parts around one agent.</p>
+<p class="src">Source: repo guide, Part 1A component table. Part 1E visual unit 9. Part 3 section 2.2 AgentCore components.</p>
+<p class="rule">Decision rule: use AgentCore Policy for a check on each tool call. A prompt rule is not that check.</p>
+<p class="trap">Trap: a remote MCP server on AgentCore Runtime uses Streamable HTTP. Light stateless tools can run on Lambda.</p>
+<p class="tip">Exam tip on wording: code level control points to a framework. Console only work points to a managed agent.</p>
+
+<h2>6. Guardrails: six policies and the failure each one stops</h2>
+<p class="fact">A guardrail has six policy types. Each policy stops one kind of failure.</p>
+<div class="mermaid">
+flowchart LR
+  G["Six guardrail policies"] --> P1["Denied topics"]
+  G --> P2["Word filters"]
+  G --> P3["Content filters and the<br/>prompt attack category"]
+  G --> P4["Sensitive information<br/>filters"]
+  G --> P5["Contextual grounding<br/>checks"]
+  G --> P6["Automated Reasoning checks"]
+  P1 --> F1["Failure a whole subject<br/>described in plain<br/>language"]
+  P2 --> F2["Failure exact banned words<br/>or phrases"]
+  P3 --> F3["Failure harmful text or a<br/>jailbreak on input"]
+  P4 --> F4["Failure PII in input or<br/>output that needs redact<br/>or block"]
+  P5 --> F5["Failure answer not<br/>supported by the source or<br/>not relevant"]
+  P6 --> F6["Failure response breaks<br/>formal policy rules"]
+  P3 --> N3["The prompt attack filter<br/>runs on input"]
+  P6 --> N6["Detect mode only. English<br/>only. No streaming. No<br/>prompt injection detection"]
+  G --> DR["A draft is editable and a<br/>version is frozen for<br/>production"]
+</div>
+<p class="caption">Figure: six policies mapped to the failure each one stops. Input and output checks are separate switches.</p>
+<p class="src">Source: repo guide, Part 4 section 3.1 one guardrail, six policies. Part 4 visual unit 34. Part 8D red-teaming unit for the Automated Reasoning limits.</p>
+<p class="rule">Decision rule: pick the policy for the failure that the scenario names.</p>
+<p class="trap">Trap: a word list cannot stop every phrasing of a subject. A denied topic is not a prompt attack detector. Grounding checks test support, not harm.</p>
+<p class="tip">Exam tip on wording: detect mode reports a verdict and does not refuse. A blocked message needs the Block action.</p>
+
+<h2>7. SageMaker AI endpoint choice</h2>
+<p class="fact">SageMaker AI hosts a model that the team owns. Bedrock hosts the managed foundation models.</p>
+<div class="mermaid">
+flowchart LR
+  M["Model to host<br/>in SageMaker<br/>AI"] --> T["Traffic<br/>pattern"]
+  T --> RT["Steady traffic<br/>that needs low<br/>latency"]
+  T --> SL["Intermittent<br/>traffic"]
+  T --> LJ["Long job up to<br/>one hour"]
+  T --> OB["Offline bulk<br/>work that can<br/>wait"]
+  RT --> RE["Real-time<br/>endpoint with<br/>autoscaling<br/>and blue-green<br/>or rolling<br/>deploys"]
+  SL --> SE["Serverless<br/>endpoint<br/>scales to zero<br/>with a cold<br/>start on the<br/>first request"]
+  SE --> MEM["Memory 1 GB to<br/>6 GB and<br/>Provisioned<br/>Concurrency<br/>for<br/>predictable<br/>bursts"]
+  LJ --> AE["Asynchronous<br/>endpoint<br/>queues<br/>requests with<br/>payload and<br/>result in S3"]
+  OB --> BI["Bedrock batch<br/>inference for<br/>Bedrock models"]
+  BI --> SB["SageMaker AI<br/>batch job Not<br/>in source"]
+  M --> REG["Model Registry<br/>groups<br/>versions with<br/>an approval<br/>status"]
+  REG --> APR["Approve before<br/>deploy and<br/>roll back to<br/>an earlier<br/>approved<br/>version"]
+  M --> MON["Model Monitor<br/>watches drift<br/>on structured<br/>features"]
+  MON --> MX["Model Monitor<br/>is no longer<br/>open to new<br/>customers"]
+</div>
+<p class="caption">Figure: endpoint choice for a model that the team owns.</p>
+<p class="src">Source: repo guide, Part 1C SageMaker AI hosting, registry, and monitoring. Part 3 section 2.2 SageMaker endpoints.</p>
+<p class="src">Not in source: a batch job type for SageMaker AI endpoints. The study guide names batch inference for Bedrock only.</p>
+<p class="rule">Decision rule: real-time for steady traffic. Serverless for intermittent traffic. Asynchronous for long jobs.</p>
+<p class="trap">Trap: a real-time endpoint is the wrong pick for a job that runs 45 minutes. Use asynchronous inference.</p>
+<p class="tip">Exam tip on wording: the first request after idle time can have a cold start on a serverless endpoint.</p>
+
+<h2>8. Native pairings</h2>
+<p class="fact">Each AWS service has a limit or a rule. The paired service covers the part that the first service cannot.</p>
+
+<h3>8A. Lambda limit and the waiting workflow</h3>
+<div class="mermaid">
+flowchart TD
+  L["Lambda standard<br/>function runs at<br/>most 15 minutes<br/>per invocation"] --> DF["Does the work fit<br/>in one short step"]
+  DF -->|Yes| Y["Keep each Lambda<br/>step short"]
+  DF -->|No| N["Move the flow to<br/>Step Functions<br/>Standard"]
+  N --> W["Standard keeps<br/>state for waits up<br/>to one year"]
+  W --> CB["Callback task<br/>token pauses until<br/>a person or system<br/>responds"]
+  L --> WB["A Lambda that<br/>waits bills for<br/>the full wait"]
+  L --> MI["Managed Instances<br/>async up to 90<br/>minutes not for<br/>standard functions"]
+</div>
+<p class="caption">Figure: the Lambda limit and the workflow that waits.</p>
+<p class="src">Source: repo guide, Part 3 section 2.2 Lambda limits and long work. Part 1E visual unit 10. Part 7 traps.</p>
+<p class="rule">Decision rule: a wait for a person moves to Step Functions Standard. Lambda does not hold the wait.</p>
+<p class="trap">Trap: raising the Lambda timeout past 900 seconds is wrong. 900 seconds is the Lambda maximum.</p>
+
+<h3>8B. API Gateway timeout and the two paths around it</h3>
+<div class="mermaid">
+flowchart TD
+  A["Client calls a<br/>REST API"] --> RI["REST<br/>integration<br/>default<br/>timeout 29<br/>seconds Not in<br/>source on the<br/>quotas page"]
+  RI --> TO["A model call<br/>longer than<br/>the default<br/>loses its<br/>connection"]
+  TO --> FX["Raising the<br/>Lambda timeout<br/>does not<br/>change the<br/>gateway limit"]
+  A --> ST["Stream tokens<br/>over a<br/>WebSocket API<br/>or server-sent<br/>events"]
+  A --> AJ["Asynchronous<br/>job returns a<br/>job ID"]
+  AJ --> PL["Client polls<br/>or receives<br/>the result<br/>later"]
+  ST --> NT["Streaming<br/>improves<br/>perceived<br/>speed. It does<br/>not change the<br/>gateway limit"]
+</div>
+<p class="caption">Figure: the gateway limit and the two paths that avoid it.</p>
+<p class="src">Source: repo guide, Part 1E visual unit 11. Part 3 sections 2.2 and 2.4. Part 9 open checks.</p>
+<p class="src">Not in source on the quotas page: the 29 second REST default. The study guide lists it as an open check.</p>
+<p class="rule">Decision rule: a call that can run past the gateway limit uses a stream or an asynchronous job.</p>
+<p class="trap">Trap: streaming does not extend a REST timeout. A 90 second model call fails at the gateway.</p>
+
+<h3>8C. Step Functions wait, retry, and catch</h3>
+<div class="mermaid">
+flowchart TD
+  AG["Agent drafts a<br/>change"] --> WT["Step Functions<br/>waits with a<br/>task token"]
+  WT --> HM["Human approves<br/>or the timeout<br/>fires"]
+  HM --> OK["Approved path<br/>continues"]
+  HM --> TM["Timeout path"]
+  WT --> ST["Standard runs<br/>up to one year<br/>with history<br/>kept up to 90<br/>days"]
+  WT --> EX["Express does<br/>not support<br/>the callback<br/>pattern"]
+  WT --> TO["A Task state<br/>reports<br/>States.Timeout<br/>past<br/>TimeoutSeconds"]
+  TO --> RY["Retry defaults<br/>interval 1<br/>second max<br/>attempts 3<br/>backoff 2.0"]
+  RY --> CT["Catch sends<br/>the error to a<br/>Next state"]
+  CT --> RT["States.Runtime<br/>is not<br/>retriable and<br/>States.ALL<br/>does not catch<br/>it"]
+</div>
+<p class="caption">Figure: a durable wait with the retry and catch rules.</p>
+<p class="src">Source: repo guide, Part 3 section 2.2 human approval with a task token. Part 8A6 Step Functions timeouts, retries, and catchers unit.</p>
+<p class="rule">Decision rule: use Standard for waits in hours or days. Express does not support the callback pattern.</p>
+<p class="trap">Trap: a catch on States.ALL does not handle States.Runtime. Fix the input so the runtime error does not occur.</p>
+
+<h3>8D. SQS for asynchronous work and dead-letter queues</h3>
+<div class="mermaid">
+flowchart TD
+  W["Asynchronous work<br/>that can finish<br/>later"] --> Q["SQS queue holds<br/>the message"]
+  Q --> C["Consumer receives<br/>the message"]
+  C --> OK["Consumer deletes<br/>the message when<br/>the work is done"]
+  C --> F["Consumer fails and<br/>does not delete<br/>the message"]
+  F --> MR["Redrive policy<br/>maxReceiveCount is<br/>reached"]
+  MR --> DLQ["Dead-letter queue<br/>in the same<br/>account and Region"]
+  DLQ --> IN["Inspect the cause.<br/>The queue does not<br/>fix code"]
+  DLQ --> RD["Redrive moves<br/>messages back to<br/>the source queue"]
+  DLQ --> RET["DLQ retention<br/>longer than the<br/>source retention"]
+</div>
+<p class="caption">Figure: a message that fails repeatedly leaves the main queue.</p>
+<p class="src">Source: repo guide, Part 8A4 dead-letter queue unit. Part 3 section 2.4 call models reliably.</p>
+<p class="rule">Decision rule: use SQS for asynchronous work that can finish later. Use Bedrock APIs for synchronous calls.</p>
+<p class="trap">Trap: a dead-letter queue does not fix failing code. It holds the failed messages so you can find the cause.</p>
+
+<h3>8E. RDS and Aurora with pgvector</h3>
+<div class="mermaid">
+flowchart LR
+  R["Relational<br/>database<br/>already in the<br/>team stack"] --> AU["Aurora with<br/>pgvector gives<br/>vector search<br/>in that<br/>database"]
+  R --> RD["RDS with<br/>pgvector Not<br/>in source for<br/>this build"]
+  AU --> KB["Knowledge<br/>Bases lists<br/>Aurora as a<br/>vector store<br/>choice"]
+  AU --> FI["Frequent<br/>interactive<br/>search fits<br/>OpenSearch<br/>Serverless or<br/>Aurora"]
+  RD --> CF["Confirm RDS<br/>support on the<br/>live console<br/>before use"]
+  R --> XX["ElastiCache is<br/>not a durable<br/>store of<br/>record"]
+</div>
+<p class="caption">Figure: where pgvector fits. The study guide names Aurora only.</p>
+<p class="src">Source: repo guide, Part 2 section 1.4 vector stores. Part 1A component table. Part 2 visual unit 24.</p>
+<p class="src">Not in source: RDS with pgvector. The study guide does not name RDS.</p>
+<p class="rule">Decision rule: use Aurora with pgvector when the team already runs that relational database.</p>
+<p class="trap">Trap: ElastiCache is not a durable store of record. It is durable only on node-based Valkey clusters with durability enabled.</p>
+
+<h3>8F. DynamoDB session memory and customer memory</h3>
+<div class="mermaid">
+flowchart TD
+  AS["Agent session<br/>expires with a TTL<br/>of 60 to 5400<br/>seconds"] --> NM["Customer memory<br/>must outlive the<br/>session"]
+  NM --> DB["DynamoDB table<br/>with customer or<br/>session ID as the<br/>key"]
+  DB --> TL["Native TTL removes<br/>old records"]
+  DB --> LK["Single-digit<br/>millisecond lookup<br/>by key"]
+  DB --> EN["Data is encrypted<br/>at rest"]
+  LK --> NS["Next session reads<br/>the memory by the<br/>same key"]
+  AS --> TR["The agent session<br/>is not the memory<br/>store"]
+</div>
+<p class="caption">Figure: session memory and customer memory are two different stores.</p>
+<p class="src">Source: repo guide, Part 3 section 2.1 session memory and customer memory. Part 3 visual unit 49.</p>
+<p class="rule">Decision rule: memory that lasts weeks goes to a table with a key and a TTL.</p>
+<p class="trap">Trap: the agent session expires. It is not a memory store.</p>
+
+<h3>8G. S3 versioning</h3>
+<div class="mermaid">
+flowchart TD
+  R["S3 versioning<br/>rules"] --> OW["Overwrite in a<br/>versioning<br/>enabled bucket"]
+  R --> DL["Delete without<br/>a version ID"]
+  R --> VD["Delete with a<br/>version ID"]
+  R --> EN["Off by default<br/>and once<br/>enabled the<br/>bucket can<br/>only be<br/>suspended"]
+  OW --> NV["A new version<br/>is created and<br/>the previous<br/>version stays"]
+  NV --> BL["Each stored<br/>version is<br/>billed"]
+  BL --> LC["A lifecycle<br/>rule expires<br/>noncurrent<br/>versions after<br/>a set age"]
+  DL --> DM["A delete<br/>marker is<br/>added and the<br/>data stays"]
+  DM --> GT["GET on a<br/>delete marker<br/>returns not<br/>found"]
+  VD --> PD["That version<br/>is permanently<br/>deleted"]
+</div>
+<p class="caption">Figure: versioning keeps every version of a draft.</p>
+<p class="src">Source: repo guide, Part 8A5 S3 versioning unit. Part 8A7 S3 versioning images.</p>
+<p class="rule">Decision rule: use versioning for draft history. Add a lifecycle rule to bound the cost.</p>
+<p class="trap">Trap: versioning is not a live editing tool. For real-time editing, use AppSync with DynamoDB.</p>
+
+<h3>8H. S3 Object Lock</h3>
+<div class="mermaid">
+flowchart TD
+  OL["Object Lock<br/>gives write<br/>once read many<br/>retention"] --> RU["Retain until<br/>date comes<br/>from the<br/>duration"]
+  RU --> SH["A 2 year<br/>duration sets<br/>2029-01-01 and<br/>a shorter<br/>duration does<br/>not reduce it"]
+  OL --> HO["A hold on<br/>keeps the<br/>retain until<br/>date dynamic"]
+  HO --> HR["A hold release<br/>sets the date<br/>to release<br/>time plus<br/>duration"]
+  HR --> DE["After that<br/>date the<br/>object is<br/>deletable"]
+  OL --> MIN["The later of<br/>the computed<br/>date and the<br/>minimum retain<br/>until date<br/>applies"]
+  OL --> LE["Lifecycle<br/>expiration<br/>deletes<br/>objects at the<br/>end of their<br/>lifetime"]
+</div>
+<p class="caption">Figure: Object Lock retention rules from the official timeline images.</p>
+<p class="src">Source: repo guide, Part 8A7 S3 Object Lock images. Part 4 section 3.2 logs that hold prompts.</p>
+<p class="rule">Decision rule: use Object Lock for write once retention. Use lifecycle expiration for deletion at the end of life.</p>
+<p class="trap">Trap: a shorter duration does not shorten the retain until date. S3 does not apply the earlier date.</p>
+
+<h2>9. Limits and numbers</h2>
+<p class="fact">Each number below comes from the repo guide. A grey source line names the section for each number.</p>
+<p class="rule">Decision rule: use the number from the official page. Use an illustrative value only as a sizing example.</p>
+<p class="trap">Trap: an illustrative price or an example figure is not a service limit. Check the live quota page.</p>
+
+<h3>9A. Timeouts</h3>
+<div class="mermaid">
+flowchart LR
+  TM["Timeouts"] --> L1["Lambda standard function<br/>maximum 15 minutes or 900<br/>seconds"]
+  TM --> L2["Lambda timeout default 3<br/>seconds with a range of 1<br/>to 900 seconds"]
+  TM --> L3["Lambda Managed Instances<br/>async up to 90 minutes"]
+  TM --> A1["API Gateway REST default<br/>29 seconds"]
+  TM --> S1["Step Functions Standard<br/>runs up to one year"]
+  TM --> S2["Step Functions Standard<br/>keeps history up to 90<br/>days"]
+  TM --> A2["Asynchronous endpoint<br/>processing up to one hour"]
+  TM --> N1["NAT gateway interface<br/>endpoint and NLB drop idle<br/>TCP after 350 seconds"]
+  TM --> SP["Spot interruption notice<br/>of two minutes"]
+</div>
+<p class="caption">Figure: timeout limits. Each number has its own source line below.</p>
+<p class="src">Source: repo guide, Part 3 section 2.2 Lambda limits and long work. Standard functions run up to 15 minutes. Also Part 1A component table.</p>
+<p class="src">Source: repo guide, Part 8B Set the Lambda timeout. The default is 3 seconds and the range is 1 to 900 seconds.</p>
+<p class="src">Source: repo guide, Part 3 section 2.2 Lambda limits and long work. The 90 minute case does not apply to standard functions.</p>
+<p class="src">Source: repo guide, Part 3 section 2.2 and Part 9 open checks. Not in source on the quotas page.</p>
+<p class="src">Source: repo guide, Part 1A component table, Step Functions row.</p>
+<p class="src">Source: repo guide, Part 3 section 2.2 human approval with a task token.</p>
+<p class="src">Source: repo guide, Part 1C SageMaker AI asynchronous endpoints.</p>
+<p class="src">Source: repo guide, Part 8A3 section on connection timeouts.</p>
+<p class="src">Source: repo guide, Part 8A5 compute pricing unit on Spot instances.</p>
+
+<h3>9B. TTLs and durations</h3>
+<div class="mermaid">
+flowchart LR
+  TT["TTLs and durations"] --> PC["Prompt cache default TTL 5<br/>minutes and each hit<br/>resets it"]
+  TT --> PH["Prompt cache one hour TTL<br/>with the ttl field set to<br/>1h on supported models"]
+  TT --> AT["Agent session TTL 60 to<br/>5400 seconds"]
+  TT --> UC["Presigned URL from the<br/>console 1 minute to 12<br/>hours"]
+  TT --> UA["Presigned URL from the CLI<br/>or SDK up to 7 days"]
+  TT --> PT["Provisioned Throughput<br/>commitment none 1 month or<br/>6 months"]
+  TT --> GL["S3 Glacier Flexible<br/>Retrieval minimum storage<br/>90 days"]
+  TT --> RB["Retry example waits 1<br/>second then 4 seconds with<br/>jitter"]
+</div>
+<p class="caption">Figure: TTLs, commitment terms, and retry timing.</p>
+<p class="src">Source: repo guide, Part 1E visual unit 4. Part 5 section 4.1 prompt caching.</p>
+<p class="src">Source: repo guide, Part 8A5 prompt caching unit, one hour TTL on supported models.</p>
+<p class="src">Source: repo guide, Part 3 section 2.1 session memory and customer memory.</p>
+<p class="src">Source: repo guide, Part 8A5 storage unit on presigned URLs, console route.</p>
+<p class="src">Source: repo guide, Part 8A5 storage unit on presigned URLs, CLI and SDK route.</p>
+<p class="src">Source: repo guide, Part 8C glossary and Part 8D decision ladders unit.</p>
+<p class="src">Source: repo guide, Part 8A5 storage unit on archives.</p>
+<p class="src">Source: repo guide, Part 1E visual unit 12. The wait values are illustrative in the figure.</p>
+
+<h3>9C. Sizes and dimensions</h3>
+<div class="mermaid">
+flowchart LR
+  SZ["Sizes and dimensions"] --> CO["Comprehend real-time<br/>single document up to 100<br/>KB"]
+  SZ --> CS["Comprehend sentiment and<br/>syntax 5 KB"]
+  SZ --> EV["Lambda environment<br/>variables 4 KB total"]
+  SZ --> SM["SageMaker AI serverless<br/>memory 1 GB to 6 GB"]
+  SZ --> GM["Glacier archived object<br/>adds 40 KB of metadata"]
+  SZ --> TD["Titan Text Embeddings v2<br/>dimensions 1024 default<br/>512 or 256"]
+  SZ --> OS["OpenSearch shard 10 to 30<br/>GiB for search latency"]
+  SZ --> OL["OpenSearch shard 30 to 50<br/>GiB for write heavy log<br/>analytics"]
+  SZ --> VQ["Float32 uses 4 bytes per<br/>dimension and binary uses<br/>1 bit"]
+  SZ --> VA["One 1536 dimension float32<br/>vector is 6144 bytes"]
+</div>
+<p class="caption">Figure: sizes and vector dimensions.</p>
+<p class="src">Source: repo guide, Part 1A component table, Amazon Comprehend row. Part 4 section 3.2.</p>
+<p class="src">Source: repo guide, Part 1A component table, Amazon Comprehend row.</p>
+<p class="src">Source: repo guide, Part 8A6 Lambda environment variables unit.</p>
+<p class="src">Source: repo guide, Part 1C SageMaker AI hosting.</p>
+<p class="src">Source: repo guide, Part 8A5 storage unit on archives.</p>
+<p class="src">Source: repo guide, Part 2 section 1.4 embeddings. Part 1B lesson 3.</p>
+<p class="src">Source: repo guide, Part 8A6 OpenSearch shard count unit.</p>
+<p class="src">Source: repo guide, Part 8A6 OpenSearch shard count unit.</p>
+<p class="src">Source: repo guide, Part 8D vector quantization unit. The bit counts come from an AWS blog, a secondary source.</p>
+<p class="src">Source: repo guide, Part 8D vector quantization unit. The 6144 bytes is design arithmetic in the study guide.</p>
+
+<h3>9D. Counts and cost figures</h3>
+<div class="mermaid">
+flowchart LR
+  CT["Counts and cost figures"] --> CK["Cache checkpoint needs 512<br/>to 4096 tokens before it<br/>depending on model"]
+  CT --> CL["Claude models allow up to<br/>four cache checkpoints per<br/>request"]
+  CT --> RM["Request metadata attaches<br/>up to 16 key value pairs"]
+  CT --> SH["OpenSearch default of 5<br/>primary shards with 1<br/>replica each"]
+  CT --> SJ["At most 25 shards for each<br/>GiB of Java heap on a node"]
+  CT --> GB["Global profile about 10<br/>percent savings"]
+  CT --> PR["Illustrative price 3 USD<br/>per million input and 15<br/>USD per million output"]
+  CT --> EX["4000 input and 1000 output<br/>tokens cost 0.027 USD at<br/>those prices"]
+  CT --> KB["Default chunking makes<br/>chunks of about 300 tokens"]
+  CT --> RR["Retrieval example 50<br/>keyword and 50 vector<br/>merged to 100 then top 5"]
+  CT --> CN["Canary example starts at a<br/>small share such as 10<br/>percent"]
+</div>
+<p class="caption">Figure: counts and cost figures. Prices are illustrative, not current AWS prices.</p>
+<p class="src">Source: repo guide, Part 5 section 4.1 prompt caching. Part 8A5 prompt caching unit.</p>
+<p class="src">Source: repo guide, Part 8A5 prompt caching unit.</p>
+<p class="src">Source: repo guide, Part 8A5 cost attribution unit.</p>
+<p class="src">Source: repo guide, Part 8A6 OpenSearch shard count unit.</p>
+<p class="src">Source: repo guide, Part 8A6 OpenSearch shard count unit.</p>
+<p class="src">Source: repo guide, Part 8A4 cross-Region routing unit.</p>
+<p class="src">Source: repo guide, Part 5 section 4.1 token economics. The study guide says these prices are not current AWS prices.</p>
+<p class="src">Source: repo guide, Part 5 section 4.1 token economics.</p>
+<p class="src">Source: repo guide, Part 8A5 knowledge base freshness unit.</p>
+<p class="src">Source: repo guide, Part 1E visual unit 7. The values are illustrative in the figure.</p>
+<p class="src">Source: repo guide, Part 1E visual unit 14. The 10 percent share is an example.</p>
+
+<h3>9E. Error codes</h3>
+<div class="mermaid">
+flowchart LR
+  EC["Error codes and the first<br/>fix"] --> E4["400 ValidationError fix<br/>the request and do not<br/>retry"]
+  EC --> E5["403 AccessDeniedException<br/>missing or expired IAM<br/>permissions"]
+  EC --> E6["404 ResourceNotFound wrong<br/>model ID or resource name"]
+  EC --> E7["429 ThrottlingException<br/>account quota exceeded"]
+  EC --> E8["503 ServiceUnavailable<br/>capacity error"]
+  EC --> E9["529 overloaded_error<br/>capacity error"]
+  E7 --> F7["Backoff with jitter then a<br/>quota increase or<br/>Provisioned Throughput"]
+  E8 --> F8["Backoff with jitter and<br/>consider cross-Region<br/>inference"]
+  E9 --> F9["Same handling as 503"]
+  EC --> MT["Watch the<br/>InvocationThrottles metric<br/>in CloudWatch"]
+</div>
+<p class="caption">Figure: error codes and the fix for each one.</p>
+<p class="src">Source: repo guide, Part 8A3 error codes unit.</p>
+<p class="src">Source: repo guide, Part 8A3 error codes unit and Part 8A5 knowledge base freshness unit.</p>
+<p class="src">Source: repo guide, Part 8A3 error codes unit and Part 8A5 knowledge base freshness unit.</p>
+<p class="src">Source: repo guide, Part 8A3 error codes unit.</p>
+<p class="src">Source: repo guide, Part 8A3 error codes unit.</p>
+<p class="src">Source: repo guide, Part 8A3 error codes unit.</p>
+<p class="src">Source: repo guide, Part 5 section 4.1 quotas, retries, and pre-call checks.</p>
+
+<h2>10. Monitoring and cost levers</h2>
+<p class="fact">Each waste has one lever. Each signal answers one kind of problem.</p>
+
+<h3>10A. Cost levers by observed waste</h3>
+<div class="mermaid">
+flowchart LR
+  W["Observed waste"] --> W1["Most requests are simple"]
+  W --> W2["The same long prefix<br/>repeats"]
+  W --> W3["Many paraphrases of one<br/>request"]
+  W --> W4["Steady baseline load with<br/>a latency target"]
+  W --> W5["Short spikes above the<br/>baseline"]
+  W --> W6["Work can wait for hours"]
+  W --> W7["Long replies"]
+  W --> W8["Long prompts or many<br/>retrieved chunks"]
+  W1 --> L1["Tiered routing or a<br/>cascade to a smaller model"]
+  W2 --> L2["Prompt caching with a<br/>cache checkpoint and<br/>static content first"]
+  W3 --> L3["Semantic cache returns the<br/>stored answer before the<br/>model call"]
+  W4 --> L4["Provisioned Throughput for<br/>the baseline"]
+  W5 --> L5["On-demand for the spikes"]
+  W6 --> L6["Batch inference"]
+  W7 --> L7["Set a maximum output<br/>length"]
+  W8 --> L8["Rerank then send fewer<br/>chunks"]
+</div>
+<p class="caption">Figure: each waste maps to one lever.</p>
+<p class="src">Source: repo guide, Part 5 section 4.1 cost levers. Part 5 visual unit 40.</p>
+<p class="rule">Decision rule: match each waste to one lever. Buying more capacity does not fix a cost that comes from long prompts.</p>
+<p class="trap">Trap: a semantic cache saves little for personal or unique requests. Those requests rarely hit the cache.</p>
+<p class="tip">Exam tip on wording: prompt caching reuses an exact prefix. A semantic cache matches the meaning of a request.</p>
+
+<h3>10B. Monitoring: one signal for each kind of problem</h3>
+<div class="mermaid">
+flowchart LR
+  S1["Slow or expensive"] --> M1["CloudWatch metrics<br/>InputTokenCount<br/>OutputTokenCount<br/>Invocations"]
+  M1 --> AL["Anomaly alarm<br/>catches spikes<br/>that a fixed<br/>threshold misses"]
+  M1 --> CE["Cost Anomaly<br/>Detection for<br/>spend"]
+  S2["Which step is slow"] --> XR["AWS X-Ray traces<br/>requests and<br/>downstream calls"]
+  S3["What did the model<br/>receive"] --> IL["Invocation logs<br/>searched with Logs<br/>Insights or Athena"]
+  S4["Is the answer good"] --> JG["Judge or golden<br/>set run over time"]
+  S5["Who called which<br/>API"] --> CT["CloudTrail audit<br/>record that does<br/>not show row<br/>content"]
+  S6["Did structured<br/>inputs drift"] --> MM["Model Monitor<br/>drift on<br/>structured<br/>features not free<br/>text"]
+</div>
+<p class="caption">Figure: one signal for each kind of problem.</p>
+<p class="src">Source: repo guide, Part 5 section 4.3 monitoring signals. Part 1E visual unit 15. Part 8A5 invocation logs unit.</p>
+<p class="rule">Decision rule: find the slow step with X-Ray. Then read the exact prompts in the invocation logs.</p>
+<p class="trap">Trap: Model Monitor does not score free-text answer quality. Use a judge or a golden set for that.</p>
+<p class="tip">Exam tip on wording: CloudTrail is for audit. It does not debug answers.</p>
+
+<h3>10C. Cost attribution</h3>
+<div class="mermaid">
+flowchart TD
+  AT["Attribute spend to<br/>a feature"] --> RQ["Request metadata<br/>with up to 16 key<br/>value pairs"]
+  RQ --> LG["The pairs appear<br/>in model<br/>invocation logs"]
+  RQ --> NB["Not a cost<br/>allocation tag and<br/>not in Cost<br/>Explorer"]
+  AT --> IP["Application<br/>inference profile<br/>for each feature"]
+  IP --> CA["Cost allocation<br/>tags reach Cost<br/>Explorer and the<br/>Cost and Usage<br/>Report"]
+</div>
+<p class="caption">Figure: request metadata and inference profiles reach different records.</p>
+<p class="src">Source: repo guide, Part 8A5 cost attribution unit.</p>
+<p class="rule">Decision rule: use an application inference profile when finance needs the bill split by feature.</p>
+<p class="trap">Trap: request metadata is not a cost allocation tag. It does not reach the bill.</p>
+
+<h2>11. Release gates and troubleshooting</h2>
+<p class="rule">Decision rule: a change to a prompt, model, chunking setting, or guardrail passes the same gates.</p>
+
+<h3>11A. Release gates with canary and rollback</h3>
+<div class="mermaid">
+flowchart TD
+  CH["Change to a prompt<br/>model chunking<br/>guardrail or<br/>re-sync"] --> GS["Run the golden set"]
+  GS --> QG["Quality gate on<br/>metrics and judge<br/>scores"]
+  QG -->|Fails| BL["Block the release"]
+  QG -->|Passes| CA["Canary to a small<br/>share such as 10<br/>percent"]
+  CA -->|Alarm fires| RB["Roll back to the<br/>last approved<br/>version"]
+  CA -->|Alarms stay<br/>quiet| FU["Move to full<br/>traffic"]
+  BL --> FX["Fix the change and<br/>run the gates<br/>again"]
+</div>
+<p class="caption">Figure: release gates with a canary and a rollback.</p>
+<p class="src">Source: repo guide, Part 6 section 5.1 golden datasets, regression, and canaries. Part 1E visual unit 14. Part 6 visual unit 48.</p>
+<p class="trap">Trap: a re-sync is a change. It needs the same gate as a prompt edit.</p>
+
+<h3>11B. Troubleshooting by symptom</h3>
+<div class="mermaid">
+flowchart LR
+  SY["Symptom"] --> S1["Output cut off<br/>mid-sentence"]
+  SY --> S2["Answer ignores the<br/>documents"]
+  SY --> S3["Output changes between<br/>runs"]
+  SY --> S4["Throttling after buying<br/>capacity"]
+  SY --> S5["Agent runs old behavior"]
+  SY --> S6["Works on Titan but fails<br/>on Claude"]
+  SY --> S7["AccessDeniedException in<br/>one Region only"]
+  SY --> S8["Quality dropped after a<br/>re-sync"]
+  S1 --> C1["Check max tokens and the<br/>token count against the<br/>limit"]
+  S2 --> C2["Check the retrieved chunks<br/>before the model"]
+  S3 --> C3["Check temperature Top P<br/>and the prompt version"]
+  S4 --> C4["Check the provisioned<br/>model ARN in the call"]
+  S5 --> C5["Prepare the agent and<br/>check the alias version"]
+  S6 --> C6["Check the InvokeModel body<br/>for anthropic_version and<br/>max_tokens"]
+  S7 --> C7["Check IAM for that call<br/>and the resource ARNs for<br/>that Region"]
+  S8 --> C8["Check the changed chunking<br/>or embedding model then<br/>the golden set"]
+</div>
+<p class="caption">Figure: the first check for each symptom.</p>
+<p class="src">Source: repo guide, Part 6 section 5.2 troubleshooting by symptom. Part 1E visual unit 1 for the InvokeModel body.</p>
+<p class="rule">Decision rule: start the debug at the step that failed. For a RAG fault, check the retrieved chunks first.</p>
+<p class="trap">Trap: temperature does not fix bad retrieval. A bigger model does not fix a slow search step.</p>
+
+<h2>12. Open checks before exam day</h2>
+<p class="rule">Decision rule: confirm each open check on the official page before you rely on the value.</p>
+<div class="mermaid">
+flowchart LR
+  OC["Open checks from Part 9"] --> O1["Confirm the API Gateway<br/>integration timeout of 29<br/>seconds on the official<br/>page"]
+  OC --> O2["Confirm the Knowledge Base<br/>web crawler end date"]
+  O2 --> OD["Part 2 gives September 30<br/>2026 and that date has<br/>already passed as of<br/>October 21 2026"]
+  OC --> O3["Confirm the batch discount<br/>on the Bedrock pricing<br/>page"]
+  OC --> O4["Resolved the Bedrock FAQ<br/>says inputs and outputs do<br/>not train Nova Titan or<br/>third-party models"]
+  OC --> GP["Gaps Not in source for<br/>this build"]
+  GP --> G1["SageMaker JumpStart Neo<br/>and Unified Studio"]
+  GP --> G2["AWS CodeDeploy Kiro and<br/>Amazon Managed Streaming<br/>for Apache Kafka"]
+  GP --> G3["CloudWatch Synthetics Auto<br/>Scaling for GenAI and Cost<br/>Explorer"]
+  GP --> G4["Lake Formation permission<br/>details IAM Access<br/>Analyzer and AWS WAF rules"]
+  GP --> G5["Red-team procedures and<br/>Model Evaluations job<br/>setup"]
+</div>
+<p class="caption">Figure: open checks from the gaps, limits, and checks part, with the gap list.</p>
+<p class="src">Source: repo guide, Part 9 Gaps, limits, and checks. Part 2 section 1.5 gives the web crawler date.</p>
+<p class="src">Not in source: the web crawler end date. Part 9 says the docs page did not show one.</p>
+<p class="src">Not in source for this build: the gap list above.</p>
+<p class="trap">Trap: the study guide gives two statuses for the web crawler date. Check the live Knowledge Base documentation.</p>
+<p class="tip">Exam tip on wording: the 29 second gateway value is not on the quotas page in this guide. Confirm it before you rely on it.</p>
+</main>
+<script type="module">
+  import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.esm.min.mjs";
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: "base",
+    themeVariables: {
+      background: "#000000",
+      mainBkg: "#000000",
+      primaryColor: "#000000",
+      primaryTextColor: "#f2f2f2",
+      primaryBorderColor: "#7db8ff",
+      secondaryColor: "#000000",
+      tertiaryColor: "#000000",
+      lineColor: "#d0d0d0",
+      textColor: "#f2f2f2",
+      edgeLabelBackground: "#000000",
+      clusterBkg: "#000000",
+      clusterBorder: "#7db8ff",
+      titleColor: "#ffffff",
+      fontFamily: "Helvetica, Arial, sans-serif",
+      fontSize: "22px"
+    },
+    flowchart: { htmlLabels: true, curve: "basis", useMaxWidth: false, padding: 16, nodeSpacing: 40, rankSpacing: 56 }
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,712 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>4. Agents, tools, and orchestration</title>
+<style>
+:root {
+  --bg: #000000;
+  --ink: #f2f2f2;
+  --fact: #7db8ff;
+  --rule: #6ee7a0;
+  --tip: #d8a6ff;
+  --trap: #ff8a8a;
+  --muted: #a8a8a8;
+  --line: #333333;
+}
+html, body { background: #000000; }
+body {
+  color: var(--ink);
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 19px;
+  line-height: 1.7;
+  margin: 0;
+  padding: 24px 20px 72px;
+}
+main { max-width: 780px; margin: 0 auto; }
+main p, main li { text-align: justify; }
+h1 { font-size: 32px; line-height: 1.3; margin: 0 0 12px; color: #ffffff; }
+h2 { font-size: 26px; line-height: 1.35; margin: 48px 0 14px; color: #ffffff; border-top: 1px solid var(--line); padding-top: 22px; }
+h3 { font-size: 21px; line-height: 1.4; margin: 32px 0 10px; color: #ffffff; }
+h4 { font-size: 19px; line-height: 1.4; margin: 24px 0 8px; color: #ffffff; }
+p { margin: 0 0 18px; }
+ul, ol { margin: 0 0 18px; padding-left: 26px; }
+li { margin-bottom: 10px; }
+.fact { color: var(--fact); }
+.rule { color: var(--rule); }
+.tip { color: var(--tip); }
+.trap { color: var(--trap); }
+.src { font-size: 16px; color: var(--muted); }
+.meta { font-size: 16px; color: var(--muted); margin-bottom: 24px; }
+.caption { font-size: 16px; color: var(--muted); margin: -8px 0 26px; text-align: left; }
+.legend p { margin-bottom: 6px; text-align: left; }
+.mermaid { margin: 14px 0 26px; font-size: 21px; text-align: left; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; }
+.mermaid svg { max-width: none; height: auto; }
+@media print {
+  .mermaid { overflow: visible; break-inside: avoid; }
+  .mermaid svg { max-width: 100% !important; height: auto !important; }
+  body { padding: 14mm 10mm; }
+  h1, h2, h3, h4 { break-after: avoid; }
+  p.caption, p.src { break-before: avoid; }
+}
+.markmap { position: relative; margin: 10px 0 28px; border-top: 1px solid #222; border-bottom: 1px solid #222; --markmap-text-color: #f2f2f2; --markmap-a-color: #7db8ff; color: #f2f2f2; }
+.markmap > svg { width: 100%; height: 560px; display: block; }
+.markmap foreignObject, .markmap .markmap-foreign { color: #f2f2f2; font-size: 17px; }
+nav.mod { font-size: 16px; color: #a8a8a8; margin: 0 0 18px; }
+nav.mod a { color: #7db8ff; }
+table { border-collapse: collapse; width: 100%; margin: 0 0 22px; font-size: 17px; }
+th, td { border: 1px solid #333; padding: 6px 8px; text-align: left; vertical-align: top; }
+th { color: #ffffff; }
+</style>
+</head>
+<body>
+<main>
+
+<nav class="mod"><a href="index.html">All modules</a> <a href="m3-rag-vectors.html">Previous</a> <a href="m5-model-access-cost.html">Next</a></nav>
+<h2>Module 4: Agents, tools, and orchestration</h2>
+<p>After this module, you can read a long agent or workflow question and find the one constraint that decides the design. You can separate three kinds of control: your code runs a tool, a managed agent loop picks tools for you, or a workflow you draw fixes the order of steps. You can also reject each wrong option with one reason, even when the option names a real AWS service.</p>
+
+<div class="markmap"><script type="text/template">
+# Agents, tools, and orchestration
+## Decide who controls the steps
+- Fixed order means workflow
+- Open-ended choice means agent
+- Ask who owns each decision
+## Converse tool use
+- Your code runs the tool
+- Good for small custom loops
+- Toolcall loop stays in service
+## Bedrock Agents Classic
+- Managed loop with action groups
+- Return control hands off tools
+- Aliases pin deployed versions
+## AgentCore
+- Any framework and any model
+- Runtime, Memory, Gateway, Identity
+- Evaluations score live sessions
+## Bedrock Flows
+- Visual prompt chains
+- Conditions route deterministically
+- Versions and aliases for release
+## Step Functions
+- Standard for long waits
+- Express for short high volume
+- Task tokens resume human approval
+## Lambda and messaging
+- Lambda stops at fifteen minutes
+- EventBridge routes events
+- SQS buffers and decouples
+## MCP
+- One protocol for many clients
+- Lambda for stateless servers
+- ECS for heavy servers
+## Multi-agent
+- Supervisor routes to collaborators
+- Agents as tools, one reply
+- Agent Squad routes across services
+</script></div>
+
+<h3>The deciding constraint</h3>
+<p>Start from the scenario and ask one question first: who decides the next step, the model or your code? The answer removes most of the options before any service name matters. A model that picks the next step needs an agent loop, guardrails on tool use, and a trace. Code that picks the next step needs a workflow, a flow, or a plain function.</p>
+<div class="mermaid">
+flowchart LR
+  A["Scenario needs<br/>a model and<br/>tools"] -->|your code<br/>picks the<br/>next step| B["Deterministic<br/>side"]
+  A -->|the model<br/>picks the<br/>next step| C["Agentic side"]
+  B -->|fixed order<br/>of steps| D["Bedrock Flows"]
+  B -->|long wait or<br/>human<br/>approval| E["Step Functions"]
+  B -->|one model<br/>call with a<br/>tool you run| F["Converse loop<br/>with tools you<br/>run"]
+  C -->|one managed<br/>agent in<br/>Bedrock| G["Bedrock Agents<br/>Classic"]
+  C -->|any<br/>framework or<br/>long<br/>sessions| H["AgentCore"]
+  C -->|several<br/>specialists<br/>under a<br/>supervisor| I["Multi-agent<br/>collaboration"]
+</div>
+<p class="caption">Figure: The first split is who picks the next step, then the wait and framework needs pick the service.</p>
+<p>Use these signal words to move down each branch. Phrases such as "in this exact order", "every time", and "for audit" point to a workflow. Phrases such as "decide which tool to use", "any framework", and "remember across visits" point to an agent. Phrases such as "wait for a person", "several days", and "approval link" point to a callback in Step Functions.</p>
+<p class="rule">Rule: If you can draw every step before the request arrives, do not choose an agent.</p>
+<p class="tip">Exam tip: Read the verb in the question. "Decide" and "choose" point to a model. "Run", "route", and "wait" usually point to a workflow or a function.</p>
+
+<h3>Converse tool use: your code runs the tool</h3>
+<p class="fact">The Converse API gives one request shape for models that support it. A request can include a tool configuration with tool definitions and a tool choice setting. When the model asks for a tool, the model reply contains the tool request, and your application runs the function and sends the result back in the next message.</p>
+<p>The loop belongs to your code in this pattern. Amazon Bedrock does not call your Lambda function for you. You decide how many turns the loop can take, how errors are retried, and where the state is saved. This control is the reason to choose it.</p>
+<p>Converse tool use fits a small custom loop that already lives in your service. It also fits a team that wants to keep one request format across models. Lambda, a container, or an AgentCore Runtime endpoint can host the loop. The model choice does not change the loop owner.</p>
+<p class="rule">Rule: Choose Converse tool use when your own code must own the tool loop, the retries, and the state.</p>
+<p class="trap">Trap: Choosing a Bedrock agent because the question mentions tools. Converse does not run tools for you, so the managed agent loop adds a service you do not need.</p>
+<p>Converse pairs with Lambda for the tool body, with Step Functions when the loop must survive long waits, and with guardrails on the request. Limits for the number of tools or turns are Not in source for this module.</p>
+<p class="src">Source: Sundog course extract, slide page 21 (Converse request fields including toolConfig) and slide page 20 (bedrock-runtime Converse). Converse request reference: https://docs.aws.amazon.com/bedrock/latest/userguide/agents-how-it-works.html was attempted and returned only a title, so no fact here comes from that page.</p>
+
+<h3>Bedrock Agents Classic: the managed agent loop</h3>
+<p class="fact">Amazon Bedrock Agents is a managed loop. The foundation model reads the user message, plans steps, picks an action, fills in its parameters, and writes the final answer. The agent calls action groups, and it can also search attached knowledge bases.</p>
+<p class="fact">AWS states that Amazon Bedrock Agents Classic is no longer open to new customers and is in maintenance mode. AWS points new builds to Amazon Bedrock AgentCore. Existing customers can keep using it as normal.</p>
+<p>The loop is managed, so you give up control of the steps the model takes. You control the instructions, the action definitions, the executor for each action, and the alias that clients call. The model still decides when to call each action. This is why the descriptions matter so much.</p>
+<p>The Sundog course describes the same idea in plain terms. The action group defines a tool, the prompt tells the model when to use it, and the description is used to pull the needed values from the user message. The course also says the model can ask the user for missing values before a call.</p>
+<p class="rule">Rule: For a new build, check AgentCore first. Keep Bedrock Agents Classic for existing agents that already run well.</p>
+<p class="trap">Trap: Treating the action description as optional text. The model uses it to choose the action, so a vague description causes wrong calls.</p>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/agents-action-create.html (maintenance and action group summary). Source: https://docs.aws.amazon.com/bedrock/latest/userguide/agents-multi-agent-collaboration.html (maintenance note). Source: Sundog course extract, slide pages 224 and 225.</p>
+
+<h3>Action groups: function details or an OpenAPI schema</h3>
+<p class="fact">An action group defines what the agent can do for the user. You define the parameters the agent must collect for each action. You also choose how the agent sends those values to the executor. The two common definitions are function details, which name each function and its parameters, and an OpenAPI schema, which describes API operations with paths and methods.</p>
+<p>Function details suit a few named actions that share one executor. An OpenAPI schema suits an API that already has a specification. The Sundog course says OpenAPI schemas can be uploaded to Amazon S3 or edited in the console. The schema tells the agent the operation names, parameter types, and required fields.</p>
+<div class="mermaid">
+flowchart TD
+  A["User message to<br/>agent"] -->|model plans| B["Agent picks action<br/>and fills<br/>parameters"]
+  B -->|values still<br/>missing| C["Agent asks the<br/>user"]
+  C --> B
+  B -->|executor is<br/>Lambda| D["Lambda runs<br/>business logic"]
+  B -->|executor is<br/>return of<br/>control| E["Your app receives<br/>invocation inputs"]
+  D --> F["Result returns to<br/>agent"]
+  E --> F
+  F --> G["Agent writes final<br/>answer"]
+</div>
+<p class="caption">Figure: The model plans and fills parameters, then the executor runs the action and the agent writes the reply.</p>
+<p class="rule">Rule: Use function details for a few named actions behind one executor. Use an OpenAPI schema when the API already has a spec.</p>
+<p class="trap">Trap: Assuming the model runs the action. The agent only chooses the action and the values, and the executor does the work.</p>
+<p class="fact">User confirmation is a per-action setting in an action group. It makes the agent ask the user before the action runs. I did not confirm the exact behavior of this setting in the pages fetched for this module, so verify it in the action group docs before you rely on it.</p>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/agents-action-create.html (action group purpose, elicited parameters). Source: https://docs.aws.amazon.com/bedrock/latest/userguide/agents-returncontrol.html (function details and OpenAPI examples). Source: Sundog course extract, slide pages 224 and 258.</p>
+
+<h3>Return of control: your app runs the tool</h3>
+<p class="fact">Return of control changes the executor from Lambda to your application. You set the custom control value RETURN_CONTROL in the action group executor. When the agent chooses that action, the InvokeAgent response carries the invocation inputs and an invocation ID instead of calling a function.</p>
+<p>Your application then runs the function, and it sends the result in the session state of another InvokeAgent request. The request must use the same invocation ID and action group that the response returned. The agent uses that result as context, and then writes the answer or chooses another action.</p>
+<div class="mermaid">
+flowchart TD
+  A["User asks agent"] -->|model plans| B["Agent picks action"]
+  B -->|RETURN_CONTROL<br/>executor| C["InvokeAgent returns<br/>invocation inputs"]
+  C -->|your app runs the<br/>function| D["Your code gets the result"]
+  D -->|same invocation ID<br/>and action group| E["Second InvokeAgent with<br/>results"]
+  E -->|model writes answer| F["Final response to user"]
+</div>
+<p class="caption">Figure: Return of control splits one tool call into two InvokeAgent requests with your code in the middle.</p>
+<p>The return of control pattern also applies to collaborator agents. When a collaborator returns control, the supervisor response names the collaborator, and the caller sends results back with the matching agent identifier. The Sundog course presents this as the way to keep tools inside your own environment while the model still plans.</p>
+<p class="rule">Rule: Choose return of control when tool execution must stay in your code or network, and the model must still plan the steps.</p>
+<p class="trap">Trap: Choosing return of control to make tools faster. It adds a round trip to your application, so it usually adds latency and code.</p>
+<p class="trap">Trap: Sending results with a new invocation ID. The agent matches the result to the pending call only with the ID and action group it returned.</p>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/agents-returncontrol.html (RETURN_CONTROL, invocationInputs, returnControlInvocationResults, collaborator examples).</p>
+
+<h3>Knowledge bases and agentic RAG</h3>
+<p class="fact">An agent can have knowledge bases attached. A prompt tells the model when to search each one, such as for questions about a named topic. The Sundog course calls this agentic RAG and says that retrieval is just another tool the agent can choose.</p>
+<p>The design choice is whether the model should decide to retrieve. A fixed pipeline that always retrieves first is simpler and easier to test. An agent that retrieves only when needed can answer a mixed set of questions with fewer searches. Choose by how predictable the question mix is.</p>
+<p class="rule">Rule: Attach a knowledge base to an agent when the model must decide when to search. Use a fixed retrieval step when every question needs it.</p>
+<p class="trap">Trap: Treating a knowledge base as a per-user memory. It holds the documents you load, so it does not record the preferences of one customer across visits.</p>
+<p class="src">Source: Sundog course extract, slide pages 219 to 222 (knowledge bases and agentic RAG). Source: Sundog course extract, slide page 234 (knowledge bases framed as a memory type).</p>
+
+<h3>Session state, memory, and what survives a session</h3>
+<p class="fact">Short-term memory holds the chat history and events of one session. Long-term memory keeps distilled knowledge from earlier conversations, such as a summary of a past visit or a stated preference. The Sundog course lists both types and says long-term data must be stored somewhere, such as a database.</p>
+<p>Session state fits the active thread. A troubleshooting thread, a booking in progress, or a set of pending values belongs there. Long-term memory fits facts that must return next month. The two must be kept apart, or old data floods the active context and the model starts to mix up users.</p>
+<p>Bedrock Agents has its own memory and session attribute features. I did not confirm their exact field names or retention rules in the pages fetched for this module, so those details are Not in source here. The design rule below holds for any memory store.</p>
+<p class="rule">Rule: Keep active turn context in session state. Keep facts that must survive later sessions in a memory store scoped to the user.</p>
+<p class="trap">Trap: Putting the full transcript in every prompt to get memory. Cost and context length grow each turn, and the design has no retention rule.</p>
+<p class="src">Source: Sundog course extract, slide page 234 (short-term and long-term memory) and slide page 243 (AgentCore short-term Session and Events, long-term Memory Records and strategies). Source: https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/what-is-bedrock-agentcore.html (Memory component).</p>
+
+<h3>Versions, aliases, and deployment</h3>
+<p class="fact">An alias for an agent is a deployed snapshot that clients call. The Sundog course says an alias creates the deployed snapshot, and the application calls InvokeAgent with the alias ID and an agents runtime endpoint. The course also says on-demand throughput uses account quotas, while provisioned throughput buys a fixed rate for the agent. Exact quota numbers are Not in source.</p>
+<p>Flows follow the same pattern. A working draft changes with each edit, a version is an immutable snapshot, and an alias points to the version that applications call. The Flows overview says you can change the alias routing to revert to an older version or move to a newer one.</p>
+<p class="rule">Rule: Point clients to an alias. Move the alias to roll back, and never point production clients to the draft.</p>
+<p class="trap">Trap: Treating the draft as production. Each edit changes the draft, so a client on the draft sees untested behavior.</p>
+<p class="src">Source: Sundog course extract, slide page 225 (alias, on-demand and provisioned throughput, InvokeAgent). Source: https://docs.aws.amazon.com/bedrock/latest/userguide/flows.html (working draft, versions, alias, InvokeFlow).</p>
+
+<h3>Trace: the path of one agent session</h3>
+<p class="fact">Each agent response can include a trace. The trace shows the reasoning path for that invocation, including which knowledge base was hit, which action group was called, and any errors. The Sundog course lists trace types for preprocessing, orchestration, postprocessing, custom orchestration, routing classification, failure, and guardrail events.</p>
+<p>You turn trace on by setting the trace flag in the InvokeAgent request. The return of control examples in the AWS docs set this flag in the same request. Store the trace with the final answer if reviewers must later see how the answer was made.</p>
+<p class="tip">Exam tip: Words such as "which knowledge base was used" or "why did it choose that tool" point to agent trace. Words such as "who called the API" point to an audit log.</p>
+<p class="trap">Trap: Choosing an API audit log to debug a wrong tool choice. An audit log shows that a call happened, not the path the agent took through the task.</p>
+<p class="src">Source: Sundog course extract, slide page 419 (Bedrock Agents trace types and trace content). Source: https://docs.aws.amazon.com/bedrock/latest/userguide/agents-returncontrol.html (enableTrace in InvokeAgent requests).</p>
+
+<h3>Multi-agent collaboration: a supervisor and collaborators</h3>
+<p class="fact">In Bedrock Agents, you designate one agent as the supervisor and attach collaborator agents to it. The supervisor reads the user request, plans across the collaborators, and routes each task to the right specialist. Each collaborator can have its own instructions, tools, knowledge bases, and guardrails.</p>
+<p class="fact">You must save the supervisor before you enable collaboration. You can add collaborators later. The supervisor uses the natural language description of each collaborator to route work, so the roles must not overlap. The number of collaborators allowed is Not in source for this module.</p>
+<p>The Sundog course frames a supervisor, worker, and synthesizer pattern. It also warns that complex logic in one prompt becomes hard to maintain, and that simple sequences should stay as deterministic workflows. A supervisor helps when specialists need different tools and a shared conversation.</p>
+<p class="rule">Rule: Use supervisor collaboration when several specialists must serve one conversation and one front door.</p>
+<p class="trap">Trap: Giving one agent every tool because the team wants fewer agents. The Sundog course says a single agent with too many tools chooses poorly, so specialists with fewer tools fit better.</p>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/agents-multi-agent-collaboration.html (supervisor and collaborator roles, saving before collaboration, routing). Source: https://docs.aws.amazon.com/bedrock/latest/userguide/agents-returncontrol.html (collaborator return of control). Source: Sundog course extract, slide pages 228 to 229.</p>
+
+<h3>AgentCore: the platform for any framework</h3>
+<p class="fact">Amazon Bedrock AgentCore is a platform for building, deploying, and operating agents with any framework and any foundation model. Its services can be used together or one at a time. AWS lists Runtime, Memory, Gateway, Identity, Code Interpreter, Browser, Observability, Policy, Evaluations, and other services. Pricing is consumption based with no minimum fee in the overview.</p>
+<div class="mermaid">
+flowchart LR
+  A["AgentCore platform"] -->|run agent code| B["Runtime"]
+  A -->|remember<br/>across turns| C["Memory"]
+  A -->|expose tools<br/>as MCP| D["Gateway"]
+  A -->|agent<br/>credentials| E["Identity"]
+  A -->|trace and<br/>score| F["Observability and<br/>Evaluations"]
+  A -->|guard tool<br/>calls| G["Policy"]
+</div>
+<p class="caption">Figure: Each AgentCore service answers one operational question, and you can use any subset.</p>
+<p class="rule">Rule: Choose AgentCore when the framework or model is not fixed to Bedrock Agents, or when the agent needs a runtime that suits extended asynchronous work.</p>
+<p class="trap">Trap: Reading "AgentCore" as a single product that must be used whole. AWS says each service works alone, so the question may need only one of them.</p>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/what-is-bedrock-agentcore.html (core services table, framework statement, pricing). Source: Sundog course extract, slide pages 240 and 241.</p>
+
+<h3>AgentCore Runtime: hosting agent code</h3>
+<p class="fact">Runtime is a serverless environment for deploying and scaling agent code. AWS says it has fast cold starts, extended runtime support for asynchronous agents, session isolation, and built-in identity. It works with Strands Agents, LangGraph, and other frameworks, and with any model, and it supports MCP and A2A protocols.</p>
+<p>The Sundog course says you can deploy with the AgentCore command line, which uses CodeBuild, or build your own container. A deployed runtime can have more than one endpoint, and an observability dashboard shows usage and performance. Container build details beyond these points are Not in source.</p>
+<p class="rule">Rule: Choose Runtime when you want to host agent code without managing containers, clusters, or load balancers yourself.</p>
+<p class="trap">Trap: Choosing Step Functions to host the agent code. Step Functions coordinates calls and states, but it does not host a framework agent loop.</p>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/what-is-bedrock-agentcore.html (Runtime description). Source: Sundog course extract, slide page 242 (serverless endpoints, CLI, multiple endpoints).</p>
+
+<h3>AgentCore Memory: short-term events and long-term records</h3>
+<p class="fact">AgentCore Memory has two parts. Short-term memory keeps the raw events of a session, including each message and each tool result. Long-term memory stores records extracted from those events, such as preferences, facts, and session summaries, under configured strategies.</p>
+<p>Scope memory to the person and to the conversation. A person-scoped record survives many sessions. A session-scoped event stays with one visit. The exact identifiers and the strategy names are Not in source for this module, so read the memory docs before you write code.</p>
+<p class="rule">Rule: Use Memory when durable records per person must come back in later sessions with a managed store.</p>
+<p class="trap">Trap: Relying on short-term events to recall a fact from last month. Events belong to the session, and the durable recall comes from long-term records.</p>
+<p class="src">Source: Sundog course extract, slide page 243 (short-term session and events, long-term memory records and strategies). Source: https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/what-is-bedrock-agentcore.html (Memory description, works with Strands and LangGraph).</p>
+
+<h3>AgentCore Gateway: tools as MCP for many clients</h3>
+<p class="fact">Gateway turns APIs, Lambda functions, and existing services into Model Context Protocol tools. It also connects to existing MCP servers. The Sundog course lists targets as OpenAPI REST APIs, Smithy models, endpoints, and Lambda functions. It also says Gateway manages OAuth security and can do semantic tool selection.</p>
+<p>Gateway solves the problem of many agents needing the same tools. You register the tool source once, and each client connects to the Gateway endpoint. This avoids a custom adapter in each agent. The Sundog course says Gateway is the layer for using external tools at scale.</p>
+<p class="rule">Rule: Put shared tools behind Gateway when several agents or frameworks call the same tools.</p>
+<p class="trap">Trap: Treating every Gateway target as an MCP server. The target type decides whether the Gateway aggregates tools as MCP or only proxies the call, and the pages I read do not give that detail.</p>
+<p class="src">Source: Sundog course extract, slide page 246 (Gateway targets, MCP conversion, OAuth, semantic tool selection). Source: https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/what-is-bedrock-agentcore.html (Gateway description, connect existing MCP servers).</p>
+
+<h3>AgentCore Identity: the own identity of the agent</h3>
+<p class="fact">Identity manages the identity of the agent itself. It controls how the agent reaches outside tools and AWS resources, stores credentials, and supports OAuth 2.0. The Sundog course says it works with common identity providers and lists built-in support for several SaaS providers.</p>
+<p>The course stresses that this is different from end-user sign-in. A customer who logs in to your web app is one identity. The agent that calls a CRM API is another identity. Identity answers the second question.</p>
+<p class="rule">Rule: Use Identity when the agent must call outside services and the credentials must be stored and rotated in one managed place.</p>
+<p class="trap">Trap: Confusing the agent identity with the end-user login. Identity does not replace the user sign-in in your web app.</p>
+<p class="src">Source: Sundog course extract, slide page 247 (agent identities, OAuth 2.0, credential storage, difference from user OAuth). Source: https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/what-is-bedrock-agentcore.html (Identity description and identity providers).</p>
+
+<h3>AgentCore Observability and Evaluations</h3>
+<p class="fact">Observability gives a unified view of the steps in an agent run. It uses OpenTelemetry-compatible telemetry and shows the execution path, intermediate outputs, and failures. Evaluations scores agents from sessions, traces, and spans, and it can use traces from Strands Agents or LangGraph instrumented with OpenTelemetry or OpenInference.</p>
+<p>The Sundog course says evaluations check whether the agent performs tasks, handles edge cases, and keeps consistent output. It also says results show in CloudWatch. The modes for live sampling, targeted spans, and offline sets are Not in source for this module, so check the evaluation types page before you choose a mode.</p>
+<p class="rule">Rule: Use Observability to inspect one run. Use Evaluations to score many runs against stated criteria.</p>
+<p class="trap">Trap: Using CloudWatch Logs alone to decide if a task succeeded. Logs show events, but they do not score goal completion or tool choice.</p>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/what-is-bedrock-agentcore.html (Observability and Evaluations descriptions). Source: Sundog course extract, slide page 250 (AgentCore Evaluations).</p>
+
+<h3>AgentCore Browser and Code Interpreter</h3>
+<p class="fact">Browser is a managed cloud browser runtime. An agent can navigate sites, fill forms, and extract information. It works with Playwright and similar automation frameworks. Code Interpreter is an isolated sandbox where an agent runs Python, JavaScript, or TypeScript to compute results.</p>
+<p>Use Browser when the only way to reach the data is a website or a web form. Use Code Interpreter when the answer needs a calculation or a chart that the model writes as code. Both run outside your application, which keeps generated code and browsing away from your own servers.</p>
+<p class="rule">Rule: Choose Browser for a site with no usable API. Choose Code Interpreter for generated calculations or charts.</p>
+<p class="trap">Trap: Using Code Interpreter for a fixed formula. A Lambda function with the known formula is simpler and more predictable.</p>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/what-is-bedrock-agentcore.html (Browser and Code Interpreter rows). Source: Sundog course extract, slide page 244 and slide page 223 (optional code interpreter in Bedrock Agents).</p>
+
+<h3>AgentCore Policy: a gate on each tool call</h3>
+<p class="fact">Policy sets deterministic boundaries for agents. It integrates with Gateway and intercepts each tool call before it runs, then checks the call against rules. Rules are written in Cedar or a compatible policy language, and they can say which tools an agent can call, which actions it can take, and under what conditions.</p>
+<p>The Sundog course says Policy is evaluated outside the agent code. That matters when the model must not be able to override a rule through its prompt. Fine-grained control answers who can do what under what conditions.</p>
+<p class="rule">Rule: Use Policy when a rule must hold even if the model asks for a forbidden tool call.</p>
+<p class="trap">Trap: Writing the rule only in the system prompt. A prompt is advice to the model, not an enforced gate.</p>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/what-is-bedrock-agentcore.html (Policy row: intercepts tool calls, Cedar-compatible). Source: Sundog course extract, slide page 248 (Policy in AgentCore, evaluated outside agent code).</p>
+
+<h3>Bedrock Flows: a visual chain of prompts and models</h3>
+<p class="fact">Bedrock Flows links prompts, foundation models, knowledge bases, Lambda functions, and other AWS services into a workflow. You build it in the visual builder or through the APIs. A flow is made of nodes and connections, and connections can be conditional. The Sundog course notes that Prompt Flows was absorbed into the larger Flows feature.</p>
+<p class="fact">Flows have a working draft, immutable versions, and aliases. Applications call InvokeFlow on an alias. The loop and iterator node details, and any loop limits, are Not in source for this module.</p>
+<p>Flows fit a chain that product owners or analysts must change without application code. The steps are mostly fixed, and each step is a prompt, a model call, a condition, or a service call. A flow is a good place for prompt chaining and routing by a condition. It is not a managed open-ended agent.</p>
+<p class="rule">Rule: Choose Flows when the steps are mostly fixed and non-developers must edit them visually.</p>
+<p class="trap">Trap: Choosing Flows for an open-ended task that needs the model to decide new steps. The flow only follows the connections you drew.</p>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/flows.html (overview, visual builder, versions, aliases, InvokeFlow, async executions). Source: Sundog course extract, slide pages 110 to 113.</p>
+
+<h3>Step Functions: state machines with waits and audit</h3>
+<p class="fact">Step Functions runs state machines. A Task state calls an AWS service. Standard workflows run up to one year, follow an exactly-once model, and keep a full execution history for up to 90 days after the run. Express workflows run up to five minutes and use at-least-once or at-most-once execution, depending on how they are started.</p>
+<p>Use Step Functions when you need auditable state transitions, retry and failure isolation, parallel branches, and explicit approval steps. The Sundog course lists these reasons and notes that serverless choices other than Step Functions also exist. The model does not pick the steps here, because your state machine does.</p>
+<p class="rule">Rule: Use Step Functions when your code must own the steps, the retries, and the wait for a person.</p>
+<p class="trap">Trap: Using Step Functions to decide open-ended next steps for a model. The state machine follows the states you wrote, so it does not reason about new paths.</p>
+<p class="src">Source: https://docs.aws.amazon.com/step-functions/latest/dg/concepts-standard-vs-express.html (duration, execution semantics, history). Source: Sundog course extract, slide page 661 (auditable transitions, retry, approval).</p>
+
+<h3>Step Functions: callbacks, task tokens, and heartbeats</h3>
+<p class="fact">The wait for a callback uses the resource suffix for waiting on a task token. The task token is read from the Context object, and the workflow pauses until the same token returns with a success, a failure, or a heartbeat call. The callback APIs are SendTaskSuccess, SendTaskFailure, and SendTaskHeartbeat.</p>
+<p class="fact">Set HeartbeatSeconds on a waiting task to detect a missing reply. If no valid token returns in that interval, the task fails with the States.Timeout error name. A timed-out task gets a new random token. A callback token must return from a caller inside the account of the workflow, or the reply is refused.</p>
+<p>A Lambda task, Amazon SQS, Amazon SNS, and EventBridge can all carry the token to an outside system in the optimized integrations. Standard workflows support the callback pattern, and Express workflows do not. The wait itself is the callback pattern, so no polling loop is needed.</p>
+<p class="rule">Rule: Use a callback task when a person or outside system must reply later and no service job is running.</p>
+<p class="trap">Trap: Using the run-a-job pattern for human approval. The run-a-job pattern waits for a service job to finish, and a reviewer is not a service job.</p>
+<p class="src">Source: https://docs.aws.amazon.com/step-functions/latest/dg/connect-to-resource.html (three patterns, callback tokens, HeartbeatSeconds, same-account rule, optimized integration table). Source: https://docs.aws.amazon.com/step-functions/latest/dg/concepts-standard-vs-express.html (callback support by workflow type).</p>
+
+<h3>Step Functions: Map state and large fan-out</h3>
+<p class="fact">A Map state runs the same steps for each item in a list. The Distributed Map mode runs each item as its own child workflow execution, and it is supported in Standard workflows only. The Standard and Express comparison page marks Distributed Map as not supported in Express.</p>
+<p>Use Distributed Map when the item count is large, such as tens of thousands of files, and each item must succeed or retry on its own. The Map state lets you set how many children run at once. The exact concurrency limit and item count limit are Not in source for this module.</p>
+<div class="mermaid">
+flowchart TD
+  A["List of S3 keys"] -->|Distributed Map| B["One child run per item"]
+  B -->|item one| C["Lambda summary step"]
+  B -->|item N| D["Lambda summary step"]
+  C -->|failure on one item| E["Retry that item only"]
+  D -->|success| F["Summary written to S3"]
+</div>
+<p class="caption">Figure: Each item runs in its own child, so a failure retries one item and not the whole batch.</p>
+<p class="rule">Rule: Use Distributed Map in Standard for large item sets that need per-item retries and history.</p>
+<p class="trap">Trap: Using one Lambda function to loop over every item. A loop inside one function hits the Lambda timeout and loses per-item status.</p>
+<p class="src">Source: https://docs.aws.amazon.com/step-functions/latest/dg/concepts-standard-vs-express.html (Distributed Map supported in Standard, not Express). Source: Sundog course extract, slide page 295 (parallel branches in Step Functions).</p>
+
+<h3>Step Functions: retries, catches, and fallbacks</h3>
+<p class="fact">A Retry field on a task retries an error with backoff. A Catch field routes an error that remains after the retries to another state, such as a fallback path. The fields for jitter and maximum delay also exist in the state language, but I did not confirm their exact names and defaults in the pages fetched here, so verify them in the state definition docs.</p>
+<div class="mermaid">
+flowchart TD
+  A["Model call task"] -->|transient error| B["Retry with backoff"]
+  B -->|still failing after<br/>retries| C["Catch route"]
+  B -->|succeeds| D["Next state"]
+  C -->|fallback text or<br/>smaller model| E["Degraded answer"]
+  C -->|human needed| F["Callback task"]
+</div>
+<p class="caption">Figure: Retry handles short failures, and Catch decides what the workflow does when retries run out.</p>
+<p>Retry alone does not stop a shared outage from causing a retry spike. Add jitter so many executions do not retry at the same moment. Add a bounded attempt count, and a fallback path that returns a safe answer.</p>
+<p class="rule">Rule: Use Retry for short transient errors and Catch for the fallback path after retries run out.</p>
+<p class="trap">Trap: Unlimited retries with no jitter during a shared outage. Every execution retries at the same moments, and the outage gets worse.</p>
+<p class="src">Source: https://docs.aws.amazon.com/step-functions/latest/dg/connect-bedrock.html (Bedrock optimized integration, task definition with a Bedrock Task). Retry and Catch field details: Not in source in the pages fetched for this module.</p>
+
+<h3>Step Functions with Amazon Bedrock</h3>
+<p class="fact">Step Functions has an optimized integration that invokes a Bedrock model. The InvokeModel request body can be up to 256 KiB. For larger payloads, AWS recommends the Input field, which reads the request from an S3 URI, and the Output field, which writes the response to S3. You set either Body or Input, but not both.</p>
+<p class="fact">Bedrock actions support Request Response for model calls. The customization job API also supports the run-a-job pattern. The callback pattern is available for Bedrock in Standard workflows. The integration with AgentCore supports Request Response only.</p>
+<p>Keep large prompts and model outputs in S3, and pass references through state data. This keeps state small and avoids the payload limit. A workflow that carries full transcripts in state will hit size limits and cost more to store.</p>
+<p class="rule">Rule: Use S3 Input and Output for large prompts or outputs, and pass only references in state data.</p>
+<p class="trap">Trap: Putting a long transcript in the state data of every step. The payload limit and the storage cost both grow with the transcript.</p>
+<p class="src">Source: https://docs.aws.amazon.com/step-functions/latest/dg/connect-bedrock.html (256 KiB Body limit, Input and Output S3 fields). Source: https://docs.aws.amazon.com/step-functions/latest/dg/connect-to-resource.html (optimized integration table: Bedrock, AgentCore).</p>
+
+<h3>AWS Lambda: the fifteen minute limit</h3>
+<p class="fact">Lambda timeout defaults to 3 seconds and can be set up to 900 seconds, which is fifteen minutes. For Lambda Managed Instances, asynchronous and event source invocations allow up to 5,400 seconds. The fifteen minute limit applies to the standard function timeout, so a longer job must be split.</p>
+<div class="mermaid">
+flowchart TD
+  A["Job may run long"] -->|under fifteen<br/>minutes| B["Single Lambda task"]
+  A -->|over fifteen<br/>minutes| C["Split into steps"]
+  C -->|many items| D["Map state with<br/>child runs"]
+  C -->|waits for a<br/>person| E["Callback task<br/>token"]
+  B -->|needs per-step<br/>retries| F["Step Functions<br/>Retry field"]
+</div>
+<p class="caption">Figure: A job over the limit is split into steps, and Step Functions carries the state between them.</p>
+<p>Lambda suits short, stateless work such as one tool call, one transformation, or one API request. It is a poor place to hold a long model loop or a long wait. Raising the timeout or memory does not fix a loop that never ends.</p>
+<p class="rule">Rule: If the job can run longer than fifteen minutes, split it into steps and move the wait to Step Functions.</p>
+<p class="trap">Trap: Raising the Lambda timeout to fix an agent that loops forever. The loop keeps calling the model and the tools, so cost grows and the answer does not improve.</p>
+<p class="src">Source: https://docs.aws.amazon.com/lambda/latest/dg/configuration-timeout.html (default 3 seconds, maximum 900 seconds, Managed Instances limit).</p>
+
+<h3>EventBridge and SQS: decoupling producers from consumers</h3>
+<p class="fact">Amazon EventBridge routes events from producers to targets through rules, and it can start a workflow on a schedule. Amazon SQS holds messages in a queue until a consumer reads them. A queue smooths spikes, and a dead-letter queue holds messages that keep failing.</p>
+<p>Use a queue when producers can outpace consumers, such as uploads that arrive all day but processing that runs at night. Use EventBridge when one event must reach several targets. Use both when a schedule reads a queue and starts a batch workflow.</p>
+<p class="trap">Trap: Using EventBridge as a durable work queue for every item. EventBridge routes events, and a queue is the right buffer when items must wait for a consumer.</p>
+<p class="src">Source: No AWS page for EventBridge or SQS was fetched for this module, so the numeric limits in this subsection are Not in source. Source: Sundog course extract, slide page 661 (approval and retry as reasons to use Step Functions).</p>
+
+<h3>MCP servers and Streamable HTTP</h3>
+<p class="fact">The Model Context Protocol is a standard interface for agent to tool calls. Its data layer uses JSON-RPC 2.0. A server can expose tools, resources, and prompts. The Sundog course says the transports are stdio and HTTP streaming, and the MCP specification names the HTTP transport Streamable HTTP. The spec version details are Not in source.</p>
+<div class="mermaid">
+flowchart TD
+  A["MCP client inside agent"] -->|local development| B["stdio transport"]
+  A -->|shared production<br/>service| C["HTTP streaming transport"]
+  B -->|JSON-RPC 2.0<br/>messages| D["MCP server process"]
+  C -->|JSON-RPC 2.0<br/>messages| E["MCP server over HTTP"]
+  D -->|tools resources<br/>prompts| F["Server exposes<br/>capabilities"]
+  E -->|tools resources<br/>prompts| F
+</div>
+<p class="caption">Figure: One protocol, two transports, and the same tools and resources at the end.</p>
+<p>The Sundog course gives deployment advice. A stateless, lightweight MCP server fits AWS Lambda. A complex server with long-running work or heavy memory fits Amazon ECS or AWS Fargate. API Gateway can present MCP endpoints too, and AgentCore can host MCP servers. The course also notes that AWS guidance for MCP architecture differs from some exam guide wording, so use the current AWS docs.</p>
+<p class="rule">Rule: Use Lambda for stateless MCP tools. Use ECS or Fargate when the server must keep state or load a large engine.</p>
+<p class="trap">Trap: Putting a server that loads a large engine and keeps session state into Lambda. Each cold start reloads the engine, and state does not persist between calls by design.</p>
+<p class="src">Source: Sundog course extract, slide page 256 (MCP data layer, JSON-RPC 2.0, stdio and HTTP streaming, servers expose tools resources prompts) and slide page 257 (Lambda, ECS, Fargate, API Gateway, AgentCore for MCP). Source: https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/what-is-bedrock-agentcore.html (Gateway MCP conversion, Runtime MCP support).</p>
+
+<h3>Strands Agents and AWS Agent Squad</h3>
+<p class="fact">Strands Agents is an open-source Python SDK from AWS for building agents and multi-agent systems. Its agent loop selects tools, runs them, and returns the response. It has built-in tools, supports MCP, and works with models outside AWS. The Sundog course says Strands can use Bedrock models, Lambda, and Step Functions.</p>
+<p class="fact">AWS Agent Squad is an open-source framework for multi-agent workflows. It routes each query to the right agent with a classifier, shares conversation context across agents, and integrates with Bedrock Agents. The Sundog course describes it as focused on routing, while Strands focuses on tool use inside one agent loop.</p>
+<p class="rule">Rule: Use Strands for the tool loop of one agent or for agents used as tools. Use Agent Squad to route a request across separate services.</p>
+<p class="trap">Trap: Choosing Agent Squad to run the tool loop of one agent. Agent Squad routes between agents, and the tool loop belongs to the agent framework.</p>
+<p class="src">Source: Sundog course extract, slide pages 235 to 239 (Strands Agents agent loop, built-in tools, MCP support, Agent Squad routing and Supervisor Agent).</p>
+
+<h3>Deterministic workflow versus agentic reasoning</h3>
+<p class="fact">A deterministic workflow has steps you can list before the request. Its branches use known values, such as a score or a status field. An agentic design lets the model choose the next step from a result it has not seen yet. The Sundog course says complex decision making can benefit from agents, but simple cases should stay as deterministic workflows.</p>
+<div class="mermaid">
+flowchart TD
+  A["Can you list every<br/>step now"] -->|yes always the<br/>same| B["Deterministic<br/>workflow"]
+  A -->|no next step<br/>depends on a<br/>result| C["Agentic reasoning"]
+  B -->|branch on<br/>known values| D["Choice state or<br/>flow condition"]
+  C -->|bounded tool<br/>set| E["Agent with action<br/>group or MCP"]
+  C -->|many<br/>specialists| F["Supervisor or<br/>orchestrator"]
+  E -->|loop must stop| G["Add limits and a<br/>fail path"]
+</div>
+<p class="caption">Figure: Pick the workflow first, and add an agent only where the next step truly depends on a result.</p>
+<p class="rule">Rule: Use a workflow for known steps and an agent for steps the model must choose. Add a loop limit to every agent.</p>
+<p class="trap">Trap: Using an agent for a three-step process with fixed rules. The model adds cost and variation that the rules do not need.</p>
+<p class="src">Source: Sundog course extract, slide page 227 and slide page 229 (use multi-agent only when complex decisions need it, otherwise keep deterministic workflows). Source: https://docs.aws.amazon.com/bedrock/latest/userguide/flows.html (flows as chained steps).</p>
+
+<h3>Distinguishing the confusable pairs</h3>
+<p>The pairs below cover the choices that cause most wrong answers in this area. For each pair, read the decision tree, answer the one question, and then check the trap. The comparison rows use three fixed labels: purpose, input, and output or effect.</p>
+
+<h3>Pair 1: Converse tool use versus a Bedrock Agents managed loop</h3>
+<div class="mermaid">
+flowchart TD
+  A["Need model plus tools"] -->|who runs the tool| B["Your code runs it"]
+  A -->|who runs the tool| C["Managed agent runs it"]
+  B -->|Converse toolUse<br/>then toolResult| D["Converse tool use"]
+  C -->|Bedrock calls Lambda<br/>or returns control| E["Bedrock Agents Classic"]
+  D -->|you own retries and<br/>state| F["Keep loop in your service"]
+  E -->|you accept managed<br/>loop| G["Use action groups and<br/>aliases"]
+</div>
+<p class="caption">Figure: The owner of the tool call decides between the two patterns.</p>
+<ul>
+<li><strong>Purpose:</strong> Converse tool use gives you a loop you control. Bedrock Agents gives you a loop that Bedrock runs.</li>
+<li><strong>Input:</strong> Converse takes messages and tool definitions in your request. Bedrock Agents takes a user message, action groups, and optional knowledge bases.</li>
+<li><strong>Output or effect:</strong> Converse returns tool requests that you must answer. Bedrock Agents returns a final answer, with a trace if you ask for it.</li>
+</ul>
+<p class="tip">Exam tip: Look for "your application must run the tool" or "your code must retry". Those phrases point to Converse. Look for "managed" or "action group" to point to Bedrock Agents.</p>
+<p class="rule">Rule: If your code must own each tool call, use Converse. If Bedrock should own the loop, use Bedrock Agents Classic or AgentCore.</p>
+<p class="trap">Trap: Picking Bedrock Agents because the question says tool use. The option may be valid, but the question must also say the managed loop is acceptable.</p>
+<p class="src">Source: Sundog course extract, slide pages 20 to 21 (Converse and toolConfig) and slide page 224 (action groups for the agent). Source: https://docs.aws.amazon.com/bedrock/latest/userguide/agents-returncontrol.html (the split between managed execution and return of control).</p>
+
+<h3>Pair 2: Bedrock Agents Classic versus AgentCore</h3>
+<div class="mermaid">
+flowchart TD
+  A["Agent build<br/>decision"] -->|framework<br/>fixed to<br/>Bedrock| B["Bedrock Agents<br/>Classic"]
+  A -->|any<br/>framework or<br/>model| C["AgentCore<br/>Runtime"]
+  B -->|new build| D["Check<br/>AgentCore<br/>first"]
+  C -->|shared tools| E["AgentCore<br/>Gateway"]
+  C -->|user memory| F["AgentCore<br/>Memory"]
+  C -->|generated<br/>code or<br/>browsing| G["Code<br/>Interpreter or<br/>Browser"]
+  A -->|long<br/>asynchronous<br/>work| C
+</div>
+<p class="caption">Figure: Choose the platform by framework freedom and by which operational service the agent needs.</p>
+<ul>
+<li><strong>Purpose:</strong> Bedrock Agents Classic runs one managed agent inside Bedrock. AgentCore hosts and operates agents built with any framework.</li>
+<li><strong>Input:</strong> Bedrock Agents takes action groups, knowledge bases, and aliases. AgentCore takes your agent code, plus any mix of Gateway, Memory, Identity, and Policy.</li>
+<li><strong>Output or effect:</strong> Bedrock Agents returns answers from its managed loop. AgentCore returns answers from your code, with the platform services around it.</li>
+</ul>
+<p class="tip">Exam tip: The words "any framework", "any model", or "long asynchronous work" point to AgentCore. AWS says Bedrock Agents Classic is no longer open to new customers.</p>
+<p class="rule">Rule: For a new build with a chosen framework, start from AgentCore. Keep Classic only where it already runs.</p>
+<p class="trap">Trap: Choosing AgentCore for a plain managed agent with two action groups when the question asks for the simplest managed option. AgentCore adds design work that the question did not ask for.</p>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/agents-action-create.html (maintenance note). Source: https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/what-is-bedrock-agentcore.html (any framework, any model, Runtime). Source: Sundog course extract, slide pages 240 and 245.</p>
+
+<h3>Pair 3: Bedrock Flows versus Step Functions</h3>
+<div class="mermaid">
+flowchart TD
+  A["Chain of AI steps"] -->|analysts edit<br/>visually| B["Bedrock Flows"]
+  A -->|waits or many<br/>AWS services| C["Step Functions"]
+  B -->|prompt model<br/>condition<br/>nodes| D["Versions and<br/>aliases"]
+  C -->|state machine<br/>definition| E["Standard or<br/>Express type"]
+  C -->|task token<br/>callback| F["Pause until<br/>outside reply"]
+  B -->|needs a long<br/>human wait| C
+</div>
+<p class="caption">Figure: Flows is the visual prompt chain, and Step Functions is the durable state machine for waits and broad service calls.</p>
+<ul>
+<li><strong>Purpose:</strong> Flows chains prompts, models, and conditions for AI steps. Step Functions coordinates any AWS services with durable state.</li>
+<li><strong>Input:</strong> Flows takes a flow input and node outputs. Step Functions takes a JSON input and the state machine definition.</li>
+<li><strong>Output or effect:</strong> Flows returns the output of the last node. Step Functions records each state transition and can pause for a callback.</li>
+</ul>
+<p class="tip">Exam tip: Words such as "visual builder for prompt steps" point to Flows. Words such as "wait for approval", "audit each state", or "call many AWS services" point to Step Functions.</p>
+<p class="rule">Rule: Choose Flows for a visual prompt chain. Choose Step Functions when the chain must wait or coordinate many services.</p>
+<p class="trap">Trap: Choosing Flows for an approval that takes days. The wait requirement in the question is the signal for a durable state machine.</p>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/flows.html (visual builder, versions, aliases). Source: https://docs.aws.amazon.com/step-functions/latest/dg/connect-to-resource.html (callback pattern). Source: Sundog course extract, slide pages 110 to 113 and slide page 661.</p>
+
+<h3>Pair 4: Standard workflow versus Express workflow</h3>
+<div class="mermaid">
+flowchart LR
+  A["Workflow<br/>duration and<br/>guarantees"] -->|up to one<br/>year| B["Standard<br/>workflow"]
+  A -->|up to five<br/>minutes| C["Express<br/>workflow"]
+  B -->|exactly-once| D["Non-idempotent<br/>actions"]
+  C -->|at-least-once<br/>or<br/>at-most-once| E["Idempotent<br/>actions only"]
+  B -->|callback and<br/>sync<br/>supported| F["Human approval"]
+  C -->|no callback<br/>or sync| G["Move approval<br/>to Standard"]
+</div>
+<p class="caption">Figure: Duration and the callback rule decide the workflow type before cost does.</p>
+<ul>
+<li><strong>Purpose:</strong> Standard runs long, durable, auditable workflows. Express runs short, high volume workflows.</li>
+<li><strong>Input:</strong> Both take a state machine definition and an execution input. Express also allows synchronous start from API Gateway or Lambda.</li>
+<li><strong>Output or effect:</strong> Standard keeps history for up to 90 days and bills per state transition. Express bills per execution, duration, and memory, and it does not keep history in Step Functions.</li>
+</ul>
+<p class="tip">Exam tip: A wait longer than five minutes, or any callback, means Standard. Short bursts of idempotent work mean Express.</p>
+<p class="rule">Rule: Use Standard for any step that waits for a person, a callback, or more than five minutes.</p>
+<p class="trap">Trap: Keeping the approval in an Express workflow and looping over repeated runs to poll. The polling adds state, retries, and cost that Standard avoids.</p>
+<p class="src">Source: https://docs.aws.amazon.com/step-functions/latest/dg/concepts-standard-vs-express.html (duration, execution semantics, callback support, history, billing). Source: https://docs.aws.amazon.com/step-functions/latest/dg/connect-to-resource.html (integration pattern support by workflow type).</p>
+
+<h3>Pair 5: Request Response versus run-a-job versus callback task token</h3>
+<div class="mermaid">
+flowchart TD
+  A["Step Functions<br/>task must wait"] -->|service<br/>replies now| B["Request<br/>Response"]
+  A -->|a service<br/>job runs in<br/>AWS| C["Run a job with<br/>sync"]
+  A -->|an outside<br/>party<br/>replies<br/>later| D["Wait for task<br/>token"]
+  B -->|next state<br/>right away| E["Example SNS<br/>publish"]
+  C -->|polls job<br/>until<br/>complete| F["Example Batch<br/>job"]
+  D -->|SendTaskSuccess<br/>returns<br/>token| G["Human approval<br/>or partner<br/>system"]
+</div>
+<p class="caption">Figure: The reply source decides the pattern, and the service API does not.</p>
+<ul>
+<li><strong>Purpose:</strong> Request Response moves on after the call returns. Run-a-job waits for a job to finish. The callback pattern waits for an external reply that carries the token.</li>
+<li><strong>Input:</strong> Request Response takes the service parameters. Run-a-job takes the job parameters. The callback takes the parameters plus a token from the Context object.</li>
+<li><strong>Output or effect:</strong> Request Response continues at once. Run-a-job continues when the job completes. The callback continues on SendTaskSuccess, SendTaskFailure, or a heartbeat timeout.</li>
+</ul>
+<p class="tip">Exam tip: The phrase "wait for a person" or "reply from another system" points to the callback. The phrase "wait until the batch job ends" points to run-a-job.</p>
+<p class="rule">Rule: Use the callback pattern when the workflow must pause for an outside reply, and set a heartbeat.</p>
+<p class="trap">Trap: Using run-a-job for a reviewer. Run-a-job expects a service job whose status the service can read, and a person is not that kind of job.</p>
+<p class="src">Source: https://docs.aws.amazon.com/step-functions/latest/dg/connect-to-resource.html (three patterns, callback, run-a-job, HeartbeatSeconds). Source: https://docs.aws.amazon.com/step-functions/latest/dg/concepts-standard-vs-express.html (pattern support).</p>
+
+<h3>Pair 6: AgentCore Gateway MCP target versus a Bedrock action group</h3>
+<div class="mermaid">
+flowchart TD
+  A["Tool access<br/>need"] -->|one Bedrock<br/>agent only| B["Action group<br/>with Lambda"]
+  A -->|many clients<br/>or<br/>frameworks| C["AgentCore<br/>Gateway"]
+  C -->|MCP tools<br/>list and<br/>call| D["Shared MCP<br/>endpoint"]
+  C -->|OpenAPI<br/>Lambda or<br/>endpoint<br/>targets| E["Tools from<br/>existing<br/>services"]
+  B -->|function<br/>details or<br/>OpenAPI| F["Schema in<br/>agent<br/>definition"]
+  C -->|auth managed<br/>at gateway| G["Central<br/>credentials"]
+</div>
+<p class="caption">Figure: An action group serves one agent. A gateway serves many clients through one MCP surface.</p>
+<ul>
+<li><strong>Purpose:</strong> An action group gives one Bedrock agent its tools. Gateway gives any MCP-capable client the same tools.</li>
+<li><strong>Input:</strong> An action group takes a function or OpenAPI definition with an executor. Gateway takes targets such as OpenAPI APIs, Lambda functions, and existing MCP servers.</li>
+<li><strong>Output or effect:</strong> An action group returns results only to its agent. Gateway returns tool results to any client that speaks MCP.</li>
+</ul>
+<p class="tip">Exam tip: The words "one standard tool interface for several frameworks" point to Gateway. The words "our Bedrock agent calls this API" point to an action group.</p>
+<p class="rule">Rule: Use Gateway when several clients or frameworks need one MCP tool surface. Use an action group for one Bedrock agent.</p>
+<p class="trap">Trap: Assuming an action group gives MCP access for other frameworks. It is a Bedrock agent mechanism, so other clients need their own adapter.</p>
+<p class="src">Source: Sundog course extract, slide page 246 (Gateway targets and MCP conversion) and slide page 256 (MCP as a shared interface). Source: https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/what-is-bedrock-agentcore.html (Gateway description). Target-type behavior details: Not in source in the pages fetched.</p>
+
+<h3>Pair 7: Supervisor collaboration versus agents as tools versus Agent Squad</h3>
+<div class="mermaid">
+flowchart TD
+  A["Several<br/>specialists needed"] -->|one<br/>conversation<br/>one supervisor| B["Bedrock<br/>multi-agent<br/>supervisor"]
+  A -->|one lead model<br/>calls<br/>specialists| C["Agents as tools in<br/>Strands"]
+  A -->|separate<br/>services route<br/>by intent| D["Agent Squad<br/>classifier"]
+  B -->|collaborators<br/>in Bedrock| E["Supervisor routes<br/>context"]
+  C -->|orchestrator<br/>combines<br/>replies| F["One reply to user"]
+  D -->|Lambda starts<br/>orchestrator| G["Services stay<br/>independent"]
+</div>
+<p class="caption">Figure: The three patterns differ in who routes, who combines, and whether services stay separate.</p>
+<ul>
+<li><strong>Purpose:</strong> A Bedrock supervisor routes one conversation to collaborator agents. Agents as tools lets a lead agent call specialists as functions. Agent Squad routes a request to one of several independent agents.</li>
+<li><strong>Input:</strong> The supervisor takes a user request and collaborator descriptions. The lead agent takes the request and a list of specialist tools. Agent Squad takes a request and a classifier with agent descriptions.</li>
+<li><strong>Output or effect:</strong> The supervisor returns a combined answer through its own plan. The lead agent combines specialist results into one reply. Agent Squad returns the reply of the chosen agent.</li>
+</ul>
+<p class="tip">Exam tip: "Each specialist stays an independent service" points to Agent Squad. "One reply combines several specialists" points to agents as tools or the supervisor.</p>
+<p class="rule">Rule: Use one supervisor for a shared conversation. Use agents as tools for one reply. Use Agent Squad for independent services.</p>
+<p class="trap">Trap: Using one Strands agent with every tool to avoid coordination. Tool choice gets worse as the tool set grows, and the specialists lose focus.</p>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/agents-multi-agent-collaboration.html (supervisor and collaborators). Source: Sundog course extract, slide pages 228, 229, 235, 236, and 239 (orchestrator and worker, Strands, Agent Squad).</p>
+
+<h3>Pair 8: Session state versus long-term memory versus reference documents</h3>
+<div class="mermaid">
+flowchart TD
+  A["Where does this<br/>fact belong"] -->|needed in this<br/>conversation<br/>only| B["Session state or<br/>events"]
+  A -->|needed in<br/>future visits| C["Long-term memory<br/>records"]
+  A -->|shared product<br/>or policy text| D["Knowledge base<br/>documents"]
+  B -->|ends with the<br/>session| E["Not durable"]
+  C -->|per person<br/>preferences<br/>and facts| F["Scoped memory<br/>store"]
+  D -->|not personal<br/>data| G["Reference content"]
+</div>
+<p class="caption">Figure: The lifespan and owner of a fact decide where it is stored.</p>
+<ul>
+<li><strong>Purpose:</strong> Session state keeps the active thread. Long-term memory keeps person-level facts across sessions. A knowledge base keeps reference content for retrieval.</li>
+<li><strong>Input:</strong> Session state takes events from the current session. Long-term memory takes extracted insights from many sessions. A knowledge base takes documents you load.</li>
+<li><strong>Output or effect:</strong> Session state gives the next turn its context. Long-term memory returns recalled records for a person. A knowledge base returns passages for a query.</li>
+</ul>
+<p class="tip">Exam tip: The words "remember across visits" or "returns next month" point to long-term memory. The words "current troubleshooting thread" point to session state.</p>
+<p class="rule">Rule: Match each fact to its lifespan. Session for this turn, memory for the person, knowledge base for shared text.</p>
+<p class="trap">Trap: Storing the preferences of a person in a knowledge base and calling it memory. Reference retrieval does not keep a per-person record that the agent updates.</p>
+<p class="src">Source: Sundog course extract, slide page 234 (short-term and long-term memory, knowledge bases framed as a memory type) and slide page 243 (AgentCore Memory). Source: https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/what-is-bedrock-agentcore.html (Memory description).</p>
+
+<h3>Read a long question: three worked scenarios</h3>
+<p>Each scenario below is written for practice. The underlined words are the constraints that decide the design. For each wrong option, the reason names the constraint it breaks.</p>
+
+<h4>Scenario 1: approval that waits several days</h4>
+<p>A bakery group runs a chat helper that places supplier orders. An order can go out only after a regional manager approves it through a web form, and approvals can take <strong>three days</strong>. The design must <strong>not poll</strong> the approval store, and the form posts to an endpoint in <strong>another AWS account</strong>.</p>
+<ul>
+<li>Constraint words: three days, must not poll, another AWS account.</li>
+<li>Express workflow with a callback: fails. Express does not support the callback pattern, and its duration is five minutes.</li>
+<li>Scheduled Lambda that checks a table: fails. It polls, which the design forbids.</li>
+<li>Passing the task token to the other account so its service calls the callback API directly: fails. Callback tokens work only from the same account as the workflow.</li>
+<li>Bedrock Agents that holds the order open: fails. A managed agent loop does not own a multi-day external wait.</li>
+</ul>
+<p class="rule">Rule: Answer. A Standard workflow with a callback task. The approval endpoint in the other account posts to an API in the workflow account, and a same-account Lambda function sends SendTaskSuccess or SendTaskFailure.</p>
+
+<h4>Scenario 2: fixed chain for staff and memory across visits</h4>
+<p>A dental clinic runs a booking assistant for patients. The assistant must <strong>remember the preferred hygienist of each patient across visits</strong>, and a nightly summary must <strong>always run the same four steps in order</strong>. Clinic staff must <strong>change the step prompts visually without a developer</strong>.</p>
+<ul>
+<li>Constraint words: across visits, always the same four steps, visually without a developer.</li>
+<li>Bedrock Agents session state only: fails. Session state ends with the session, so the preference does not return next visit.</li>
+<li>Step Functions with coded prompts: fails. Staff cannot change the prompts without a developer.</li>
+<li>An AgentCore agent that picks the four steps itself: fails. The steps must be fixed, and the model would choose them.</li>
+<li>Bedrock Flows for the nightly chain with AgentCore Memory for the preference: fits all three constraints.</li>
+</ul>
+<p class="rule">Rule: Answer. Bedrock Flows for the fixed nightly chain, and AgentCore Memory with a per-patient long-term record for the preferred hygienist.</p>
+
+<h4>Scenario 3: many tool vendors and a refusal rule</h4>
+<p>A port authority runs a container-tracking agent. Three vendors supply tools, and each vendor exposes an MCP server that runs on a laptop during development and as an HTTP service in production. Auditors require the agent to <strong>refuse any tool call that moves a container out of a customs hold</strong>, even if the model asks for it.</p>
+<ul>
+<li>Constraint words: three vendors, MCP laptop and HTTP production, refuse any tool call.</li>
+<li>One Bedrock action group per vendor: fails. It duplicates integration and does not give one shared MCP surface for other frameworks.</li>
+<li>A rule in the system prompt only: fails. The prompt is advice to the model, and the model can ignore it.</li>
+<li>A single Lambda that holds all three vendors and calls them in order: fails. It fixes the order, which the vendors do not need, and it adds a custom router.</li>
+<li>AgentCore Gateway with MCP targets and AgentCore Policy on each tool call, with stdio for development: fits all three constraints.</li>
+</ul>
+<p class="rule">Rule: Answer. AgentCore Gateway with MCP targets, AgentCore Policy to block the forbidden call before it runs, and stdio for local development.</p>
+
+<h3>Distractor patterns seen in the tests</h3>
+<p>Wrong options in this area follow a few concept-level patterns. Learn the pattern, and you can reject an option even when you do not know every service detail. Each pattern below names the reason it fails.</p>
+<ul>
+<li><strong>Right service for a sub-part.</strong> An option names a real service that handles one step, such as Lambda, but the question needs the whole orchestration. Lambda runs code and does not coordinate waits.</li>
+<li><strong>Agent for fixed steps.</strong> The option gives a model the choice of steps for a process with a fixed order. The result adds variation and cost that the rules did not ask for.</li>
+<li><strong>Workflow for open choices.</strong> The option draws every branch in advance for a task where the next step depends on new results. The workflow cannot handle paths nobody drew.</li>
+<li><strong>Prompt as a control.</strong> The option stops a behavior by writing an instruction. A prompt is advice, so a rule that must hold needs IAM, Policy, or code.</li>
+<li><strong>Express for long work.</strong> The option uses Express for an approval or a long wait. Express stops at five minutes and does not support callbacks.</li>
+<li><strong>Polling for a reply.</strong> The option checks a table on a schedule to see whether a human answered. The question usually forbids polling, and a callback is the native pattern.</li>
+<li><strong>Token across accounts.</strong> The option sends a callback token to another account that calls the callback API. The token is accepted only from the same account.</li>
+<li><strong>Logs for reasoning.</strong> The option uses an audit log or model invocation log to explain a wrong tool choice. Those show calls, but the agent trace shows the path.</li>
+<li><strong>Memory as a bigger prompt.</strong> The option stores every transcript and sends it back each turn. Cost and context grow with each turn, and no retention rule exists.</li>
+<li><strong>Timeout as a loop fix.</strong> The option raises a timeout or memory to stop a repeating loop. The loop continues and the cost grows, so a loop limit and a fail path are needed.</li>
+<li><strong>Retry without limits.</strong> The option retries the same failing call with no jitter and no fallback. A shared outage then gets worse.</li>
+</ul>
+<p class="trap">Trap: Accepting an option only because it names the right service. Check whether it also meets the wait, the owner of each step, and the rule that must hold.</p>
+
+<h3>Drill</h3>
+<p>Each prompt has one answer on the next line. Cover the answer and try first.</p>
+<p>1. A model proposes a tool call, and your service must run it and send the result back. Which pattern fits?</p>
+<p class="rule">Rule: Converse tool use, where your code runs the tool and returns a toolResult.</p>
+<p>2. Product analysts reorder prompt steps and add a condition in a visual builder. Which service fits?</p>
+<p class="rule">Rule: Bedrock Flows with prompt nodes and conditional connections.</p>
+<p>3. A reviewer may reply after five days, and no service job runs in the meantime. Which Step Functions type and pattern fit?</p>
+<p class="rule">Rule: Standard workflow with the wait for a task token, and a heartbeat interval.</p>
+<p>4. A payment step must never run twice when a retry happens. Which workflow type fits?</p>
+<p class="rule">Rule: Standard workflow, because it follows the exactly-once model.</p>
+<p>5. Forty thousand files each need their own model call and a retry of only the failed files. Which Step Functions feature fits?</p>
+<p class="rule">Rule: Distributed Map in a Standard workflow, with one child run per item.</p>
+<p>6. A Lambda function must run a job that takes about twenty minutes. What is the design fix?</p>
+<p class="rule">Rule: Split the job into steps under Step Functions. A single Lambda timeout cannot exceed fifteen minutes.</p>
+<p>7. A Bedrock agent must ask for missing values and run three named functions on one Lambda. Which action group style fits?</p>
+<p class="rule">Rule: Function details, which name each function and its parameters.</p>
+<p>8. An auditor must see which knowledge base and which action ran for one answer. Which feature gives that?</p>
+<p class="rule">Rule: Agent trace, requested with the trace flag on the InvokeAgent call.</p>
+<p>9. Several agent frameworks must call the same retrieval tools through one standard interface. Which AgentCore service fits?</p>
+<p class="rule">Rule: AgentCore Gateway with MCP targets for the shared tools.</p>
+<p>10. A tool call that moves restricted cargo must be refused, even when the model requests it. Which control fits?</p>
+<p class="rule">Rule: AgentCore Policy, which evaluates each tool call outside the agent code.</p>
+<p>11. The assistant of a clinic must recall the preferences of each patient at the next visit. Which store fits?</p>
+<p class="rule">Rule: AgentCore Memory long-term records, scoped to the person.</p>
+<p>12. Independent microservices each handle one domain, and a classifier must route each request to one of them. Which framework fits?</p>
+<p class="rule">Rule: AWS Agent Squad with a classifier, because it routes between separate agents.</p>
+
+<h3>Sources</h3>
+<p class="src">Source: Each URL below was fetched with WebFetch. The first list shows pages that returned usable text. The second list shows pages that returned only a title or an index, and no fact in this module depends on them.</p>
+<ul>
+<li>https://docs.aws.amazon.com/bedrock/latest/userguide/agents-action-create.html</li>
+<li>https://docs.aws.amazon.com/bedrock/latest/userguide/agents-returncontrol.html</li>
+<li>https://docs.aws.amazon.com/bedrock/latest/userguide/agents-multi-agent-collaboration.html</li>
+<li>https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/what-is-bedrock-agentcore.html</li>
+<li>https://docs.aws.amazon.com/bedrock/latest/userguide/flows.html</li>
+<li>https://docs.aws.amazon.com/step-functions/latest/dg/connect-bedrock.html</li>
+<li>https://docs.aws.amazon.com/step-functions/latest/dg/concepts-standard-vs-express.html</li>
+<li>https://docs.aws.amazon.com/step-functions/latest/dg/connect-to-resource.html</li>
+<li>https://docs.aws.amazon.com/lambda/latest/dg/configuration-timeout.html</li>
+</ul>
+<ul>
+<li>https://docs.aws.amazon.com/bedrock/latest/userguide/agents-how-it-works.html (title only, no facts used)</li>
+<li>https://docs.aws.amazon.com/bedrock/latest/userguide/flows-how-it-works.html (topic index only, no facts used)</li>
+</ul>
+<p class="src">Source: Sundog course extract for this module, file m4-agents-orchestration-sundog.txt, slide pages cited in each section.</p>
+<nav class="mod"><a href="index.html">All modules</a> <a href="m3-rag-vectors.html">Previous</a> <a href="m5-model-access-cost.html">Next</a></nav>
+</main>
+<script type="module">
+  import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.esm.min.mjs";
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: "base",
+    themeVariables: {
+      background: "#000000",
+      mainBkg: "#000000",
+      primaryColor: "#000000",
+      primaryTextColor: "#f2f2f2",
+      primaryBorderColor: "#7db8ff",
+      secondaryColor: "#000000",
+      tertiaryColor: "#000000",
+      lineColor: "#d0d0d0",
+      textColor: "#f2f2f2",
+      edgeLabelBackground: "#000000",
+      clusterBkg: "#000000",
+      clusterBorder: "#7db8ff",
+      titleColor: "#ffffff",
+      fontFamily: "Helvetica, Arial, sans-serif",
+      fontSize: "22px"
+    },
+    flowchart: { htmlLabels: true, curve: "basis", useMaxWidth: false, padding: 16, nodeSpacing: 40, rankSpacing: 56 }
+  });
+</script>
+<script>window.markmap = { autoLoader: { manual: false, toolbar: false } };</script>
+<script src="https://cdn.jsdelivr.net/npm/markmap-autoloader@0.18.12"></script>
+</body>
+</html>

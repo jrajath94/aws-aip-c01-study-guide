@@ -1,0 +1,678 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>Crash course: question patterns</title>
+<style>
+:root {
+  --bg: #000000;
+  --ink: #f2f2f2;
+  --fact: #7db8ff;
+  --rule: #6ee7a0;
+  --tip: #d8a6ff;
+  --trap: #ff8a8a;
+  --muted: #a8a8a8;
+  --line: #333333;
+}
+html, body { background: #000000; }
+body {
+  color: var(--ink);
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 19px;
+  line-height: 1.7;
+  margin: 0;
+  padding: 24px 20px 72px;
+}
+main { max-width: 780px; margin: 0 auto; }
+main p, main li { text-align: justify; }
+h1 { font-size: 32px; line-height: 1.3; margin: 0 0 12px; color: #ffffff; }
+h2 { font-size: 26px; line-height: 1.35; margin: 48px 0 14px; color: #ffffff; border-top: 1px solid var(--line); padding-top: 22px; }
+h3 { font-size: 21px; line-height: 1.4; margin: 32px 0 10px; color: #ffffff; }
+h4 { font-size: 19px; line-height: 1.4; margin: 24px 0 8px; color: #ffffff; }
+p { margin: 0 0 18px; }
+ul, ol { margin: 0 0 18px; padding-left: 26px; }
+li { margin-bottom: 10px; }
+.fact { color: var(--fact); }
+.rule { color: var(--rule); }
+.tip { color: var(--tip); }
+.trap { color: var(--trap); }
+.src { font-size: 16px; color: var(--muted); }
+.meta { font-size: 16px; color: var(--muted); margin-bottom: 24px; }
+.caption { font-size: 16px; color: var(--muted); margin: -8px 0 26px; text-align: left; }
+.legend p { margin-bottom: 6px; text-align: left; }
+.mermaid { margin: 14px 0 26px; font-size: 21px; text-align: left; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; }
+.mermaid svg { max-width: none; height: auto; }
+@media print {
+  .mermaid { overflow: visible; break-inside: avoid; }
+  .mermaid svg { max-width: 100% !important; height: auto !important; }
+  body { padding: 14mm 10mm; }
+  h1, h2, h3, h4 { break-after: avoid; }
+  p.caption, p.src { break-before: avoid; }
+}
+</style>
+</head>
+<body>
+<main>
+
+<h2>How to think: five steps for each question</h2>
+<p><span class="fact">Each question has one answer type and one set of constraints. Work through five steps in order. Do not start with the options.</span></p>
+<div class="mermaid">
+flowchart TD
+  S1["1. Read the last sentence<br/>and name the answer type"] --> S2["2. List each constraint<br/>word in the stem"]
+  S2 --> S3["3. Mark each constraint as<br/>hard or soft"]
+  S3 --> S4["4. Pick the managed option<br/>that meets every hard<br/>constraint"]
+  S4 --> S5["5. Check the choice for a<br/>trap and for soft<br/>constraints"]
+</div>
+<p class="caption">Figure: the order of work for each question. Step 4 uses hard constraints only.</p>
+<ul>
+<li>Step 1: Name the answer type. Write one of four words: service, configuration, failure cause, or design.</li>
+<li>Step 2: Write each constraint as a short phrase. Examples are cost, latency, Region, effort, and existing footprint.</li>
+<li>Step 3: Mark a constraint as hard when the stem says must, only, required, or never. Mark all other constraints as soft.</li>
+<li>Step 4: Remove each option that breaks one hard constraint. Keep the simplest managed option that remains.</li>
+<li>Step 5: Read the remaining option once more. Check its scope, its layer, and its limit against the stem.</li>
+</ul>
+<p class="rule">Decision rule: A hard constraint removes an option. A soft constraint only breaks a tie between options that remain.</p>
+<p class="trap">Trap: The option that meets most constraints is still wrong. One broken hard constraint removes that option.</p>
+<p class="tip">Exam tip: Write the constraints before you read the options. Options written to look right are easier to accept when you have no list.</p>
+<p class="src">Source: method for this course, built from the repo guide Part 1 (how AWS asks questions) and Part 8 (method for each question). The hard and soft labels are a study aid.</p>
+
+<h2>Constraint families: signal words to the component</h2>
+<p>Each signal word in a stem points to one constraint family. Find the family first. Then test the component that the family names.</p>
+<div class="mermaid">
+flowchart LR
+  E1["Effort: least custom work,<br/>managed, simplest"] --> C1["A Bedrock managed feature,<br/>such as Knowledge Bases,<br/>Guardrails, or Flows"]
+  E2["Cost: cheapest option that<br/>still meets every hard<br/>constraint"] --> C2["On-demand for spiky load,<br/>batch when no user waits"]
+  E3["Load shape: steady, high,<br/>spiky, or real time"] --> C3["Provisioned Throughput for<br/>steady high load,<br/>on-demand otherwise"]
+  E4["Location: one Region,<br/>residency, or sovereignty"] --> C4["Single-Region model access<br/>and Region-matched keys"]
+  E5["Freshness: current,<br/>private, or company<br/>documents"] --> C5["Knowledge Bases with a<br/>sync to the data source"]
+  E6["Safety: harmful content,<br/>personal data, prompt<br/>attack"] --> C6["Guardrails policies,<br/>chosen by the failure to<br/>stop"]
+  E7["Quality: grounded,<br/>accurate, fair, or<br/>measured"] --> C7["Guardrails contextual<br/>grounding, Model<br/>Evaluations, or SageMaker<br/>AI Clarify"]
+  E8["Failure: throttle,<br/>timeout, retry, or dead<br/>letter"] --> C8["Backoff with jitter, quota<br/>or Provisioned Throughput,<br/>SQS with a dead-letter<br/>queue"]
+  E9["Long work: minutes,<br/>approval, or a person must<br/>wait"] --> C9["Step Functions Standard,<br/>or SageMaker AI<br/>asynchronous inference"]
+  E10["Audit: record each model<br/>call, or who did what"] --> C10["Model invocation logging<br/>for content, CloudTrail<br/>for who and when"]
+  E11["Footprint: already runs on<br/>a store or runtime"] --> C11["Use the store and runtime<br/>that the team already runs"]
+</div>
+<p class="caption">Figure: eleven constraint families and the first component to test for each family.</p>
+<p class="rule">Decision rule: Name the family before you name the service. A service that fits the family can still break a hard constraint in another family.</p>
+<p class="trap">Trap: Choosing a service because it is well known. The family and the hard constraints decide the service.</p>
+
+<h2>If you see this, then this</h2>
+<p>Each pair below gives the first answer to test. Test the pair against every hard constraint before you select it.</p>
+<div class="mermaid">
+flowchart LR
+  H1["Reserved or guaranteed<br/>throughput"] --> A1["Provisioned Throughput"]
+  H2["Customized model in<br/>production"] --> A2["Provisioned Throughput for<br/>inference"]
+  H3["Nobody waits for the<br/>output"] --> A3["Batch inference, or batch<br/>transform for a model you<br/>host"]
+  H4["One code path for many<br/>models"] --> A4["Converse"]
+  H5["A model-specific request<br/>field"] --> A5["InvokeModel"]
+  H6["Best trade-off inside one<br/>model family"] --> A6["Intelligent prompt routing"]
+  H7["Candidates from several<br/>providers"] --> A7["Your own router, because<br/>routing stays inside one<br/>family"]
+  H8["Data must stay in one<br/>Region"] --> A8["Single-Region model access"]
+  H9["Current private documents<br/>with citations"] --> A9["Bedrock Knowledge Bases"]
+  H10["Block harmful or off-topic<br/>content"] --> A10["Guardrails denied topics<br/>or content filters"]
+  H11["Check that the answer<br/>comes from the source text"] --> A11["Guardrails contextual<br/>grounding check"]
+  H12["Hide personal data in the<br/>output"] --> A12["Guardrails sensitive<br/>information filter"]
+  H13["Human approval, or a wait<br/>of hours"] --> A13["Step Functions Standard<br/>with a task token"]
+  H14["Work longer than 15<br/>minutes"] --> A14["Asynchronous path, not<br/>Lambda alone"]
+  H15["Every model call must be<br/>recorded"] --> A15["Turn on model invocation<br/>logging, then send records<br/>to CloudWatch Logs or S3"]
+  H16["Who made the call and when"] --> A16["CloudTrail"]
+  H17["Throttling, error 429"] --> A17["Quota increase or<br/>Provisioned Throughput,<br/>with backoff and jitter"]
+  H18["Relational data with<br/>vectors, moderate size"] --> A18["Aurora PostgreSQL with<br/>pgvector"]
+  H19["Session memory that<br/>expires"] --> A19["DynamoDB with TTL"]
+  H20["Fast cache where loss is<br/>acceptable"] --> A20["ElastiCache, not a system<br/>of record"]
+</div>
+<p class="caption">Figure: twenty signal pairs. Each pair names the first component to test.</p>
+<p class="trap">Trap: Model invocation logging is off by default. Turn it on before an audit needs the record.</p>
+<p class="trap">Trap: CloudTrail records who called and when. It does not record the prompt or the output.</p>
+<p class="trap">Trap: Lambda runs for at most 15 minutes. A longer design needs a workflow or an asynchronous path.</p>
+<p class="trap">Trap: Provisioned Throughput bills for the reserved units even when the units are idle.</p>
+<p class="tip">Exam tip: The pair is a study aid. Confirm the component against the constraint in the stem. Do not select it on a keyword alone.</p>
+<p class="src">Source: repo guide Parts 1 to 5, the traps list, and the decision units. Pairs marked by the repo as Not in source are not listed as facts.</p>
+
+<h2>Pattern families</h2>
+<p>Each family maps one wording pattern to one answer type. Each tree starts at the wording and ends at the answer type. The leaf names a type of answer, not a specific option.</p>
+
+<h3>1. Least operational effort or managed service first</h3>
+<p><span class="fact">Choose the simplest managed option. Choose custom work only when a constraint forces it.</span></p>
+<div class="mermaid">
+flowchart TD
+  A["Stem asks for<br/>least effort or a<br/>managed option"] --> B["Does a stated<br/>requirement force<br/>custom work"]
+  B -->|No| C["Pick the managed<br/>service that meets<br/>every constraint"]
+  B -->|Yes| D["Build only the<br/>part that the<br/>requirement forces"]
+  C --> E["Private documents<br/>with citations"]
+  E --> F["Bedrock Knowledge<br/>Bases"]
+  C --> G["Predictable steps<br/>with branches"]
+  G --> H["Amazon Bedrock<br/>Prompt Flows"]
+  C --> I["Steps that wait<br/>for a person"]
+  I --> J["Step Functions<br/>Standard"]
+</div>
+<p class="caption">Figure: managed-first tree. Custom work needs a named requirement.</p>
+<ul>
+<li>Signal words: least effort, least custom work, simplest, managed.</li>
+<li>Private, current, or cited facts point to Bedrock Knowledge Bases. A sync and one API call cover the flow.</li>
+<li>Hand-built RAG fits only a stated requirement, such as a custom retrieval algorithm.</li>
+<li>Fixed prompt chains with branches point to Amazon Bedrock Prompt Flows.</li>
+</ul>
+<p class="rule">Decision rule: Pick the managed option that meets every stated constraint. Build custom work only when a named requirement forces it.</p>
+<p class="trap">Trap: A hand-built pipeline is wrong when the stem asks for least effort.</p>
+<p class="tip">Exam tip: Words such as least effort and least custom work mark this family. Then check whether a stated requirement forces custom work.</p>
+<p class="src">Source: repo guide, Part 1 How AWS asks questions, Part 2 Domain 1, task 1.5, visual unit 58.</p>
+
+<h3>2. Lowest cost while meeting the constraint</h3>
+<p><span class="fact">The cheapest option is correct only when it passes every other constraint.</span></p>
+<div class="mermaid">
+flowchart LR
+  A["Stem asks for<br/>lowest cost<br/>that meets<br/>every<br/>constraint"] --> B["Drop each<br/>option that<br/>breaks one<br/>constraint"]
+  B --> C["Which waste<br/>does the stem<br/>name"]
+  C -->|Long prefix<br/>repeats| D["Prompt caching<br/>with static<br/>content first"]
+  C -->|Simple<br/>requests| E["Tiered routing<br/>or cascade to<br/>a smaller<br/>model"]
+  C -->|Work can<br/>wait for<br/>hours| F["Batch<br/>inference from<br/>S3 to S3"]
+  C -->|Steady<br/>baseline<br/>load| G["Provisioned<br/>Throughput<br/>with the<br/>provisioned<br/>model ARN"]
+  C -->|Short spikes| H["On-demand<br/>inference"]
+  C -->|Many<br/>paraphrases<br/>of one<br/>question| I["Semantic cache"]
+  C -->|Too many<br/>retrieved<br/>chunks| J["Rerank, then<br/>keep the top<br/>few"]
+</div>
+<p class="caption">Figure: each cost waste maps to one lever.</p>
+<ul>
+<li>Cost per call: input tokens times the input price, plus output tokens times the output price, per million tokens.</li>
+<li>Output tokens usually cost more per token than input tokens. Set a maximum output length to cap the reply.</li>
+<li>Prompt caching needs the static content first and the changing message last. The default time to live is 5 minutes.</li>
+<li>Semantic cache matches paraphrases by embedding similarity. Personal or unique questions rarely hit it.</li>
+<li>Sending more chunks raises token cost. Rerank the candidates, then send only the top few.</li>
+<li>Binary quantization cuts index memory. It can lose accuracy without rescoring the top candidates.</li>
+<li>The exact batch inference discount is Not in source on the docs page.</li>
+</ul>
+<p class="rule">Decision rule: Match each cost waste to one lever. Keep the cheapest option that passes every constraint.</p>
+<p class="trap">Trap: A cheaper option that breaks one constraint is wrong. The cheapest store is wrong when the latency need is strict.</p>
+<p class="tip">Exam tip: A cost ceiling in the stem asks for a lever. Buying more capacity does not fix a cost that comes from long prompts.</p>
+<p class="src">Source: repo guide, Part 5 Domain 4, tasks 4.1 and 4.2, visual units 20, 22, 40, and 67, Part 8D, units G1 and G4.</p>
+
+<h3>3. Least complicated architecture</h3>
+<p><span class="fact">Use the fewest components that meet every constraint. Add a component only when a constraint forces it.</span></p>
+<div class="mermaid">
+flowchart LR
+  A["Stem asks for<br/>a simple<br/>design that<br/>meets the<br/>constraints"] --> B["Are the steps<br/>fixed"]
+  B -->|Yes| C["Amazon Bedrock<br/>Prompt Flows"]
+  B -->|No,<br/>branching<br/>depends on<br/>code| D["Lambda code or<br/>Step Functions"]
+  A --> E["Managed<br/>foundation<br/>models needed"]
+  E --> F["Bedrock model<br/>calls with<br/>Converse or<br/>InvokeModel"]
+  A --> G["Own model<br/>artifact<br/>stored in S3"]
+  G --> H["SageMaker AI<br/>endpoint"]
+  A --> I["Staff who<br/>build AWS<br/>applications"]
+  I --> J["Amazon Q<br/>Developer"]
+  A --> K["End users of<br/>your own<br/>application"]
+  K --> L["Bedrock<br/>application<br/>behind API<br/>Gateway and<br/>Lambda"]
+</div>
+<p class="caption">Figure: pick the service by the job and by the user.</p>
+<ul>
+<li>Use a flow when the steps are fixed. Use Lambda code or Step Functions when the steps depend on complex branching in your code.</li>
+<li>Use Bedrock when you need managed foundation models. Use a SageMaker AI endpoint when you host your own model artifact in S3.</li>
+<li>Put API Gateway in front of a Lambda function that calls Bedrock. Clients keep one contract. The Lambda function owns the model choice.</li>
+<li>Amazon Q Developer helps staff who build AWS applications. It does not serve the end users of your application.</li>
+<li>Amazon Q Business is no longer open to new customers. The documentation names Amazon Quick as the alternative.</li>
+<li>The host for heavy, stateful MCP servers is Not in source for this build.</li>
+</ul>
+<p class="rule">Decision rule: Choose the simplest managed option. Choose custom work only when a constraint forces it.</p>
+<p class="trap">Trap: Inference. A broader or more capable design is not a better answer by default. The guide calls the flagship model not the default answer.</p>
+<p class="tip">Exam tip: Match the tool to the person. A tool for staff and an application for end users are separate builds.</p>
+<p class="src">Source: repo guide, Part 1 How AWS asks questions, Part 2 Domain 1, task 1.2, Part 8 units N3, N4, N6, and N7, visual units 27 and 52.</p>
+
+<h3>4. Latency versus throughput versus batch</h3>
+<p><span class="fact">Latency is what the user feels. Throughput is what the system handles. Batch inference is offline work from S3 to S3.</span></p>
+<div class="mermaid">
+flowchart TD
+  A["Stem names a speed<br/>or volume target"] --> B["Does a user wait<br/>for the reply"]
+  B -->|Yes| C["Real-time call on<br/>on-demand or<br/>Provisioned<br/>Throughput"]
+  B -->|No| D["Batch inference<br/>from S3 to S3"]
+  C --> E["Which target does<br/>the stem name"]
+  E -->|Perceived<br/>speed| F["Stream the<br/>response"]
+  E -->|Slow call| G["Trace each step<br/>with X-Ray"]
+  G --> H["Slow retrieval<br/>step"]
+  H --> I["Index tuning,<br/>query<br/>preprocessing, or<br/>hybrid search"]
+  E -->|Steady volume| J["Provisioned<br/>Throughput for the<br/>baseline"]
+  E -->|Spiky volume| K["On-demand for the<br/>spikes"]
+</div>
+<p class="caption">Figure: the target word in the stem picks the lever.</p>
+<ul>
+<li>Streaming improves perceived speed. It does not raise throughput. It does not shorten total generation time.</li>
+<li>Buying Provisioned Throughput does not change the speed of one call. It reserves model units. The call must use the provisioned model ARN.</li>
+<li>Batch inference reads input from S3 and writes output to S3. It is not supported for provisioned models.</li>
+<li>Set the batch job time limit with a timeout duration in hours.</li>
+<li>For a slow step, measure each step first. A slow retrieval step needs index tuning, query preprocessing, or hybrid search.</li>
+<li>Precompute predictable answers when speed matters for repeated questions.</li>
+</ul>
+<p class="rule">Decision rule: Name the target first. Perceived speed, call speed, and volume each point to a different lever.</p>
+<p class="trap">Trap: Batch does not fit a user waiting on a reply. A bigger model does not fix a slow search step.</p>
+<p class="tip">Exam tip: Latency and throughput are different targets. Read the metric word before you pick a lever.</p>
+<p class="src">Source: repo guide, Part 1B Lesson 2, Part 5 Domain 4, tasks 4.1 and 4.2, visual unit 41.</p>
+
+<h3>5. Data residency and Region scope</h3>
+<p><span class="fact">An inference profile spreads load across the Regions it lists. It does not keep data in one place.</span></p>
+<div class="mermaid">
+flowchart TD
+  A["Stem states a<br/>data location<br/>or Region rule"] --> B["Must the data<br/>stay on your<br/>premises"]
+  B -->|Yes| C["AWS Outposts<br/>for that data"]
+  B -->|No| D["Is the rule a<br/>geography such<br/>as the EU"]
+  D -->|Yes| E["Geographic<br/>inference<br/>profile with<br/>the eu. prefix"]
+  E --> F["A global<br/>profile can<br/>send requests<br/>outside the EU<br/>boundary"]
+  D -->|No| G["Single Region<br/>where the<br/>model is<br/>offered"]
+  A --> H["Failure in one<br/>Region only"]
+  H --> I["Check IAM<br/>permissions<br/>and resource<br/>ARNs for that<br/>Region"]
+  A --> J["Availability<br/>target across<br/>Regions"]
+  J --> K["Cross-Region<br/>profile, then<br/>retries and<br/>fallback in<br/>the<br/>application"]
+</div>
+<p class="caption">Figure: residency rules pick the profile type or the location.</p>
+<ul>
+<li>Call the profile ID with its prefix, such as us. or eu. Requests route only to Regions the profile lists.</li>
+<li>A geographic EU profile keeps routing inside the EU Regions it lists.</li>
+<li>Cross-Region guardrail inference routes to another Region in the same geography. Input prompts and outputs can move there.</li>
+<li>Outposts runs AWS services on your premises. It suits a rule that keeps data on site.</li>
+<li>A model that is cheap but unavailable in your Region is not a choice. Check Regional availability first.</li>
+</ul>
+<p class="rule">Decision rule: Match the residency rule to the profile prefix. A strict boundary needs a geographic profile, or Outposts for data on site.</p>
+<p class="trap">Trap: Cross-Region inference is not automatic failover for your app. A global profile does not meet a strict EU boundary.</p>
+<p class="tip">Exam tip: Stays in a Region and stays on premises are different rules. Only the on-premises rule points to Outposts.</p>
+<p class="src">Source: repo guide, Part 2 Domain 1, tasks 1.2 and 1.5, Part 4 Domain 3, task 3.2, visual units 3, 19, and 22.</p>
+
+<h3>6. Streaming and timeouts</h3>
+<p><span class="fact">A REST integration in API Gateway has a default integration timeout of 29 seconds. Streaming does not change that timeout.</span></p>
+<div class="mermaid">
+flowchart LR
+  A["Stem names a<br/>long call or a<br/>streamed reply"] --> B["Client reaches<br/>the API over<br/>REST"]
+  B --> C["REST<br/>integration<br/>default<br/>timeout is 29<br/>seconds"]
+  C --> D["Stream over<br/>WebSocket or<br/>server-sent<br/>events"]
+  C --> E["Asynchronous<br/>job returns a<br/>job ID and a<br/>later result"]
+  A --> F["Lambda step<br/>runs the model<br/>call"]
+  F --> G["Standard<br/>Lambda limit<br/>is 15 minutes<br/>per invocation"]
+  G --> H["Step Functions<br/>or<br/>asynchronous<br/>work for<br/>longer flows"]
+  A --> I["Connection<br/>drops while<br/>idle"]
+  I --> J["Enable TCP<br/>keep-alive and<br/>set the OS<br/>interval below<br/>350 seconds"]
+  A --> K["Streaming<br/>chosen for<br/>speed"]
+  K --> L["Total<br/>generation<br/>time stays the<br/>same"]
+</div>
+<p class="caption">Figure: match the path to the length of the call.</p>
+<ul>
+<li>Streaming sends tokens as they appear. It lowers the wait for the first visible token.</li>
+<li>A WebSocket API or server-sent events can carry a stream to the browser. A REST integration still stops at the 29-second limit.</li>
+<li>A very long call uses an asynchronous job. The client polls or receives the result later.</li>
+<li>SageMaker AI asynchronous endpoints process long requests up to one hour. The payload comes from S3 and the result goes to S3.</li>
+<li>NAT gateways, interface VPC endpoints, and Network Load Balancers drop idle TCP connections after 350 seconds.</li>
+</ul>
+<p class="rule">Decision rule: Pick the path that can hold the connection for the full call.</p>
+<p class="trap">Trap: A 90-second model call fails at the gateway. Raising the Lambda timeout does not fix it.</p>
+<p class="tip">Exam tip: Perceived speed points to streaming. A gateway timeout points to the connection path, not the model.</p>
+<p class="src">Source: repo guide, Part 3 Domain 2, tasks 2.2 and 2.4, visual units 10 and 11, Part 8D, unit H1.</p>
+
+<h3>7. Long waits and human approval</h3>
+<p><span class="fact">A wait for a person can last hours or days. Step Functions Standard keeps the flow paused until a callback arrives.</span></p>
+<div class="mermaid">
+flowchart TD
+  A["Stem includes<br/>a wait for a<br/>person or a<br/>multi-day step"] --> B["Does the wait<br/>fit inside one<br/>Lambda call"]
+  B -->|No| C["Step Functions<br/>Standard"]
+  C --> D["Callback task<br/>token pauses<br/>the flow"]
+  D --> E["Approval or<br/>timeout<br/>resumes the<br/>flow"]
+  B -->|Yes| F["Lambda can run<br/>the short step"]
+  A --> G["Fixed prompt<br/>chain with no<br/>waits"]
+  G --> H["Amazon Bedrock<br/>Prompt Flows"]
+  A --> I["Long model job<br/>with no live<br/>caller"]
+  I --> J["SageMaker AI<br/>asynchronous<br/>endpoint up to<br/>one hour"]
+  A --> K["Batch job with<br/>a time limit"]
+  K --> L["Set the job<br/>time limit in<br/>hours"]
+</div>
+<p class="caption">Figure: a durable pause needs a durable workflow.</p>
+<ul>
+<li>Step Functions Standard waits with a callback task token. It runs for up to one year.</li>
+<li>Standard workflows keep execution history for up to 90 days.</li>
+<li>Express workflows do not support the callback pattern.</li>
+<li>Waits in Lambda bill for the full duration of the wait.</li>
+<li>A standard Lambda function runs at most 15 minutes in one invocation.</li>
+</ul>
+<p class="rule">Decision rule: A wait measured in hours or days points to Step Functions Standard with a callback task token.</p>
+<p class="trap">Trap: A Lambda function that waits for a person pays for the wait and hits the 15-minute limit. Express workflows cannot take the callback pattern.</p>
+<p class="tip">Exam tip: Approval and wait words in the stem both point to a durable workflow. Check the workflow type for callback support.</p>
+<p class="src">Source: repo guide, Part 2 Domain 1, task 1.6, Part 3 Domain 2, task 2.2, visual units 10 and 27.</p>
+
+<h3>8. Retrieval failure versus generation failure</h3>
+<p><span class="fact">If the answer is wrong while the chunks look right, the fault is in how the chunks were built or ranked.</span></p>
+<div class="mermaid">
+flowchart TD
+  A["Answer is<br/>wrong or weak"] --> B["Do the<br/>retrieved<br/>chunks hold<br/>the correct<br/>text"]
+  B -->|No| C["Retrieval<br/>failure"]
+  C --> D["Check chunk<br/>boundaries,<br/>then the<br/>chunking<br/>setting and<br/>embedding<br/>model version"]
+  D --> E["Keyword drift:<br/>hybrid search"]
+  D --> F["Top results<br/>related but<br/>not right:<br/>reranker"]
+  D --> G["Vocabulary<br/>gap: query<br/>expansion"]
+  B -->|Yes| H["Is the answer<br/>supported by<br/>the chunks"]
+  H -->|No| I["Generation<br/>failure:<br/>faithfulness<br/>problem"]
+  I --> J["Check the<br/>prompt and the<br/>grounding<br/>score"]
+  H -->|Yes| K["Check the<br/>golden set for<br/>out-of-scope<br/>gaps"]
+</div>
+<p class="caption">Figure: diagnose the stage that failed, in order.</p>
+<ul>
+<li>Check the chunks first. Then check the ranking. Then check the generator model.</li>
+<li>Changing the generator model does not repair broken retrieval.</li>
+<li>Score the retriever with context relevance and context coverage. Score the generator with faithfulness.</li>
+<li>When answers are wrong, run retrieve-only first. When the retrieved text is good but ignored, run retrieve-and-generate.</li>
+<li>Output that changes between runs points to sampling settings or prompt drift.</li>
+<li>Output that stops mid-sentence points to the maximum output tokens or context overflow.</li>
+</ul>
+<p class="rule">Decision rule: Diagnose the stage that failed. Chunks first, then retrieval, then generation.</p>
+<p class="trap">Trap: Reranking fixes order. It does not add a chunk that retrieval missed. Temperature does not fix bad retrieval.</p>
+<p class="tip">Exam tip: A correct final answer can hide weak retrieval. Measure both parts before you choose a fix.</p>
+<p class="src">Source: repo guide, Part 2 Domain 1, tasks 1.3 and 1.5, Part 6 Domain 5, tasks 5.1 and 5.2, visual unit 57, Part 8A6, knowledge base evaluation unit.</p>
+
+<h3>9. Changing documents versus stable behavior (RAG versus fine-tuning)</h3>
+<p><span class="fact">Knowledge goes to retrieval. Behavior goes to weights.</span></p>
+<div class="mermaid">
+flowchart LR
+  A["Stem names<br/>what must<br/>change"] --> B["Facts change<br/>or answers<br/>need citations"]
+  B --> C["RAG with<br/>Bedrock<br/>Knowledge<br/>Bases"]
+  A --> D["Stable format,<br/>tone, or voice<br/>at high volume"]
+  D --> E["Fine-tune a<br/>small model or<br/>distill"]
+  A --> F["Model must<br/>take actions<br/>or call APIs"]
+  F --> G["Agent with<br/>tools through<br/>AgentCore<br/>Gateway"]
+  A --> H["Only the<br/>instructions<br/>change"]
+  H --> I["Prompt<br/>engineering<br/>first"]
+  A --> J["Cheaper rung<br/>fails a<br/>measured test"]
+  J --> K["Move up one<br/>rung"]
+</div>
+<p class="caption">Figure: the ladder starts at the cheapest rung.</p>
+<ul>
+<li>The decision ladder runs from prompt engineering, to RAG, to fine-tuning, to continued pre-training.</li>
+<li>Each rung costs more and needs more data. Move up only when the cheaper rung fails a measured test.</li>
+<li>Calls to APIs or databases point to agents.</li>
+<li>LoRA freezes the base weights and trains small adapter matrices.</li>
+<li>To change chunking on a Knowledge Base data source, add a new data source with the new setting. Then sync it.</li>
+</ul>
+<p class="rule">Decision rule: Changing facts go to RAG. Stable behavior at high volume goes to fine-tuning or distillation.</p>
+<p class="trap">Trap: Fine-tuning on documents that change is wrong. Use RAG. A tuned LoRA adapter still holds the facts from its training data.</p>
+<p class="tip">Exam tip: Words such as current, cite, or sources point to retrieval. Words such as fixed format or high volume point to weights.</p>
+<p class="src">Source: repo guide, Part 2 Domain 1, task 1.1 and task 1.2, Part 1B Lesson 7, Part 8D, unit G4, visual unit 21.</p>
+
+<h3>10. Safety controls and which policy fits</h3>
+<p><span class="fact">No single control stops every failure. Each layer checks something different.</span></p>
+<div class="mermaid">
+flowchart LR
+  A["Stem names a<br/>failure to stop"] --> B["Answer not<br/>supported by the<br/>source"]
+  B --> C["Contextual<br/>grounding check on<br/>the output"]
+  A --> D["Jailbreak or<br/>prompt injection"]
+  D --> E["Prompt attack<br/>filter on tagged<br/>input"]
+  A --> F["PII in input or<br/>output"]
+  F --> G["Sensitive<br/>information<br/>filters at the<br/>model call"]
+  A --> H["PII in S3 objects<br/>at rest"]
+  H --> I["Amazon Macie"]
+  A --> J["Harmful text or a<br/>banned subject"]
+  J --> K["Content filters or<br/>denied topics"]
+  A --> L["Rule that must<br/>hold in every<br/>account"]
+  L --> M["SCP with a<br/>bedrock:GuardrailIdentifier<br/>condition,<br/>enforced at IAM"]
+  A --> N["Network path must<br/>stay private"]
+  N --> O["PrivateLink<br/>endpoint for each<br/>Bedrock plane"]
+</div>
+<p class="caption">Figure: one failure maps to one control and one layer.</p>
+<ul>
+<li>Guardrails has six policy types: content filters, word filters, denied topics, sensitive information filters, Automated Reasoning checks, and contextual grounding checks.</li>
+<li>A denied topic covers a whole subject in plain language. A word filter covers exact strings and misses rephrased requests.</li>
+<li>The prompt attack category applies to input. With InvokeModel, tag the user input. Untagged input is not checked for prompt attacks.</li>
+<li>Amazon Macie finds sensitive data in S3 at rest. Amazon Comprehend detects PII in text before the call.</li>
+<li>VPC interface endpoints keep API traffic on the AWS network. The bedrock-runtime plane runs invocations. The bedrock-agent and bedrock-agent-runtime planes serve agents.</li>
+<li>Encryption at rest uses AWS KMS. Red-team step-by-step procedures are Not in source.</li>
+</ul>
+<p class="rule">Decision rule: Match the failure to one control. A wrong answer needs a grounding check. A jailbreak needs the prompt attack filter on input. PII needs sensitive information filters.</p>
+<p class="trap">Trap: Grounding is not safety. A denied topic is not a prompt attack detector. Detect mode is not a block.</p>
+<p class="tip">Exam tip: Claims that a control prevents all prompt injection or eliminates hallucinations are wrong. No control is absolute.</p>
+<p class="src">Source: repo guide, Part 4 Domain 3, tasks 3.1 to 3.3, Part 8D, units G2 and G3, visual units 34 to 38.</p>
+
+<h3>11. Audit versus debugging</h3>
+<p><span class="fact">CloudTrail records who called which API, when, and from where. Invocation logs record the prompt and the response.</span></p>
+<div class="mermaid">
+flowchart LR
+  A["Stem asks what<br/>happened or who<br/>acted"] --> B["Who called which<br/>API and when"]
+  B --> C["AWS CloudTrail"]
+  A --> D["What prompt and<br/>response were sent"]
+  D --> E["Model invocation<br/>logs with KMS and<br/>access rules"]
+  A --> F["Which step was<br/>slow"]
+  F --> G["AWS X-Ray traces"]
+  A --> H["Pattern across<br/>logs by time or<br/>caller"]
+  H --> I["CloudWatch Logs<br/>Insights"]
+  A --> J["Is the answer good"]
+  J --> K["Judge or golden<br/>set"]
+  A --> L["What the model is<br/>for and its limits"]
+  L --> M["SageMaker Model<br/>Cards"]
+  A --> N["Which rows and<br/>columns a team<br/>reads"]
+  N --> O["Lake Formation"]
+</div>
+<p class="caption">Figure: audit questions and debugging questions use different records.</p>
+<ul>
+<li>Need the identity? CloudTrail. Need the words? Invocation logs.</li>
+<li>Invocation logs keep the original request, even when a guardrail masks the output.</li>
+<li>CloudWatch Logs shows what the model received. Logs Insights finds patterns by time, caller identity, or request metadata.</li>
+<li>Lake Formation controls column and row access to lake tables. Model Cards describe intended use and evaluation results.</li>
+<li>Lineage that shows which documents support an answer combines catalog metadata with citations. The Lake Formation permission model details are Not in source.</li>
+</ul>
+<p class="rule">Decision rule: Audit asks who and when. Debugging asks what the model received and which step failed.</p>
+<p class="trap">Trap: CloudTrail is for audit, not for debugging answers. Metrics alone cannot rebuild what the model received. Masked output does not mean the log is masked.</p>
+<p class="tip">Exam tip: Who and when point to CloudTrail. Words and content point to invocation logs.</p>
+<p class="src">Source: repo guide, Part 4 Domain 3, tasks 3.2 and 3.3, Part 6 Domain 5, task 5.2, visual units 15 and 16.</p>
+
+<h3>12. Versions, rollback, and release gates</h3>
+<p><span class="fact">Every release is a version you can roll back. A prompt, model, chunk setting, guardrail, or agent change is a release.</span></p>
+<div class="mermaid">
+flowchart TD
+  A["Stem names a change to<br/>prompt, model, chunks,<br/>guardrail, or agent"] --> B["Store the change as a<br/>version"]
+  B --> C["Run the golden set"]
+  C --> D["Quality gate passed"]
+  D -->|No| E["Block the release"]
+  D -->|Yes| F["Canary to a small share of<br/>traffic"]
+  F --> G["Alarm fires"]
+  G -->|Yes| H["Roll back to the last<br/>approved version"]
+  G -->|No| I["Move traffic to the full<br/>share"]
+  A --> J["Agent configuration change"]
+  J --> K["Prepare the agent and move<br/>the alias"]
+</div>
+<p class="caption">Figure: each release passes the same gates, and a failed gate blocks it.</p>
+<ul>
+<li>Prompt Management keeps saved versions and variants. An application deploys a chosen version.</li>
+<li>Agent edits go to DRAFT. Create a version, then point an alias to it. Callers use the alias.</li>
+<li>The SageMaker AI Model Registry gives each version an approval status. A rollback points to an earlier approved version.</li>
+<li>AppConfig rolls out a change in steps. A CloudWatch alarm rolls the change back.</li>
+<li>A canary starts at a small share, such as 10 percent. Traffic returns to the last approved version if an alarm fires.</li>
+</ul>
+<p class="rule">Decision rule: Version the change, run the golden set, pass the quality gate, then canary. Roll back to the last approved version.</p>
+<p class="trap">Trap: A prompt that changes in place has no safe rollback point. A re-sync is a change and needs the same gate. A console test on DRAFT does not prove the alias works.</p>
+<p class="tip">Exam tip: Inference. A rollback needs a stored approved version. Choose the option that keeps one.</p>
+<p class="src">Source: repo guide, Part 2 Domain 1, tasks 1.2 and 1.6, Part 3 Domain 2, task 2.1, Part 6 Domain 5, task 5.1, visual units 8, 14, 26, and 48.</p>
+
+<h3>13. Throttling and error codes</h3>
+<p><span class="fact">The error code tells you who must act. A quota error, a capacity error, and an input error need different fixes.</span></p>
+<div class="mermaid">
+flowchart LR
+  A["Stem shows an<br/>error code or<br/>throttling"] --> B["ThrottlingException<br/>HTTP 429"]
+  B --> C["Quota problem:<br/>backoff with<br/>jitter, quota<br/>increase, or<br/>Provisioned<br/>Throughput"]
+  A --> D["ServiceUnavailable<br/>503 or<br/>overloaded_error<br/>529"]
+  D --> E["Capacity problem:<br/>backoff with<br/>jitter,<br/>cross-Region<br/>inference, or<br/>another Region"]
+  A --> F["ValidationError<br/>HTTP 400"]
+  F --> G["Fix the request<br/>and do not retry"]
+  A --> H["AccessDeniedException<br/>HTTP 403"]
+  H --> I["Check IAM<br/>permissions for<br/>the call"]
+  A --> J["ResourceNotFound<br/>HTTP 404"]
+  J --> K["Check the model ID<br/>or resource name"]
+  A --> L["Throttling starts<br/>after buying<br/>capacity"]
+  L --> M["Call the<br/>provisioned model<br/>ARN, not the base<br/>model ID"]
+  A --> N["Retries reach the<br/>maximum attempt<br/>count"]
+  N --> O["Fallback model or<br/>cached answer"]
+</div>
+<p class="caption">Figure: read the code first, then pick the fix.</p>
+<ul>
+<li>Tokens per minute and tokens per day cap token use. Watch the InvocationThrottles metric in CloudWatch.</li>
+<li>Call CountTokens before the call. Compare the count with the model limit.</li>
+<li>Retry with exponential backoff and random jitter. Set a maximum number of attempts.</li>
+<li>After the last attempt, fall back to a second model or a cached answer.</li>
+<li>For sustained traffic, a quota increase or Provisioned Throughput fits a quota error.</li>
+</ul>
+<p class="rule">Decision rule: Read the code first. Retry capacity errors with backoff and jitter. Fix input errors. Request more quota for quota errors.</p>
+<p class="trap">Trap: A tight retry loop is never correct. Retries that add load make an overload worse. Retrying an input error never works. A 429 quota error and a 503 capacity error need different fixes.</p>
+<p class="tip">Exam tip: Throttling after buying capacity points to the base model ID. Call the provisioned model ARN.</p>
+<p class="src">Source: repo guide, Part 5 Domain 4, task 4.1, Part 6 Domain 5, task 5.2, visual unit 12, Part 8A3, error code unit H1.</p>
+
+<h3>14. Existing footprint</h3>
+<p><span class="fact">Aurora with pgvector fits vector search in a relational database the team already runs.</span></p>
+<div class="mermaid">
+flowchart LR
+  A["Stem names an<br/>existing store or<br/>team footprint"] --> B["Team already runs<br/>a relational<br/>database"]
+  B --> C["Aurora with<br/>pgvector"]
+  A --> D["Team already uses<br/>DynamoDB for<br/>metadata"]
+  D --> E["DynamoDB table<br/>with metadata and<br/>embeddings"]
+  A --> F["Private documents<br/>with citations and<br/>least effort"]
+  F --> G["Bedrock Knowledge<br/>Bases"]
+  A --> H["Frequent<br/>interactive<br/>queries with<br/>filters"]
+  H --> I["OpenSearch<br/>Serverless"]
+  A --> J["Large corpus with<br/>infrequent queries"]
+  J --> K["S3 Vectors with no<br/>cluster to run"]
+  A --> L["Service named in a<br/>closed status<br/>notice"]
+  L --> M["Use the documented<br/>alternative"]
+</div>
+<p class="caption">Figure: the footprint sets the store, if the store fits the query pattern.</p>
+<ul>
+<li>OpenSearch Serverless is managed vector search that combines filters and vectors.</li>
+<li>S3 Vectors suits a large corpus with infrequent queries and no cluster to run.</li>
+<li>An always-on store fits steady, interactive search with high query volume better.</li>
+<li>An RDS team: Not in source. The repo guide names Aurora with pgvector only.</li>
+<li>Amazon Kendra is no longer open to new customers. Bedrock Knowledge Bases is the documented alternative.</li>
+<li>Bedrock Agents and SageMaker Model Monitor are closed to new customers. Existing use still follows the docs.</li>
+</ul>
+<p class="rule">Decision rule: Inference. An existing footprint that meets every stated constraint is the simplest store to pick. Otherwise match the store to query rate and data size.</p>
+<p class="trap">Trap: The cheapest store is wrong when the latency need is strict. A closed service is not a new build option.</p>
+<p class="tip">Exam tip: Already runs and already uses in a stem point to the footprint. Check the store against the fit list in the guide.</p>
+<p class="src">Source: repo guide, Part 2 Domain 1, tasks 1.3 and 1.4, Part 3 Domain 2, task 2.5, Part 1C, Model Monitor status.</p>
+
+<h3>15. When Lambda is right and when it is wrong</h3>
+<p><span class="fact">A standard Lambda function runs at most 15 minutes in one invocation. Keep each Lambda step short.</span></p>
+<div class="mermaid">
+flowchart LR
+  A["Stem asks<br/>whether Lambda<br/>fits a step"] --> B["Is the step<br/>short and<br/>stateless"]
+  B -->|Yes| C["Lambda is a<br/>good fit"]
+  B -->|No| D["Does the step<br/>wait for a<br/>person or run<br/>past 15<br/>minutes"]
+  D -->|Yes| E["Step Functions<br/>Standard or an<br/>asynchronous<br/>job"]
+  A --> F["Light tool<br/>with bursty<br/>calls"]
+  F --> G["Lambda hosts a<br/>light<br/>stateless MCP<br/>tool"]
+  A --> H["Secret needed<br/>at run time"]
+  H --> I["Read from<br/>Secrets<br/>Manager at run<br/>time"]
+  A --> J["Function<br/>writes to the<br/>bucket that<br/>triggers it"]
+  J --> K["Loop risk:<br/>write to a<br/>second bucket<br/>or limit the<br/>trigger to one<br/>prefix"]
+  A --> L["Model call<br/>needs longer<br/>than 900<br/>seconds"]
+  L --> M["Asynchronous<br/>job or Step<br/>Functions"]
+</div>
+<p class="caption">Figure: Lambda suits short steps. Waits and long jobs move elsewhere.</p>
+<ul>
+<li>Lambda suits short compute steps and light stateless tools with bursty calls.</li>
+<li>A Lambda function behind API Gateway can call Bedrock. The clients keep one contract.</li>
+<li>Do not assume the 90-minute case applies to a standard function. The 90-minute case is for Lambda Managed Instances functions invoked asynchronously.</li>
+<li>Keep non-secret settings in environment variables. Read credentials from Secrets Manager at run time.</li>
+<li>Lambda routing with AppConfig uses rules you write. The model ID is read at run time.</li>
+</ul>
+<p class="rule">Decision rule: Lambda fits a short, stateless step. Move a wait or a long job to Step Functions or to asynchronous work.</p>
+<p class="trap">Trap: Raising the Lambda timeout past 900 seconds is wrong. 900 seconds is the Lambda maximum. Encryption at rest does not make a value a secret.</p>
+<p class="tip">Exam tip: Wait for a person and 15 minutes in one stem both point away from a single Lambda invocation.</p>
+<p class="src">Source: repo guide, Part 3 Domain 2, task 2.2, Part 7 Traps AWS reuses, visual unit 10, Part 8A6, Lambda environment variables and S3 event units.</p>
+
+<h3>16. When a native service stores the data versus when a model service does</h3>
+<p><span class="fact">Read what each service stores and returns. Look-alike services differ in that one fact.</span></p>
+<div class="mermaid">
+flowchart LR
+  A["Stem names a data<br/>need"] --> B["Durable store of<br/>record"]
+  B --> C["DynamoDB, S3, or a<br/>vector store"]
+  A --> D["Fast reads only as<br/>a cache layer"]
+  D --> E["ElastiCache as a<br/>cache, not the<br/>store of record"]
+  A --> F["Graph<br/>relationships<br/>across entities"]
+  F --> G["Neptune for<br/>GraphRAG"]
+  A --> H["Session memory<br/>that outlives the<br/>agent session"]
+  H --> I["DynamoDB with<br/>native TTL"]
+  A --> J["Generate, embed,<br/>or answer with a<br/>model"]
+  J --> K["Bedrock models,<br/>with InvokeModel<br/>for embeddings"]
+  J --> L["SageMaker AI<br/>endpoint for an<br/>own model"]
+  A --> M["Extract fields<br/>from documents"]
+  M --> N["Bedrock Data<br/>Automation"]
+  A --> O["Find PII in text"]
+  O --> P["Amazon Comprehend"]
+</div>
+<p class="caption">Figure: a store keeps data. A model service returns output.</p>
+<ul>
+<li>DynamoDB gives single-digit millisecond lookup by a key, such as a customer or session ID. Native TTL removes old records.</li>
+<li>The agent session expires. Its TTL is set in seconds, between 60 and 5400.</li>
+<li>Neptune traverses explicit relationships for GraphRAG. It is a distractor for plain document search.</li>
+<li>Bedrock hosts managed foundation models. SageMaker AI endpoints host a model that you own.</li>
+<li>Converse does not produce embeddings. Use InvokeModel with an embedding model.</li>
+<li>Guardrails block, mask, or filter content. They do not extract fields. Amazon Translate changes language and does not detect PII.</li>
+</ul>
+<p class="rule">Decision rule: Use a store for data that must persist. Use a model service for generated, embedded, or extracted output.</p>
+<p class="trap">Trap: Speed does not make a service durable. A guardrail does not validate data. Converse is not an embeddings API.</p>
+<p class="tip">Exam tip: Look-alike names do not decide the service. The stored or returned output does.</p>
+<p class="src">Source: repo guide, Part 2 Domain 1, tasks 1.3 and 1.4, Part 3 Domain 2, tasks 2.1 and 2.3, visual units 1, 49, and 63, Part 1C.</p>
+
+<h2>AWS caveats</h2>
+<p>Each rule below comes from the repo guide. Rules marked Inference are reasoning from the guide.</p>
+<ul>
+<li>Prefer the managed option that meets the stated constraint. <span class="src">Source: repo guide, Part 1 How AWS asks questions.</span></li>
+<li>A cheaper option that breaks one constraint is wrong. <span class="src">Source: repo guide, Part 1, and visual unit 22.</span></li>
+<li>A broader or more capable option is not a better answer by default. <span class="src">Inference: the guide says the flagship model is not the default answer, and bigger models do not fix broken retrieval.</span></li>
+<li>Name only the constraints that the stem states. Do not add one. <span class="src">Inference: the guide says custom work is chosen only when a constraint forces it.</span></li>
+<li>A guardrail does not validate data quality or extract fields. <span class="src">Source: repo guide, Part 2 Domain 1, task 1.3.</span></li>
+<li>A cache does not reserve capacity. Prompt caching lowers the cost of a repeated prefix. <span class="src">Source: repo guide, Part 3 Domain 2, task 2.5.</span></li>
+<li>A prompt does not enforce a control. A prompt that says stop is not a limit. <span class="src">Source: repo guide, Part 1B Lesson 8.</span></li>
+<li>Grounding reduces hallucination. It does not remove it. Grounding is not safety. <span class="src">Source: repo guide, Part 4 Domain 3, task 3.1.</span></li>
+<li>No control is absolute. Answers that claim full prevention are wrong. <span class="src">Source: repo guide, Part 4 Domain 3, task 3.1.</span></li>
+<li>A cross-Region profile is not automatic failover. Add retries and fallback in the application. <span class="src">Source: visual unit 3.</span></li>
+<li>Streaming does not extend a REST timeout and does not raise throughput. <span class="src">Source: visual unit 11, and repo guide, Part 5 Domain 4, task 4.2.</span></li>
+<li>Provisioned Throughput does not speed up one call. It reserves capacity. <span class="src">Source: repo guide, Part 1B Lesson 2.</span></li>
+<li>Reranking orders the chunks. It does not add a chunk that retrieval missed. <span class="src">Source: repo guide, Part 2 Domain 1, task 1.5.</span></li>
+<li>A Region in the cloud does not keep data on your premises. <span class="src">Source: visual unit 19.</span></li>
+<li>Converse is not an embeddings API. <span class="src">Source: visual unit 1.</span></li>
+<li>Encryption does not change the network path. PrivateLink does not encrypt data at rest. <span class="src">Source: repo guide, Part 8D, unit G3.</span></li>
+<li>The IAM layer still applies when application code changes or is skipped. <span class="src">Source: visual unit 18.</span></li>
+<li>MCP is the tool connection standard. It is not a safety control. <span class="src">Source: repo guide, Part 2 Domain 1, task 1.5.</span></li>
+<li>CloudTrail does not show row content. Invocation logs keep the original request. <span class="src">Source: visual unit 16.</span></li>
+<li>Metrics alone cannot rebuild a wrong answer. Keep the payloads under access control. <span class="src">Source: visual unit 15.</span></li>
+<li>Model Monitor does not score free-text answer quality. Use a judge or a golden set. <span class="src">Source: repo guide, Part 5 Domain 4, task 4.3.</span></li>
+<li>An uncalibrated judge gives opinions, not measurements. <span class="src">Source: repo guide, Part 6 Domain 5, task 5.1.</span></li>
+<li>A re-sync or a prompt edit is a release. It needs the same gate. <span class="src">Source: repo guide, Part 6 Domain 5, task 5.1.</span></li>
+<li>A console test on DRAFT does not prove the alias works. <span class="src">Source: visual unit 8.</span></li>
+<li>Detect mode is not a block. A blocked message needs the Block action. <span class="src">Source: repo guide, Part 4 Domain 3, task 3.1.</span></li>
+<li>Batch does not fit a user waiting on a reply. <span class="src">Source: repo guide, Part 5 Domain 4, task 4.1.</span></li>
+<li>A tight retry loop is never correct. Retries need jitter, a maximum attempt count, and a fallback. <span class="src">Source: visual unit 12.</span></li>
+<li>A standard Lambda function runs at most 15 minutes. <span class="src">Source: repo guide, Part 3 Domain 2, task 2.2.</span></li>
+<li>Bedrock Agents, Amazon Kendra, and Amazon Q Business are closed to new customers. Use the documented alternative. <span class="src">Source: repo guide, status notices in Parts 1C, 2, and 3.</span></li>
+<li>Multiple response: count the answers the stem requires. Select all of them. <span class="src">Source: repo guide, Part 8 Method for each question.</span></li>
+</ul>
+
+<h2>Source and status</h2>
+<p>Facts come from the repo study guide. Inference marks reasoning from the guide. Each claim the guide does not confirm carries its own mark. This page holds concepts and decision rules only.</p>
+</main>
+<script type="module">
+  import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.esm.min.mjs";
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: "base",
+    themeVariables: {
+      background: "#000000",
+      mainBkg: "#000000",
+      primaryColor: "#000000",
+      primaryTextColor: "#f2f2f2",
+      primaryBorderColor: "#7db8ff",
+      secondaryColor: "#000000",
+      tertiaryColor: "#000000",
+      lineColor: "#d0d0d0",
+      textColor: "#f2f2f2",
+      edgeLabelBackground: "#000000",
+      clusterBkg: "#000000",
+      clusterBorder: "#7db8ff",
+      titleColor: "#ffffff",
+      fontFamily: "Helvetica, Arial, sans-serif",
+      fontSize: "22px"
+    },
+    flowchart: { htmlLabels: true, curve: "basis", useMaxWidth: false, padding: 16, nodeSpacing: 40, rankSpacing: 56 }
+  });
+</script>
+</body>
+</html>
