@@ -1,0 +1,901 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>2. Safety, PII, and hallucination controls</title>
+<style>
+:root {
+  --bg: #000000;
+  --ink: #f2f2f2;
+  --fact: #7db8ff;
+  --rule: #6ee7a0;
+  --tip: #d8a6ff;
+  --trap: #ff8a8a;
+  --muted: #a8a8a8;
+  --line: #333333;
+}
+html, body { background: #000000; }
+body {
+  color: var(--ink);
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 19px;
+  line-height: 1.7;
+  margin: 0;
+  padding: 24px 20px 72px;
+}
+main { max-width: 780px; margin: 0 auto; }
+main p, main li { text-align: justify; }
+h1 { font-size: 32px; line-height: 1.3; margin: 0 0 12px; color: #ffffff; }
+h2 { font-size: 26px; line-height: 1.35; margin: 48px 0 14px; color: #ffffff; border-top: 1px solid var(--line); padding-top: 22px; }
+h3 { font-size: 21px; line-height: 1.4; margin: 32px 0 10px; color: #ffffff; }
+h4 { font-size: 19px; line-height: 1.4; margin: 24px 0 8px; color: #ffffff; }
+p { margin: 0 0 18px; }
+ul, ol { margin: 0 0 18px; padding-left: 26px; }
+li { margin-bottom: 10px; }
+.fact { color: var(--fact); }
+.rule { color: var(--rule); }
+.tip { color: var(--tip); }
+.trap { color: var(--trap); }
+.src { font-size: 16px; color: var(--muted); }
+.meta { font-size: 16px; color: var(--muted); margin-bottom: 24px; }
+.caption { font-size: 16px; color: var(--muted); margin: -8px 0 26px; text-align: left; }
+.legend p { margin-bottom: 6px; text-align: left; }
+.mermaid { margin: 14px 0 26px; font-size: 21px; text-align: left; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; }
+.mermaid svg { max-width: none; height: auto; }
+@media print {
+  .mermaid { overflow: visible; break-inside: avoid; }
+  .mermaid svg { max-width: 100% !important; height: auto !important; }
+  body { padding: 14mm 10mm; }
+  h1, h2, h3, h4 { break-after: avoid; }
+  p.caption, p.src { break-before: avoid; }
+}
+.markmap { position: relative; margin: 10px 0 28px; border-top: 1px solid #222; border-bottom: 1px solid #222; --markmap-text-color: #f2f2f2; --markmap-a-color: #7db8ff; color: #f2f2f2; }
+.markmap > svg { width: 100%; height: 560px; display: block; }
+.markmap foreignObject, .markmap .markmap-foreign { color: #f2f2f2; font-size: 17px; }
+nav.mod { font-size: 16px; color: #a8a8a8; margin: 0 0 18px; }
+nav.mod a { color: #7db8ff; }
+table { border-collapse: collapse; width: 100%; margin: 0 0 22px; font-size: 17px; }
+th, td { border: 1px solid #333; padding: 6px 8px; text-align: left; vertical-align: top; }
+th { color: #ffffff; }
+</style>
+</head>
+<body>
+<main>
+
+<nav class="mod"><a href="index.html">All modules</a> <a href="m1-service-chooser.html">Previous</a> <a href="m3-rag-vectors.html">Next</a></nav>
+<h2>Module m2: Safety, PII, and hallucination controls</h2>
+<p>After this module, you can read a long scenario, find the constraint that decides the service, and reject each wrong option with one reason. Most confusion comes from three names that sound alike: Amazon Bedrock Guardrails, Amazon Comprehend, and the many "filters" inside an application. This module puts that comparison at the center. Each section tells you when to choose a control, when not to choose it, and which limit decides the answer.</p>
+
+<div class="markmap"><script type="text/template">
+# Safety PII and hallucination controls
+## Pick the control by its job
+- Guardrails enforce model traffic policy
+- Comprehend finds or redacts PII
+- Macie scans S3 data
+- Clarify measures bias in data
+- A2I adds human review
+## Guardrail policies
+- Content filters by category strength
+- Prompt attack filter for injection
+- Denied topics for themes
+- Word filters for exact terms
+- Sensitive filters block or mask
+- Contextual grounding for answers
+- Automated Reasoning for rule logic
+## Where the check runs
+- Input and output of inference
+- ApplyGuardrail for any text
+- Agents and Knowledge Bases
+## Comprehend PII
+- Real-time up to 100 KB
+- Async jobs for redaction
+- English and Spanish only
+## Hallucination controls
+- Retrieval grounds the answer
+- Grounding check scores the response
+- Automated Reasoning checks rules
+- Citations show sources
+## Traps
+- Masking does not clean logs
+- Retrieval score is not truth
+- Clarify closed to new customers
+## Injection defenses
+- Tag user input for InvokeModel
+- Validate tool results in code
+- Least privilege on model ARNs
+## Read the question
+- Find the deciding constraint first
+- Reject wrong options with reasons
+- Watch timing words like batch
+</script></div>
+
+<h3>The deciding constraint</h3>
+<p>Start from the scenario, not from the list of services. Ask five questions in order. Where does the text live, at rest in storage or in a live request? What must happen to it, locate, mask, block, or score? Is a model call part of the path? Does a source or a rule decide whether the answer is correct? Does a person need to decide? The first two answers usually remove most of the options.</p>
+
+<div class="mermaid">
+flowchart TD
+  A["Scenario needs<br/>a safety<br/>control"] -->|data sits in<br/>S3 at rest| B["Amazon Macie"]
+  A -->|text in a<br/>live request| C["Which control<br/>acts on the<br/>text"]
+  C -->|locate PII<br/>with offsets| D["Comprehend<br/>DetectPiiEntities"]
+  C -->|policy on<br/>prompts or<br/>answers| E["Bedrock<br/>Guardrails"]
+  C -->|answer<br/>checked<br/>against<br/>sources| F["Contextual<br/>grounding<br/>check"]
+  C -->|answer<br/>checked<br/>against<br/>rules| G["Automated<br/>Reasoning<br/>checks"]
+  C -->|human<br/>judgment<br/>needed| H["Amazon A2I<br/>review loop"]
+  C -->|bias in data<br/>or<br/>predictions| I["SageMaker<br/>Clarify"]
+  E -->|model call<br/>in the path| J["Guardrail on<br/>Converse or<br/>InvokeModel"]
+  E -->|no model<br/>call| K["ApplyGuardrail<br/>API"]
+</div>
+<p class="caption">Figure: Start from where the text lives, then from what must happen to it.</p>
+
+<div class="mermaid">
+flowchart LR
+  A["Guardrail policy<br/>needed for a risk"] -->|harmful text<br/>categories| B["Content filters"]
+  A -->|jailbreak or<br/>injection text| C["Prompt attack<br/>filter"]
+  A -->|a named<br/>subject to<br/>avoid| D["Denied topics"]
+  A -->|exact words or<br/>profanity| E["Word filters"]
+  A -->|personal data<br/>or custom<br/>pattern| F["Sensitive<br/>information<br/>filters"]
+  A -->|answer not<br/>supported by<br/>source| G["Contextual<br/>grounding check"]
+  A -->|rule logic<br/>from a policy<br/>document| H["Automated<br/>Reasoning checks"]
+</div>
+<p class="caption">Figure: Each guardrail policy answers one kind of risk.</p>
+
+<p>Signal words for each branch of the tree:</p>
+<ul>
+<li><span class="fact">Signal words for Macie:</span> at rest, S3 bucket, discovery, inventory, object. Macie works on stored objects, not on a live chat message.</li>
+<li><span class="fact">Signal words for Comprehend:</span> PII, redact, locate, offsets, English or Spanish, text. Comprehend returns entities and positions, and your code applies the change.</li>
+<li><span class="fact">Signal words for guardrails:</span> harmful, unsafe, insults, jailbreak, block, mask, denied topic, blocked message. A guardrail returns a decision on both the input and the output.</li>
+<li><span class="fact">Signal words for grounding:</span> source passage, hallucination, supported by the source, relevant to the question. The check needs a grounding source, a query, and the answer.</li>
+<li><span class="fact">Signal words for rules:</span> policy document, eligibility rules, must follow the policy, formal logic. Automated Reasoning returns findings that your application must act on.</li>
+<li><span class="fact">Signal words for humans:</span> reviewer, escalate, human in the loop, approval queue. A2I adds people to the workflow, so it is slower than an automatic block.</li>
+<li><span class="fact">Signal words for bias:</span> demographic group, fairness, imbalance, bias metric. Clarify measures the data or the predictions, not the text of one message.</li>
+</ul>
+
+<h3>Amazon Bedrock Guardrails</h3>
+<h4>What it is</h4>
+<p class="fact">Amazon Bedrock Guardrails is a managed set of safeguards that you configure once and apply to model inputs and model outputs. A guardrail holds one or more policies and a blocked message. The policies are content filters, prompt attack detection, word filters, denied topics, Automated Reasoning checks, contextual grounding checks, and sensitive information filters. A guardrail must contain at least one policy and a messaging setting for blocked prompts and blocked responses.</p>
+<p class="fact">Each policy has its own action. Some actions block content and return the blocked message. Other actions mask content or only report a detection with no change. The console calls the no-change setting Detect. The API calls it NONE.</p>
+<h4>When to choose it</h4>
+<p class="rule">Rule: Choose Guardrails when the same safety policy must cover model prompts, model answers, or both, and the team wants managed policies instead of custom classifiers.</p>
+<p>Guardrails fits a chatbot that needs harmful content blocked, certain topics refused, and personal data masked. The application sets the guardrail identifier and version on the model call, so the same policy applies even when the team changes the prompt text. This is the answer when the wording says "consistent across models" or "minimal custom moderation code."</p>
+<h4>When not to choose it</h4>
+<p class="trap">Trap: Guardrails does not replace data cleaning before ingestion. A guardrail evaluates a request or response at inference time. It is not a batch redaction tool for a folder of files in S3.</p>
+<p class="trap">Trap: Guardrails does not cover the reasoning content blocks in the protection described for the content filters. A test answer that depends on protecting reasoning output with the content filters is wrong for that reason.</p>
+<h4>What it pairs with</h4>
+<p>Guardrails pairs with Comprehend when the design needs locating or redaction with exact offsets. It pairs with Lambda when a deterministic notice or tool result must be checked. It pairs with CloudWatch and invocation logs when auditors need evidence. It attaches to Agents and Knowledge Bases as well.</p>
+<h4>Limits and numbers</h4>
+<ul>
+<li><span class="fact">Filter strengths for content filters are NONE, LOW, MEDIUM, and HIGH.</span> Each category has an input strength and an output strength.</li>
+<li><span class="fact">Content filters support text and image input for the harmful categories in the console.</span> The API input modalities field accepts TEXT and IMAGE.</li>
+<li><span class="fact">Standard tier extends detection to code.</span> The docs name comments, variable and function names, and string literals.</li>
+<li><span class="fact">Blocked content appears in plain text in invocation logs when logging is on.</span> Plan retention for those logs.</li>
+<li><span class="fact">Contextual grounding threshold is between 0 and 0.99.</span> A threshold of 1 is not valid.</li>
+<li><span class="fact">Contextual grounding limits are 100,000 characters for the source, 1,000 for the query, and 5,000 for the response.</span></li>
+<li>Not in source: the number of policies or words allowed in one guardrail, and the request rate limits.</li>
+</ul>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-components.html, https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-content-filters.html, https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-contextual-grounding-check.html. Sundog slide page 54 lists the same policy families.</p>
+
+<h3>Input versus output evaluation</h3>
+<p class="fact">A guardrail used during inference checks the user input before the model runs. It then checks the model response before the application returns it. If the input is blocked, the model does not produce an answer and the blocked message returns. If the output is blocked or masked, the response that reaches the user changes.</p>
+<p class="rule">Rule: When the question says both prompts and responses must be checked, configure input and output strength or action separately, and attach the guardrail to the inference call.</p>
+<p class="trap">Trap: A single strength value is not enough when the scenario allows more false positives on user text but needs strict answers. Set the input and output strengths to different values.</p>
+<p class="tip">Exam tip: Look for the words "before the model" or "before the response is shown." Those words point to input and output checks, and they also point to a path that must cover both sides.</p>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-components.html, https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-content-filters-overview.html</p>
+
+<div class="mermaid">
+flowchart TD
+  A["User request"] -->|input check| B["Guardrail input policies"]
+  B -->|not blocked| C["Model call"]
+  C -->|output check| D["Guardrail output policies"]
+</div>
+<p class="caption">Figure: One guardrail covers the input and the output of one inference call.</p>
+
+<h3>Content filters</h3>
+<h4>What it is</h4>
+<p class="fact">Content filters detect harmful text or image content in prompts and responses. The predefined categories are Hate, Insults, Sexual, Violence, and Misconduct. Prompt attack is offered as a category inside content filters. Each category has its own strength for prompts and for responses.</p>
+<h4>When to choose it</h4>
+<p class="rule">Rule: Choose content filters when the risk is harmful language in a known category and the team wants a managed strength setting, not a list of words.</p>
+<p>Use content filters for abusive language from customers, sexual content in a public assistant, or violent text in a generated summary. The strength setting is the control that changes how many borderline messages are blocked. The team does not need to write a classifier.</p>
+<h4>When not to choose it</h4>
+<p class="trap">Trap: Content filters do not find a named phrase that the team wants to block. Use word filters for an exact phrase, such as a brand name or a banned term.</p>
+<p class="trap">Trap: Content filters do not evaluate tool results, tool definitions, or model-generated tool call arguments in tool use workloads. The docs say these fields are not assessed.</p>
+<h4>What it pairs with</h4>
+<p>Content filters pairs with word filters for banned terms and with denied topics for themes. It is the first policy to check when the scenario lists harassment, hate, or threats. It also pairs with a second control for tool outputs, because the filter does not read those fields.</p>
+<h4>Limits and numbers</h4>
+<ul>
+<li><span class="fact">Strength NONE applies no filtering.</span></li>
+<li><span class="fact">Strength LOW blocks content with HIGH confidence only.</span></li>
+<li><span class="fact">Strength MEDIUM blocks content with HIGH and MEDIUM confidence.</span></li>
+<li><span class="fact">Strength HIGH blocks content with HIGH, MEDIUM, and LOW confidence.</span> This is the strictest setting.</li>
+<li><span class="fact">Standard tier is needed for the code domain.</span> Classic tier covers natural language.</li>
+<li>Not in source: the exact list of languages for each content filter category in the pages reviewed.</li>
+</ul>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-content-filters-overview.html, https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-content-filters.html</p>
+
+<h3>Prompt attack filter</h3>
+<h4>What it is</h4>
+<p class="fact">The prompt attack filter detects jailbreaks, prompt injection, and prompt leakage. A jailbreak tries to bypass the model safety behavior. Prompt injection tries to override the developer instructions. Prompt leakage tries to reveal the system prompt or developer configuration. Prompt leakage detection needs the Standard tier.</p>
+<h4>When to choose it</h4>
+<p class="rule">Rule: Choose the prompt attack filter when untrusted user text can try to override instructions, and the team wants a managed classifier on that text.</p>
+<p>A typical case is a free-text field that a customer fills in and sends to the model with trusted instructions around it. The filter only needs to evaluate the untrusted part. Scope it correctly with tags or content blocks, as described below.</p>
+<h4>When not to choose it</h4>
+<p class="trap">Trap: Prompt instructions such as "never reveal your rules" are not enforcement. A model can still follow the injected text. The filter is the managed control.</p>
+<p class="trap">Trap: The prompt attack filter does not evaluate tool results. A tool response that contains injected instructions needs a control in the application, as described in the injection section.</p>
+<h4>What it pairs with</h4>
+<p>It pairs with input tags for InvokeModel and content blocks for Converse. It pairs with application-side validation of tool outputs. It also pairs with the Standard tier when the scenario names prompt leakage.</p>
+<h4>How to scope it</h4>
+<ol>
+<li>Wrap only the untrusted user text in the input tag for InvokeModel.</li>
+<li>Set the same tag suffix in the guardrail configuration of that request.</li>
+<li>Send the user text as a guard content block for Converse.</li>
+<li>Keep trusted instructions and retrieved passages outside the tags.</li>
+</ol>
+<p class="fact">The docs say that without input tags, Bedrock does not apply the prompt attack filter on InvokeModel and InvokeModelWithResponseStream. The tag names use the amazon-bedrock-guardrails-guardContent prefix with a suffix.</p>
+<p class="trap">Trap: Tagging the whole prompt is a scoping mistake. The filter then checks trusted instructions too. Tag only the field that a user controls.</p>
+<p class="trap">Trap: Raising the misconduct or violence strength does not fix a jailbreak in an untagged InvokeModel body. The prompt attack category needs its own strength and the tags.</p>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-prompt-attack.html, https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-contextual-grounding-check.html (Converse guard content blocks). Sundog slide page 69 describes prompt injection and prompt leakage in general terms.</p>
+
+<h3>Denied topics</h3>
+<h4>What it is</h4>
+<p class="fact">A denied topic is a named subject that the application must avoid, described in natural language. An example is advice on a regulated subject. The guardrail uses the topic definition and examples to decide whether a prompt or response falls inside that topic.</p>
+<h4>When to choose it</h4>
+<p class="rule">Rule: Choose denied topics when the rule is a subject area, such as investment advice, and not a fixed word or a fixed pattern.</p>
+<p>A bank assistant that must refuse to give investment guidance is a clean case. The team describes the topic once in the guardrail. Every model behind the guardrail then refuses the same subject.</p>
+<h4>When not to choose it</h4>
+<p class="trap">Trap: Denied topics are a poor fit for an exact list of words or for entity names. Word filters or sensitive information filters are the right controls for those rules.</p>
+<p class="trap">Trap: A denied topic does not measure whether an answer is true. Use contextual grounding or Automated Reasoning for correctness.</p>
+<h4>What it pairs with</h4>
+<p>Denied topics pairs with content filters for harmful categories and with word filters for exact terms. It also pairs with the blocked message, which the user sees when the topic is refused.</p>
+<h4>Limits and numbers</h4>
+<ul>
+<li><span class="fact">Denied topics use a natural language definition and optional examples.</span></li>
+<li>Not in source: the maximum number of denied topics per guardrail in the pages reviewed.</li>
+</ul>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-components.html. Sundog slide page 281 describes blocked topics for an enterprise assistant.</p>
+
+<h3>Word filters and profanity</h3>
+<h4>What it is</h4>
+<p class="fact">Word filters block exact words or phrases. The team can add custom words, such as a competitor name, or use the managed profanity list. The matching is exact, so the filter does not understand meaning.</p>
+<h4>When to choose it</h4>
+<p class="rule">Rule: Choose word filters when the banned item is a list of exact terms or the managed profanity list.</p>
+<p>A retailer that must block a set of banned slang words is a clean case. A word filter is simple, cheap to run, and easy to audit.</p>
+<h4>When not to choose it</h4>
+<p class="trap">Trap: Word filters do not catch a rephrased insult. A rude message written with different words passes an exact-match list. Content filters catch the meaning of harmful language.</p>
+<p class="trap">Trap: Word filters do not find personal data formats. A phone number or a national ID needs sensitive information filters or a custom regex.</p>
+<h4>What it pairs with</h4>
+<p>Word filters pairs with content filters because the two catch different things. The exact list catches known terms, and the managed category catches new phrasing.</p>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-components.html (word filters described as exact match, with a ready-to-use profanity option).</p>
+
+<h3>Sensitive information filters</h3>
+<h4>What it is</h4>
+<p class="fact">Sensitive information filters detect personal data in prompts and responses. The filter is a probabilistic machine learning feature that uses context. It supports a set of predefined PII types and custom regex patterns. For each type, the action is BLOCK, ANONYMIZE, or NONE in the API. The console labels the masking action Mask.</p>
+<h4>When to choose it</h4>
+<p class="rule">Rule: Choose sensitive information filters when the policy names PII types or a custom identifier pattern, and the control must sit on model input or output.</p>
+<p>A support assistant that must hide names, emails, and phone numbers in its answers is a clean case. A custom regex covers a loyalty number or a booking ID that has a fixed format.</p>
+<h4>When not to choose it</h4>
+<p class="trap">Trap: Masking in a guardrail does not sanitize invocation logs. The docs say the input field of the logs keeps the original request. Clean the data before the call or protect the logs with a separate control.</p>
+<p class="trap">Trap: The filter evaluates text only. It does not evaluate PII that the model writes into tool call arguments, tool results from the application, or tool definitions.</p>
+<p class="trap">Trap: The guardrail trace keeps the unmasked PII value in its match field. Treat the trace as sensitive.</p>
+<h4>What it pairs with</h4>
+<p>It pairs with Comprehend when the application must replace exact spans before the model call. It pairs with invocation logging when auditors need the record. It pairs with a custom regex when the identifier is company-specific.</p>
+<h4>Limits and numbers</h4>
+<ul>
+<li><span class="fact">Custom regex pattern length is 1 to 500 characters.</span></li>
+<li><span class="fact">Custom regex does not support lookaround matches.</span></li>
+<li><span class="fact">Masked text uses the PII type as a placeholder, such as NAME or EMAIL.</span></li>
+<li>Not in source: the exact count of custom regex patterns per guardrail.</li>
+</ul>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-sensitive-filters.html, https://docs.aws.amazon.com/bedrock/latest/userguide/model-invocation-logging.html. Sundog slide page 54 lists PII removal and masking as a guardrail feature.</p>
+
+<h3>Contextual grounding check</h3>
+<h4>What it is</h4>
+<p class="fact">The contextual grounding check scores a model response on two measures. Grounding asks whether the response is supported by the source you supply. Relevance asks whether the response answers the query. Each measure has a threshold. A response with a score below the threshold is filtered.</p>
+<p class="fact">The check needs three inputs. The grounding source is the passage. The query is the user question. The content to guard is the model response. The check runs on the output only, not on the prompt.</p>
+<h4>When to choose it</h4>
+<p class="rule">Rule: Choose the contextual grounding check when the answer must be supported by a supplied passage, and the team wants a managed score and a block or flag decision.</p>
+<p>A retrieval-based assistant that answers from policy pages is a clean case. The application passes the retrieved passages as the source, the question from the user as the query, and the answer as the content to guard.</p>
+<h4>When not to choose it</h4>
+<p class="trap">Trap: The check needs a source. A general question with no passage cannot be scored for grounding.</p>
+<p class="trap">Trap: Classic tier is strict. It lowers the grounding score for reasonable inference and conversational phrasing. Classic tier does not support conversational use cases. Standard tier supports reasoning and conversational content but needs cross-Region inference.</p>
+<p class="trap">Trap: A threshold of 1 is invalid. Use a value from 0 to 0.99.</p>
+<h4>What it pairs with</h4>
+<p>It pairs with RAG retrieval, which supplies the source. It pairs with Automated Reasoning when the answer must follow formal rules. It pairs with citations, which show where the passages came from. It does not replace reviewing the answer when the stake is high.</p>
+<h4>Limits and numbers</h4>
+<ul>
+<li><span class="fact">Threshold range is 0 to 0.99.</span></li>
+<li><span class="fact">Maximum grounding source is 100,000 characters.</span></li>
+<li><span class="fact">Maximum query is 1,000 characters.</span></li>
+<li><span class="fact">Maximum response is 5,000 characters.</span></li>
+<li><span class="fact">Standard tier requires cross-Region inference.</span></li>
+<li>Not in source: a recommended threshold for Classic tier. The docs suggest 0.7 as a starting point only for Standard tier conversational use.</li>
+</ul>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-contextual-grounding-check.html. Sundog slide page 54 describes grounding and relevance in the same terms.</p>
+
+<h3>Automated Reasoning checks</h3>
+<h4>What it is</h4>
+<p class="fact">Automated Reasoning checks validate model content against formal rules that you derive from a policy document. The policy document is natural language, such as a rules page. Bedrock extracts rules and variables from it. At runtime, the check returns findings that say whether the content is valid, invalid, or outside the policy scope. The findings include feedback that the application can use to rewrite or escalate.</p>
+<h4>When to choose it</h4>
+<p class="rule">Rule: Choose Automated Reasoning checks when the answer must follow written rules with conditions, such as eligibility or a benefit formula, and an audit needs a verifiable explanation.</p>
+<p>A benefits assistant that must apply a written eligibility rule is a clean case. The check can show which rule and which variable supported the result.</p>
+<h4>When not to choose it</h4>
+<p class="trap">Trap: The check is detect mode only. It does not block content by itself. The application must read the findings and decide what to do.</p>
+<p class="trap">Trap: The check does not support streaming. It needs the complete response.</p>
+<p class="trap">Trap: The check does not detect prompt injection or off-topic content. Use the prompt attack filter and denied topics for those risks.</p>
+<p class="trap">Trap: A valid result covers only the statements captured by policy variables. Other statements are outside the check.</p>
+<h4>What it pairs with</h4>
+<p>It pairs with content filters and topic policies in the same guardrail. It pairs with an application step that uses the findings. It pairs with a test set that checks the policy before release.</p>
+<h4>Limits and numbers</h4>
+<ul>
+<li><span class="fact">Input policy document limit is 5 MB and 50,000 characters.</span></li>
+<li><span class="fact">The check supports English US only.</span></li>
+<li><span class="fact">The check is charged per validation request, whatever the result.</span></li>
+<li><span class="fact">The check is listed as generally available in seven Regions, including US East N. Virginia and EU Ireland.</span></li>
+<li>Not in source: the exact latency added per request.</li>
+</ul>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-automated-reasoning-checks.html. Sundog slide page 55 describes the policy document flow and the Create policy API.</p>
+
+<h3>ApplyGuardrail API</h3>
+<h4>What it is</h4>
+<p class="fact">ApplyGuardrail evaluates any text against a configured guardrail without invoking a foundation model. The request names the guardrail identifier and version, sets the source to INPUT or OUTPUT, and sends the content. The response reports an action of GUARDRAIL_INTERVENED or NONE. The outputs are masked text, the blocked message, or an empty list when nothing happened.</p>
+<h4>When to choose it</h4>
+<p class="rule">Rule: Choose ApplyGuardrail when text must be checked with the same policy but no model call is part of the path.</p>
+<p>Examples are a deterministic notice assembled by Lambda, a rules-engine draft, text from an upstream workflow step, or a RAG query checked before retrieval. The policy stays the same as the one used on inference.</p>
+<h4>When not to choose it</h4>
+<p class="trap">Trap: ApplyGuardrail does not stop a model call by itself. The application must read the action and skip the call.</p>
+<p class="trap">Trap: An empty outputs list does not mean the content was blocked. It means no action happened.</p>
+<p class="trap">Trap: Using a model to rewrite deterministic text for safety adds cost and changes the message. Use ApplyGuardrail instead.</p>
+<h4>What it pairs with</h4>
+<p>It pairs with Lambda and Step Functions for workflow steps. It pairs with a guardrail on inference for the model path. It pairs with the full output scope when the team needs to see non-detected entries for debugging.</p>
+<h4>Limits and numbers</h4>
+<ul>
+<li><span class="fact">Source values are INPUT and OUTPUT.</span></li>
+<li><span class="fact">The output scope FULL returns non-detected entries as well as detected ones.</span> The docs say FULL does not apply to word filters or regex in sensitive information filters.</li>
+<li><span class="fact">The response usage fields count units for each policy type.</span></li>
+<li>Not in source: image input limits for ApplyGuardrail in the pages reviewed.</li>
+</ul>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-use-independent-api.html. Sundog slide page 21 lists guardrail configuration on Converse.</p>
+
+<h3>Guardrail versions</h3>
+<h4>What it is</h4>
+<p class="fact">A guardrail has an identifier and a version. The draft version is used while the team edits the guardrail. The application references a version on each model call or ApplyGuardrail call. A numbered version is a fixed point that a release can point to.</p>
+<h4>When to choose it</h4>
+<p class="rule">Rule: Pin the application to a numbered version for a release, and test the draft version separately.</p>
+<p>This keeps the audit trail clear. The team can prove which policy set was live on a given date.</p>
+<h4>When not to choose it</h4>
+<p class="trap">Trap: Editing the draft changes what the draft version does. A release that uses the draft does not have a fixed policy set.</p>
+<p class="trap">Trap: The version must be included with the identifier. An identifier alone is not enough for the call.</p>
+<h4>Limits and numbers</h4>
+<ul>
+<li><span class="fact">The docs show DRAFT as a valid version value in ApplyGuardrail examples.</span></li>
+<li>Not in source: the rules for creating numbered versions, and any claim that numbered versions are immutable, in the pages reviewed.</li>
+<li>Not in source: how organization-level policies reference guardrail versions. Do not answer a test item on that basis without the policy document.</li>
+</ul>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-use-independent-api.html (version in the request path). Sundog slide page 21 lists the guardrail identifier and version fields on Converse.</p>
+
+<h3>Guardrails with Agents and Knowledge Bases</h3>
+<h4>What it is</h4>
+<p class="fact">The Sundog course slides state that a guardrail can be incorporated into agents and knowledge bases. The course example combines an agent, a knowledge base for source material, an action group for a tool, and guardrails. Agent traces include a guardrail step that shows what the guardrail did.</p>
+<h4>When to choose it</h4>
+<p class="rule">Rule: Attach the guardrail at the agent or the knowledge base layer when the requirement covers every model call in that workflow.</p>
+<p>This avoids forgetting the guardrail on one call path.</p>
+<h4>When not to choose it</h4>
+<p class="trap">Trap: The pages reviewed do not show a guardrail that scans retrieved chunks before generation. Do not assume that retrieved references are inspected for policy. Check the retrieved passages with ApplyGuardrail or with a grounding check if the scenario needs it.</p>
+<p class="trap">Trap: A citation shows where a passage came from. It does not prove that the answer is correct.</p>
+<h4>Limits and numbers</h4>
+<ul>
+<li><span class="fact">Agent traces include a guardrail trace type.</span></li>
+<li>Not in source: the exact knowledge base retrieval fields that show guardrail results.</li>
+</ul>
+<p class="src">Source: Sundog slide pages 54, 226, and 419. The AWS documentation for agent guardrail configuration was not part of the fetched set.</p>
+
+<h3>Model invocation logging as audit evidence</h3>
+<h4>What it is</h4>
+<p class="fact">Model invocation logging records the request and response data for supported Bedrock calls in one Region. The supported operations are Converse, ConverseStream, InvokeModel, and InvokeModelWithResponseStream. The destinations are CloudWatch Logs and Amazon S3, and each destination must sit in the account and Region of the call. Logging is off by default.</p>
+<p class="fact">Each record includes the model identifier, the caller identity ARN, the token counts, and an optional request metadata object. The caller supplies the request metadata. The input body keeps the original request.</p>
+<h4>When to choose it</h4>
+<p class="rule">Rule: Enable invocation logging when auditors need prompt and response evidence, and make sure the stored content is already safe to keep.</p>
+<p>Use request metadata for a case identifier. Use the caller identity for who invoked the model.</p>
+<h4>When not to choose it</h4>
+<p class="trap">Trap: CloudTrail keeps an API activity record: the caller and the time. It does not replace the prompt and response record that invocation logging keeps.</p>
+<p class="trap">Trap: The docs say invocation logging is only supported for the bedrock-runtime endpoint. Calls through another endpoint are not captured.</p>
+<h4>Limits and numbers</h4>
+<ul>
+<li><span class="fact">Inline bodies up to 100 KB appear in the record.</span> Larger bodies and binary data go to S3 as separate objects.</li>
+<li><span class="fact">Logging is disabled by default.</span></li>
+</ul>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/model-invocation-logging.html. Sundog slide page 446 lists Bedrock model invocation logs as a monitoring source.</p>
+
+<div class="mermaid">
+flowchart TD
+  A["Auditors need evidence of<br/>model calls"] -->|prompt and response<br/>record| B["Model invocation logging"]
+  A -->|who called the API<br/>and when| C["CloudTrail"]
+  B -->|input is original<br/>text| D["Sanitize before the call"]
+  B -->|retain by Region and<br/>account| E["Same Region destination"]
+</div>
+<p class="caption">Figure: Logging keeps evidence, so the content must already be safe to keep.</p>
+
+<h3>Amazon Comprehend PII detection and redaction</h3>
+<h4>What it is</h4>
+<p class="fact">Amazon Comprehend detects PII entities in English and Spanish text. It returns each entity with a type, a confidence score, and character offsets for the start and end. Real-time analysis handles a single document of up to 100 KB of UTF-8 text. Redaction returns a copy of the text with the entities masked, and the docs say this needs an asynchronous batch job.</p>
+<h4>When to choose it</h4>
+<p class="rule">Rule: Choose Comprehend when the application must find PII in text before the model sees it, and the application must control the replacement.</p>
+<p>Lambda can call DetectPiiEntities, use the offsets to replace each span with a placeholder, and then call the model. The stored audit record can keep the type, score, and offsets for each entity.</p>
+<h4>When not to choose it</h4>
+<p class="trap">Trap: A real-time PII call returns locations, not redacted text. Writing the response straight into the prompt sends the original text.</p>
+<p class="trap">Trap: The asynchronous redaction job is a batch step. It does not fit a live chat path that must answer in seconds.</p>
+<p class="trap">Trap: Comprehend does not evaluate tool results in a guardrail sense. Your code must call it on each tool result that enters the model context.</p>
+<h4>What it pairs with</h4>
+<p>It pairs with Lambda for pre-processing and post-processing. It pairs with a Bedrock guardrail when the team wants a second layer on the model output. It pairs with Transcribe when the source is audio, because Transcribe can also redact PII from transcripts.</p>
+<h4>Limits and numbers</h4>
+<ul>
+<li><span class="fact">English and Spanish are supported for PII.</span></li>
+<li><span class="fact">Real-time input is up to 100 KB of UTF-8 text.</span></li>
+<li><span class="fact">Each detected entity has BeginOffset, EndOffset, Type, and Score.</span></li>
+<li>Not in source: the redaction mode names and masking options for the asynchronous job in the pages reviewed.</li>
+<li>Not in source: the exact contents of the ContainsPiiEntities response. Do not assume it returns offsets.</li>
+</ul>
+<p class="src">Source: https://docs.aws.amazon.com/comprehend/latest/dg/how-pii.html, https://docs.aws.amazon.com/comprehend/latest/dg/trust-safety.html. Sundog slide pages 57, 111, and 118 describe Comprehend in Lambda pre-processing and token-level redaction.</p>
+
+<h3>Amazon Comprehend toxicity and prompt safety</h3>
+<h4>What it is</h4>
+<p class="fact">DetectToxicContent is a synchronous API for English text. It takes up to 10 text strings, each up to 1 KB. It returns categories such as insult, harassment or abuse, hate speech, violence or threat, profanity, sexual content, and graphic content, with scores and a toxicity score.</p>
+<p class="fact">Prompt safety classification uses the ClassifyDocument operation on English text up to 10 KB. It returns SAFE or UNSAFE with a score. The docs state that topic modeling, event detection, and prompt safety classification are no longer available to new customers.</p>
+<h4>When to choose it</h4>
+<p class="rule">Rule: Choose DetectToxicContent for short English chat turns when the team needs a score per turn before the model call and a Comprehend-based check is allowed.</p>
+<h4>When not to choose it</h4>
+<p class="trap">Trap: Do not choose Comprehend toxicity for Spanish or long documents. The language and size limits fail the requirement.</p>
+<p class="trap">Trap: Do not design a new solution around prompt safety classification for a new account. The docs say it is not available to new customers.</p>
+<p class="trap">Trap: A toxicity score is not a guardrail. It does not block the model call by itself. The application must act on the score.</p>
+<h4>Limits and numbers</h4>
+<ul>
+<li><span class="fact">DetectToxicContent: English only, up to 10 strings, each up to 1 KB.</span></li>
+<li><span class="fact">ClassifyDocument prompt safety: English, up to 10 KB, classes SAFE and UNSAFE.</span></li>
+<li><span class="fact">Prompt safety and topic modeling are not available to new customers.</span></li>
+</ul>
+<p class="src">Source: https://docs.aws.amazon.com/comprehend/latest/dg/trust-safety.html</p>
+
+<h3>Amazon Macie</h3>
+<h4>What it is</h4>
+<p class="fact">Amazon Macie finds and reports sensitive data in Amazon S3. It discovers sensitive data in S3 objects by using managed data identifiers and custom data identifiers. It can run automated sensitive data discovery with sampling, or run sensitive data discovery jobs. Findings go to EventBridge and Security Hub.</p>
+<h4>When to choose it</h4>
+<p class="rule">Rule: Choose Macie when the data is stored in S3 and the team must find where sensitive data lives before the data is used.</p>
+<p>Macie fits the step before a RAG index is built from a folder of support tickets. Findings can route high-risk objects to a quarantine prefix.</p>
+<h4>When not to choose it</h4>
+<p class="trap">Trap: Macie does not scan a live chat message. The fetched page describes S3 scope only. A live request needs Comprehend, a guardrail, or application code.</p>
+<p class="trap">Trap: Macie finds data. It does not redact a file for you by itself. Pair it with a redaction step.</p>
+<h4>Limits and numbers</h4>
+<ul>
+<li><span class="fact">Scope is S3 general purpose buckets.</span></li>
+<li><span class="fact">Findings can be sent to EventBridge.</span></li>
+<li>Not in source: the per-object size limit for discovery in the pages reviewed.</li>
+</ul>
+<p class="src">Source: https://docs.aws.amazon.com/macie/latest/user/what-is-macie.html. Sundog slide pages 499 and 11 describe Macie for S3 discovery and PII.</p>
+
+<h3>Amazon SageMaker Clarify bias</h3>
+<h4>What it is</h4>
+<p class="fact">SageMaker Clarify measures bias in data before training and in predictions after training. Pre-training metrics include class imbalance, difference in proportions of labels, and several divergence measures. Clarify can also run bias drift monitoring against a baseline. The Sundog slides list these metrics and the terms facet, label, and group variable.</p>
+<p class="trap">Trap: The docs state that Clarify is no longer open to new customers. Existing customers can continue to use it, but the docs say no new features are planned. Do not design a new workload around Clarify if the scenario asks for a new account.</p>
+<h4>When to choose it</h4>
+<p class="rule">Rule: Choose Clarify when the question asks about bias in a dataset or in predictions across demographic groups, and the account already uses it.</p>
+<h4>When not to choose it</h4>
+<p class="trap">Trap: Clarify does not check a single generated sentence for harm. A guardrail or a judge model does that.</p>
+<p class="trap">Trap: Pre-training metrics do not need model outputs. Post-training or drift metrics do need predictions.</p>
+<h4>Limits and numbers</h4>
+<ul>
+<li><span class="fact">Pre-training metrics include CI, DPL, KL, JS, LP, TVD, KS, and CDD.</span></li>
+<li><span class="fact">Clarify is no longer open to new customers.</span></li>
+</ul>
+<p class="src">Source: https://docs.aws.amazon.com/sagemaker/latest/dg/clarify-detect-data-bias.html. Sundog slide pages 327, 328, and 330.</p>
+
+<h3>Amazon Augmented AI human review</h3>
+<h4>What it is</h4>
+<p class="fact">Amazon Augmented AI (A2I) inserts humans into a workflow to review and correct results. The Sundog slides list it in the set of tools for responsible AI, next to Clarify and Model Monitor. The AWS docs page for A2I was not part of the fetched set, so the flow details below are not confirmed.</p>
+<h4>When to choose it</h4>
+<p class="rule">Rule: Choose A2I when a person must review a model result before it is final, such as a borderline decision with a regulated outcome.</p>
+<h4>When not to choose it</h4>
+<p class="trap">Trap: A2I is not a real-time block. A reviewer takes minutes or hours, so it cannot be the only control in a live chat path.</p>
+<p class="trap">Trap: A guardrail blocks automatically. A2I routes to a person. Pick the one that matches the wording of the requirement.</p>
+<h4>Limits and numbers</h4>
+<ul>
+<li>Not in source: review queue limits, work team sizes, and integration details beyond the slide statement.</li>
+</ul>
+<p class="src">Source: Sundog slide page 433. AWS documentation for A2I was not confirmed in this review.</p>
+
+<h3>Prompt injection defenses beyond guardrails</h3>
+<h4>What it is</h4>
+<p class="fact">Prompt injection is an application security problem. Bedrock gives a filter, but the application must tag the input, scope the check, and treat outside text as untrusted. The Sundog slides also describe a system prompt with an instruction to refuse certain requests, and a PII filter or a rule not to store PII.</p>
+<h4>When to choose it</h4>
+<p class="rule">Rule: Add an application control when the untrusted text reaches a place the guardrail does not evaluate, such as tool results or retrieved documents.</p>
+<h4>What to do</h4>
+<ol>
+<li>Validate each tool result in Lambda before it re-enters the model context.</li>
+<li>Keep tool permissions to the approved model ARNs and tool actions.</li>
+<li>Tag only the user-controlled text for InvokeModel prompt attack checks.</li>
+<li>Log each blocked attempt and send it to a review queue.</li>
+</ol>
+<h4>When not to choose it</h4>
+<p class="trap">Trap: A longer system prompt is not a control. It can be overridden by the injected text.</p>
+<p class="trap">Trap: A WAF rule matches strings at the edge. It does not understand a role-play request written in fluent language.</p>
+<h4>Limits and numbers</h4>
+<ul>
+<li><span class="fact">The prompt attack filter does not evaluate tool results or tool definitions.</span></li>
+</ul>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-prompt-attack.html, https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-sensitive-filters.html. Sundog slide page 69 describes prompt injection, prompt leakage, and the system prompt approach.</p>
+
+<h3>Hallucination controls</h3>
+<h4>What it is</h4>
+<p class="fact">Hallucination controls are layers. Retrieval-augmented generation supplies source passages so the model answers from them. A grounding check scores the answer against those passages and the query. Automated Reasoning checks an answer against written rules. Citations show which passages the answer used. Each layer answers a different question.</p>
+<p class="fact">The Sundog slides say RAG can prevent hallucinations about information the model was not trained on, and can still hallucinate. The slides also say RAG is sensitive to the relevance of the retrieved passages.</p>
+<h4>When to choose each layer</h4>
+<ul>
+<li><span class="fact">RAG:</span> the question is about private or new documents.</li>
+<li><span class="fact">Grounding check:</span> the answer must be supported by the passages, and the team wants a managed score.</li>
+<li><span class="fact">Automated Reasoning:</span> the answer must follow written rules with conditions.</li>
+<li><span class="fact">Citations:</span> the user or reviewer must see the source.</li>
+</ul>
+<h4>When not to choose each layer</h4>
+<p class="trap">Trap: A retrieval score shows relevance to the query. It is not a truth score. A high score does not prove that the answer is correct.</p>
+<p class="trap">Trap: A citation proves a link, not a supported claim. Pair it with a grounding check when the claim must be verified.</p>
+<p class="trap">Trap: Model evaluation jobs measure quality across a test set. They do not moderate one live answer.</p>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-contextual-grounding-check.html, https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-automated-reasoning-checks.html. Sundog slide pages 162, 431 describe RAG pros and cons and output validation. Citation field names: Not in source.</p>
+
+<h3>Watermark detection for Titan images</h3>
+<p class="fact">Not in source. The Sundog extract and the pages fetched for this module do not describe watermark detection for Titan images. Do not answer a test item on watermark detection from this module.</p>
+<p class="src">Source: none for this topic. Checked the Sundog extract and the module corpus. No match.</p>
+
+<h3>Guardrails versus Comprehend</h3>
+<p>This is the center comparison of the module. Guardrails applies a policy to model traffic and returns a decision. Comprehend analyzes text and returns entities or scores that the application uses. A guardrail can mask PII in a response, but it does not return the offsets that a redaction step needs. Comprehend can find PII, but it does not block a harmful prompt for you.</p>
+<div class="mermaid">
+flowchart TD
+  A["Text must be<br/>protected<br/>before use"] -->|policy<br/>decision on<br/>model<br/>traffic| B["Bedrock<br/>Guardrails"]
+  A -->|entities<br/>with<br/>positions| C["Comprehend PII"]
+  A -->|both policy<br/>and exact<br/>spans| D["Both in one<br/>pipeline"]
+  B -->|input and<br/>output<br/>checks| E["Attach to<br/>inference call"]
+  C -->|live request<br/>under 100 KB| F["DetectPiiEntities<br/>in Lambda"]
+  C -->|batch files<br/>in S3| G["Asynchronous<br/>redaction job"]
+</div>
+<p class="caption">Figure: Guardrails decides, Comprehend locates. Use both when the scenario asks for both.</p>
+<ul>
+<li><span class="fact">Purpose.</span> Guardrails: enforce a policy on prompts and responses. Comprehend: find, score, or redact entities in text.</li>
+<li><span class="fact">Input.</span> Guardrails: the prompt, the response, or any text sent to ApplyGuardrail. Comprehend: one text document or a batch of files.</li>
+<li><span class="fact">Output or effect.</span> Guardrails: allow, block, mask, or report. Comprehend: entity types, scores, offsets, or a redacted copy from a batch job.</li>
+</ul>
+<p class="tip">Exam tip: Read the verb. "Block" or "enforce" points to Guardrails. "Identify the offsets" or "produce a redacted file" points to Comprehend.</p>
+<p class="rule">Rule: If the answer must change the text before the model sees it, and the change must be exact, use Comprehend plus application code. If the answer must refuse or mask on policy, use Guardrails.</p>
+<p><strong>The one question to ask yourself:</strong> Does the requirement name a policy outcome, or a location of data?</p>
+<p class="trap">Trap: Choosing Comprehend because the scenario says "PII." When the same sentence also says "block harmful content" and "consistent across models," Guardrails is the answer. Comprehend alone is incomplete.</p>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-components.html, https://docs.aws.amazon.com/comprehend/latest/dg/how-pii.html. Sundog slide pages 54 and 57.</p>
+
+<h3>Content filters versus word filters versus denied topics versus sensitive filters</h3>
+<p>Learners often treat all four as "filters." They are four different policy types in one guardrail. Each one has its own input, its own rule type, and its own action. Pick the one that matches the kind of risk named in the stem.</p>
+<div class="mermaid">
+flowchart TD
+  A["Which<br/>guardrail<br/>policy matches<br/>the risk"] -->|harm<br/>category<br/>with<br/>strength| B["Content<br/>filters"]
+  A -->|exact term<br/>from a list| C["Word filters"]
+  A -->|a subject<br/>area| D["Denied topics"]
+  A -->|personal<br/>data or a<br/>custom<br/>pattern| E["Sensitive<br/>information<br/>filters"]
+  B -->|strength<br/>picks the<br/>blocking set| F["Input and<br/>output<br/>strengths"]
+  E -->|action picks<br/>the outcome| G["Block or mask"]
+</div>
+<p class="caption">Figure: Match the risk type first, then choose the strength or the action.</p>
+<ul>
+<li><span class="fact">Purpose.</span> Content filters: harmful categories. Word filters: exact terms. Denied topics: subjects. Sensitive filters: personal data and patterns.</li>
+<li><span class="fact">Input.</span> Content filters: text and images by category. Word filters: text by exact match. Denied topics: text described by definition. Sensitive filters: text by PII type or regex.</li>
+<li><span class="fact">Output or effect.</span> Content filters: block by confidence and strength. Word filters: block. Denied topics: block. Sensitive filters: block or mask.</li>
+</ul>
+<p class="tip">Exam tip: The strength setting belongs only to content filters. If the stem asks for a strength, the answer is content filters or the prompt attack category.</p>
+<p class="rule">Rule: Use content filters for harm categories, word filters for named terms, denied topics for subjects, and sensitive filters for personal data.</p>
+<p><strong>The one question to ask yourself:</strong> Is the risk a category, a term, a subject, or a data format?</p>
+<p class="trap">Trap: A denied topic for a list of banned words. Denied topics are described in natural language. A list of exact words belongs in word filters.</p>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-components.html, https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-content-filters-overview.html.</p>
+
+<h3>Comprehend real-time versus asynchronous</h3>
+<p>Comprehend has two timing modes for PII. Real-time analysis returns results in the same call. An asynchronous job reads many documents and writes results later. Redaction is the job that needs the asynchronous mode.</p>
+<div class="mermaid">
+flowchart TD
+  A["Comprehend PII requirement"] -->|answer needed in the<br/>same request| B["Real-time<br/>DetectPiiEntities"]
+  A -->|many files and<br/>output later| C["Asynchronous job"]
+  B -->|single text up to<br/>100 KB| D["Offsets for masking in<br/>code"]
+  C -->|redacted copy needed| E["Redaction mode job"]
+</div>
+<p class="caption">Figure: Timing words in the stem decide the mode.</p>
+<ul>
+<li><span class="fact">Purpose.</span> Real-time: locate entities now. Asynchronous: process a collection later.</li>
+<li><span class="fact">Input.</span> Real-time: one text document up to 100 KB of UTF-8. Asynchronous: a set of documents in S3.</li>
+<li><span class="fact">Output or effect.</span> Real-time: entity list with type, score, and offsets. Asynchronous: output files, including redacted text when the job is a redaction job.</li>
+</ul>
+<p class="tip">Exam tip: Words such as "hourly," "nightly," or "batch" point to the asynchronous mode. Words such as "chat," "before the model call," or "live" point to real-time.</p>
+<p class="rule">Rule: Use real-time for a live path, and use the asynchronous job when the files are large or the output can wait.</p>
+<p><strong>The one question to ask yourself:</strong> Does the answer have to exist before the model call returns?</p>
+<p class="trap">Trap: Using the real-time response as if it were redacted text. It is a list of locations.</p>
+<p class="src">Source: https://docs.aws.amazon.com/comprehend/latest/dg/how-pii.html.</p>
+
+<h3>Comprehend versus Macie</h3>
+<p>Both services find sensitive data. Comprehend reads text in a request or a file that you send to it. Macie scans S3 objects where the data already lives, and it reports where sensitive data sits across the bucket inventory.</p>
+<div class="mermaid">
+flowchart TD
+  A["Need to find sensitive<br/>data"] -->|data sits in S3<br/>storage| B["Amazon Macie"]
+  A -->|text passed to an<br/>API| C["Amazon Comprehend"]
+  B -->|inventory and<br/>findings| D["Quarantine or tag the<br/>object"]
+  C -->|entity list for one<br/>document| E["Mask in application code"]
+</div>
+<p class="caption">Figure: Storage location decides Macie. Request text decides Comprehend.</p>
+<ul>
+<li><span class="fact">Purpose.</span> Macie: discover and report sensitive data in S3. Comprehend: detect and redact entities in text.</li>
+<li><span class="fact">Input.</span> Macie: S3 objects and buckets. Comprehend: text strings or documents you send.</li>
+<li><span class="fact">Output or effect.</span> Macie: findings and inventory. Comprehend: entity list, scores, offsets, or a redacted copy.</li>
+</ul>
+<p class="tip">Exam tip: The phrase "at rest" or "already stored" is the Macie signal. The phrase "before the model" or "in the request" is the Comprehend signal.</p>
+<p class="rule">Rule: Choose Macie to find data in S3 storage. Choose Comprehend to act on text before a model call.</p>
+<p><strong>The one question to ask yourself:</strong> Is the data sitting in storage, or passing through my code?</p>
+<p class="trap">Trap: Using Macie to block a live prompt. Macie does not sit in the request path.</p>
+<p class="src">Source: https://docs.aws.amazon.com/macie/latest/user/what-is-macie.html, https://docs.aws.amazon.com/comprehend/latest/dg/how-pii.html. Sundog slide page 499.</p>
+
+<h3>ApplyGuardrail versus a guardrail on inference</h3>
+<p>Both use the same guardrail. The difference is the call path. A guardrail on inference is attached to a model call, so the input and output checks happen inside that call. ApplyGuardrail checks text on its own, so it works with any text and with no model call.</p>
+<div class="mermaid">
+flowchart TD
+  A["Text needs the guardrail<br/>policy"] -->|a model call is in<br/>the path| B["Guardrail on Converse or<br/>InvokeModel"]
+  A -->|no model call in the<br/>path| C["ApplyGuardrail"]
+  B -->|input and output<br/>checked| D["Blocked message or masked<br/>answer"]
+  C -->|action returned to<br/>code| E["Application skips or masks<br/>the text"]
+</div>
+<p class="caption">Figure: The model call decides which path to use.</p>
+<ul>
+<li><span class="fact">Purpose.</span> Inference guardrail: protect a model call. ApplyGuardrail: protect any text.</li>
+<li><span class="fact">Input.</span> Inference guardrail: prompt and response. ApplyGuardrail: any text with a source value of INPUT or OUTPUT.</li>
+<li><span class="fact">Output or effect.</span> Inference guardrail: the model answer changes. ApplyGuardrail: an action that your code must use.</li>
+</ul>
+<p class="tip">Exam tip: The phrase "without invoking a foundation model" points to ApplyGuardrail. The phrase "every model call" points to the inference attachment.</p>
+<p class="rule">Rule: Use both when the scenario has a model path and a non-model path under one policy.</p>
+<p><strong>The one question to ask yourself:</strong> Is there a model call for this text?</p>
+<p class="trap">Trap: Calling ApplyGuardrail after the model returns and assuming the input was checked. Input and output need separate checks in that design.</p>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-use-independent-api.html. Sundog slide page 21 (Converse guardrail configuration).</p>
+
+<h3>Contextual grounding versus Automated Reasoning versus citations</h3>
+<p>These three answer different questions about an answer. Grounding asks whether the answer is supported by the passage and relevant to the query. Automated Reasoning asks whether the answer follows written rules. Citations ask where the answer came from.</p>
+<div class="mermaid">
+flowchart TD
+  A["Answer quality<br/>question"] -->|supported by<br/>the passage| B["Contextual<br/>grounding check"]
+  A -->|follows<br/>written rules| C["Automated<br/>Reasoning checks"]
+  A -->|shows the<br/>source| D["Citations"]
+  B -->|score against<br/>threshold| E["Block or flag the<br/>answer"]
+  C -->|findings for<br/>the app| F["Rewrite or<br/>escalate"]
+</div>
+<p class="caption">Figure: Pick the layer that matches the question in the stem.</p>
+<ul>
+<li><span class="fact">Purpose.</span> Grounding: supported and relevant. Automated Reasoning: valid under rules. Citations: source links.</li>
+<li><span class="fact">Input.</span> Grounding: source, query, and response. Automated Reasoning: policy document and response. Citations: retrieved passages.</li>
+<li><span class="fact">Output or effect.</span> Grounding: scores and a block or flag. Automated Reasoning: findings only. Citations: references.</li>
+</ul>
+<p class="tip">Exam tip: The word "rule" or "eligibility policy" points to Automated Reasoning. The word "supported by the passage" points to grounding.</p>
+<p class="rule">Rule: Use grounding for passage support, Automated Reasoning for formal rules, and citations for traceability.</p>
+<p><strong>The one question to ask yourself:</strong> Is the claim wrong against a passage, or against a rule?</p>
+<p class="trap">Trap: Treating a citation as proof of correctness. A citation can point to a passage that does not support the claim.</p>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-contextual-grounding-check.html, https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-automated-reasoning-checks.html.</p>
+
+<h3>Clarify versus model evaluation versus guardrails for bias</h3>
+<p>Bias work splits into three jobs. Clarify measures bias in data or predictions across groups. Model evaluation measures quality across a test set. Guardrails block or mask content in one live request. A bias question about a dataset does not need a guardrail, and a live harmful answer does not need a dataset metric.</p>
+<div class="mermaid">
+flowchart TD
+  A["Bias or fairness<br/>requirement"] -->|imbalance in data or<br/>predictions| B["SageMaker Clarify"]
+  A -->|quality across a<br/>test set| C["Model evaluation"]
+  A -->|one live answer must<br/>be blocked| D["Guardrails"]
+  B -->|baseline and drift<br/>alerts| E["Monitoring output"]
+  D -->|block or mask| F["Blocked message"]
+</div>
+<p class="caption">Figure: Scope decides the tool. Dataset scope, test set scope, or single request scope.</p>
+<ul>
+<li><span class="fact">Purpose.</span> Clarify: measure bias. Model evaluation: measure quality. Guardrails: enforce on one request.</li>
+<li><span class="fact">Input.</span> Clarify: a dataset or predictions. Model evaluation: prompts and responses in a test set. Guardrails: one prompt or response.</li>
+<li><span class="fact">Output or effect.</span> Clarify: metrics and alerts. Model evaluation: scores. Guardrails: block, mask, or report.</li>
+</ul>
+<p class="tip">Exam tip: Check the account status in the stem. Clarify is closed to new customers, so a new-account design should not depend on it.</p>
+<p class="rule">Rule: Use Clarify for group bias in data or predictions, and use guardrails for a live harmful output.</p>
+<p><strong>The one question to ask yourself:</strong> Is the bias question about a population, or about one message?</p>
+<p class="trap">Trap: A guardrail with a denied topic for a demographic group is not a fairness metric. It blocks text, but it does not measure disparity.</p>
+<p class="src">Source: https://docs.aws.amazon.com/sagemaker/latest/dg/clarify-detect-data-bias.html, https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-components.html. Sundog slide pages 327 and 433.</p>
+
+<h3>Automated blocking versus Amazon A2I review</h3>
+<p>A guardrail decides at once. A2I sends the case to a person. Both can sit in one design. The guardrail handles the clear cases, and A2I handles the borderline cases that need judgment.</p>
+<div class="mermaid">
+flowchart TD
+  A["Output needs a<br/>decision"] -->|clear policy<br/>violation| B["Guardrail blocks<br/>at once"]
+  A -->|borderline and<br/>high stakes| C["A2I human review"]
+  C -->|reviewer<br/>approves| D["Release the answer"]
+  C -->|reviewer<br/>rejects| E["Send the blocked<br/>message"]
+</div>
+<p class="caption">Figure: Automatic for clear cases, human for judgment cases.</p>
+<ul>
+<li><span class="fact">Purpose.</span> Guardrail: enforce policy at once. A2I: add human judgment.</li>
+<li><span class="fact">Input.</span> Guardrail: text in a request. A2I: a model result and its context.</li>
+<li><span class="fact">Output or effect.</span> Guardrail: an immediate action. A2I: a reviewed decision.</li>
+</ul>
+<p class="tip">Exam tip: Words such as "reviewer," "escalate," or "approval" point to A2I. Words such as "immediately" or "before the response is shown" point to a guardrail.</p>
+<p class="rule">Rule: Use a guardrail for the live decision, and use A2I for the cases that a person must judge.</p>
+<p><strong>The one question to ask yourself:</strong> Can the decision wait for a person?</p>
+<p class="trap">Trap: Placing A2I as the only control in a live chat path. The reviewer is too slow for that path.</p>
+<p class="src">Source: Sundog slide page 433. A2I documentation: not confirmed in this review.</p>
+
+<h3>Guardrails versus AWS Control Tower guardrails</h3>
+<p>The word "guardrail" is used for two different services. Bedrock Guardrails filters model traffic. Control Tower guardrails govern AWS accounts. Control Tower uses preventive controls built on service control policies and detective controls built on AWS Config.</p>
+<div class="mermaid">
+flowchart TD
+  A["Guardrail word in<br/>the stem"] -->|model prompts<br/>or answers| B["Bedrock Guardrails"]
+  A -->|account or<br/>region rules| C["Control Tower<br/>guardrails"]
+  C -->|block an<br/>action| D["Preventive using<br/>SCPs"]
+  C -->|detect and<br/>alert| E["Detective with AWS<br/>Config"]
+</div>
+<p class="caption">Figure: Read the object of the word guardrail before you choose.</p>
+<ul>
+<li><span class="fact">Purpose.</span> Bedrock Guardrails: safety on model traffic. Control Tower guardrails: governance of accounts.</li>
+<li><span class="fact">Input.</span> Bedrock Guardrails: prompts and responses. Control Tower: account actions and resource configuration.</li>
+<li><span class="fact">Output or effect.</span> Bedrock Guardrails: block or mask. Control Tower: deny an action or report non-compliance.</li>
+</ul>
+<p class="tip">Exam tip: If the stem names prompts, responses, tokens, or a model, the guardrail is Bedrock. If it names accounts, OUs, or regions, the guardrail is Control Tower.</p>
+<p class="rule">Rule: Match the word guardrail to the object it protects.</p>
+<p class="trap">Trap: Choosing a Control Tower guardrail to stop harmful model output. It does not read model text.</p>
+<p class="src">Source: Sundog slide pages 490 and 491 describe Control Tower guardrails with preventive and detective types. Sundog slide page 54 describes Bedrock Guardrails.</p>
+
+<h3>Guardrail masking versus Comprehend redaction</h3>
+<p>Both mask PII. A guardrail masks text as part of a model policy, and it does so on prompt or response. Comprehend redaction is a separate step that your design calls before the model. The difference matters when the copy is stored, because a guardrail mask does not change what the invocation log keeps.</p>
+<div class="mermaid">
+flowchart TD
+  A["PII must not reach the<br/>model"] -->|masked before the<br/>call| B["Comprehend plus code"]
+  A -->|masked as a model<br/>policy| C["Guardrail sensitive filter"]
+  B -->|copy stored in the<br/>audit trail| D["Safe to keep"]
+  C -->|log input keeps the<br/>original| E["Not safe to keep"]
+</div>
+<p class="caption">Figure: Masking in the guardrail protects the answer, not the stored input.</p>
+<ul>
+<li><span class="fact">Purpose.</span> Guardrail: policy on prompt or answer. Comprehend: locate or redact before the call.</li>
+<li><span class="fact">Input.</span> Guardrail: prompt or response text. Comprehend: text your code sends.</li>
+<li><span class="fact">Output or effect.</span> Guardrail: masked answer, with the original kept in logs. Comprehend: redacted input before the model sees it.</li>
+</ul>
+<p class="tip">Exam tip: If the stem asks what the audit log stores, the answer depends on whether the input was redacted before the call.</p>
+<p class="rule">Rule: For clean logs, redact before the model call and use the guardrail as the second layer.</p>
+<p><strong>The one question to ask yourself:</strong> Does the stored record need to be clean?</p>
+<p class="trap">Trap: Relying on guardrail masking alone when the stem requires clean invocation logs.</p>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-sensitive-filters.html, https://docs.aws.amazon.com/bedrock/latest/userguide/model-invocation-logging.html.</p>
+
+<h3>Read a long question: three worked scenarios</h3>
+<p>Each scenario below is written for this module. The steps are the same for any long stem. Find the deciding constraint, underline the words that set it, reject each option with one reason, and then choose.</p>
+
+<h4>Scenario one: live chat with personal data</h4>
+<p>A support team sends each live chat message to a model on Bedrock. Customer names and phone numbers must not reach the model. Each chat message is under 10 KB.</p>
+<p><strong>Constraint words:</strong> live chat, must not reach the model, names and phone numbers, under 10 KB.</p>
+<ul>
+<li><span class="fact">Macie:</span> rejected. It scans S3 at rest, and the message is in a live request.</li>
+<li><span class="fact">Asynchronous redaction job:</span> rejected. It is batch, and the chat path cannot wait.</li>
+<li><span class="fact">Prompt instruction to ignore personal data:</span> rejected. An instruction is not enforcement.</li>
+<li><span class="fact">Real-time DetectPiiEntities in Lambda, masking offsets, then the model call:</span> chosen. It runs in the live path and works under the size limit.</li>
+</ul>
+<p>Add a guardrail with a sensitive information filter on the model call. That covers output masking as a second layer.</p>
+<p class="rule">Rule: Live text and personal data point to real-time Comprehend in code, with a guardrail as the second layer.</p>
+
+<h4>Scenario two: a notice assembled by code</h4>
+<p>A Lambda function builds a fixed notice from a rules engine. The notice must pass the same safety policy as the chatbot, and no model call is allowed for the notice. The team wants the least custom code.</p>
+<p><strong>Constraint words:</strong> assembled by code, same safety policy, no model call, least custom code.</p>
+<ul>
+<li><span class="fact">Second guardrail with different settings:</span> rejected. Two policies drift apart over time.</li>
+<li><span class="fact">Model call to rewrite the notice:</span> rejected. It breaks the no-model rule and adds cost.</li>
+<li><span class="fact">Custom regex and word lists in Lambda:</span> rejected. It is more custom code than the managed option.</li>
+<li><span class="fact">ApplyGuardrail with the same guardrail and version:</span> chosen. It evaluates the text without a model call.</li>
+</ul>
+<p class="rule">Rule: Non-model text with an existing policy points to ApplyGuardrail on the same guardrail version.</p>
+
+<h4>Scenario three: an answer from policy pages</h4>
+<p>A benefits assistant answers from policy pages retrieved by RAG. The answer must be supported by the retrieved text, and a reviewer must see where each claim came from. The team does not need a formal rule engine.</p>
+<p><strong>Constraint words:</strong> supported by the retrieved text, reviewer must see where, no formal rule engine.</p>
+<ul>
+<li><span class="fact">Retrieval score as proof:</span> rejected. A relevance score is not a truth score.</li>
+<li><span class="fact">Automated Reasoning:</span> rejected for this stem. The team does not have a formal rule set, and the check is detect mode only.</li>
+<li><span class="fact">Word filter for wrong facts:</span> rejected. Word filters match exact terms, not facts.</li>
+<li><span class="fact">Contextual grounding check with the passages as source, plus citations:</span> chosen. It scores support, and citations show the source.</li>
+</ul>
+<p class="rule">Rule: Support against passages points to the grounding check. Citations are for traceability only.</p>
+
+<h3>Distractor patterns seen in the tests</h3>
+<p>Wrong options follow a small set of patterns. Learn the pattern, and you can reject an option even when you do not know every service detail.</p>
+<ul>
+<li><span class="trap">Trap: The right service in the wrong place.</span> Macie scans storage, so it does not protect a live message. Each option sounds correct, but the data location is wrong.</li>
+<li><span class="trap">Trap: The right service at the wrong time.</span> A batch job cannot sit in a live path that must answer in seconds.</li>
+<li><span class="trap">Trap: A prompt as a control.</span> A system prompt that says "refuse" is advice to the model. It is not a check the application can rely on.</li>
+<li><span class="trap">Trap: A location returned as a redaction.</span> A real-time PII call returns offsets. The original text stays until code changes it.</li>
+<li><span class="trap">Trap: A score treated as truth.</span> Retrieval scores and toxicity scores measure something other than correctness.</li>
+<li><span class="trap">Trap: A filter named for the wrong risk.</span> A word filter for PII, or a denied topic for a list of words, uses the wrong policy type.</li>
+<li><span class="trap">Trap: A model call used as a moderator.</span> Calling a model to judge text that a managed policy could judge adds cost and a new failure mode.</li>
+<li><span class="trap">Trap: Manual review as an automatic block.</span> A2I routes to a person. It does not stop a response at once.</li>
+<li><span class="trap">Trap: A limit that is not real.</span> A threshold of 1 for grounding, or a strength that is not in the list, is invalid.</li>
+<li><span class="trap">Trap: A retired or closed feature.</span> Clarify and prompt safety classification are closed to new customers, so a design that depends on them fails the account condition.</li>
+<li><span class="trap">Trap: Guardrails assumed to cover tool results.</span> The docs say content filters and sensitive filters do not evaluate tool results, tool definitions, or tool call arguments.</li>
+</ul>
+
+<h3>Drill</h3>
+<p>Cover the answer line, read the prompt, decide, then check.</p>
+
+<p>1. Chat input must block insults before the model call. Which control?</p>
+<p class="rule">Rule: Content filters with the Insults category, input strength set, on the guardrail attached to the call.</p>
+
+<p>2. A monthly batch of files in S3 must produce redacted copies. Which service and mode?</p>
+<p class="rule">Rule: Comprehend asynchronous redaction job. Real-time calls return offsets only.</p>
+
+<p>3. Find buckets of files that hold personal data in S3. Which service?</p>
+<p class="rule">Rule: Amazon Macie, using sensitive data discovery on S3.</p>
+
+<p>4. A model must not discuss one named subject. Which policy?</p>
+<p class="rule">Rule: Denied topics, described in natural language.</p>
+
+<p>5. A list of banned product code words must be blocked exactly. Which policy?</p>
+<p class="rule">Rule: Word filters with custom words.</p>
+
+<p>6. Customer account numbers have a fixed pattern. Which guardrail feature?</p>
+<p class="rule">Rule: Sensitive information filter with a custom regex, action block or mask.</p>
+
+<p>7. A generated answer must be supported by the retrieved passages, with a score. Which check?</p>
+<p class="rule">Rule: Contextual grounding check with the passage as the source, the question as the query, and the answer as the content.</p>
+
+<p>8. A written eligibility policy with conditions must govern each answer. Which check?</p>
+<p class="rule">Rule: Automated Reasoning checks, which return findings in detect mode.</p>
+
+<p>9. Text from a rules engine must be checked with no model call. Which API?</p>
+<p class="rule">Rule: ApplyGuardrail with the guardrail identifier, version, and source.</p>
+
+<p>10. A tool result returned by an external API may contain injected instructions. Which control is missing?</p>
+<p class="rule">Rule: Application validation of the tool result in Lambda, since the prompt attack filter does not evaluate tool results.</p>
+
+<p>11. Auditors need the prompt and response record for each Region. Which setting?</p>
+<p class="rule">Rule: Model invocation logging per Region, with the same-account destination. It is off by default.</p>
+
+<p>12. The stem says a person must approve borderline outputs before release. Which service?</p>
+<p class="rule">Rule: Amazon A2I human review loop, not a guardrail block.</p>
+
+<h3>Sources</h3>
+<ul>
+<li>https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-components.html</li>
+<li>https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-content-filters-overview.html</li>
+<li>https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-content-filters.html</li>
+<li>https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-prompt-attack.html</li>
+<li>https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-sensitive-filters.html</li>
+<li>https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-contextual-grounding-check.html</li>
+<li>https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-automated-reasoning-checks.html</li>
+<li>https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-use-independent-api.html</li>
+<li>https://docs.aws.amazon.com/bedrock/latest/userguide/model-invocation-logging.html</li>
+<li>https://docs.aws.amazon.com/comprehend/latest/dg/how-pii.html</li>
+<li>https://docs.aws.amazon.com/comprehend/latest/dg/trust-safety.html</li>
+<li>https://docs.aws.amazon.com/macie/latest/user/what-is-macie.html</li>
+<li>https://docs.aws.amazon.com/sagemaker/latest/dg/clarify-detect-data-bias.html</li>
+<li>Sundog course slide extract, module m2 (corpus file m2-safety-pii-sundog.txt), slide pages 21, 54, 55, 57, 69, 118, 162, 264, 281, 327, 328, 330, 373, 419, 433, 446, 490, 491, 499.</li>
+</ul>
+<nav class="mod"><a href="index.html">All modules</a> <a href="m1-service-chooser.html">Previous</a> <a href="m3-rag-vectors.html">Next</a></nav>
+</main>
+<script type="module">
+  import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.esm.min.mjs";
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: "base",
+    themeVariables: {
+      background: "#000000",
+      mainBkg: "#000000",
+      primaryColor: "#000000",
+      primaryTextColor: "#f2f2f2",
+      primaryBorderColor: "#7db8ff",
+      secondaryColor: "#000000",
+      tertiaryColor: "#000000",
+      lineColor: "#d0d0d0",
+      textColor: "#f2f2f2",
+      edgeLabelBackground: "#000000",
+      clusterBkg: "#000000",
+      clusterBorder: "#7db8ff",
+      titleColor: "#ffffff",
+      fontFamily: "Helvetica, Arial, sans-serif",
+      fontSize: "22px"
+    },
+    flowchart: { htmlLabels: true, curve: "basis", useMaxWidth: false, padding: 16, nodeSpacing: 40, rankSpacing: 56 }
+  });
+</script>
+<script>window.markmap = { autoLoader: { manual: false, toolbar: false } };</script>
+<script src="https://cdn.jsdelivr.net/npm/markmap-autoloader@0.18.12"></script>
+</body>
+</html>

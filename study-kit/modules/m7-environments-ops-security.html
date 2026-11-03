@@ -1,0 +1,816 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>7. Dev, QA, production, operations, security</title>
+<style>
+:root {
+  --bg: #000000;
+  --ink: #f2f2f2;
+  --fact: #7db8ff;
+  --rule: #6ee7a0;
+  --tip: #d8a6ff;
+  --trap: #ff8a8a;
+  --muted: #a8a8a8;
+  --line: #333333;
+}
+html, body { background: #000000; }
+body {
+  color: var(--ink);
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 19px;
+  line-height: 1.7;
+  margin: 0;
+  padding: 24px 20px 72px;
+}
+main { max-width: 780px; margin: 0 auto; }
+main p, main li { text-align: justify; }
+h1 { font-size: 32px; line-height: 1.3; margin: 0 0 12px; color: #ffffff; }
+h2 { font-size: 26px; line-height: 1.35; margin: 48px 0 14px; color: #ffffff; border-top: 1px solid var(--line); padding-top: 22px; }
+h3 { font-size: 21px; line-height: 1.4; margin: 32px 0 10px; color: #ffffff; }
+h4 { font-size: 19px; line-height: 1.4; margin: 24px 0 8px; color: #ffffff; }
+p { margin: 0 0 18px; }
+ul, ol { margin: 0 0 18px; padding-left: 26px; }
+li { margin-bottom: 10px; }
+.fact { color: var(--fact); }
+.rule { color: var(--rule); }
+.tip { color: var(--tip); }
+.trap { color: var(--trap); }
+.src { font-size: 16px; color: var(--muted); }
+.meta { font-size: 16px; color: var(--muted); margin-bottom: 24px; }
+.caption { font-size: 16px; color: var(--muted); margin: -8px 0 26px; text-align: left; }
+.legend p { margin-bottom: 6px; text-align: left; }
+.mermaid { margin: 14px 0 26px; font-size: 21px; text-align: left; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; }
+.mermaid svg { max-width: none; height: auto; }
+@media print {
+  .mermaid { overflow: visible; break-inside: avoid; }
+  .mermaid svg { max-width: 100% !important; height: auto !important; }
+  body { padding: 14mm 10mm; }
+  h1, h2, h3, h4 { break-after: avoid; }
+  p.caption, p.src { break-before: avoid; }
+}
+.markmap { position: relative; margin: 10px 0 28px; border-top: 1px solid #222; border-bottom: 1px solid #222; --markmap-text-color: #f2f2f2; --markmap-a-color: #7db8ff; color: #f2f2f2; }
+.markmap > svg { width: 100%; height: 560px; display: block; }
+.markmap foreignObject, .markmap .markmap-foreign { color: #f2f2f2; font-size: 17px; }
+nav.mod { font-size: 16px; color: #a8a8a8; margin: 0 0 18px; }
+nav.mod a { color: #7db8ff; }
+table { border-collapse: collapse; width: 100%; margin: 0 0 22px; font-size: 17px; }
+th, td { border: 1px solid #333; padding: 6px 8px; text-align: left; vertical-align: top; }
+th { color: #ffffff; }
+</style>
+</head>
+<body>
+<main>
+
+<nav class="mod"><a href="index.html">All modules</a> <a href="m6-customization-sagemaker.html">Previous</a> <a href="m8-evaluation-testing.html">Next</a></nav>
+<h2>Module m7: Dev, QA, and production, and how to run and secure a GenAI app</h2>
+<p>After this module you can decide what changes between dev, QA, and production, and what stays the same. You can pick the monitoring signal that answers a question about latency, cost, payloads, or callers. You can also pick the security control that blocks a network path, limits a role, or protects a key. The method is simple. Find the deciding constraint in a long question, then reject each wrong option with one reason.</p>
+
+<div class="markmap"><script type="text/template">
+# Dev QA and production ops security
+## Environment differences
+- Separate accounts per environment
+- Prompt versions and agent aliases
+- Guardrail versions pinned per environment
+- Model ID per environment
+- Flags change without a deploy
+## Promotion and rollout
+- Build once then promote
+- Approval gate before production
+- Canary or linear traffic shift
+- Alarm-driven rollback
+- Rollback by repointing an alias
+## Config and secrets
+- Parameter Store for plain settings
+- Secrets Manager for rotated secrets
+- AppConfig for flags and tuning
+- Validate config before deploy
+## Prompt and agent control
+- Prompt Management versions
+- Agent DRAFT then numbered versions
+- Guardrail numbered versions in production
+- Evaluate a candidate before promotion
+## Infrastructure as code
+- CloudFormation template as the unit
+- CDK synthesizes CloudFormation
+- StackSets for many accounts
+- Pipeline deploys the same template
+## Monitoring signals
+- Runtime metrics for latency
+- Invocation logs for payload evidence
+- CloudTrail for who called what
+- X-Ray for the request path
+## Logging and retention
+- Log level differs by environment
+- Set retention on each destination
+- Same account and Region rule
+- Redact before logging
+## Network and identity
+- Interface endpoints for Bedrock APIs
+- Private DNS keeps standard hostnames
+- Endpoint policy limits the role
+- SCPs cap member account permissions
+## Keys and data
+- KMS customer keys
+- Keys audited through CloudTrail
+- Cross account needs roles
+- Training use claim needs verification
+</script></div>
+
+<h2>The deciding constraint</h2>
+<p>Read the last sentence of the question first. It names what the answer must do, such as change, prove, block, or recover. Then scan the middle of the scenario for constraint words such as exact, last approved, no internet, or least operational overhead. Those words remove most options before you read the details.</p>
+<p>The tree below starts from the scenario and ends at a service or feature. Use it as a first filter. The later sections explain each branch in more depth.</p>
+
+<div class="mermaid">
+flowchart LR
+  A["Read the last<br/>sentence first"] -->|prompt wording| B["Prompt Management<br/>version ARN"]
+  A -->|agent or model<br/>behavior| C["Agent alias and<br/>version"]
+  A -->|safety rules| D["Guardrail numbered<br/>version"]
+  A -->|same release<br/>in each env| E["IaC template and<br/>pipeline"]
+  A -->|switch or<br/>percent<br/>without deploy| F["AppConfig feature<br/>flag"]
+  A -->|who called and<br/>when| G["CloudTrail"]
+  A -->|prompt and<br/>response text<br/>kept| H["Model invocation<br/>logging"]
+  A -->|latency tokens<br/>throttles| I["CloudWatch Bedrock<br/>metrics"]
+  A -->|no internet<br/>path allowed| J["Interface VPC<br/>endpoint"]
+</div>
+<p class="caption">Figure: First filter from the scenario to the service family.</p>
+
+<p>Signal words for each branch:</p>
+<ul>
+<li><span class="fact">Prompt text, template, variables, or reviewed wording</span> points to Prompt Management.</li>
+<li><span class="fact">Agent steps, tool calls, or a release of agent behavior</span> points to agent versions and aliases.</li>
+<li><span class="fact">Blocked topics, PII masking, or harmful content rules</span> point to Bedrock Guardrails.</li>
+<li><span class="fact">Same release in each environment with no drift</span> points to infrastructure as code and a pipeline.</li>
+<li><span class="fact">Flag, percentage, allow list, or log level changed at runtime</span> points to AppConfig.</li>
+<li><span class="fact">Who called and when</span> points to CloudTrail, which is an API audit record.</li>
+<li><span class="fact">Prompt and response text retained for investigation</span> points to model invocation logging.</li>
+<li><span class="fact">Latency, throttles, token counts, or an alarm on a trend</span> points to CloudWatch Bedrock metrics.</li>
+<li><span class="fact">Private subnet with no internet route</span> points to an interface VPC endpoint.</li>
+</ul>
+<p><span class="tip">Exam tip: The word exact points to a pinned version, not to the draft. The word last approved points to a stored pointer that you can move back.</span></p>
+<p><span class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/monitoring.html and https://docs.aws.amazon.com/bedrock/latest/userguide/logging-using-cloudtrail.html and https://docs.aws.amazon.com/bedrock/latest/userguide/vpc-interface-endpoints.html</span></p>
+
+<h2>Environment differences: what changes between QA and production</h2>
+<p>Most wrong answers in this area mix up two things. One is the artifact that changes, such as a prompt version or a model ID. The other is the place where the change lands, such as an alias, a configuration value, or a separate account. A strong answer names both. A weak answer changes the code.</p>
+<p>The matrix below lists each lever. Yes means the environment has its own value or its own control. No means it uses none, or it uses a shared one. The detail list after the matrix explains why each row is set that way.</p>
+
+<table>
+<thead><tr><th>Lever</th><th>Dev</th><th>QA</th><th>Prod</th></tr></thead>
+<tbody>
+<tr><td>Own prompt version ARN in config</td><td>Yes</td><td>Yes</td><td>Yes</td></tr>
+<tr><td>Own agent alias</td><td>Yes</td><td>Yes</td><td>Yes</td></tr>
+<tr><td>Own guardrail version</td><td>Yes</td><td>Yes</td><td>Yes</td></tr>
+<tr><td>Own knowledge base and data source</td><td>Yes</td><td>Yes</td><td>Yes</td></tr>
+<tr><td>Own model ID or inference profile value</td><td>Yes</td><td>Yes</td><td>Yes</td></tr>
+<tr><td>Provisioned Throughput</td><td>No</td><td>No</td><td>Yes</td></tr>
+<tr><td>Separate AWS account</td><td>Yes</td><td>Yes</td><td>Yes</td></tr>
+<tr><td>Same IaC template with own parameters</td><td>Yes</td><td>Yes</td><td>Yes</td></tr>
+<tr><td>Approval gate before this stage</td><td>No</td><td>No</td><td>Yes</td></tr>
+<tr><td>Canary or linear traffic shift</td><td>No</td><td>No</td><td>Yes</td></tr>
+<tr><td>Feature flag value can differ</td><td>Yes</td><td>Yes</td><td>Yes</td></tr>
+<tr><td>Rollback by alias or version</td><td>No</td><td>Yes</td><td>Yes</td></tr>
+<tr><td>Quota increase requested for account</td><td>No</td><td>No</td><td>Yes</td></tr>
+<tr><td>Verbose logging allowed</td><td>Yes</td><td>Yes</td><td>No</td></tr>
+<tr><td>Long log retention</td><td>No</td><td>No</td><td>Yes</td></tr>
+</tbody>
+</table>
+<p class="caption">Figure: Environment matrix. Yes or No for each lever.</p>
+
+<p><span class="rule">Rule: Build the artifact once. Change only the configuration, the alias, or the version pointer between environments.</span></p>
+<p>Why: a rebuild in each environment creates a different artifact. The tested build and the released build can then differ. A pointer change is small and easy to undo.</p>
+<p><span class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/deploy-agent.html and course slide extract pages 376 and 374.</span></p>
+
+<h3>Environment levers in detail</h3>
+<ul>
+<li><strong>Prompt version.</strong> Dev edits the working copy. QA and production reference a fixed prompt version ARN. Production must never read the working copy. Version limits: Not in source.</li>
+<li><strong>Agent alias.</strong> Dev and QA call a test or staging alias. Production calls a production alias. Moving that alias to a new version is the release. Moving it back is the rollback.</li>
+<li><strong>Guardrail version.</strong> Dev can use the working copy. QA and production should pin a numbered version. The CloudTrail page records a guardrail version on ApplyGuardrail events. Version immutability: Not in source.</li>
+<li><strong>Knowledge base and data source.</strong> Each environment gets its own data source. This stops a QA test from reading production documents. Sync and vector store limits: Not in source.</li>
+<li><strong>Model ID or inference profile.</strong> Store the value per environment in Parameter Store or AppConfig. Invocation log records name the model ID or inference profile ID that ran.</li>
+<li><strong>Provisioned Throughput.</strong> Only production buys reserved capacity. Dev and QA use on-demand capacity to test logic. Setup steps and pricing: Not in source.</li>
+<li><strong>Separate account.</strong> Each environment runs in its own AWS account under one organization. Production gets the strictest service control policies. Those policies do not affect the management account.</li>
+<li><strong>IaC template.</strong> One template holds the shape of the system. Parameters hold the per-environment values. A CDK app produces a CloudFormation template with cdk synth.</li>
+<li><strong>Pipeline promotion.</strong> The pipeline passes the same artifact from stage to stage. A manual approval can sit at any stage. The approval gate is the control that blocks an unapproved release.</li>
+<li><strong>Canary or linear shift.</strong> Use it in production. Lambda aliases and SageMaker endpoints support gradual shifts. ECS services in CodeDeploy use blue green only.</li>
+<li><strong>Feature flag.</strong> Flag values can differ per environment. A flag change takes effect without a code deployment.</li>
+<li><strong>Rollback.</strong> QA and production need a fast path back. Repoint an alias, use a stage rollback, or use a CodeDeploy alarm rollback.</li>
+<li><strong>Quotas.</strong> Quotas belong to each account. Production may need a quota increase in its own account. Bedrock quota values: Not in source.</li>
+<li><strong>Logging level and retention.</strong> Dev can log more detail for debugging. Production logs what policy allows. It keeps records only as long as policy needs them.</li>
+</ul>
+<p><span class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/deploy-agent.html and https://docs.aws.amazon.com/bedrock/latest/userguide/logging-using-cloudtrail.html and https://docs.aws.amazon.com/bedrock/latest/userguide/model-invocation-logging.html and https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies_scps.html and course slide extract pages 10, 314, 376, 377, 383, 388, 389, 577, and 364.</span></p>
+
+<h3>Decision tree: which lever changes</h3>
+<p>Start from the artifact that changed. The lever is the pointer to that artifact in the environment. Do not change code when a pointer is enough.</p>
+<div class="mermaid">
+flowchart LR
+  A["Change between QA<br/>and production"] -->|prompt text| B["Promote prompt<br/>version ARN"]
+  A -->|agent logic| C["New agent version<br/>then move alias"]
+  A -->|safety rules| D["New guardrail<br/>version then pin<br/>it"]
+  A -->|data source| E["Separate KB and<br/>data source per<br/>env"]
+  A -->|model choice| F["Model ID in Param<br/>Store or AppConfig"]
+  A -->|on off switch| G["AppConfig feature<br/>flag"]
+  A -->|infrastructure| H["Same IaC template<br/>with env<br/>parameters"]
+  A -->|capacity for<br/>steady load| I["Provisioned<br/>Throughput in prod<br/>only"]
+</div>
+<p class="caption">Figure: Each artifact type maps to one environment lever.</p>
+<p><span class="rule">Rule: If the change is text, use a version. If the change is a switch, use a flag. If the change is a new resource, use the template.</span></p>
+<p><span class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/deploy-agent.html and https://docs.aws.amazon.com/bedrock/latest/userguide/model-invocation-logging.html and course slide extract pages 364 and 577.</span></p>
+
+<h3>Decision tree: how a release moves to production</h3>
+<p>The release path has one artifact, one gate per environment, and one controlled shift to live traffic. A failed gate stops the stage. A bad live signal sends traffic back.</p>
+<div class="mermaid">
+flowchart TD
+  A["Same artifact<br/>built once"] --> B["Deploy to dev<br/>account"]
+  B --> C["QA tests with QA<br/>values"]
+  C -->|tests fail| D["Stop stage with<br/>Entry Fail"]
+  C -->|tests pass| E["Approval gate in<br/>pipeline"]
+  E -->|approved| F["Production canary<br/>shift"]
+  E -->|rejected| G["Production stays<br/>on old version"]
+  F -->|alarm breaches| H["Rollback by alias<br/>or alarm"]
+  F -->|alarm stays<br/>clear| I["Full traffic shift"]
+</div>
+<p class="caption">Figure: Promotion path with two gates and one rollback branch.</p>
+<p>Why: each gate answers a different question. The QA test asks whether the artifact works. The approval asks whether a person accepts the risk. The alarm asks whether live traffic behaves.</p>
+<p><span class="src">Source: https://docs.aws.amazon.com/codepipeline/latest/userguide/stage-conditions.html and course slide extract pages 374, 383, and 388.</span></p>
+
+<h3>Decision tree: how a bad release goes back</h3>
+<div class="mermaid">
+flowchart LR
+  A["Bad release<br/>detected"] -->|agent or<br/>prompt| B["Repoint alias or<br/>version ARN"]
+  A -->|Lambda<br/>function code| C["CodeDeploy alarm<br/>rollback"]
+  A -->|pipeline stage<br/>failed| D["On Failure<br/>condition Rollback"]
+  A -->|guardrail<br/>change| E["Point app at last<br/>numbered version"]
+  A -->|flag value| F["Redeploy previous<br/>AppConfig version"]
+</div>
+<p class="caption">Figure: Rollback path depends on what changed.</p>
+<p><span class="rule">Rule: Roll back by moving a pointer that already exists. Do not rebuild a previous version under pressure.</span></p>
+<p><span class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/deploy-agent.html and https://docs.aws.amazon.com/codepipeline/latest/userguide/stage-conditions.html and course slide extract page 383.</span></p>
+
+<h3>Decision tree: which model identifier</h3>
+<div class="mermaid">
+flowchart TD
+  A["Choose model<br/>identifier per<br/>environment"] -->|one model in<br/>one Region| B["Foundation<br/>model ID"]
+  A -->|cross Region<br/>routing<br/>wanted| C["Inference<br/>profile ID or<br/>ARN"]
+  A -->|steady high<br/>load in<br/>production| D["Provisioned<br/>Throughput in<br/>production"]
+  B -->|store the<br/>value| E["Parameter<br/>Store or<br/>AppConfig"]
+  C -->|store the<br/>value| E
+  D -->|dev and QA| F["On-demand<br/>capacity in<br/>dev and QA"]
+</div>
+<p class="caption">Figure: Model identifier choice and where the value lives.</p>
+<p><span class="fact">Fact: The model invocation log record holds a field for the model ID or inference profile ID used for the call.</span></p>
+<p><span class="trap">Trap: Hard-coding one model ID in each service makes a QA model change a code release.</span></p>
+<p><span class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/model-invocation-logging.html and course slide extract page 619. Provisioned Throughput details: Not in source.</span></p>
+
+<h2>Services and features in scope</h2>
+<p>Each section below covers one service or feature. It states the fact first, then the rule for when to choose it, then the trap for when not to choose it. Numbers that the fetched sources do not confirm are marked Not in source.</p>
+
+<h3>Amazon Bedrock Prompt Management</h3>
+<p><span class="fact">Fact: Prompt Management stores reusable prompt templates. Templates take variables at runtime. The course slide places it in the governance group with traces and evaluations.</span> The application refers to a managed prompt by its ARN.</p>
+<p><span class="rule">Rule: Use it when several applications share prompt text and each change needs review before production.</span></p>
+<p><span class="fact">Fact: CloudTrail logs RenderPrompt as a data event on the prompt resource type. RenderPrompt is a permission-only action. It renders a managed prompt for InvokeModel or Converse.</span></p>
+<p><span class="trap">Trap: Keeping prompt text in code or in an environment variable leaves no managed version record for an auditor.</span></p>
+<p>Why: a version is the unit that QA tests and that production uses. Once versions exist, the question becomes which version each environment points to.</p>
+<p><span class="fact">Limits and numbers: version count, template size, and version immutability are Not in source. The Prompt Management documentation page did not return text in this session.</span></p>
+<p><span class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/logging-using-cloudtrail.html and course slide extract page 10.</span></p>
+
+<h3>Bedrock Agents versions and aliases</h3>
+<p><span class="fact">Fact: The working draft changes when you edit the agent. A version is a numbered snapshot that starts at 1. A version is immutable. An alias points to one version, and the application calls the alias.</span></p>
+<p><span class="rule">Rule: Call a production alias from production code. Move the alias to a new version to release. Move it back to roll back.</span></p>
+<p><span class="fact">Fact: Setting aliasInvocationState to REJECT_INVOCATIONS pauses an alias. Setting it to ACCEPT_INVOCATIONS resumes it. No IAM change is needed to pause.</span></p>
+<p><span class="trap">Trap: Calling the working draft in production sends unreleased edits to users.</span></p>
+<p><span class="trap">Trap: The documentation banner says Bedrock Agents Classic is not open to new customers. A new design should check the current agent offering first.</span></p>
+<p>Why: the alias gives the application one stable name. The version behind it can change without an application change.</p>
+<p><span class="fact">Limits and numbers: alias count and version count: Not in source.</span></p>
+<p><span class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/deploy-agent.html</span></p>
+
+<h3>Bedrock Guardrails versions</h3>
+<p><span class="fact">Fact: A guardrail has a working draft and numbered versions. A call or an ApplyGuardrail request names a guardrail and a version. The CloudTrail page shows a guardrailVersion request parameter on ApplyGuardrail data events.</span></p>
+<p><span class="rule">Rule (design choice): Test the working draft in QA. Pin a numbered version in production so a later edit cannot change production behavior.</span></p>
+<p><span class="fact">Fact: When an organization enforces a guardrail and the request names none, the event shows ENFORCED as a marker in the guardrail fields. The marker is not an identifier.</span></p>
+<p><span class="trap">Trap: Pointing production at the working draft lets an edit change safety behavior with no release record.</span></p>
+<p><span class="fact">Limits and numbers: version immutability, version count, and enforcement set-up steps are Not in source. The guardrail versioning page did not return text in this session.</span></p>
+<p><span class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/logging-using-cloudtrail.html</span></p>
+
+<h3>Knowledge bases and data sources</h3>
+<p><span class="fact">Fact: A knowledge base reads from a data source. In this design the data source is an S3 location. CloudTrail data events exist for Retrieve and RetrieveAndGenerate on the knowledge base resource type.</span></p>
+<p><span class="rule">Rule: Use a separate knowledge base or at least a separate data source per environment. QA must never index production documents.</span></p>
+<p><span class="trap">Trap: One shared knowledge base across QA and production lets a QA test read real customer documents.</span></p>
+<p>Why: a retrieval answer is only as safe as the documents behind it. Separate sources keep test data and live data apart.</p>
+<p><span class="fact">Limits and numbers: sync behavior, vector store limits, and document count limits are Not in source. The knowledge base documentation was not fetched.</span></p>
+<p><span class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/logging-using-cloudtrail.html</span></p>
+
+<h3>AWS Systems Manager Parameter Store</h3>
+<p><span class="fact">Fact: Parameter Store is a serverless store for configuration and secrets. Values can be plain text or encrypted with KMS. It tracks versions, and IAM controls access to each parameter.</span></p>
+<p><span class="rule">Rule: Store per-environment values here, such as a model ID, a guardrail version number, or an alias name. The app reads them at startup.</span></p>
+<p><span class="trap">Trap: Parameter Store alone does not split traffic or roll back on an alarm. Use AppConfig for a gradual change.</span></p>
+<p>Why: a plain setting that changes rarely does not need the extra machinery of a feature flag service.</p>
+<p><span class="fact">Limits and numbers: throughput and parameter size limits: Not in source.</span></p>
+<p><span class="src">Source: course slide extract page 619.</span></p>
+
+<h3>AWS Secrets Manager</h3>
+<p><span class="fact">Fact: Secrets Manager stores secrets encrypted with KMS. It can force rotation on a set schedule. It can run a Lambda function to generate and rotate a secret. It can replicate a secret to another Region. The course slide says it is mostly used for database integration.</span></p>
+<p><span class="rule">Rule: Use it for a database password or an API key that must rotate without a code change.</span></p>
+<p><span class="trap">Trap: Putting a secret in code, a plain environment variable, or a configuration file breaks the rule that secrets stay encrypted and out of code.</span></p>
+<p><span class="fact">Limits and numbers: price per secret and API call rates: Not in source.</span></p>
+<p><span class="src">Source: course slide extract pages 495, 500, and 501.</span></p>
+
+<h3>AWS AppConfig</h3>
+<p><span class="fact">Fact: AppConfig deploys dynamic configuration to running applications without a code deployment. It supports feature flags and free-form configuration. It can validate a change with a JSON Schema or a Lambda validator before deployment. It rolls back automatically when a CloudWatch alarm fires.</span></p>
+<p><span class="fact">Fact: The configuration can come from the AppConfig hosted store, Secrets Manager, Parameter Store, or S3. The AppConfig Agent caches the deployed configuration for the app.</span></p>
+<p><span class="rule">Rule: Use it for flags, allow lists, throttles, and log levels that must change at runtime and roll back fast.</span></p>
+<p><span class="trap">Trap: AppConfig tracks configuration deployments. It does not give prompt-level review history. Use Prompt Management for prompt versions.</span></p>
+<p>Why: a runtime change is the highest-risk change in a GenAI app. Validation and an alarm-based rollback reduce the blast radius without a release.</p>
+<p><span class="fact">Limits and numbers: named deployment strategies, validator limits, and retrieval call rates: Not in source for named strategies.</span></p>
+<p><span class="src">Source: https://docs.aws.amazon.com/appconfig/latest/userguide/what-is-appconfig.html and course slide extract page 364.</span></p>
+
+<h3>AWS CodePipeline stage conditions</h3>
+<p><span class="fact">Fact: An Entry condition checks run ahead of a stage. Its results are Fail or Skip. An On Failure condition runs when a stage fails. Its only result is Rollback. An On Success condition runs after a stage succeeds. Its results are Rollback or Fail.</span></p>
+<p><span class="fact">Fact: Rules include a CloudWatch alarm check, a Lambda check, a variable check, and a deployment window check. A Skip result cannot be overridden. Automatic stage retry cannot combine with On Failure.</span></p>
+<p><span class="rule">Rule: Use an Entry condition with Fail to stop a stage from starting when a gate is not met. Use On Failure with Rollback to restore the last good state after a failed deployment.</span></p>
+<p><span class="rule">Rule: Use On Success with a check when a finished deployment must pass a test before the release is kept.</span></p>
+<p><span class="trap">Trap: On Failure does not accept Fail as a result. A failed audit that must stop entry needs an Entry condition.</span></p>
+<p><span class="trap">Trap: A Skip result ends the stage quietly. It does not show a failed gate as a failure.</span></p>
+<p><span class="fact">Limits and numbers: a rollback can target only a previous execution in the current pipeline structure version.</span></p>
+<p><span class="src">Source: https://docs.aws.amazon.com/codepipeline/latest/userguide/stage-conditions.html and course slide extract pages 374 and 377.</span></p>
+
+<h3>AWS CodeDeploy and traffic shifting</h3>
+<p><span class="fact">Fact: CodeDeploy shifts Lambda alias traffic with canary and linear options. On ECS, CodeDeploy uses blue green only. SageMaker endpoint deployment guardrails support blue green, canary, linear, and all-at-once shifts, with automatic rollback.</span></p>
+<p><span class="fact">Fact: CodeDeploy rolls back automatically when a deployment fails or when a CloudWatch alarm you attach fires.</span></p>
+<p><span class="rule">Rule: Choose canary to send a small first share of traffic, then the rest. Choose linear for even steps over time. Attach an alarm on errors and latency.</span></p>
+<p><span class="trap">Trap: Selecting linear or canary for ECS in CodeDeploy is wrong. ECS allows blue green only.</span></p>
+<p><span class="fact">Limits and numbers: step percentages and minutes are shown as examples on the slide. Treat the exact names as Not in source for this module.</span></p>
+<p><span class="src">Source: course slide extract pages 314, 383, 388, and 389.</span></p>
+
+<h3>CloudFormation, CDK, and StackSets</h3>
+<p><span class="fact">Fact: CloudFormation is declarative. A template names the resources, and CloudFormation creates them in the right order. CDK writes infrastructure in a programming language. cdk synth turns the app into CloudFormation templates. Both CDK and SAM use CloudFormation underneath.</span></p>
+<p><span class="rule">Rule: Keep one template for the shape of the system. Pass per-environment values as parameters. The pipeline deploys the same template to each account.</span></p>
+<p><span class="trap">Trap: Copying a template into each account by hand creates drift. Two accounts then run two different systems.</span></p>
+<p><span class="fact">StackSets fact: a StackSet pushes one template out to many accounts and Regions. Service-managed permissions and automatic deployment for new OU accounts: Not in source. The StackSet documentation was not fetched.</span></p>
+<p><span class="src">Source: course slide extract pages 577, 578, and 585.</span></p>
+
+<h3>AWS Organizations and service control policies</h3>
+<p><span class="fact">Fact: A service control policy sets the maximum permissions for IAM users and roles in member accounts. An SCP never grants a permission. An SCP does not affect the management account. It applies to the root user of a member account.</span></p>
+<p><span class="fact">Fact: The effective permission is the overlap of the SCP, any permissions boundary, and the identity policy. An explicit deny in an SCP blocks the action in that account.</span></p>
+<p><span class="rule">Rule: Use an SCP on an OU to stop production accounts from using a service or action that policy forbids.</span></p>
+<p><span class="trap">Trap: An SCP alone never gives Bedrock access to anyone. The identity policy must still allow the call.</span></p>
+<p><span class="trap">Trap: Attaching an SCP at the root reaches every member account at once. Test on one OU first.</span></p>
+<p><span class="fact">Limits and numbers: SCP size limit and attachment limits: Not in source for values.</span></p>
+<p><span class="src">Source: https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies_scps.html and course slide extract page 489.</span></p>
+
+<h3>Provisioned Throughput</h3>
+<p><span class="fact">Fact: Provisioned Throughput reserves model capacity for a steady load. Setup steps, unit size, commitment terms, and pricing: Not in source. The fetched pages did not cover it.</span></p>
+<p><span class="rule">Rule (design choice): Buy reserved capacity only in production, and only when traffic is steady. Use on-demand in dev and QA.</span></p>
+<p><span class="trap">Trap: Reserved capacity in QA adds fixed cost. It also gives QA no more information about the release logic than on-demand does.</span></p>
+<p>Why: the production load pattern is what justifies a fixed cost. QA needs correct behavior, not a reserved rate.</p>
+<p><span class="src">Source: Not in source for Provisioned Throughput details. The environment rule comes from the module design.</span></p>
+
+<h3>CloudWatch metrics, dashboards, and alarms for Bedrock</h3>
+<p><span class="fact">Fact: Bedrock runtime metrics are in the AWS/Bedrock namespace. They include Invocations, InvocationLatency, InvocationClientErrors, InvocationServerErrors, InvocationThrottles, InputTokenCount, OutputTokenCount, and TimeToFirstToken.</span></p>
+<p><span class="fact">Fact: Invocations counts accepted requests. Throttled calls and calls refused at input checks are left out of it. Throttled requests appear only in InvocationThrottles. Requests that fail before the model is known have no ModelId dimension.</span></p>
+<p><span class="fact">Fact: TimeToFirstToken applies only to ConverseStream and InvokeModelWithResponseStream. EstimatedTPMQuotaUsage is an approximation. The docs say not to use it as the only capacity signal.</span></p>
+<p><span class="fact">Fact: Output tokens per second is OutputTokenCount divided by the difference of InvocationLatency and TimeToFirstToken, times 1000. It applies only to streaming operations. The docs example alarms on the p50 statistic over 5-minute periods, with 3 of 5 datapoints breaching.</span></p>
+<p><span class="rule">Rule: Alarm on server errors and throttles in production. Query both with and without the ModelId dimension so no failed request is missed.</span></p>
+<p><span class="trap">Trap: Invocations is not an audit count. Throttled calls are missing from it.</span></p>
+<p><span class="trap">Trap: OTPS for a nonstreaming call is not valid, because TimeToFirstToken is missing.</span></p>
+<p><span class="fact">Limits and numbers: a CloudWatch dimension limit of 30 per metric is shown on the course slide. Dashboard and alarm quotas for Bedrock: Not in source.</span></p>
+<p><span class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/monitoring-runtime-metrics.html and https://docs.aws.amazon.com/bedrock/latest/userguide/monitoring-runtime-otps.html and https://docs.aws.amazon.com/bedrock/latest/userguide/monitoring.html and course slide extract page 109.</span></p>
+
+<h3>Model invocation logging</h3>
+<p><span class="fact">Fact: Model invocation logging is disabled by default. It is set per account and per Region. Supported destinations are CloudWatch Logs and S3. Both belong to the account and Region that hold the configuration.</span></p>
+<p><span class="fact">Fact: It covers Converse, ConverseStream, InvokeModel, and InvokeModelWithResponseStream on the bedrock-runtime endpoint. JSON request and response bodies of 100 KB or less stay inline in the log. Larger bodies and binary data go to S3 as separate objects.</span></p>
+<p><span class="fact">Fact: requestMetadata is the only field the caller supplies. The record also holds the caller identity ARN, the model ID or inference profile ID, and token counts. Logs stay until the logging configuration is deleted.</span></p>
+<p><span class="rule">Rule: Enable it in the account and Region where prompt text must be kept. Set retention on the CloudWatch log group or an S3 lifecycle rule, because the docs say logs stay until the configuration is deleted.</span></p>
+<p><span class="trap">Trap: A central logging account in another account is not a supported destination for these logs.</span></p>
+<p><span class="trap">Trap: The four operations listed do not include InvokeAgent. Agent calls need CloudTrail data events and agent tracing instead.</span></p>
+<p><span class="trap">Trap: Calls through the bedrock-mantle endpoint are not captured by this logging.</span></p>
+<p><span class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/model-invocation-logging.html and https://docs.aws.amazon.com/bedrock/latest/userguide/monitoring.html</span></p>
+
+<h3>AWS CloudTrail</h3>
+<p><span class="fact">Fact: CloudTrail records API calls made by users, roles, and services. Event history covers recent events by default. A trail delivers an ongoing record to S3, and a trail applies to all Regions by default.</span></p>
+<p><span class="fact">Fact: Converse, ConverseStream, InvokeModel, and InvokeModelWithResponseStream are management events. InvokeAgent, RenderPrompt, ApplyGuardrail, and knowledge base Retrieve calls are data events. Data events are off by default and need advanced event selectors.</span></p>
+<p><span class="fact">Fact: A streaming call also writes a stream-completion event with eventType AwsServiceEvent. It holds token counts. It is not an API call and IAM and SCP do not evaluate it. Filter eventType to AwsApiCall for counts and authorization review.</span></p>
+<p><span class="rule">Rule: Use CloudTrail to answer who called an API and when. Turn on data events for agent, prompt, and guardrail calls when the audit needs them.</span></p>
+<p><span class="trap">Trap: CloudTrail data events are off by default. A default trail shows no InvokeAgent calls.</span></p>
+<p><span class="trap">Trap: Counting stream-completion events as well as API calls doubles the count.</span></p>
+<p><span class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/logging-using-cloudtrail.html and course slide extract pages 448, 449, 450, and 451.</span></p>
+
+<h3>AWS X-Ray</h3>
+<p><span class="fact">Fact: X-Ray traces one request across services. The application SDK captures calls to AWS services and HTTP calls. The X-Ray daemon sends the traces. Lambda can enable active tracing. The role needs permission to write traces.</span></p>
+<p><span class="rule">Rule: Use X-Ray when the question asks where time went across services for one request.</span></p>
+<p><span class="trap">Trap: X-Ray shows timing and call paths. It is not the record of prompt and response text. Use invocation logs for the text.</span></p>
+<p><span class="fact">Limits and numbers: sampling rate defaults and trace retention: Not in source.</span></p>
+<p><span class="src">Source: course slide extract pages 454, 459, and 461.</span></p>
+
+<h3>AgentCore Observability</h3>
+<p><span class="fact">Fact: AgentCore is the newer agent platform named by the Bedrock Agents Classic banner. Its observability signals, dashboards, and trace formats: Not in source. The AgentCore documentation was not fetched for this module.</span></p>
+<p><span class="rule">Rule (design choice): For a new agent design, check the AgentCore observability pages before you pick a trace or log design.</span></p>
+<p><span class="trap">Trap: Do not claim a specific AgentCore metric or log name without a source. The module does not verify those names.</span></p>
+<p><span class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/deploy-agent.html for the banner only. Observability details: Not in source.</span></p>
+
+<h3>IAM least privilege and condition keys</h3>
+<p><span class="fact">Fact: IAM policies are JSON documents attached to users, groups, and roles. Least privilege means granting only the actions and resources a principal needs. Roles for services let AWS services act on your behalf.</span></p>
+<p><span class="rule">Rule: Give the application role only the Bedrock actions and the resource ARNs it uses, such as one prompt version or one alias.</span></p>
+<p><span class="fact">Fact: RenderPrompt is permission-only. A role that renders managed prompts needs that action in its policy, even though the application does not call it directly.</span></p>
+<p><span class="trap">Trap: A role with a wildcard resource lets the application call any model in the account.</span></p>
+<p><span class="fact">Limits and numbers: the exact condition key name for guardrails, and the full list of Bedrock condition keys: Not in source. The service authorization reference did not return text.</span></p>
+<p><span class="src">Source: course slide extract pages 477 and 484, and https://docs.aws.amazon.com/bedrock/latest/userguide/logging-using-cloudtrail.html</span></p>
+
+<h3>Resource policies and endpoint policies</h3>
+<p><span class="fact">Fact: An endpoint policy on an interface endpoint names principals, actions, and resources allowed through that endpoint. The default endpoint policy allows full access. A custom policy narrows it. A resource-based policy grants access on the resource itself.</span></p>
+<p><span class="rule">Rule: Use an endpoint policy to limit which role may use the private path, and keep the identity policy narrow too.</span></p>
+<p><span class="trap">Trap: An endpoint policy does not replace the IAM policy. The call must be allowed by both, because access requires each layer to allow it.</span></p>
+<p><span class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/vpc-interface-endpoints.html and https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies_scps.html</span></p>
+
+<h3>AWS KMS customer managed keys</h3>
+<p><span class="fact">Fact: KMS keys are integrated with IAM and CloudTrail. AWS owned keys and AWS managed keys are free. A customer managed key has a monthly fee on the course slide, and automatic rotation must be enabled for it. The slide shows a per-call fee. Current prices: Not in source.</span></p>
+<p><span class="fact">Fact: For S3 SSE-KMS, the upload header names KMS, and each object calls KMS. KMS request quotas apply per second by Region, and the slide notes a quota increase is requested through Service Quotas.</span></p>
+<p><span class="fact">Fact: Model invocation logs to S3 with SSE-KMS need a key policy that lets the Bedrock service principal call GenerateDataKey, under the account and ARN conditions shown in the docs.</span></p>
+<p><span class="rule">Rule: Use a customer managed key when the team must control the key policy and rotation for audit evidence.</span></p>
+<p><span class="trap">Trap: A default AWS owned or AWS managed key does not meet a rule that needs your own key policy.</span></p>
+<p><span class="src">Source: course slide extract pages 210, 211, 495, 496, and 497, and https://docs.aws.amazon.com/bedrock/latest/userguide/model-invocation-logging.html</span></p>
+
+<h3>VPC endpoints and PrivateLink for Bedrock</h3>
+<p><span class="fact">Fact: Bedrock uses interface VPC endpoints powered by PrivateLink. The service names include bedrock, bedrock-runtime, bedrock-agent, and bedrock-agent-runtime. Private DNS lets the SDK keep the default Regional hostname.</span></p>
+<p><span class="fact">Fact: Without private DNS, the SDK must set the endpoint URL to the VPC endpoint address. Interface endpoints do not need an internet gateway, NAT device, VPN, or Direct Connect. Instances do not need public IP addresses.</span></p>
+<p><span class="fact">Fact: Gateway endpoints exist for S3 and DynamoDB. The course slide says interface endpoints serve most other services. The Bedrock page lists only interface endpoints.</span></p>
+<p><span class="rule">Rule: Use an interface endpoint for bedrock-runtime from private subnets. Add bedrock-agent-runtime when the app calls agents. Enable private DNS to keep standard hostnames.</span></p>
+<p><span class="trap">Trap: A gateway endpoint is not offered for Bedrock in the fetched source. Gateway endpoints cover S3 and DynamoDB.</span></p>
+<p><span class="trap">Trap: A NAT gateway gives private subnets outbound internet access. It fails a rule that forbids any internet path.</span></p>
+<p><span class="trap">Trap: Turning off private DNS keeps the traffic private, but it forces endpoint URLs into code and breaks the hostname rule.</span></p>
+<p><span class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/vpc-interface-endpoints.html and course slide extract pages 518, 520, and 522.</span></p>
+
+<h3>Cross-account access</h3>
+<p><span class="fact">Fact: IAM Identity Center can manage permission sets across accounts in an organization. An SCP does not directly affect resource-based policies, and it does not restrict principals outside the organization.</span></p>
+<p><span class="fact">Fact: Destinations for these logs sit only in the configuring account and Region. CloudWatch cross-account observability: Not in source.</span></p>
+<p><span class="rule">Rule: Keep invocation logs in the account that makes the calls, then share a read view if a central team needs it.</span></p>
+<p><span class="trap">Trap: A bucket in another account cannot receive these invocation logs from this account.</span></p>
+<p><span class="trap">Trap: An SCP in the workload account does not block a bucket policy in a partner account.</span></p>
+<p><span class="src">Source: course slide extract page 489, https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies_scps.html, and https://docs.aws.amazon.com/bedrock/latest/userguide/model-invocation-logging.html</span></p>
+
+<h3>Data not used for training</h3>
+<p><span class="fact">Fact: The course slide that covers security and governance says that the product does not train models on customer data. That slide describes a business intelligence product, not Bedrock.</span></p>
+<p><span class="rule">Rule: For a training-use answer on Bedrock, cite the service data terms, not the slide. Bedrock-specific statement: Not in source.</span></p>
+<p><span class="trap">Trap: Do not turn a claim about one product into a claim about another product.</span></p>
+<p><span class="src">Source: course slide extract page 281. Bedrock data terms: Not in source.</span></p>
+
+<h2>Confusable pairs: X versus Y</h2>
+<p>Each pair below has one decision tree, a three-row comparison, one question to ask, and one trap. Use the question first. It usually settles the pair in a few seconds.</p>
+
+<h3>Parameter Store versus Secrets Manager</h3>
+<div class="mermaid">
+flowchart TD
+  A["Value read by app at<br/>runtime"] -->|needs automatic<br/>rotation| B["Secrets Manager"]
+  A -->|plain config or<br/>encrypted value| C["Parameter Store"]
+  A -->|database credential| B
+  B -->|rotation runs on a<br/>schedule| D["Lambda rotation function"]
+</div>
+<p class="caption">Figure: Rotation need decides the store.</p>
+<ul>
+<li>Purpose: Parameter Store holds settings and optional secrets. Secrets Manager holds secrets that rotate and replicate.</li>
+<li>Input: Parameter Store takes a name and a value, with optional KMS encryption. Secrets Manager takes a secret with a rotation schedule.</li>
+<li>Output or effect: Parameter Store returns the stored value. Secrets Manager returns the current secret and rotates it on schedule.</li>
+</ul>
+<p><strong>Question to ask yourself:</strong> Does this value need automatic rotation?</p>
+<p><span class="trap">Trap: Choosing Parameter Store for a database password that must rotate moves the rotation work to the team.</span></p>
+<p><span class="src">Source: course slide extract pages 500, 501, and 619.</span></p>
+
+<h3>AppConfig versus Parameter Store</h3>
+<div class="mermaid">
+flowchart TD
+  A["Change must reach app<br/>without deploy"] -->|flag or staged<br/>rollout| B["AppConfig"]
+  A -->|simple value read at<br/>startup| C["Parameter Store"]
+  B -->|validate first| D["JSON Schema or Lambda<br/>validator"]
+  B -->|alarm breach| E["Automatic rollback"]
+</div>
+<p class="caption">Figure: Rollout and rollback needs point to AppConfig.</p>
+<ul>
+<li>Purpose: AppConfig deploys runtime changes with validation and a monitored rollout. Parameter Store stores values that apps read.</li>
+<li>Input: AppConfig takes a configuration profile, validators, and a deployment. Parameter Store takes a parameter name.</li>
+<li>Output or effect: AppConfig serves a deployed version through its agent and rolls back on alarm. Parameter Store returns the current value on each read.</li>
+</ul>
+<p><strong>Question to ask yourself:</strong> Must the change roll out in steps and roll back on an alarm?</p>
+<p><span class="trap">Trap: Reading Parameter Store on every request for a flag adds calls. The AppConfig Agent caches the deployed configuration for the app.</span></p>
+<p><span class="src">Source: https://docs.aws.amazon.com/appconfig/latest/userguide/what-is-appconfig.html and course slide extract page 619.</span></p>
+
+<h3>CodePipeline stage conditions versus CodeDeploy alarm rollback</h3>
+<div class="mermaid">
+flowchart LR
+  A["Failure or gate in<br/>a release"] -->|block before<br/>stage starts| B["Entry condition<br/>with Fail"]
+  A -->|stage failed,<br/>restore state| C["On Failure<br/>condition Rollback"]
+  A -->|check after<br/>stage passes| D["On Success<br/>condition Rollback<br/>or Fail"]
+  A -->|alarm during<br/>Lambda shift| E["CodeDeploy alarm<br/>rollback"]
+</div>
+<p class="caption">Figure: Stage conditions gate a stage. CodeDeploy rolls back one deployment.</p>
+<ul>
+<li>Purpose: Stage conditions gate or react to a whole pipeline stage. CodeDeploy rolls traffic back for one deployment.</li>
+<li>Input: Stage conditions take rules such as an alarm check or a Lambda check. CodeDeploy takes a deployment group with alarms.</li>
+<li>Output or effect: A stage condition blocks entry, rolls back a stage, or fails a stage. CodeDeploy redeploys the last good revision on an alarm.</li>
+</ul>
+<p><strong>Question to ask yourself:</strong> Is the check about a stage in the pipeline, or about traffic on one function?</p>
+<p><span class="trap">Trap: On Failure accepts only Rollback. A failed audit that must stop entry needs an Entry condition with Fail.</span></p>
+<p><span class="src">Source: https://docs.aws.amazon.com/codepipeline/latest/userguide/stage-conditions.html and course slide extract page 383.</span></p>
+
+<h3>Interface endpoint versus gateway endpoint versus NAT gateway</h3>
+<div class="mermaid">
+flowchart TD
+  A["Private subnet<br/>must call AWS API"] -->|Bedrock<br/>runtime| B["Interface endpoint<br/>with private DNS"]
+  A -->|S3 or DynamoDB| C["Gateway endpoint<br/>in route table"]
+  A -->|internet bound<br/>traffic| D["NAT gateway"]
+  D -->|rule forbids<br/>internet| E["Reject this option"]
+</div>
+<p class="caption">Figure: The private path and the forbidden path.</p>
+<ul>
+<li>Purpose: An interface endpoint gives a private entry point for Bedrock APIs. A gateway endpoint gives private routes for S3 and DynamoDB. A NAT gateway gives private subnets outbound internet access.</li>
+<li>Input: An interface endpoint takes subnets and security groups, with optional private DNS. A gateway endpoint takes route table entries.</li>
+<li>Output or effect: An interface endpoint keeps Bedrock traffic on the AWS network. A NAT gateway sends traffic to the internet.</li>
+</ul>
+<p><strong>Question to ask yourself:</strong> Does the rule forbid any path to the public internet?</p>
+<p><span class="trap">Trap: A NAT gateway looks private because the instances have no public IP addresses. The NAT gateway still reaches the internet.</span></p>
+<p><span class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/vpc-interface-endpoints.html and course slide extract pages 518 and 520.</span></p>
+
+<h3>CloudTrail versus model invocation logging</h3>
+<div class="mermaid">
+flowchart TD
+  A["Question asks for<br/>evidence"] -->|who called and<br/>when| B["CloudTrail"]
+  A -->|prompt and<br/>response text| C["Model invocation<br/>logging"]
+  A -->|both needed| D["Enable both in<br/>same account"]
+  C -->|agent runtime<br/>calls| E["Not covered by<br/>invocation logs"]
+</div>
+<p class="caption">Figure: Caller evidence and content evidence are separate records.</p>
+<ul>
+<li>Purpose: CloudTrail records API calls for audit. Invocation logging records model input and output for supported runtime calls.</li>
+<li>Input: CloudTrail takes management and data events from the account. Invocation logging takes four runtime operations on bedrock-runtime.</li>
+<li>Output or effect: CloudTrail gives the caller identity, the time, and the API name. Invocation logging gives bodies up to the size limit, token counts, and metadata.</li>
+</ul>
+<p><strong>Question to ask yourself:</strong> Does the auditor need the words sent and returned, or only the caller and the time?</p>
+<p><span class="trap">Trap: Invocation logging does not cover InvokeAgent. For agent calls, use CloudTrail data events and the agent tracing setting.</span></p>
+<p><span class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/logging-using-cloudtrail.html and https://docs.aws.amazon.com/bedrock/latest/userguide/model-invocation-logging.html</span></p>
+
+<h3>CloudWatch metrics versus X-Ray</h3>
+<div class="mermaid">
+flowchart TD
+  A["Performance<br/>question"] -->|trend or<br/>threshold| B["CloudWatch metrics<br/>and alarms"]
+  A -->|one request<br/>path across<br/>services| C["X-Ray trace"]
+  A -->|text of one<br/>request| D["Invocation logs or<br/>app logs"]
+</div>
+<p class="caption">Figure: Trend, path, and text answer different questions.</p>
+<ul>
+<li>Purpose: Metrics show volume, latency, and errors over time. X-Ray shows the path of one request across services.</li>
+<li>Input: Metrics take the AWS/Bedrock namespace and dimensions such as ModelId. X-Ray takes traces from an instrumented SDK.</li>
+<li>Output or effect: Metrics drive alarms and dashboards. Traces show which call took the time.</li>
+</ul>
+<p><strong>Question to ask yourself:</strong> Is the question about a trend across many calls, or about one slow request?</p>
+<p><span class="trap">Trap: A metric is not a per-request record. A dashboard cannot show the prompt of one failed call.</span></p>
+<p><span class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/monitoring-runtime-metrics.html and course slide extract pages 109, 459, and 461.</span></p>
+
+<h3>Service control policy versus IAM policy versus permission boundary</h3>
+<div class="mermaid">
+flowchart TD
+  A["Limit who can use<br/>Bedrock"] -->|all member<br/>accounts| B["SCP at OU level"]
+  A -->|one role in<br/>one account| C["IAM identity<br/>policy"]
+  A -->|team may<br/>create roles<br/>safely| D["Permission<br/>boundary on role"]
+  B -->|never grants<br/>access| E["Identity policy<br/>must still allow"]
+</div>
+<p class="caption">Figure: Caps and grants are separate layers.</p>
+<ul>
+<li>Purpose: An SCP caps permissions for member accounts. An IAM policy grants permissions to a principal. A permission boundary caps what one role can have.</li>
+<li>Input: An SCP attaches to the root, an OU, or an account. An IAM policy attaches to a user, group, or role.</li>
+<li>Output or effect: An SCP never grants. A call works only when the SCP, any boundary, and the identity policy all allow it.</li>
+</ul>
+<p><strong>Question to ask yourself:</strong> Is the control across many accounts, or inside one role?</p>
+<p><span class="trap">Trap: An SCP alone never lets a user call Bedrock. The identity policy must allow the call too.</span></p>
+<p><span class="src">Source: https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies_scps.html and course slide extract page 477.</span></p>
+
+<h3>Prompt Management versus prompt files in S3</h3>
+<div class="mermaid">
+flowchart TD
+  A["Where prompt text<br/>lives"] -->|versions and<br/>variables| B["Prompt Management"]
+  A -->|files reviewed<br/>in git| C["Git repo then<br/>publish"]
+  A -->|object history<br/>only| D["S3 object versions"]
+  D -->|render code is<br/>your job| E["Extra code to<br/>maintain"]
+</div>
+<p class="caption">Figure: Managed rendering versus owned rendering code.</p>
+<ul>
+<li>Purpose: Prompt Management stores templates as managed resources with variables. S3 stores files with object history.</li>
+<li>Input: Prompt Management takes template text, variables, and a version. S3 takes a file, with versioning on the bucket.</li>
+<li>Output or effect: Prompt Management gives a version ARN the app can call. S3 gives an object version, and your code must load and fill the template.</li>
+</ul>
+<p><strong>Question to ask yourself:</strong> Should the managed service fill the variables, or will the team own that code?</p>
+<p><span class="trap">Trap: File versioning keeps history but does not fill variables. The team then writes and tests the fill logic. S3 versioning details: Not in source.</span></p>
+<p><span class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/logging-using-cloudtrail.html and course slide extract page 10.</span></p>
+
+<h3>DRAFT versus numbered version</h3>
+<div class="mermaid">
+flowchart TD
+  A["Which copy will<br/>the app use"] -->|still changing| B["DRAFT copy"]
+  A -->|tested and<br/>approved| C["Numbered version"]
+  A -->|production<br/>alias or pin| D["Alias or pin<br/>points to version"]
+  B -->|used in<br/>production| E["Trap unreleased<br/>edits"]
+</div>
+<p class="caption">Figure: Only a numbered version or a version-pointed alias is a release.</p>
+<ul>
+<li>Purpose: DRAFT is the working copy. A numbered version is a fixed point that you can deploy or call.</li>
+<li>Input: DRAFT takes edits. A numbered version is created from a snapshot of the working copy.</li>
+<li>Output or effect: An agent alias pointed at a version keeps production steady while DRAFT changes. A guardrail pinned to a version does the same for safety rules.</li>
+</ul>
+<p><strong>Question to ask yourself:</strong> If someone edits this copy today, does production change?</p>
+<p><span class="trap">Trap: Calling DRAFT in production sends unreleased edits to users. The docs say agent versions are immutable snapshots.</span></p>
+<p><span class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/deploy-agent.html and https://docs.aws.amazon.com/bedrock/latest/userguide/logging-using-cloudtrail.html. Guardrail immutability: Not in source.</span></p>
+
+<h3>Lambda alias weights versus CodeDeploy versus AppConfig experiment</h3>
+<div class="mermaid">
+flowchart TD
+  A["Shift Lambda<br/>traffic by<br/>percent"] -->|new function<br/>version| B["CodeDeploy<br/>canary or<br/>linear"]
+  A -->|same code<br/>new setting| C["AppConfig flag<br/>or experiment"]
+  A -->|manual alias<br/>weight<br/>change| D["Person must<br/>act on alarm"]
+  B -->|alarm breach| E["Automatic<br/>rollback"]
+</div>
+<p class="caption">Figure: Code change, setting change, and manual shift need different tools.</p>
+<ul>
+<li>Purpose: Alias weights split traffic between two versions. CodeDeploy shifts alias traffic with rules and alarms. AppConfig splits traffic for flags and experiments with no code deployment.</li>
+<li>Input: Alias weights take a manual value. CodeDeploy takes a deployment configuration and alarms. AppConfig takes a flag, a target, and a percentage.</li>
+<li>Output or effect: A manual weight change waits for a person. CodeDeploy rolls back on alarm. AppConfig changes the setting and rolls back when configured.</li>
+</ul>
+<p><strong>Question to ask yourself:</strong> Is the change a new function version, or a new setting for the same code?</p>
+<p><span class="trap">Trap: A manual alias weight change does not roll back by itself. The requirement for no manual step rules it out.</span></p>
+<p><span class="src">Source: course slide extract page 388 and https://docs.aws.amazon.com/appconfig/latest/userguide/what-is-appconfig.html</span></p>
+
+<h3>Single CloudFormation stack versus StackSet</h3>
+<div class="mermaid">
+flowchart TD
+  A["Same resources in many<br/>accounts"] -->|one account| B["Single stack"]
+  A -->|many accounts and<br/>Regions| C["StackSet"]
+  C -->|new account joins OU| D["Automatic deployment if<br/>enabled"]
+  B -->|copied by hand| E["Drift risk across accounts"]
+</div>
+<p class="caption">Figure: Repeat by hand is the wrong answer when no manual step is allowed.</p>
+<ul>
+<li>Purpose: A stack creates resources in one account and Region. A StackSet pushes one template out to many accounts and Regions.</li>
+<li>Input: A stack takes a template and parameters. A StackSet takes a template and a set of target accounts or an OU.</li>
+<li>Output or effect: A stack gives one set of resources. A StackSet gives one stack instance for each target.</li>
+</ul>
+<p><strong>Question to ask yourself:</strong> Must new accounts receive the same setup with no manual step?</p>
+<p><span class="trap">Trap: Sharing a template for each team to run by hand does not meet a no-manual-step rule.</span></p>
+<p><span class="src">Source: course slide extract pages 577 and 585. StackSet details: Not in source.</span></p>
+
+<h3>AWS owned or managed key versus customer managed KMS key</h3>
+<div class="mermaid">
+flowchart TD
+  A["Encryption requirement"] -->|no key policy<br/>control needed| B["AWS owned or AWS managed<br/>key"]
+  A -->|own key policy and<br/>rotation| C["Customer managed key"]
+  C -->|automatic rotation| D["Must enable rotation"]
+  B -->|key use still<br/>audited| E["CloudTrail records key use"]
+</div>
+<p class="caption">Figure: Control over the key policy decides the key type.</p>
+<ul>
+<li>Purpose: AWS owned and AWS managed keys are run by AWS. A customer managed key lets you set the key policy and rotation.</li>
+<li>Input: An AWS managed key takes the service default. A customer managed key takes a key you create, with a key policy.</li>
+<li>Output or effect: A default key encrypts with no key policy from you. A customer managed key gives control and carries a monthly fee on the slide.</li>
+</ul>
+<p><strong>Question to ask yourself:</strong> Must your team write the key policy or prove control of the key?</p>
+<p><span class="trap">Trap: A default key does not satisfy a rule that needs your own key policy.</span></p>
+<p><span class="src">Source: course slide extract pages 495, 496, and 497.</span></p>
+
+<h2>Read a long question</h2>
+<p>Each worked scenario below uses three sentences. The constraint words are in bold. Each wrong option gets one reason. The answer comes last. Work through the scenario before you read the answer.</p>
+
+<h3>Worked scenario 1: exact text and a fast way back</h3>
+<p>A claims team changes the wording of a Bedrock assistant prompt. QA must test the exact text that production uses. Production must return to the last approved text in minutes, with no code build.</p>
+<p><span class="tip">Exam tip: The bold words are <strong>exact text</strong>, <strong>last approved</strong>, <strong>in minutes</strong>, and <strong>no code build</strong>. Each one removes a type of option.</span></p>
+<ul>
+<li>A rebuild of the function from source is rejected. It needs a build, so it misses the no-build rule.</li>
+<li>Reading the latest object from S3 is rejected. Latest is not a fixed approved text, so QA and production can differ.</li>
+<li>Copying the QA draft into production by hand is rejected. It creates drift and leaves no release record.</li>
+<li>Storing an approved prompt version ARN in AppConfig, then moving the value back, is the answer. QA tests the same version ARN, and the value change is a rollback.</li>
+</ul>
+<p><span class="rule">Rule: For exact and fast rollback, pin a version ARN and move a configuration pointer.</span></p>
+<p><span class="src">Source: course slide extract page 364 and https://docs.aws.amazon.com/appconfig/latest/userguide/what-is-appconfig.html</span></p>
+
+<h3>Worked scenario 2: who called, what was said, and where it is kept</h3>
+<p>A bank must show which caller invoked its model and when, for every request in a year. The compliance team also wants prompt and response text kept for only 30 days. All records must stay in the production account.</p>
+<p><span class="tip">Exam tip: The bold words in this kind of question are the record type, the retention period, and the account. Match each one to a service before you read the options.</span></p>
+<ul>
+<li>Sending invocation logs to a central logging account is rejected. Invocation log destinations sit only in the configuring account and Region.</li>
+<li>CloudTrail alone is rejected. It shows the caller and time, but not the text.</li>
+<li>X-Ray traces are rejected. They show timing and the call path, not the caller record or the text.</li>
+<li>CloudTrail with a trail to an S3 bucket in the production account, plus invocation logs with 30-day retention on the destination, is the answer.</li>
+</ul>
+<p><span class="rule">Rule: Keep caller records in CloudTrail and content records in invocation logs. Set retention on each destination.</span></p>
+<p><span class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/logging-using-cloudtrail.html and https://docs.aws.amazon.com/bedrock/latest/userguide/model-invocation-logging.html</span></p>
+
+<h3>Worked scenario 3: private subnets, agent calls, and one role</h3>
+<p>A healthcare app runs in private subnets with no internet route. It calls a model directly and also calls an agent. Security wants only the app role to use the private path, and the hostnames must stay the standard Regional names.</p>
+<p><span class="tip">Exam tip: The bold words here are no internet route, the agent call, standard hostnames, and only the app role. The agent call is the detail that removes an answer that covers only one endpoint.</span></p>
+<ul>
+<li>A NAT gateway is rejected. It gives the private subnets internet access.</li>
+<li>A gateway endpoint for Bedrock is rejected. The Bedrock endpoint page lists only interface endpoints.</li>
+<li>One interface endpoint for bedrock-runtime is rejected. It misses the agent runtime calls.</li>
+<li>Interface endpoints for bedrock-runtime and bedrock-agent-runtime, with private DNS and an endpoint policy for the app role, is the answer.</li>
+</ul>
+<p><span class="rule">Rule: One Bedrock API surface needs its own interface endpoint. Private DNS keeps the hostname. The endpoint policy limits the role.</span></p>
+<p><span class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/vpc-interface-endpoints.html and course slide extract pages 518 and 522.</span></p>
+
+<h2>Distractor patterns seen in the tests</h2>
+<p>Wrong options follow a small number of patterns. Learn the patterns first. Then each new question becomes a check against a known pattern. Each pattern below names the pattern and says why it is wrong.</p>
+<ul>
+<li><strong>Right service, wrong scope.</strong> The option names a real feature but applies it to one account when the need is one environment, or to one environment when the need is one account. Why wrong: the scope does not match the requirement.</li>
+<li><strong>Latest instead of pinned.</strong> The option reads the newest prompt, guardrail, or object. Why wrong: production then changes without a release decision.</li>
+<li><strong>Metric used as evidence.</strong> The option proposes a dashboard as the audit record. Why wrong: metrics count events and do not hold the content or the caller record.</li>
+<li><strong>Logs used as a control.</strong> The option proposes logs to stop a bad output. Why wrong: logs record a call. Guardrails or IAM stop it.</li>
+<li><strong>Custom code for a managed feature.</strong> The option builds a router, a registry, or a fill engine. Why wrong: when the question asks for least operational overhead, managed features win.</li>
+<li><strong>Internet detour labeled private.</strong> The option uses a NAT gateway or a public route. Why wrong: any path to the public internet fails a no-internet rule.</li>
+<li><strong>Wrong endpoint type.</strong> The option uses a control plane endpoint for runtime calls, or a gateway endpoint for Bedrock. Why wrong: each Bedrock API surface needs its own interface endpoint.</li>
+<li><strong>Manual step for an automatic rule.</strong> The option waits for a reviewer or a person to press a button. Why wrong: the question asks for no manual step.</li>
+<li><strong>Counting the wrong event.</strong> The option counts stream completion events as calls. Why wrong: those events are not API calls, and they double the count.</li>
+<li><strong>Shared secret or data source.</strong> The option gives dev and production one secret or one data source. Why wrong: a test can then reach live data or live credentials.</li>
+</ul>
+<p><span class="trap">Trap: A correct-sounding option that uses a real service can still fail on scope. Check the scope words before you check the service name.</span></p>
+<p><span class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/logging-using-cloudtrail.html, https://docs.aws.amazon.com/bedrock/latest/userguide/vpc-interface-endpoints.html, and course slide extract page 520.</span></p>
+
+<h2>Drill</h2>
+<p>Read the question line. Cover the answer line. Say the answer aloud, then check it.</p>
+
+<p>1. QA must test the exact prompt text that production will use, with fixed variables.</p>
+<p class="rule">Rule: Test a Prompt Management version ARN, not the working copy.</p>
+
+<p>2. Production must not start a stage until an audit gate has passed.</p>
+<p class="rule">Rule: Use an Entry condition with the Fail result.</p>
+
+<p>3. A failed production deployment must restore the last good revision with no person acting.</p>
+<p class="rule">Rule: Use an On Failure condition with the Rollback result.</p>
+
+<p>4. A team wants a failed audit gate to look like a normal skip.</p>
+<p class="trap">Trap: Skip ends the stage quietly, so it hides the failed gate.</p>
+
+<p>5. Turn a feature on for five percent of users, with validation first and no deployment.</p>
+<p class="rule">Rule: Use AppConfig with a validator and a deployment.</p>
+
+<p>6. A database password must rotate on a schedule without a code change.</p>
+<p class="rule">Rule: Use Secrets Manager with a rotation function.</p>
+
+<p>7. Each environment needs a model ID that the app reads at startup, with no rotation.</p>
+<p class="rule">Rule: Store the value in Parameter Store per environment.</p>
+
+<p>8. An auditor must see who called Bedrock and when, across the year.</p>
+<p class="rule">Rule: Use CloudTrail with a trail that delivers to S3.</p>
+
+<p>9. The compliance team must keep prompt and response text for investigations, in the same account and Region.</p>
+<p class="rule">Rule: Turn on invocation logs that land in CloudWatch Logs or S3 for that account and Region.</p>
+
+<p>10. A central logging account must receive invocation logs from several workload accounts.</p>
+<p class="trap">Trap: Invocation log destinations sit only in the configuring account and Region.</p>
+
+<p>11. A private subnet app must call the agent runtime, with no internet route.</p>
+<p class="rule">Rule: Use an interface endpoint for bedrock-agent-runtime with private DNS.</p>
+
+<p>12. Stop every member account from using a service that policy forbids.</p>
+<p class="rule">Rule: Use a service control policy on the OU that holds the accounts.</p>
+
+<h2>Sources</h2>
+<p>AWS documentation pages used in this module. Each one was fetched with WebFetch.</p>
+<ul>
+<li>https://docs.aws.amazon.com/bedrock/latest/userguide/deploy-agent.html</li>
+<li>https://docs.aws.amazon.com/bedrock/latest/userguide/model-invocation-logging.html</li>
+<li>https://docs.aws.amazon.com/bedrock/latest/userguide/monitoring.html</li>
+<li>https://docs.aws.amazon.com/bedrock/latest/userguide/monitoring-runtime-metrics.html</li>
+<li>https://docs.aws.amazon.com/bedrock/latest/userguide/monitoring-runtime-otps.html</li>
+<li>https://docs.aws.amazon.com/bedrock/latest/userguide/vpc-interface-endpoints.html</li>
+<li>https://docs.aws.amazon.com/bedrock/latest/userguide/logging-using-cloudtrail.html</li>
+<li>https://docs.aws.amazon.com/appconfig/latest/userguide/what-is-appconfig.html</li>
+<li>https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies_scps.html</li>
+<li>https://docs.aws.amazon.com/codepipeline/latest/userguide/stage-conditions.html</li>
+</ul>
+<p class="src">Source: course slide extract for this module, pages 10, 109, 210, 211, 281, 314, 364, 374, 376, 377, 383, 388, 389, 448 to 451, 454, 459, 461, 477, 484, 489, 495 to 497, 500, 501, 518, 520, 522, 577, 578, 585, and 619.</p>
+<nav class="mod"><a href="index.html">All modules</a> <a href="m6-customization-sagemaker.html">Previous</a> <a href="m8-evaluation-testing.html">Next</a></nav>
+</main>
+<script type="module">
+  import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.esm.min.mjs";
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: "base",
+    themeVariables: {
+      background: "#000000",
+      mainBkg: "#000000",
+      primaryColor: "#000000",
+      primaryTextColor: "#f2f2f2",
+      primaryBorderColor: "#7db8ff",
+      secondaryColor: "#000000",
+      tertiaryColor: "#000000",
+      lineColor: "#d0d0d0",
+      textColor: "#f2f2f2",
+      edgeLabelBackground: "#000000",
+      clusterBkg: "#000000",
+      clusterBorder: "#7db8ff",
+      titleColor: "#ffffff",
+      fontFamily: "Helvetica, Arial, sans-serif",
+      fontSize: "22px"
+    },
+    flowchart: { htmlLabels: true, curve: "basis", useMaxWidth: false, padding: 16, nodeSpacing: 40, rankSpacing: 56 }
+  });
+</script>
+<script>window.markmap = { autoLoader: { manual: false, toolbar: false } };</script>
+<script src="https://cdn.jsdelivr.net/npm/markmap-autoloader@0.18.12"></script>
+</body>
+</html>

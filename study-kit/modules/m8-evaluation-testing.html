@@ -1,0 +1,666 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>8. Evaluation, testing, troubleshooting</title>
+<style>
+:root {
+  --bg: #000000;
+  --ink: #f2f2f2;
+  --fact: #7db8ff;
+  --rule: #6ee7a0;
+  --tip: #d8a6ff;
+  --trap: #ff8a8a;
+  --muted: #a8a8a8;
+  --line: #333333;
+}
+html, body { background: #000000; }
+body {
+  color: var(--ink);
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 19px;
+  line-height: 1.7;
+  margin: 0;
+  padding: 24px 20px 72px;
+}
+main { max-width: 780px; margin: 0 auto; }
+main p, main li { text-align: justify; }
+h1 { font-size: 32px; line-height: 1.3; margin: 0 0 12px; color: #ffffff; }
+h2 { font-size: 26px; line-height: 1.35; margin: 48px 0 14px; color: #ffffff; border-top: 1px solid var(--line); padding-top: 22px; }
+h3 { font-size: 21px; line-height: 1.4; margin: 32px 0 10px; color: #ffffff; }
+h4 { font-size: 19px; line-height: 1.4; margin: 24px 0 8px; color: #ffffff; }
+p { margin: 0 0 18px; }
+ul, ol { margin: 0 0 18px; padding-left: 26px; }
+li { margin-bottom: 10px; }
+.fact { color: var(--fact); }
+.rule { color: var(--rule); }
+.tip { color: var(--tip); }
+.trap { color: var(--trap); }
+.src { font-size: 16px; color: var(--muted); }
+.meta { font-size: 16px; color: var(--muted); margin-bottom: 24px; }
+.caption { font-size: 16px; color: var(--muted); margin: -8px 0 26px; text-align: left; }
+.legend p { margin-bottom: 6px; text-align: left; }
+.mermaid { margin: 14px 0 26px; font-size: 21px; text-align: left; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; }
+.mermaid svg { max-width: none; height: auto; }
+@media print {
+  .mermaid { overflow: visible; break-inside: avoid; }
+  .mermaid svg { max-width: 100% !important; height: auto !important; }
+  body { padding: 14mm 10mm; }
+  h1, h2, h3, h4 { break-after: avoid; }
+  p.caption, p.src { break-before: avoid; }
+}
+.markmap { position: relative; margin: 10px 0 28px; border-top: 1px solid #222; border-bottom: 1px solid #222; --markmap-text-color: #f2f2f2; --markmap-a-color: #7db8ff; color: #f2f2f2; }
+.markmap > svg { width: 100%; height: 560px; display: block; }
+.markmap foreignObject, .markmap .markmap-foreign { color: #f2f2f2; font-size: 17px; }
+nav.mod { font-size: 16px; color: #a8a8a8; margin: 0 0 18px; }
+nav.mod a { color: #7db8ff; }
+table { border-collapse: collapse; width: 100%; margin: 0 0 22px; font-size: 17px; }
+th, td { border: 1px solid #333; padding: 6px 8px; text-align: left; vertical-align: top; }
+th { color: #ffffff; }
+</style>
+</head>
+<body>
+<main>
+
+<nav class="mod"><a href="index.html">All modules</a> <a href="m7-environments-ops-security.html">Previous</a> <a href="m9-integration-apps.html">Next</a></nav>
+<h2>m8: Evaluate, test, and troubleshoot generative AI output</h2>
+<p>After this module, you can read a long scenario about quality, testing, or production behavior and name the deciding constraint. You can then pick the feature that fits and reject each wrong option with one reason. The module covers model evaluation jobs, knowledge base evaluation, the main metrics, golden datasets, prompt A/B tests, online and offline agent evaluation, human review, CloudWatch signals, and troubleshooting by symptom. Read the map first, then read the sections that match the services in your weak list.</p>
+
+<div class="markmap"><script type="text/template">
+# Evaluate test and troubleshoot
+## Choose the evaluation job
+- Automatic built-in metrics
+- Judge model with rubrics
+- Human workforce ratings
+- Knowledge base retrieve modes
+## Pick the metric
+- ROUGE for overlap and recall
+- BLEU for precision in translation
+- BERTScore for meaning
+- Exact match and F1
+## Regression and A/B
+- Golden dataset in the pipeline
+- Variants compared offline
+- Shadow and canary tests
+## Online versus offline
+- AgentCore online sampling
+- On-demand trace investigation
+- Batch runs across sessions
+## Human review
+- A2I for low confidence outputs
+- Work team limits and notices
+## Production signals
+- CloudWatch metrics and alarms
+- Model Monitor baselines
+- Invocation logs and traces
+## Red teaming and safety
+- Adversarial prompt sets by category
+- Guardrails are not evaluation
+## Clarify FMEval
+- Pick task type first
+- Fmeval library for outside models
+## Troubleshoot by symptom
+- Hallucination checks retrieval first
+- Truncation checks token limits
+- Wrong format checks instructions
+- Refusals need expected answers
+- Latency and cost need traces
+</script></div>
+
+<h2>The deciding constraint</h2>
+<p>Start with the object under test. A model output, a RAG answer, and an agent session each point to different features. After that, find the signal that decides the rest. Most wrong options solve a different problem, such as runtime safety, infrastructure health, or cost.</p>
+<p class="rule">Rule: Decide what is being scored before you decide which service to use. Name the object, the timing, and the evidence type first.</p>
+<p>Three words decide most questions in this area. The first is timing: before release, or after release on live traffic. The second is evidence: a reference answer, a rubric, a human opinion, or a retrieved passage. The third is the object: a model, a knowledge base, or an agent that calls tools.</p>
+
+<div class="mermaid">
+flowchart LR
+  A["Read the<br/>scenario"] -->|what is<br/>scored| B["Model or RAG<br/>or agent"]
+  B -->|model output| C["Need human<br/>opinion"]
+  B -->|RAG answer| D["Retrieve only<br/>or retrieve<br/>and generate"]
+  B -->|agent<br/>session| E["Live traffic<br/>or saved<br/>sessions"]
+  C -->|yes| F["Human<br/>workforce or<br/>A2I"]
+  C -->|reference<br/>answers<br/>exist| G["Automatic job<br/>with<br/>references"]
+  C -->|rubric<br/>scoring| H["Judge model<br/>job"]
+  D -->|search<br/>quality only| I["Knowledge base<br/>retrieve only"]
+  D -->|answer<br/>quality too| J["Knowledge base<br/>retrieve and<br/>generate"]
+  E -->|after<br/>release| K["AgentCore<br/>online<br/>evaluation"]
+  E -->|before<br/>release| L["On-demand or<br/>batch<br/>evaluation"]
+</div>
+<p class="caption">Figure: The first split is the object, then the evidence type and timing.</p>
+
+<p>Use these signal words to move down each branch. A signal word is a phrase that points to one branch. Underline it in your head before you read the options.</p>
+<ul>
+  <li><span class="fact">Reference answers, labeled answers, ground truth</span>: an automatic job that compares to a reference.</li>
+  <li><span class="fact">Rubric, scale, judge, explanation of the score</span>: a judge model job.</li>
+  <li><span class="fact">Reviewers, side by side, staff ratings</span>: a human evaluation job or A2I, depending on live or offline.</li>
+  <li><span class="fact">Retrieved passages, chunks, search results</span>: a retrieve-only job or a retrieval test.</li>
+  <li><span class="fact">Unsupported claims, fabricated facts, grounded in sources</span>: faithfulness on a retrieve and generate job.</li>
+  <li><span class="fact">Live sessions, sampling rate, production traffic</span>: an online evaluation.</li>
+  <li><span class="fact">Before promotion, release gate, pipeline</span>: a golden dataset run in CI/CD.</li>
+  <li><span class="fact">Feature drift, baseline, monitoring schedule</span>: SageMaker Model Monitor, which watches statistics, not text quality.</li>
+  <li><span class="fact">Bias in training data, class imbalance, facets</span>: Clarify bias metrics, which work on datasets, not on generated text.</li>
+</ul>
+
+<h2>Services and features in scope</h2>
+
+<h3>Bedrock model evaluation jobs</h3>
+<p class="fact">A Bedrock model evaluation job scores model responses to a prompt dataset.</p>
+<p>The job has a generator model, which writes responses, and a scoring method. Scoring can use built-in metrics, custom metrics, a judge model, or a human work team. The report goes to an S3 bucket that you choose.</p>
+<p class="fact">The automatic job type needs at least one Bedrock foundation model, a service role, and S3 input and output in the same Region as the job. The source states that CORS is not required for automatic jobs. CORS is needed only for human-based jobs.</p>
+<p class="rule">Rule: Choose a Bedrock evaluation job when you need repeatable scores for models or prompt versions on your own dataset, and you want no scoring code.</p>
+<p>The generator does not have to be a Bedrock base model. The source lists customized models, imported models, Provisioned Throughput models, prompt routers, and Bedrock Marketplace models as generators. You can also supply responses from a model outside Bedrock in the dataset. In that case, the job skips the invoke step and scores your responses directly.</p>
+<p class="trap">Trap: A Bedrock job scores a fixed dataset. It does not watch live users. Pick a production tool when the question is about what users see today.</p>
+<p><strong>Pairs with:</strong> S3 for the dataset and report, Prompt Management variants for the prompt versions, and judge models for scoring. <strong>Limits and numbers:</strong> the per-job prompt limit is Not in source for this review. The judge model list changes over time, so check it when you run the job.</p>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/evaluation-judge.html and https://docs.aws.amazon.com/bedrock/latest/userguide/model-evaluation-type-automatic.html</p>
+
+<h3>LLM as a judge and custom metrics</h3>
+<p class="fact">A judge job pairs a response writer with a separate scoring model.</p>
+<p>The evaluator reads each prompt and response pair, then scores it with a metric prompt. The console shows a score histogram and explanations for the first five prompts. The full report is in S3.</p>
+<p class="fact">Built-in judge metrics include Correctness, Completeness, Faithfulness, Helpfulness, Logical coherence, Relevance, Following instructions, Professional style and tone, Harmfulness, Stereotyping, and Refusal. Correctness and Completeness use a reference response when you supply one. Faithfulness checks whether the response adds facts that are not in the prompt context.</p>
+<p class="rule">Rule: Use a judge metric when the quality needs a rubric and no exact answer string exists. Use Faithfulness when the question is whether the answer stays inside the supplied context.</p>
+<p>A custom metric is a prompt that you write for the evaluator. Use one when your business rule is not in the built-in list, such as a tone rule for a brand. The source lists a different set of evaluator models for custom metrics than for built-in metrics. Check both lists when you pick a judge.</p>
+<p class="trap">Trap: A judge score is not a fact check against the outside world. Faithfulness measures agreement with the context you supplied. A fluent wrong fact can still pass if the context also says it.</p>
+<p class="trap">Trap: The judge can share the blind spots of the generator. The course material warns that a judge with the same problems as the model under test gives weak evidence.</p>
+<p><strong>Pairs with:</strong> Bedrock evaluation jobs, AgentCore evaluators (same judge idea, but for agents), and Prompt Management variants. <strong>Limits and numbers:</strong> the score scale for each built-in metric is Not in source for this review.</p>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/model-evaluation-metrics.html and https://docs.aws.amazon.com/bedrock/latest/userguide/evaluation-judge.html and course slide extract, pages 423 and 430</p>
+
+<h3>Bedrock human-based evaluation jobs</h3>
+<p class="fact">A human-based job uses a work team of people that you choose.</p>
+<p>The work team can come from an Amazon Cognito user pool, a SageMaker Ground Truth private workforce, or Amazon Augmented AI. Each team supports up to 50 workers. You can enter up to 50 email addresses at one time.</p>
+<p class="fact">Comparative rating methods show two or more responses and ask which is better. They include Likert comparison, choice buttons, and ordinal rank. Individual rating methods score one response at a time, using thumbs up or down, or a Likert scale. A single-model job must use an individual method.</p>
+<p class="rule">Rule: Choose a human job when quality depends on tone, domain taste, or expert judgment that a metric or judge cannot score well.</p>
+<p>Workers are notified of a job only when you first add them to the team. For a later job with the same workers, you must tell them directly and give them the portal link. Plan that step into the release schedule.</p>
+<p class="trap">Trap: A human job is slow and does not scale to every request. It is a release-time or periodic check, not a per-request safety control.</p>
+<p><strong>Pairs with:</strong> A2I for live review, SageMaker Ground Truth for workforce management, and Cognito for user pools. <strong>Limits and numbers:</strong> the maximum number of models in one human job is Not in source for this review.</p>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/human-worker-evaluations.html and course slide extract, page 421</p>
+
+<h3>Knowledge base and RAG evaluation jobs</h3>
+<p class="fact">A RAG evaluation job is either retrieve only or retrieve and generate.</p>
+<p>A retrieve-only job reports on the passages returned from the knowledge base or an external RAG source. A retrieve-and-generate job also reports on the answer that the generator wrote. Both types can use a Bedrock knowledge base or your own response data.</p>
+<p class="fact">The course material places retrieval metrics such as relevance and coverage in the retrieve-only type. It places answer metrics such as correctness, completeness, helpfulness, and logical coherence in the retrieve-and-generate type. The exact RAG metric identifiers were not confirmed from the AWS page in this review, except Builtin.Faithfulness and Builtin.Correctness, which appear on the judge metric list.</p>
+<p class="rule">Rule: When an answer is wrong, test retrieval first. If the right passage is missing, a better generator cannot fix the answer.</p>
+<p>A retrieve-only job does not test the generator model. If you change the generation model or its prompt, run a retrieve-and-generate job. If you change the chunking or the search settings, run a retrieve-only job first to see the effect on passages.</p>
+<p class="trap">Trap: A faithfulness score on a retrieve-and-generate job does not show that the search returned the best passages. Check retrieval separately.</p>
+<p class="trap">Trap: A retrieve-only job does not show whether the final answer is grounded. It stops before generation.</p>
+<p><strong>Pairs with:</strong> the Knowledge Bases retrieval interface for your own test scripts, S3 for the dataset, and CloudWatch for trends. <strong>Limits and numbers:</strong> the prompt limit per RAG job is Not in source for this review.</p>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/evaluation-kb.html and course slide extract, page 430</p>
+
+<h3>Overlap and similarity metrics</h3>
+<p>Each metric below measures a different thing. The job type and the task type decide which one is valid. Read the task first. A summary task, a translation task, a short answer task, and a label task use different metrics.</p>
+
+<h4>ROUGE</h4>
+<p class="fact">ROUGE is a set of metrics for text summarization and machine translation. It counts overlapping units between the generated text and the reference. ROUGE-N counts n-gram overlap. ROUGE-L uses the longest common subsequence, which captures order. ROUGE is recall-oriented.</p>
+<p class="rule">Rule: Use ROUGE when a reference summary exists and word overlap is the goal. Use ROUGE-L when the order of ideas matters.</p>
+<p class="trap">Trap: ROUGE rewards shared words. A correct paraphrase can score low, and a wrong sentence with the same words can score high.</p>
+
+<h4>BLEU</h4>
+<p class="fact">BLEU is used for machine translation. It measures precision of n-grams against one or more human translations. It works at sentence level and has a brevity penalty for overly short outputs. The course material says it has limited use for fluency and grammar.</p>
+<p class="rule">Rule: Use BLEU for translation checks that have human reference translations.</p>
+<p class="trap">Trap: BLEU is a weak choice for open-ended generation. It does not check meaning, and it penalizes valid short answers.</p>
+
+<h4>BERTScore</h4>
+<p class="fact">BERTScore compares embedding vectors of the generated text and the reference text. It measures semantic similarity, so it is less sensitive to synonyms and paraphrase. The AWS overview of summarization accuracy lists BERTScore next to ROUGE-N and Meteor, and it uses a large NLI-trained model to build the embeddings.</p>
+<p class="rule">Rule: Use BERTScore when meaning matters more than exact wording, and a reference exists.</p>
+<p class="trap">Trap: A high semantic score does not prove the facts are right. A number change in a sentence can still leave the embedding similar.</p>
+
+<h4>F1, exact match, and accuracy</h4>
+<p class="fact">For question answering, the AWS overview lists exact match, quasi-exact match after normalization, and F1 over words. F1 is the harmonic mean of precision and recall over the words of the answer. For classification, it lists classification accuracy, precision, recall, and balanced classification accuracy. Precision and recall can be averaged in several ways across classes.</p>
+<p class="rule">Rule: Use exact match or F1 for short answers with a known string. Use precision when false positives cost more. Use recall when false negatives cost more.</p>
+<p class="trap">Trap: F1 over words is not a meaning test. A short answer with the right words in the wrong order can still score well.</p>
+
+<h4>Toxicity</h4>
+<p class="fact">The AWS overview describes toxicity scoring with detector models. One detector returns seven scores for classes such as toxicity, insult, threat, and identity attack. The other returns a binary label trained on implicit toxicity. Built-in datasets include RealToxicityPrompts and BOLD.</p>
+<p class="rule">Rule: Use a toxicity detector to screen outputs against an agreed threshold, and report the class scores, not only one number.</p>
+<p class="trap">Trap: A toxicity score does not show bias or factual accuracy. A polite answer can still be wrong or unfair.</p>
+
+<h4>Robustness</h4>
+<p class="fact">Semantic robustness measures how much the score changes when the input changes but the meaning does not. The perturbations include keyboard typos, random uppercase changes, and extra or missing spaces. The AWS overview defines it as the absolute difference in accuracy between the clean and the perturbed input.</p>
+<p class="rule">Rule: Use the robustness metric when real users will send noisy text, such as chat messages with typos.</p>
+<p class="trap">Trap: Robustness does not show whether the answer is correct on clean input. A model can be stable and always wrong.</p>
+<p class="src">Source: https://docs.aws.amazon.com/sagemaker/latest/dg/clarify-foundation-model-evaluate-overview.html and https://docs.aws.amazon.com/bedrock/latest/userguide/model-evaluation-metrics.html and course slide extract, pages 425 to 427</p>
+
+<h3>Golden datasets and regression testing</h3>
+<p class="fact">A golden dataset is a fixed set of test cases with expected results.</p>
+<p>Each case has an input, and often a reference answer or an expected label. You run every candidate against the same cases, then compare the scores with the last approved run. The course material says unit tests alone often miss GenAI behavior because the output is not deterministic.</p>
+<p class="fact">The course material lists CloudWatch synthetic canaries, Step Functions, EventBridge, and Lambda as tools for end-to-end checks before and after a deployment. It suggests storing the results in S3 and analyzing them with Athena and QuickSight. Step Functions adds auditable state transitions, retries, and explicit approval steps.</p>
+<p class="rule">Rule: Put the golden dataset run into the CI/CD pipeline, and fail the stage when the score drops below the threshold you agreed before the change.</p>
+<p class="rule">Rule: Use Step Functions when the regression run needs retries, a branch for each case, or a human approval before promotion.</p>
+<p class="trap">Trap: A regression suite that checks only that the API call succeeds misses wrong content. A model can return a valid response that invents a policy detail.</p>
+<p class="trap">Trap: Built-in datasets test general behavior. Use your own domain cases for a release gate.</p>
+<p><strong>Pairs with:</strong> CodeBuild with a buildspec file for the test stage, CloudWatch alarms for failed runs, and S3 for stored outputs. <strong>Limits and numbers:</strong> Step Functions concurrency limits are Not in source for this review.</p>
+<p class="src">Source: course slide extract, pages 379, 431, and 661. No AWS page was fetched for golden dataset practice itself.</p>
+
+<h3>Prompt A/B tests with Prompt Management variants</h3>
+<p class="fact">A Prompt Management prompt can hold several variants to compare.</p>
+<p>Each variant has its own name, model or agent resource, template, and inference settings. In the console, compare mode lets you add up to three variants. You can run each variant with the same test variables and read the outputs side by side.</p>
+<p class="fact">The inference settings include maximum tokens, stop sequences, temperature, and top P. Temperature near zero makes the output less random. The course material also describes top K and top P as two ways to limit the sampling pool.</p>
+<p class="rule">Rule: Use variants to keep two prompt versions side by side. Then use an evaluation job on both variants with the same dataset to get scores.</p>
+<p class="trap">Trap: Compare mode is a manual check on a few inputs. It is not a regression gate. The source does not confirm that variants feed a model evaluation job, so treat that link as Not in source.</p>
+<p class="trap">Trap: A live traffic split tests business outcomes, but it exposes real users to the weaker variant. Use it after an offline gate passes.</p>
+<p><strong>Pairs with:</strong> AppConfig for changing the active variant without a code change, and CloudWatch Evidently for experiments. <strong>Limits and numbers:</strong> three variants in compare mode, as stated on the console procedure.</p>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/prompt-management-create.html and course slide extract, pages 298 and 365</p>
+
+<h3>AgentCore Evaluations: online and offline</h3>
+<p class="fact">AgentCore Evaluations scores agent behavior with built-in and custom evaluators.</p>
+<p>Built-in evaluators use LLM-as-a-judge scoring on converted traces. The service integrates with the Strands and LangGraph frameworks and with OpenTelemetry and OpenInference instrumentation. Built-in evaluator identifiers have the form Builtin followed by the name, such as Builtin.Helpfulness.</p>
+<p class="fact">An online evaluation configuration names the evaluators, the data source to watch, and the evaluation parameters. The course material says the sampling setting controls the share of sessions that are scored, and that results can appear in CloudWatch and in AgentCore Observability. The default quota is 1,000 evaluation configurations per Region per account.</p>
+<p class="rule">Rule: Use online evaluation when the question is about live sessions after release. Use on-demand evaluation for one trace or span. Use batch evaluation for a regression view across many saved sessions.</p>
+<p>The course material lists built-in checks for correctness, helpfulness, faithfulness, relevance, coherence, refusal, goal completion, tool choice, parameter checks, and harmful content. It also says evaluation may be limited by filters and the sampling rate you choose.</p>
+<p class="trap">Trap: Online evaluation needs a deployed agent and live traffic. It cannot approve a candidate before release on its own.</p>
+<p class="trap">Trap: Guardrails block unsafe output at runtime. They do not score the agent's quality, and they do not replace evaluators.</p>
+<p><strong>Pairs with:</strong> CloudWatch alarms, AgentCore Observability traces, and the batch and on-demand modes. <strong>Limits and numbers:</strong> the evaluator count per configuration and the sampling rate values are Not in source for this review.</p>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/evaluations.html and https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/online-evaluations.html and course slide extract, pages 250 and 252</p>
+
+<h3>Red teaming</h3>
+<p class="fact">Red teaming sends hostile or edge-case inputs on purpose to find failures.</p>
+<p>The course material lists hallucination rate, semantic drift, faithfulness, and compliance as output checks. It also lists Bedrock model evaluation tools, Clarify bias detection, Model Monitor alerts, and A2I as responsible AI tools. Specific AWS red teaming tooling is Not in source for this review.</p>
+<p class="rule">Rule: Build an adversarial set by category, such as jailbreak, private data request, toxic bait, and off-topic. Score each category separately and report the failure rate per category.</p>
+<p class="trap">Trap: A red team set made of easy prompts gives a false pass. The set must include the attacks that the team expects.</p>
+<p class="trap">Trap: A count of blocked requests shows that a control fired. It does not show that the model is safe without the control.</p>
+<p><strong>Pairs with:</strong> Bedrock Guardrails for runtime controls, judge metrics for scoring, and A2I for human review of borderline cases. <strong>Limits and numbers:</strong> Not in source for red teaming limits.</p>
+<p class="src">Source: course slide extract, pages 431 and 433. The definition is a general practice term, not an AWS-sourced fact.</p>
+
+<h3>SageMaker Clarify FMEval</h3>
+<p class="fact">Clarify foundation model evaluation runs automatic and human jobs.</p>
+<p>Automatic jobs run in SageMaker Studio or with the fmeval library. Human-worker jobs run in Studio. Automatic jobs use one task type each. The four task types are open-ended generation, text summarization, question answering, and classification.</p>
+<p class="fact">The fmeval library is the path for LLMs outside AWS and for models from other services, according to the AWS page. Studio needs the updated Studio experience. The built-in datasets vary by task, for example TREX and BOLD for generation, Government Report and Gigaword for summarization, and BoolQ, NaturalQuestions, and TriviaQA for question answering.</p>
+<p class="fact">Clarify also has pre-training bias metrics, such as class imbalance, difference in proportions of labels, and KL or JS divergence. These work on a labeled training dataset, not on generated text.</p>
+<p class="rule">Rule: Choose Clarify FMEval when you need dimension scores such as factual knowledge, stereotyping, toxicity, or semantic robustness, or when the model runs outside Bedrock.</p>
+<p class="trap">Trap: Clarify pre-training bias metrics do not score a generated answer. They describe a training dataset.</p>
+<p class="trap">Trap: A Bedrock-hosted model with a managed console job does not need the fmeval library. Choosing the library adds code work the scenario did not ask for.</p>
+<p><strong>Pairs with:</strong> Bedrock model evaluation for Bedrock-hosted models, SageMaker Model Monitor for production drift, and S3 for datasets and results. <strong>Limits and numbers:</strong> the per-job prompt count is Not in source for this review.</p>
+<p class="src">Source: https://docs.aws.amazon.com/sagemaker/latest/dg/clarify-foundation-model-evaluate.html and https://docs.aws.amazon.com/sagemaker/latest/dg/clarify-foundation-model-evaluate-auto.html and https://docs.aws.amazon.com/sagemaker/latest/dg/clarify-foundation-model-evaluate-overview.html and course slide extract, page 328</p>
+
+<h3>Human review with A2I</h3>
+<p class="fact">Amazon Augmented AI adds human review to predictions in production.</p>
+<p>High-confidence predictions return to the client at once. Low-confidence predictions go to human reviewers. Reviews are consolidated with weighted scores and stored in S3. Reviewers can be your employees, a vendor workforce, or Amazon Mechanical Turk.</p>
+<p class="rule">Rule: Use A2I when a live output must have a human decision before delivery, based on a confidence or risk rule.</p>
+<p>A2I works one item at a time. It is a control in the request path, so it adds latency for the items that go to review. Reviewed items can also be added to a training dataset later.</p>
+<p class="trap">Trap: A2I is not an offline benchmark. It does not compare two models over a fixed dataset the way a Bedrock human job does.</p>
+<p class="trap">Trap: Ground Truth labeling creates labels for training data. It is not a live review loop for generated answers.</p>
+<p><strong>Pairs with:</strong> Bedrock human jobs for offline ratings, Lambda and API Gateway for the request path, and S3 for stored reviews. <strong>Limits and numbers:</strong> the flow definition limits are Not in source for this review.</p>
+<p class="src">Source: course slide extract, pages 259, 321, and 594. The AWS A2I product page was not confirmed in this review.</p>
+
+<h3>CloudWatch for production quality signals</h3>
+<p class="fact">CloudWatch metrics belong to namespaces and can hold up to 30 dimensions.</p>
+<p>You can publish custom metrics, build dashboards, and create alarms. An alarm has three states: OK, INSUFFICIENT_DATA, and ALARM. High-resolution custom metrics can use periods of 10 or 30 seconds, or multiples of 60 seconds. Composite alarms combine several alarms with AND and OR logic.</p>
+<p class="fact">A metric filter on a log group can turn a log pattern into a metric. A CloudWatch alarm then watches the new metric. The course material lists production signals such as trace data, business results, prompt effect, hallucination trends, token bursts, response drift, invocation logs, and cost anomaly checks.</p>
+<p class="rule">Rule: Alarm on a score that an evaluator or job already emits as a metric. A raw log line cannot trigger a threshold until a metric filter or a custom metric exists.</p>
+<p class="trap">Trap: CloudWatch has no built-in fairness metric for generated text, in the source reviewed here. Publish a cohort-level score as your own custom metric.</p>
+<p class="trap">Trap: Infrastructure metrics such as CPU or memory do not show answer quality. A healthy endpoint can still return wrong answers.</p>
+<p><strong>Pairs with:</strong> AgentCore online evaluation, Model Monitor for ML drift, and Synthetics canaries for scripted checks. <strong>Limits and numbers:</strong> the default AgentCore metric namespace is stated in the AgentCore guidance but was not confirmed on the fetched page, so treat it as Not in source.</p>
+<p class="src">Source: course slide extract, pages 109, 110, 440, 442, 444, and 446</p>
+
+<h3>Troubleshooting by symptom</h3>
+<p>Start from the symptom the user reports. Then pick the first check. Each symptom has a first check that is cheap and a deeper check that costs more. Do the cheap check first.</p>
+
+<div class="mermaid">
+flowchart LR
+  A["Bad output in<br/>production"] -->|facts wrong| B["Hallucination path"]
+  A -->|answer stops<br/>early| C["Truncation path"]
+  A -->|structure<br/>broken| D["Format path"]
+  A -->|slow response| E["Latency path"]
+  A -->|bill rose| F["Cost path"]
+  A -->|declines valid<br/>requests| G["Refusal path"]
+</div>
+<p class="caption">Figure: Match the symptom to one path, then run its first check.</p>
+
+<h4>Hallucination</h4>
+<p class="fact">Faithfulness checks whether an answer stays inside the retrieved context.</p>
+<p>The course material lists hallucination rate and faithfulness as output checks. Temperature changes randomness, but it does not add facts that are missing from the context.</p>
+<p class="rule">Rule: For a RAG app, run a retrieve-only job first. If the passages are wrong, fix retrieval before you change the generator.</p>
+<div class="mermaid">
+flowchart TD
+  B["Hallucination reported"] -->|RAG app| C["Retrieve only job first"]
+  C -->|passages wrong| D["Fix chunking or search"]
+  C -->|passages right| E["Retrieve and generate<br/>faithfulness"]
+  E -->|low score| F["Tighten generator prompt"]
+</div>
+<p class="caption">Figure: Hallucination work starts with retrieval, then moves to the generator.</p>
+<p class="trap">Trap: Lowering temperature to zero does not remove a wrong fact that the context also contains. It only reduces variation between runs.</p>
+
+<h4>Truncation</h4>
+<p class="fact">In Prompt Management, the maximum tokens setting limits the length of the generated response. Stop sequences end generation when a listed text appears. Both settings are on the prompt or the variant.</p>
+<p class="rule">Rule: For a cut-off answer, check the maximum tokens value and the stop sequences before you change the prompt wording.</p>
+<p class="trap">Trap: A higher temperature does not stop an early end. It changes word choice, not the length limit.</p>
+
+<h4>Wrong format</h4>
+<p class="fact">A judge metric for following instructions scores whether the response respects the directions in the prompt. A structure check is a separate test. It parses the output, for example as JSON, and checks the fields.</p>
+<p class="rule">Rule: Add a parse and schema check in code after generation, and run it in the golden dataset on every change.</p>
+<p class="trap">Trap: A judge can say the format is acceptable when the output has a small syntax error. Use a parser for structure, and use the judge for intent.</p>
+
+<h4>Latency</h4>
+<p class="fact">The course material lists foundation model interaction tracing and invocation logs as production signals. X-Ray and trace data show where time goes across the components. The specific latency metric names for Bedrock invocations are Not in source for this review.</p>
+<p class="rule">Rule: Measure latency per step with traces before you change the model. A slow retrieval step needs a different fix than a slow generation step.</p>
+<p class="trap">Trap: A quality evaluation does not measure response time. A faster model can still fail the quality gate.</p>
+
+<h4>Cost spike</h4>
+<p class="fact">The course material links cost to token counts. It suggests token counting with the price performance ratio, and it lists token burst patterns and cost anomaly detection as signals to watch.</p>
+<p class="rule">Rule: For a cost spike, compare input and output token counts per request type before you change the model.</p>
+<p class="trap">Trap: Moving to a larger model rarely lowers cost. It usually raises the price per token, so check the token growth first.</p>
+
+<h4>Refusals</h4>
+<p class="fact">The built-in judge metric for refusal determines whether the response declines the prompt or rejects the request with reasons. Guardrails can also block an answer. The two signals are different, so read both.</p>
+<p class="rule">Rule: Decide the expected behavior for each test case first. A refusal is correct when the golden case expects a refusal, and wrong when the case expects an answer.</p>
+<p class="trap">Trap: A high refusal rate is not always a fault. A correct policy refusal scores the same as an over-cautious one unless the expected label is in the dataset.</p>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/model-evaluation-metrics.html and https://docs.aws.amazon.com/bedrock/latest/userguide/prompt-management-create.html and course slide extract, pages 289, 298, 431, and 446</p>
+
+<h2>X versus Y pairs</h2>
+<p>Each pair below has one decision tree, a three-row comparison, one question to ask yourself, and the trap. Read the question first, then use the tree to answer it. The three rows are purpose, input, and output or effect.</p>
+
+<h3>Bedrock model evaluation versus SageMaker Clarify FMEval</h3>
+<div class="mermaid">
+flowchart TD
+  A["Need score for a<br/>model"] -->|hosted on<br/>Bedrock| B["Bedrock model<br/>evaluation job"]
+  A -->|outside<br/>Bedrock or<br/>code needed| C["Clarify FMEval<br/>with fmeval"]
+  A -->|bias in<br/>training data| D["Clarify bias<br/>metrics"]
+</div>
+<p class="caption">Figure: Hosting location and code need decide the first split.</p>
+<ul>
+  <li><strong>Purpose:</strong> Bedrock gives a managed job for Bedrock models. Clarify gives dimension scores and code control.</li>
+  <li><strong>Input:</strong> Bedrock takes a prompt dataset in S3. Clarify takes a built-in dataset or your own prompts, through Studio or fmeval.</li>
+  <li><strong>Output:</strong> Bedrock writes a report with metric scores and judge explanations. Clarify writes results per dimension to S3.</li>
+</ul>
+<p class="tip">Exam tip: Ask yourself, is the model hosted on Bedrock, and does the team want a managed console job without scoring code.</p>
+<p class="trap">Trap: Choosing Clarify because it has the word evaluation in the name. A Bedrock-hosted model with a managed need points to the Bedrock job.</p>
+
+<h3>Built-in metrics versus LLM as a judge</h3>
+<div class="mermaid">
+flowchart TD
+  A["Need a quality score"] -->|exact reference<br/>answer| B["Automatic metric with<br/>reference"]
+  A -->|rubric or open<br/>judgment| C["Judge model job"]
+  C -->|standard dimension| D["Built-in judge metric"]
+  C -->|business rule| E["Custom metric prompt"]
+</div>
+<p class="caption">Figure: A reference string favors metrics, and a rubric favors a judge.</p>
+<ul>
+  <li><strong>Purpose:</strong> Automatic metrics measure overlap or accuracy against a reference. A judge scores quality against a rubric.</li>
+  <li><strong>Input:</strong> Automatic metrics need references for many tasks. A judge needs a prompt and a response, and optionally a reference.</li>
+  <li><strong>Output:</strong> Automatic metrics give a number per prompt. A judge gives a score and an explanation.</li>
+</ul>
+<p class="tip">Exam tip: Ask yourself, is there one correct string, or is quality a matter of judgment.</p>
+<p class="trap">Trap: A judge is not free of cost or bias. The source notes the judge can share the generator's blind spots.</p>
+
+<h3>Bedrock human job versus A2I review</h3>
+<div class="mermaid">
+flowchart TD
+  A["Need human judgment"] -->|compare models<br/>offline| B["Bedrock human evaluation<br/>job"]
+  A -->|review live output| C["A2I human review loop"]
+  C -->|low confidence only| D["Reviewer decides before<br/>delivery"]
+</div>
+<p class="caption">Figure: Offline comparison and live review are different workflows.</p>
+<ul>
+  <li><strong>Purpose:</strong> A Bedrock human job rates models on a dataset. A2I routes live items to people when the confidence is low.</li>
+  <li><strong>Input:</strong> The Bedrock job takes a prompt dataset and a work team. A2I takes a prediction and a confidence rule.</li>
+  <li><strong>Output:</strong> The Bedrock job gives ratings per model. A2I gives a reviewed result and stores the review in S3.</li>
+</ul>
+<p class="tip">Exam tip: Ask yourself, does the human see the output before a user does, or only during a release check.</p>
+<p class="trap">Trap: Using A2I for a release comparison of two models. It handles items as they arrive, so it is not a fixed benchmark.</p>
+
+<h3>Retrieve only versus retrieve and generate</h3>
+<div class="mermaid">
+flowchart TD
+  A["RAG answer is wrong"] -->|is the right passage<br/>found| B["Retrieve only job"]
+  B -->|no| C["Fix chunking or search"]
+  B -->|yes| D["Retrieve and generate job"]
+  D -->|answer not grounded| E["Check generator prompt or<br/>model"]
+</div>
+<p class="caption">Figure: Retrieval is tested before generation.</p>
+<ul>
+  <li><strong>Purpose:</strong> Retrieve only checks the passages. Retrieve and generate checks the passages and the final answer.</li>
+  <li><strong>Input:</strong> Retrieve only needs queries and passage references. Retrieve and generate needs queries, references, and a generator model.</li>
+  <li><strong>Output:</strong> Retrieve only reports retrieval metrics. Retrieve and generate reports answer metrics as well.</li>
+</ul>
+<p class="tip">Exam tip: Ask yourself, does the question change the search step or the answer step.</p>
+<p class="trap">Trap: Running only a retrieve and generate job when the team changed the chunk size. The answer score mixes two causes and hides the search effect.</p>
+
+<h3>Online versus offline agent evaluation</h3>
+<div class="mermaid">
+flowchart TD
+  A["Agent quality question"] -->|live sessions after<br/>release| B["AgentCore online<br/>evaluation"]
+  A -->|candidate before<br/>release| C["On-demand or batch<br/>evaluation"]
+  C -->|one failed trace| D["On-demand on trace IDs"]
+  C -->|many saved sessions| E["Batch across sessions"]
+</div>
+<p class="caption">Figure: Timing and scope decide online or offline.</p>
+<ul>
+  <li><strong>Purpose:</strong> Online watches live traffic with sampling. Offline checks a candidate or investigates saved traces.</li>
+  <li><strong>Input:</strong> Online reads the live data source. Offline reads saved sessions, traces, or spans.</li>
+  <li><strong>Output:</strong> Online gives continuous scores for alarms. Offline gives a point-in-time result for a release decision.</li>
+</ul>
+<p class="tip">Exam tip: Ask yourself, is the question about a release gate or about what users see now.</p>
+<p class="trap">Trap: Using online evaluation as the only pre-release test. It needs the deployed agent and live traffic.</p>
+
+<h3>ROUGE versus BLEU</h3>
+<div class="mermaid">
+flowchart TD
+  A["Overlap metric needed"] -->|summary with<br/>reference| B["ROUGE"]
+  A -->|translation with<br/>reference| C["BLEU"]
+  B -->|word order matters| D["ROUGE-L"]
+  B -->|word units matter| E["ROUGE-N"]
+</div>
+<p class="caption">Figure: The task decides the metric family.</p>
+<ul>
+  <li><strong>Purpose:</strong> ROUGE measures recall of reference units in summaries. BLEU measures precision of n-grams in translations.</li>
+  <li><strong>Input:</strong> Both need a generated text and at least one reference text.</li>
+  <li><strong>Output:</strong> ROUGE gives overlap scores per unit type. BLEU gives a precision score with a brevity penalty.</li>
+</ul>
+<p class="tip">Exam tip: Ask yourself, is the task summary or translation, and is the reference recall or precision.</p>
+<p class="trap">Trap: BLEU for a summary task. The brevity penalty and precision focus do not match a summary goal.</p>
+
+<h3>BERTScore versus n-gram metrics</h3>
+<div class="mermaid">
+flowchart TD
+  A["Compare generated text to<br/>reference"] -->|same meaning other<br/>words| B["BERTScore"]
+  A -->|exact wording<br/>matters| C["ROUGE or exact match"]
+  C -->|short answer string| D["Exact match or F1 over<br/>words"]
+  C -->|longer summary| E["ROUGE-N"]
+</div>
+<p class="caption">Figure: Meaning favors embeddings, and wording favors overlap.</p>
+<ul>
+  <li><strong>Purpose:</strong> BERTScore measures semantic similarity with embeddings. N-gram metrics measure shared words or sequences.</li>
+  <li><strong>Input:</strong> Both need a generated text and a reference.</li>
+  <li><strong>Output:</strong> BERTScore gives a similarity score. N-gram metrics give overlap counts or precision and recall.</li>
+</ul>
+<p class="tip">Exam tip: Ask yourself, must the wording match, or only the meaning.</p>
+<p class="trap">Trap: Calling BERTScore a fact check. A similar meaning score can miss a changed number.</p>
+
+<h3>Model Monitor versus evaluation jobs</h3>
+<div class="mermaid">
+flowchart TD
+  A["Production ML<br/>signal"] -->|input drift vs<br/>baseline| B["SageMaker Model<br/>Monitor"]
+  A -->|text quality<br/>of answers| C["Evaluation job or<br/>judge"]
+  B -->|feature<br/>attribution| D["Attribution drift<br/>check"]
+  B -->|model quality<br/>with labels| E["Quality baseline<br/>check"]
+</div>
+<p class="caption">Figure: Monitoring tracks statistics, and evaluation scores answers.</p>
+<ul>
+  <li><strong>Purpose:</strong> Model Monitor watches data and model statistics against a baseline. Evaluation scores the content of generated answers.</li>
+  <li><strong>Input:</strong> Model Monitor reads captured data in S3 on a schedule. Evaluation reads prompts, responses, and references.</li>
+  <li><strong>Output:</strong> Model Monitor emits metrics to CloudWatch for alarms. Evaluation gives scores and explanations per prompt.</li>
+</ul>
+<p class="tip">Exam tip: Ask yourself, does the question ask about the statistics of inputs, or about whether the text is right.</p>
+<p class="trap">Trap: Model Monitor as the answer for free-form text quality. The course material says its quality checks use statistical properties of features and labels.</p>
+
+<h3>Golden dataset regression versus canary or shadow test</h3>
+<div class="mermaid">
+flowchart TD
+  A["Change to prompt<br/>or model"] -->|before users<br/>see it| B["Golden dataset<br/>regression"]
+  A -->|after deploy<br/>with live copy| C["Shadow or canary<br/>test"]
+  C -->|no user impact| D["Shadow variant<br/>copies traffic"]
+  C -->|small share of<br/>users| E["Canary share of<br/>traffic"]
+</div>
+<p class="caption">Figure: Pre-release gates and live tests answer different questions.</p>
+<ul>
+  <li><strong>Purpose:</strong> A golden run gates a release on fixed cases. A shadow or canary compares the candidate to the live model on real traffic.</li>
+  <li><strong>Input:</strong> A golden run needs a fixed dataset. A shadow or canary needs live requests and a routing setting.</li>
+  <li><strong>Output:</strong> A golden run gives pass or fail per threshold. A shadow or canary gives comparison data on real requests.</li>
+</ul>
+<p class="tip">Exam tip: Ask yourself, is the test before any user sees the change, or with real users at a small share.</p>
+<p class="trap">Trap: A canary as the only regression gate. Users see the candidate's errors before the team knows the score.</p>
+
+<h3>Guardrails versus evaluation</h3>
+<div class="mermaid">
+flowchart TD
+  A["Team wants safety evidence"] -->|block output at<br/>runtime| B["Bedrock Guardrails"]
+  A -->|measure quality or<br/>safety| C["Evaluation job or judge"]
+  C -->|fixed test cases| D["Golden or red team set"]
+  C -->|live sampled scores| E["AgentCore online<br/>evaluation"]
+</div>
+<p class="caption">Figure: Guardrails act on traffic, and evaluation produces scores.</p>
+<ul>
+  <li><strong>Purpose:</strong> Guardrails enforce rules at runtime. Evaluation measures how well the system behaves.</li>
+  <li><strong>Input:</strong> Guardrails read each request and response. Evaluation reads a dataset or sampled sessions.</li>
+  <li><strong>Output:</strong> Guardrails block or allow. Evaluation gives scores over time.</li>
+</ul>
+<p class="tip">Exam tip: Ask yourself, does the team need a control on each request, or a score for the system.</p>
+<p class="trap">Trap: Guardrails as proof of quality. A block count shows the control fired, not that the answers were correct.</p>
+
+<h3>Prompt variants versus traffic split</h3>
+<div class="mermaid">
+flowchart TD
+  A["Choose between two<br/>prompt variants"] -->|compare before<br/>user traffic| B["Prompt Management<br/>variants compare"]
+  A -->|measure<br/>business<br/>outcome live| C["Traffic split test"]
+  C -->|config change<br/>without<br/>redeploy| D["AppConfig rollout"]
+  C -->|experiment<br/>metrics| E["CloudWatch<br/>Evidently"]
+</div>
+<p class="caption">Figure: Compare offline first, then split live traffic.</p>
+<ul>
+  <li><strong>Purpose:</strong> Variants compare outputs side by side. A traffic split changes what real users receive.</li>
+  <li><strong>Input:</strong> Variants need test inputs. A traffic split needs a routing rule and metrics.</li>
+  <li><strong>Output:</strong> Variants show outputs for review. A traffic split shows business and quality metrics per arm.</li>
+</ul>
+<p class="tip">Exam tip: Ask yourself, is the decision made before any user sees the variant, or from live results.</p>
+<p class="trap">Trap: Using a live split to pick a prompt when the team has no offline test. The weaker variant reaches real users first.</p>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/prompt-management-create.html and course slide extract, pages 298, 313, 330, 365, 430, and 440. Pair content is drawn from the AWS and course material above.</p>
+
+<h2>Read a long question</h2>
+<p>Long questions hide the deciding constraint in one clause. Read the last sentence first, to learn the ask. Then read the middle for the constraint. Bold words in the scenarios below mark the constraint. Each scenario is written for this module and is not taken from any test.</p>
+
+<h3>Scenario one: a weekly model swap with no reviewers</h3>
+<p>A claims team summarizes claim files with a Bedrock model. Each week, the team wants to test a different model before a release. They have 400 files, each with an approved summary, and no reviewer hours this month.</p>
+<p>Constraints: <strong>no reviewer hours</strong>, <strong>approved summary</strong>, and <strong>each week</strong>. The first two point to a reference-based automatic job. The third points to a repeatable run that a pipeline can start.</p>
+<p>Eliminate the human workforce job, because it needs reviewer hours. Eliminate A2I, because it reviews live items and does not compare models. Eliminate the fmeval library, because the models are Bedrock-hosted and the team wants no scoring code. Eliminate the traffic split, because it tests live users and skips the offline gate.</p>
+<p class="rule">Rule: Answer with a Bedrock automatic evaluation job that uses the approved summaries as references, run from the weekly pipeline.</p>
+
+<h3>Scenario two: fluent answers that cite wrong steps</h3>
+<p>A support assistant answers questions from a set of product manuals through a knowledge base. Users say the answers read well but cite the wrong steps. The team has a fixed list of 200 questions with known correct manual sections, and it wants to know whether the search or the answer step fails.</p>
+<p>Constraints: <strong>wrong steps</strong>, <strong>known correct sections</strong>, and <strong>search or answer</strong>. The known sections make retrieval testable. The phrase search or answer asks you to split the stages.</p>
+<p>Eliminate the CloudWatch dashboard, because it shows trends and not the cause. Eliminate a model swap, because it changes the generator without isolating the search step. Eliminate human review of live answers, because it is slow and does not split the stages. Eliminate a retrieve and generate job alone, because the score mixes search and answer causes.</p>
+<p class="rule">Rule: Run a retrieve-only job on the fixed list first. Then run a retrieve and generate job on the same list if the passages are right.</p>
+
+<h3>Scenario three: a wrong tool call in live bookings</h3>
+<p>An agent books trips and calls tools to change reservations. After release, the team sees a few bookings with the wrong tool, and it wants a daily sampled score with alarms. The team cannot change the agent code this sprint.</p>
+<p>Constraints: <strong>after release</strong>, <strong>daily sampled score</strong>, <strong>alarms</strong>, and <strong>cannot change agent code</strong>. Sampling and alarms point to an online evaluation with a metric in CloudWatch.</p>
+<p>Eliminate the offline judge job on exported transcripts, because it is not live and needs a daily export step. Eliminate Guardrails, because they block output and do not score tool choice. Eliminate a Synthetics canary with a scripted check, because a script cannot judge the tool choice in a free-form session. Eliminate Model Monitor, because the question is about agent behavior, not feature statistics.</p>
+<p class="rule">Rule: Configure an AgentCore online evaluation with the tool selection evaluator, sample the sessions, and alarm on the published score.</p>
+<p class="src">Source: course slide extract, pages 250 and 440, and https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/online-evaluations.html</p>
+
+<h2>Distractor patterns seen in the tests</h2>
+<p>Wrong options in this area follow a few patterns. Learn the pattern, and you can reject a wrong option even when you do not know the exact service. Each pattern below has a reason it is wrong.</p>
+<ul>
+  <li><span class="trap">Trap: Right service, wrong stage.</span> A pre-release tool is offered for live monitoring, or a live tool is offered for a release gate. It is wrong because the timing does not match the question.</li>
+  <li><span class="trap">Trap: Metric from another task.</span> A translation metric is used for summaries, or a classification metric is used for free-form answers. It is wrong because the metric does not measure the task output.</li>
+  <li><span class="trap">Trap: Safety control offered as evaluation.</span> A content filter or guardrail is offered as the way to measure quality. It is wrong because it blocks at runtime and does not score.</li>
+  <li><span class="trap">Trap: Infrastructure signal offered as quality.</span> CPU, memory, or uptime is offered to show answer correctness. It is wrong because it measures the server, not the text.</li>
+  <li><span class="trap">Trap: Manual effort that does not scale.</span> A team of reviewers or developers writing tests by hand is offered as the fix. It is wrong because the scenario asks for a repeatable, automated check.</li>
+  <li><span class="trap">Trap: Labeling tool for generated output.</span> A labeling service is offered to score answers. It is wrong because labeling creates training data and does not run a review loop for generated text.</li>
+  <li><span class="trap">Trap: Custom build when a managed feature fits.</span> A custom judge pipeline with new endpoints is offered when a managed job would do. It is wrong unless the constraint says the managed job cannot run the model.</li>
+  <li><span class="trap">Trap: Cost tool offered as quality.</span> A pricing or rightsizing tool is offered to pick the better model. It is wrong because it measures spend, not output quality.</li>
+  <li><span class="trap">Trap: Fixing the wrong stage.</span> The generator is changed when the search returned the wrong passages. It is wrong because the cause sits upstream.</li>
+  <li><span class="trap">Trap: Limit that breaks the count.</span> A human job or a dataset is sized beyond a documented limit. It is wrong because the design cannot run as stated. Check the count against the limit in the source.</li>
+  <li><span class="trap">Trap: Average hides a group.</span> One overall score is offered as proof of fairness. It is wrong because a strong average can hide a weak group. Report scores per cohort.</li>
+  <li><span class="trap">Trap: Judge checked by itself.</span> A judge model from the same family as the generator is offered as neutral. It is wrong because shared blind spots can pass a bad answer.</li>
+</ul>
+
+<h2>Drill</h2>
+<p>Each prompt is one line. Cover the answer line, answer in your head, then check. Each answer starts with Rule or Trap.</p>
+
+<p><strong>1.</strong> Two models summarize files that have approved summaries, and no reviewer is available. Which job fits?</p>
+<p class="rule">Rule: A Bedrock automatic evaluation job with the approved summaries as references.</p>
+
+<p><strong>2.</strong> The team needs a metric that flags answers with claims absent from the supplied context.</p>
+<p class="rule">Rule: Faithfulness, which is Builtin.Faithfulness on the judge list.</p>
+
+<p><strong>3.</strong> A team uses a guardrail denied topic list as its hallucination score.</p>
+<p class="trap">Trap: A guardrail blocks content at runtime. It does not score answer grounding.</p>
+
+<p><strong>4.</strong> A new prompt drops the structured output format on some inputs. Where is it caught before release?</p>
+<p class="rule">Rule: A golden dataset run in the pipeline, with a parse and schema check on each output.</p>
+
+<p><strong>5.</strong> Answers from a knowledge base are wrong, and the team does not know if search or generation fails.</p>
+<p class="rule">Rule: Run a retrieve-only job first to test the passages.</p>
+
+<p><strong>6.</strong> A deployed agent needs a daily sampled score for correctness and tool use, with alarms.</p>
+<p class="rule">Rule: An AgentCore online evaluation with alarms on the published scores.</p>
+
+<p><strong>7.</strong> A low-confidence model result must reach a person before a customer sees it.</p>
+<p class="rule">Rule: Amazon Augmented AI human review on the low-confidence items.</p>
+
+<p><strong>8.</strong> Thirty staff must rate two candidate models on a fixed prompt set.</p>
+<p class="rule">Rule: A Bedrock human evaluation job, with the work team under the stated worker limit.</p>
+
+<p><strong>9.</strong> A translation team wants a precision-oriented score against human translations.</p>
+<p class="rule">Rule: BLEU, because it measures n-gram precision against references.</p>
+
+<p><strong>10.</strong> Summaries use different words from the reference but keep the same meaning, and ROUGE scores are low.</p>
+<p class="rule">Rule: BERTScore, because it compares embeddings for meaning.</p>
+
+<p><strong>11.</strong> Two prompt versions must be compared on a few inputs before any test run.</p>
+<p class="rule">Rule: Prompt Management variants in compare mode, up to three variants.</p>
+
+<p><strong>12.</strong> Responses end in the middle of a sentence after a prompt change.</p>
+<p class="rule">Rule: Check the maximum tokens value and the stop sequences first.</p>
+
+<p><strong>13.</strong> A model declines valid policy questions, and the team wants to measure this.</p>
+<p class="rule">Rule: Use the refusal judge metric, and compare each case with the expected answer or refusal in the golden set.</p>
+
+<p><strong>14.</strong> A monthly bill jumps after a prompt change, with no change in traffic.</p>
+<p class="rule">Rule: Compare input and output token counts per request type before you change the model.</p>
+
+<h2>Sources</h2>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/evaluation-judge.html</p>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/model-evaluation-metrics.html</p>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/evaluation-kb.html</p>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/model-evaluation-type-automatic.html</p>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/human-worker-evaluations.html</p>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock/latest/userguide/prompt-management-create.html</p>
+<p class="src">Source: https://docs.aws.amazon.com/sagemaker/latest/dg/clarify-foundation-model-evaluate.html</p>
+<p class="src">Source: https://docs.aws.amazon.com/sagemaker/latest/dg/clarify-foundation-model-evaluate-auto.html</p>
+<p class="src">Source: https://docs.aws.amazon.com/sagemaker/latest/dg/clarify-foundation-model-evaluate-overview.html</p>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/evaluations.html</p>
+<p class="src">Source: https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/online-evaluations.html</p>
+<p class="src">Source: course slide extract, module eight pages as cited in each section above.</p>
+<nav class="mod"><a href="index.html">All modules</a> <a href="m7-environments-ops-security.html">Previous</a> <a href="m9-integration-apps.html">Next</a></nav>
+</main>
+<script type="module">
+  import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.esm.min.mjs";
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: "base",
+    themeVariables: {
+      background: "#000000",
+      mainBkg: "#000000",
+      primaryColor: "#000000",
+      primaryTextColor: "#f2f2f2",
+      primaryBorderColor: "#7db8ff",
+      secondaryColor: "#000000",
+      tertiaryColor: "#000000",
+      lineColor: "#d0d0d0",
+      textColor: "#f2f2f2",
+      edgeLabelBackground: "#000000",
+      clusterBkg: "#000000",
+      clusterBorder: "#7db8ff",
+      titleColor: "#ffffff",
+      fontFamily: "Helvetica, Arial, sans-serif",
+      fontSize: "22px"
+    },
+    flowchart: { htmlLabels: true, curve: "basis", useMaxWidth: false, padding: 16, nodeSpacing: 40, rankSpacing: 56 }
+  });
+</script>
+<script>window.markmap = { autoLoader: { manual: false, toolbar: false } };</script>
+<script src="https://cdn.jsdelivr.net/npm/markmap-autoloader@0.18.12"></script>
+</body>
+</html>
