@@ -28,7 +28,9 @@ Complete study materials for the AWS Certified Generative AI Developer - Profess
 | `volume-system-design.html` | End-to-end reference designs with trade-off math |
 | `volume-appendix-gaps.html` | Gap coverage: topics the blueprint implies but never names |
 
-Every volume is a single self-contained HTML file (works offline, no external dependencies). Each concept is taught from zero: what it is, why it exists, and how it works under the hood. You get concrete numbers, common misunderstandings, diagrams with walkthroughs, and an exam-relevance line.
+Each volume is a long scrolling treatise. A topic opens with a one-sentence claim, then the mechanism, the numbers, a worked scenario, and the exam trap. Shared styles and behavior live in `assets/treatise.css` and `assets/treatise.js`. Fonts are the files already in `assets/fonts/`. Diagrams are local SVG and image files. Nothing on the page loads from a CDN, so the guide works offline from a local copy of the repo.
+
+The `companions/` pages use the same treatise and link back to the long volume. `study/*.json` remains the section index the earlier volumes were planned from. Rebuild the HTML with `python3 tools/rebuild_treatise.py` only from the pre-treatise sources. The script refuses to parse a page that is already marked `data-treatise`.
 
 ## How the exam asks
 
